@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- SQL문 정의할 때 VO표현을 간단하게 하고 싶은 경우. 별명을 지어서 사용 -->
+
+    <settings>
+        <setting name="jdbcTypeForNull" value="NULL" />
+        <!-- DB 조회결과 snake_case -> camelCase 변환 -->
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+    </settings>
+
+    <typeAliases>
+        <!--<typeAlias
+                type="com.multi.hodooScheduler.user.model.dto.UserDTO"
+                alias="userDTO"/>
+        <typeAlias
+                type="com.multi.hodooScheduler.task.model.dto.TaskDTO"
+                alias="taskDTO"/>
+        <typeAlias
+                type="com.multi.hodooScheduler.diary.model.dto.DiaryDTO"
+                alias="diaryDTO"/>
+        <typeAlias
+                type="com.multi.hodooScheduler.diary.model.dto.PageDTO"
+                alias="pageDTO"/>
+
+        <typeAlias
+                type="com.multi.hodooScheduler.user.model.dto.AuthDTO"
+                alias="AuthDTO"/>-->
+    </typeAliases>
+    <mappers>
+        <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
+
+<!--        <mapper resource="mappers/MemberMapper.xml" />-->
+        <!--<mapper resource="mappers/taskMapper.xml" />
+        <mapper resource="mappers/diaryMapper.xml" />-->
+    </mappers>
+</configuration>

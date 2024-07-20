@@ -1,0 +1,73 @@
+@charset "UTF-8";
+@font-face {
+    font-family: 'Freesentation-1Thin';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-1Thin.woff2') format('woff2');
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Freesentation-3Light';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-3Light.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Freesentation-5Medium';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Freesentation-7Bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/2404@1.0/Freesentation-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Freesentation-3Light', sans-serif;
+    font-size: 15px;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+}
+
+.btn-udh-yellow {
+    background-color: #FFB83D;
+    color: #FFFFFF;
+}
+.btn-udh-yellow:hover {
+    background-color: #FFA11E;
+    color: #FFFFFF;
+}
+
+.btn-udh-blue {
+    background-color: #27447B;
+    color: #FFFFFF;
+}
+.btn-udh-blue:hover {
+    background-color: #142657;
+    color: #FFFFFF;
+}
+
+.btn-udh-red {
+    background-color: #CB3333;
+    color: #FFFFFF;
+}
+.btn-udh-red:hover {
+    background-color: #AA0000;
+    color: #FFFFFF;
+}
+
+.btn-udh-silver {
+    background-color: #979797;
+    color: #FFFFFF;
+}
+.btn-udh-silver:hover {
+    background-color: #6F6F6F;
+    color: #FFFFFF;
+}
+
