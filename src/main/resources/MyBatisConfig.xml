@@ -28,6 +28,10 @@
         <typeAlias
                 type="com.multi.hodooScheduler.user.model.dto.AuthDTO"
                 alias="AuthDTO"/>-->
+
+        <!-- 성현 -->
+        <typeAlias type="com.multi.udong.club.model.dto.CategoryDTO" alias="categoryDTO"/>
+
     </typeAliases>
     <mappers>
         <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
@@ -35,5 +39,9 @@
 <!--        <mapper resource="mappers/MemberMapper.xml" />-->
         <!--<mapper resource="mappers/taskMapper.xml" />
         <mapper resource="mappers/diaryMapper.xml" />-->
+
+        <!-- 성현 -->
+        <mapper resource="mappers/ClubMapper.xml" />
+
     </mappers>
 </configuration>
