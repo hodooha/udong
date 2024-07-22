@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .insert-area{
+            background-color: #E5E5E5;
+            padding: 15px;
+            border-radius: 0.375rem;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .category-select{
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            height: 25px;
+        }
+        .input{
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            height: 25px;
+            background-color: #FFFFFF;
+            border: 1px solid #979797;
+        }
+        .club-name-input{
+            width: 40%;
+        }
+        .club-master-input{
+            width: 16%;
+        }
+        .club-location-input{
+            width: 12%;
+        }
+        .img-area{
+            margin-right: 20px;
+            border: 1px solid #979797;
+            width: 240px;
+            height: 240px;
+            background-color: #FFFFFF;
+        }
+        .img-input{
+            font-family: 'Freesentation-3Light';
+            margin-top: 5px;
+        }
+        .introduction-input{
+            font-family: 'Freesentation-3Light';
+            width: 100%;
+            resize: none;
+            border: 1px solid #979797;
+
+            height: 240px;
+        }
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            $.ajax({
+                url: "/club/categoryList",
+                success: function(data) {
+                    var categorySelect = $('select[name="categoryCode"]');
+                    data.forEach(function(category) {
+                        categorySelect.append($('<option></option>').attr('value', category.categoryCode).text(category.categoryName));
+                    });
+                },
+                error: function() {
+                    alert('모임 주제를 불러오는 데 실패했습니다.');
+                }
+            })
+
+        })
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="margin: 40px;">
+    <form action="insertClub" method="post" encType="multipart/form-data" onsubmit="return validateForm()">
+        <div class="insert-area">
+            <span>주제</span>
+            <select class="category-select" name="categoryCode">
+            </select>
+            <span style="margin-left: 50px">모임명</span>
+            <input type="text" class="input club-name-input" name="clubName" maxlength="40" required>
+            <span style="margin-left: 50px">모임장</span>
+            <input type="text" class="input club-master-input" value="변필)로그인한 회원의 닉네임" disabled>
+            <span style="margin-left: 50px">동네</span>
+            <input type="text" class="input club-location-input" value="변필)로그인한 회원의 행정동" disabled>
+            <br>
+            <br>
+            <table>
+                <tr>
+                    <td>
+                        <span>대표 이미지</span>
+                    </td>
+                    <td width="100%">
+                        <span>소개</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="img-area" id="imgArea">
+                            <img id="img" width="240px" height="240px">
+                            <br>
+                            <input type="file" class="img-input" name="img" onchange="loadImg(this)">
+                        </div>
+                    </td>
+                    <td width="100%">
+                        <textarea class="introduction-input" name="introduction" maxlength="1000" required></textarea>
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <br>
+            <br>
+            <span>최대 인원</span>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
