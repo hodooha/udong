@@ -6,9 +6,9 @@
     <!-- SQL문 정의할 때 VO표현을 간단하게 하고 싶은 경우. 별명을 지어서 사용 -->
 
     <settings>
-        <setting name="jdbcTypeForNull" value="NULL" />
+        <setting name="jdbcTypeForNull" value="NULL"/>
         <!-- DB 조회결과 snake_case -> camelCase 변환 -->
-        <setting name="mapUnderscoreToCamelCase" value="true" />
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
 
     <typeAliases>
@@ -29,19 +29,32 @@
                 type="com.multi.hodooScheduler.user.model.dto.AuthDTO"
                 alias="AuthDTO"/>-->
 
+<<<<<<< HEAD
         <!-- 성현 -->
         <typeAlias type="com.multi.udong.club.model.dto.CategoryDTO" alias="categoryDTO"/>
 
+=======
+        <typeAlias
+                type="com.multi.udong.share.model.dto.ShaCatDTO"
+                alias="ShaCatDTO"/>
+        <typeAlias
+                type="com.multi.udong.share.model.dto.ShaItemDTO"
+                alias="ShaItemDTO"/>
+>>>>>>> share
     </typeAliases>
     <mappers>
         <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
 
-<!--        <mapper resource="mappers/MemberMapper.xml" />-->
+        <!--        <mapper resource="mappers/MemberMapper.xml" />-->
         <!--<mapper resource="mappers/taskMapper.xml" />
         <mapper resource="mappers/diaryMapper.xml" />-->
 
+<<<<<<< HEAD
         <!-- 성현 -->
         <mapper resource="mappers/ClubMapper.xml" />
 
+=======
+        <mapper resource="mappers/ShareMapper.xml" />
+>>>>>>> share
     </mappers>
 </configuration>
