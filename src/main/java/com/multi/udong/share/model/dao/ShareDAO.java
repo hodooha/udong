@@ -1,5 +1,6 @@
 package com.multi.udong.share.model.dao;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -19,7 +20,21 @@ public class ShareDAO {
     }
 
     public int insertItem(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+        sqlSession.insert("ShareMapper.insertItem", itemDTO);
+        return itemDTO.getItemNo();
+    }
 
-        return sqlSession.insert("ShareMapper.insertItem", itemDTO);
+    public int insertImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> imgList) {
+
+
+        return sqlSession.insert("ShareMapper.insertImg", imgList);
+    }
+
+    public List<ShaItemDTO> rentItemList(SqlSessionTemplate sqlSession, int locCode) {
+        return (ArrayList) sqlSession.selectList("ShareMapper.rentItemList", locCode);
+    }
+
+    public List<ShaItemDTO> giveItemList(SqlSessionTemplate sqlSession, int locCode) {
+        return (ArrayList) sqlSession.selectList("ShareMapper.giveItemList", locCode);
     }
 }

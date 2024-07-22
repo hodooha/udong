@@ -7,17 +7,78 @@
         <result property="catName" column="cat_name" />
     </resultMap>
 
+    <resultMap type="ShaItemDTO" id="shaItemMap">
+        <id property="itemNo" column="item_no" />
+        <result property="itemGroup" column="item_group" />
+        <result property="itemCatCode" column="item_cat_code" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="ownerNo" column="owner_no" />
+        <result property="locCode" column="loc_code" />
+        <result property="createdAt" column="created_at" />
+        <result property="modifiedAt" column="modified_at" />
+        <result property="expiryDate" column="expiry_date" />
+        <result property="statusCode" column="status_code" />
+        <result property="dealCnt" column="deal_cnt" />
+        <result property="likeCnt" column="like_cnt" />
+        <result property="viewCnt" column="view_cnt" />
+        <result property="reqCnt" column="req_cnt" />
+        <result property="deletedAt" column="deleted_at" />
+        <result property="img" column="saved_name" />
+    </resultMap>
+
     <select id="getShaCat" resultMap="shaCatMap">
         select *
         from sha_cat
     </select>
 
-    <insert id="insertItem">
+    <insert id="insertItem" useGeneratedKeys="true" keyColumn="item_no" keyProperty="itemNo">
         insert into sha_items
         (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date)
         values
         (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate})
     </insert>
 
+    <insert id="insertImg" >
+        insert into attachment
+        (type_code, target_no, original_name, saved_name)
+        values
+        <foreach collection="list" item="img" separator=",">
+            (#{img.typeCode}, #{img.targetNo}, #{img.originalName}, #{img.savedName})
+        </foreach>
+    </insert>
+
+    <select id="rentItemList" resultMap="shaItemMap">
+        select a.*, c.saved_name
+        from sha_items a
+        left join (
+        select target_no, saved_name
+        from (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        where type_code = 'rent'
+        ) sub
+        where rn = 1
+        ) c on a.item_no = c.target_no
+        where a.loc_code = #{locCode}
+        and a.item_group = 'rent'
+    </select>
+
+    <select id="giveItemList" resultMap="shaItemMap">
+        select a.*, c.saved_name
+        from sha_items a
+        left join (
+        select target_no, saved_name
+        from (
+        select *, row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        where type_code = 'give'
+        ) sub
+        where rn = 1
+        ) c on a.item_no = c.target_no
+        where a.loc_code = #{locCode}
+        and a.item_group = 'give'
+    </select>
 
 </mapper>
