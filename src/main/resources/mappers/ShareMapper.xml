@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="ShareMapper">
+    <resultMap type="ShaCatDTO" id="shaCatMap">
+        <!-- 언더바가 들어가는 쿼리문에 한하여 매핑을 해줘야함 -->
+        <id property="catCode" column="cat_code" />
+        <result property="catName" column="cat_name" />
+    </resultMap>
+
+    <select id="getShaCat" resultMap="shaCatMap">
+        select *
+        from sha_cat
+    </select>
+
+    <insert id="insertItem">
+        insert into sha_items
+        (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date)
+        values
+        (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate})
+    </insert>
+
+
+</mapper>

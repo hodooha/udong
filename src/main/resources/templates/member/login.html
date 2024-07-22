@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+        }
+        .login {
+            width: 600px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .login form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-group {
+            width: 70%;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .input-group label {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background-color: white;
+            padding: 0 5px;
+            font-size: 12px;
+            color: #666;
+        }
+        .clear-input {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            color: #999;
+        }
+        .btn {
+            width: 70%;
+        }
+        .btn.btn-udh-blue {
+            border: 1px solid #000000;
+        }
+        .btn.google-login {
+            border: 1px solid #000000;
+        }
+        .btn.kakao-login {
+            border: 1px solid #000000;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<div class="container">
+    <div class="login">
+        <form action="/login" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="input-group">
+                <label>아이디</label>
+                <input type="text" name="memberId" placeholder="아이디">
+                <button class="clear-input" type="button">&times;</button>
+            </div>
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자">
+                <button class="clear-input" type="button">&times;</button>
+            </div>
+            <button class="btn btn-udh-blue">로그인</button>
+        </form><br>
+        <form action="/signup" method="get">
+            <button class="btn btn-udh-blue">회원가입</button>
+        </form><br>
+        <button class="btn google-login">구글 로그인 </button><br>
+        <button class="btn kakao-login">kakao 카카오 로그인</button>
+    </div>
+    <div class="building">
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('.input-group input');
+        const clearButtons = document.querySelectorAll('.clear-input');
+
+        inputs.forEach((input, index) => {
+            const clearButton = clearButtons[index];
+
+            clearButton.addEventListener('click', function() {
+                input.value = '';
+                input.focus();
+            });
+        });
+    });
+</script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+        var errorMessage = /*[[${errorMessage}]]*/ null;
+        if (errorMessage) {
+            alert(errorMessage);
+        }
+    /*]]>*/
+</script>
+</body>
+</html>
