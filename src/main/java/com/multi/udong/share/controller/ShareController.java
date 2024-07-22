@@ -9,6 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -44,7 +46,7 @@ public class ShareController {
     }
 
     @PostMapping("/insert")
-    public String insertItem(ShaItemDTO itemDTO, Principal principal){
+    public String insertItem(ShaItemDTO itemDTO, Principal principal, @RequestPart MultipartFile multipartFile){
 
         System.out.println(itemDTO);
         itemDTO.setLocCode(1111010100);

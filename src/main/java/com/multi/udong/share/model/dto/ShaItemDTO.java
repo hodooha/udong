@@ -3,6 +3,7 @@ package com.multi.udong.share.model.dto;
 import lombok.Data;
 
 import java.sql.Date;
+import java.util.List;
 
 @Data
 public class ShaItemDTO {
@@ -20,4 +21,8 @@ public class ShaItemDTO {
     private int likeCnt;
     private int reqCnt;
     private Date deletedAt;
+    private List<AttachmentDTO> imgList;
+
+
+
 }
