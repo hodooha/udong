@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        .form-container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .form-group-half {
+            display: flex;
+            justify-content: space-between;
+        }
+        .form-group-half .form-group {
+            width: 48%;
+        }
+        .form-group-half input {
+            width: 100%;
+        }
+        .form-group input[type="file"] {
+            padding: 3px;
+        }
+        .btn-submit-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 40px;
+            background-color: #27447B;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            padding: 0; /* 패딩 제거 */
+        }
+        .btn-submit:hover {
+            background-color: #142657;
+            color: #FFFFFF;
+        }
+        .title-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 20px 20px;
+            position: relative;
+        }
+        .title {
+            font-family: 'Freesentation-9Black', sans-serif;
+            font-weight: bold;
+            margin: 0;
+            text-align: center;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 100px;
+            margin-top: 10px;
+            object-fit: contain;
+        }
+        .image-and-content {
+            display: flex;
+            justify-content: space-between;
+        }
+        .content {
+            width: 48%;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .image-preview-container img {
+            max-width: 200px;
+            max-height: 250px;
+            object-fit: cover;
+        }
+        .file-names {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div class="title-container">
+    <h6 class="title">⏰우리동네 땡처리</h6>
+</div>
+
+<div class="form-container">
+    <form th:action="@{/sale/insert}" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
+        <div class="form-group">
+            <label for="title">제목</label>
+            <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
+        </div>
+        <div class="form-group-half">
+            <div class="form-group">
+                <label for="started_at">시작시간</label>
+                <input type="time" id="started_at_time" name="started_at_time" required>
+                <input type="hidden" id="started_at_date" name="started_at_date">
+            </div>
+            <div class="form-group">
+                <label for="ended_at">종료시간</label>
+                <input type="time" id="ended_at_time" name="ended_at_time" required>
+                <input type="hidden" id="ended_at_date" name="ended_at_date">
+            </div>
+        </div>
+        <div class="form-group-half">
+            <div class="form-group">
+                <label for="original_price">정상가격</label>
+                <input type="text" id="original_price" name="original_price" placeholder="정상가격을 입력하세요" required oninput="formatPrice(this)">
+            </div>
+            <div class="form-group">
+                <label for="sale_price">할인가격</label>
+                <input type="text" id="sale_price" name="sale_price" placeholder="할인가격을 입력하세요" required oninput="formatPrice(this)">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="address">주소</label>
+            <input type="text" id="address" name="address" placeholder="주소를 입력하세요" required>
+        </div>
+        <div class="image-and-content">
+            <div class="form-group content">
+                <label for="image">이미지첨부</label>
+                <input type="file" id="image" name="image" multiple onchange="showPreview(event)" required>
+                <div id="image-preview-container" class="image-preview-container"></div>
+                <div id="file-names" class="file-names"></div>
+            </div>
+            <div class="form-group content">
+                <label for="content">내용</label>
+                <textarea id="content" name="content" rows="10" placeholder="내용을 입력하세요" required></textarea>
+            </div>
+        </div>
+        <div class="btn-submit-container">
+            <button type="submit" class="btn-submit">작성완료</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 오늘 날짜를 기본값으로 설정
+    window.onload = function() {
+        var today = new Date().toISOString().substr(0, 10);
+        document.getElementById("started_at_date").value = today;
+        document.getElementById("ended_at_date").value = today;
+    }
+
+    // 가격을 3자리마다 쉼표로 포맷팅하는 함수
+    function formatPrice(input) {
+        var value = input.value.replace(/,/g, '');
+        if (!isNaN(value) && value.length > 0) {
+            input.value = parseInt(value).toLocaleString('ko-KR');
+        } else {
+            input.value = '';
+        }
+         console.log("Formatted price:", input.value);
+    }
+
+    // 이미지 미리보기 및 파일 이름 표시 함수
+    function showPreview(event) {
+        var files = event.target.files;
+        var container = document.getElementById('image-preview-container');
+        var fileNamesContainer = document.getElementById('file-names');
+        container.innerHTML = "";
+        fileNamesContainer.innerHTML = "";
+        for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(files[i]);
+        }
+    }
+
+    // 폼 제출 시 유효성 검사 함수
+    function validateForm(event) {
+    var startedAtTime = document.getElementById("started_at_time").value;
+    var endedAtTime = document.getElementById("ended_at_time").value;
+    var startedAtDate = document.getElementById("started_at_date").value;
+    var endedAtDate = document.getElementById("ended_at_date").value;
+
+    var startTime = new Date(startedAtDate + 'T' + startedAtTime);
+    var endTime = new Date(endedAtDate + 'T' + endedAtTime);
+
+    var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
+    var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
+
+   if (parseInt(salePrice) > parseInt(originalPrice)) {
+        alert("할인 가격은 정상 가격보다 클 수 없습니다.");
+        event.preventDefault();
+        return false;
+    }
+
+    if (startTime >= endTime) {
+        alert("시작 시간은 종료 시간보다 늦을 수 없습니다.");
+        event.preventDefault();
+        return false;
+    }
+
+    // 쉼표를 제거하고 숫자 형식으로 변환
+    document.getElementById("original_price").value = originalPrice;
+    document.getElementById("sale_price").value = salePrice;
+
+    // 여기서 hidden 필드를 생성하고 값을 설정합니다.
+    var startedAtCombined = document.getElementById("started_at_date").value + 'T' + document.getElementById("started_at_time").value;
+    var endedAtCombined = document.getElementById("ended_at_date").value + 'T' + document.getElementById("ended_at_time").value;
+
+    var hiddenStartedAt = document.createElement("input");
+    hiddenStartedAt.type = "hidden";
+    hiddenStartedAt.name = "startedAt";
+    hiddenStartedAt.value = startedAtCombined;
+    event.target.appendChild(hiddenStartedAt);
+
+    var hiddenEndedAt = document.createElement("input");
+    hiddenEndedAt.type = "hidden";
+    hiddenEndedAt.name = "endedAt";
+    hiddenEndedAt.value = endedAtCombined;
+    event.target.appendChild(hiddenEndedAt);
+
+    return true;
+
+    }
+</script>
+
+</body>
+</html>

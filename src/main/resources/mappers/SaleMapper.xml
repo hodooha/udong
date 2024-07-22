@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Sale">
+
+    <insert id="insertSale" parameterType="SaleDTO">
+        INSERT INTO SAL (writer, title, started_at, ended_at, original_price, sale_price, address, content, location_code)
+    VALUES (#{writer}, #{title}, #{startedAt}, #{endedAt}, #{originalPrice}, #{salePrice}, #{address}, #{content}, 1111010100)
+    </insert>
+
+</mapper>
