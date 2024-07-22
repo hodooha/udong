@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
     <meta charset="UTF-8">
     <title>우동행</title>
@@ -51,8 +52,19 @@
             width: 100%;
             resize: none;
             border: 1px solid #979797;
-
+            margin-top: 6px;
             height: 240px;
+        }
+        .club-max-personnel-input{
+            width: 70px;
+        }
+        .btn-container{
+            display: flex;
+            justify-content: center;
+        }
+        .btn-create-club{
+            margin-top: 25px;
+            font-family: 'Freesentation-5Medium' !important;
         }
     </style>
     <script type="text/javascript">
@@ -81,7 +93,8 @@
 <div th:replace="~{/common/menubar}"></div>
 
 <div class="content" style="margin: 40px;">
-    <form action="insertClub" method="post" encType="multipart/form-data" onsubmit="return validateForm()">
+    <form action="insertClub" method="post" encType="multipart/form-data">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="insert-area">
             <span>주제</span>
             <select class="category-select" name="categoryCode">
@@ -92,9 +105,7 @@
             <input type="text" class="input club-master-input" value="변필)로그인한 회원의 닉네임" disabled>
             <span style="margin-left: 50px">동네</span>
             <input type="text" class="input club-location-input" value="변필)로그인한 회원의 행정동" disabled>
-            <br>
-            <br>
-            <table>
+            <table style="margin: 30px 0 70px 0">
                 <tr>
                     <td>
                         <span>대표 이미지</span>
@@ -108,7 +119,7 @@
                         <div class="img-area" id="imgArea">
                             <img id="img" width="240px" height="240px">
                             <br>
-                            <input type="file" class="img-input" name="img" onchange="loadImg(this)">
+                            <input type="file" class="img-input" name="img" onchange="loadImg(this)" required>
                         </div>
                     </td>
                     <td width="100%">
@@ -116,13 +127,29 @@
                     </td>
                 </tr>
             </table>
-            <br>
-            <br>
-            <br>
             <span>최대 인원</span>
+            <input type="number" class="input club-max-personnel-input" name="maxPersonnel" min=1 max=500 required>
+            <span>명</span>
+        </div>
+        <div class="btn-container">
+            <button type="submit" class="btn btn-udh-blue btn-create-club">모임 생성</button>
         </div>
     </form>
 </div>
 
+<script>
+    function loadImg(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                var imgElement = document.getElementById('img');
+                imgElement.src = e.target.result;
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
 </body>
 </html>
