@@ -116,11 +116,20 @@
             </svg>
             대방동
         </div>
-        <div class="user-icon"><img th:src="@{/img/defaultProfile.png}" class="user-icon"></div>
+        <div class="user-icon" th:if="${#authorization.expression('isAuthenticated()')}">
+            <img th:src="@{/img/defaultProfile.png}" class="user-icon">
+        </div>
         <div class="auth-links">
-            <a href="/myPage">로그인</a>
-            <span>|</span>
-            <a href="#">회원가입</a>
+            <th:block th:if="${#authorization.expression('isAuthenticated()')}">
+                <a href="/myPage" th:text="${#authentication.name}">사용자 ID</a>
+                <span>|</span>
+                <a href="/logout">로그아웃</a>
+            </th:block>
+            <th:block th:unless="${#authorization.expression('isAuthenticated()')}">
+                <a href="/login">로그인</a>
+                <span>|</span>
+                <a href="/signup">회원가입</a>
+            </th:block>
         </div>
     </div>
 </header>

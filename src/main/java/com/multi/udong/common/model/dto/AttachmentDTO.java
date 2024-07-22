@@ -1,4 +1,4 @@
-package com.multi.udong.share.model.dto;
+package com.multi.udong.common.model.dto;
 
 import lombok.Data;
 

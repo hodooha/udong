@@ -1,5 +1,6 @@
 package com.multi.udong.share.model.dto;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import lombok.Data;
 
 import java.sql.Date;
