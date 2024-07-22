@@ -3,10 +3,11 @@
 <mapper namespace="com.multi.udong.member.model.dao.MemberDAO">
 
     <!--시큐리티 쿼리-->
-    <select id="findMemberById" resultType="memberDTO" >
-        SELECT *
-        FROM MEMBER
-        WHERE member_id = #{memberId}
+    <select id="findMemberById" resultType="memberDTO">
+        SELECT m.*, ma.location_code
+        FROM MEMBER m
+        LEFT JOIN MEM_ADDRESS ma ON m.member_no = ma.member_no
+        WHERE m.member_id = #{memberId}
     </select>
 
     <insert id="signup" parameterType="memberDTO" useGeneratedKeys="true" keyProperty="memberNo">

@@ -27,4 +27,6 @@ public class MemberDTO {
     private Integer reportedCnt;
     private Character isBlacked;
     private LocalDateTime blackedAt;
+
+    private Long locationCode;
 }
