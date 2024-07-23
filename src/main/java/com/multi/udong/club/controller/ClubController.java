@@ -1,9 +1,6 @@
 package com.multi.udong.club.controller;
 
-import com.multi.udong.club.model.dto.CategoryDTO;
-import com.multi.udong.club.model.dto.ClubDTO;
-import com.multi.udong.club.model.dto.LocationDTO;
-import com.multi.udong.club.model.dto.MasterDTO;
+import com.multi.udong.club.model.dto.*;
 import com.multi.udong.club.service.ClubService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.security.CustomUserDetails;
@@ -20,44 +17,124 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * 우동 모임 컨트롤러
+ *
+ * @author 강성현
+ * @since 2024 -07-23
+ */
 @Controller
 @RequestMapping("/club")
 public class ClubController {
 
     private final ClubService clubService;
 
+    /**
+     * 우동 모임 컨트롤러 생성자
+     *
+     * @param clubService the club service
+     */
     public ClubController(ClubService clubService) {
         this.clubService = clubService;
     }
 
-    // 우동 모임 메인 페이지로 이동
-    @RequestMapping("/clubMain")
-    public String clubMain(Model model) {
 
-        return "club/clubMain";
+    /**
+     * 우동 모임 메인 페이지로 이동
+     *
+     * @param c         the c
+     * @param filterDTO the filter dto
+     * @param model     the model
+     * @return the string
+     * @since 2024 -07-23
+     */
+    @RequestMapping("/clubMain")
+    public String clubMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model) {
+
+        // 받아온 page로 시작 및 시작 index를 설정
+        filterDTO.setStartAndStartIndex(filterDTO.getPage());
+
+        // 로그인된 유저의 locationCode를 principal에서 받아와 filterDTO에 set
+        // long membersLocation = c.getMemberDTO().getLocationCode();
+        long membersLocation = 1117013100;
+        filterDTO.setLocationCode(membersLocation);
+
+        try {
+
+            // service의 모임 리스트 select 메소드 호출
+            List<ClubDTO> clubList = clubService.selectClubList(filterDTO);
+            System.out.println("###### 가져온 모임 리스트: " + clubList);
+            model.addAttribute("clubList", clubList);
+
+            // 모임의 총 개수를 받아와 생길 page의 총 개수 계산
+            int clubCount = clubService.selectClubCount(filterDTO);
+            System.out.println("###### 모임 총 개수: " + clubCount);
+
+            int pages = clubCount / 5;
+            if(pages % 5 != 0) {
+                pages += 1;
+            }
+
+            model.addAttribute("pages", pages);
+
+            model.addAttribute("filter", filterDTO);
+
+            return "club/clubMain";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 리스트 조회 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
 
     }
 
-    // 우동 모임 생성폼으로 이동
+
+    /**
+     * 우동 모임 생성폼으로 이동
+     *
+     * @since 2024 -07-23
+     */
     @RequestMapping("clubInsertForm")
     public void clubInsertForm() {
 
     }
 
-    // 모임 카테고리 리스트를 조회 (json, ajax)
+
+    /**
+     * 모임 카테고리 리스트를 조회 (json, ajax)
+     *
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-23
+     */
     @RequestMapping("/categoryList")
     @ResponseBody // 요청한 곳으로 json 데이터 전달
     public List<CategoryDTO> categoryList() throws Exception {
 
         List<CategoryDTO> categoryList = clubService.selectCategoryList();
-
-        System.out.println("가져온 카테고리 리스트는 >>>> " + categoryList);
+        System.out.println("###### 가져온 카테고리 리스트: " + categoryList);
 
         return categoryList;
 
     }
 
-    // 모임 생성
+
+    /**
+     * 모임 생성
+     *
+     * @param c           the c
+     * @param categoryDTO the category dto
+     * @param clubDTO     the club dto
+     * @param img         the img
+     * @param model       the model
+     * @return the string
+     * @since 2024 -07-23
+     */
     @PostMapping("/insertClub")
     public String insertClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, Model model) {
 
@@ -138,7 +215,8 @@ public class ClubController {
             // mapper의 useGeneratedKeys="true" keyProperty="clubNo" 때문에 clubDTO에 insert한 모임의 No(PK)가 담김
             int clubNo = clubDTO.getClubNo();
 
-            // return "redirect:/club/clubDetail?clubNo="+clubNo;
+            // 생성한 모임의 홈으로 바로 이동
+            // return "redirect:/club/clubHome?clubNo="+clubNo;
             return "redirect:/club/clubMain";
 
         } catch (Exception e) {

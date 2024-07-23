@@ -2,6 +2,7 @@ package com.multi.udong.club.model.dao;
 
 import com.multi.udong.club.model.dto.CategoryDTO;
 import com.multi.udong.club.model.dto.ClubDTO;
+import com.multi.udong.club.model.dto.FilterDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -38,6 +39,18 @@ public class ClubDAO {
     public int insertMaster(SqlSessionTemplate sqlSession, ClubDTO clubDTO) {
 
         return sqlSession.insert("clubMapper.insertMaster", clubDTO);
+
+    }
+
+    public List<ClubDTO> selectClubList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("clubMapper.selectClubList", filterDTO);
+
+    }
+
+    public int selectClubCount(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectClubCount", filterDTO);
 
     }
 }

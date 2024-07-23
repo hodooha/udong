@@ -14,6 +14,7 @@ public class ClubDTO {
     private String clubName;
     private String introduction;
     private MasterDTO master;
+    private int currentPersonnel;
     private int maxPersonnel;
     private String chatroomCode;
     private LocalDateTime createdAt;

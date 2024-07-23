@@ -3,6 +3,7 @@ package com.multi.udong.club.service;
 import com.multi.udong.club.model.dao.ClubDAO;
 import com.multi.udong.club.model.dto.CategoryDTO;
 import com.multi.udong.club.model.dto.ClubDTO;
+import com.multi.udong.club.model.dto.FilterDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,20 @@ public class ClubServiceImpl implements ClubService {
         }
 
         return result;
+
+    }
+
+    @Override
+    public List<ClubDTO> selectClubList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectClubCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubCount(sqlSession, filterDTO);
 
     }
 
