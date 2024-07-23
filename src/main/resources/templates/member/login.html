@@ -9,15 +9,29 @@
         .container {
             display: flex;
             justify-content: center;
+            margin-top: 70px;
+            height: 70vh
         }
         .login {
-            width: 600px;
+            display: flex;
+            justify-content: center;
+            width: 500px;
             border: 1px solid #ddd;
             border-radius: 10px;
             padding: 20px;
-            display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .vertical-line {
+            border-left: medium solid #A4A4A4;
+            margin: 0 30px;
+        }
+        .image {
+            width: 500px;
+            background-image: url('img/neighbor.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
         }
         .login form {
             width: 100%;
@@ -91,11 +105,11 @@
         <form action="/signup" method="get">
             <button class="btn btn-udh-blue">회원가입</button>
         </form><br>
-        <button class="btn google-login">구글 로그인 </button><br>
+        <button class="btn google-login" id="googleLogin">구글 로그인 </button><br>
         <button class="btn kakao-login">kakao 카카오 로그인</button>
     </div>
-    <div class="building">
-    </div>
+    <div class="vertical-line"></div>
+    <div class="image"></div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -112,13 +126,67 @@
         });
     });
 </script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-        var errorMessage = /*[[${errorMessage}]]*/ null;
-        if (errorMessage) {
-            alert(errorMessage);
+<script> // 구글 로그인 스크립트
+    document.addEventListener('DOMContentLoaded', function() {
+        const googleLoginBtn = document.getElementById('googleLogin');
+        googleLoginBtn.addEventListener('click', handleGoogleLogin);
+    });
+
+    function handleGoogleLogin() {
+        const clientId = '556739333707-rb7087lkeh4l6jgqnar3rc0bsv0gagfb.apps.googleusercontent.com';
+        const redirectUri = 'http://localhost:8090/login/oauth2/google';
+        const responseType = 'code';
+        const scope = 'email profile openid';
+
+        const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
+
+        // 새 창에서 구글 로그인 페이지 열기
+        const popup = window.open(url, 'googleLogin', 'width=600,height=700');
+
+        // 팝업 창이 닫힐 때까지 대기
+        const checkPopup = setInterval(() => {
+            if (popup.closed) {
+                clearInterval(checkPopup);
+                handleGoogleLoginComplete();
+            }
+        }, 1000);
+
+        function handleGoogleLoginComplete() {
+            // URL에서 인증 코드 추출
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                fetchAccessToken(code);
+            }
         }
-    /*]]>*/
+
+        function fetchAccessToken(code) {
+            const tokenUrl = 'https://oauth2.googleapis.com/token';
+            const data = {
+                code: code,
+                client_id: '556739333707-rb7087lkeh4l6jgqnar3rc0bsv0gagfb.apps.googleusercontent.com',
+                redirect_uri: 'http://localhost:8090/login/oauth2/google',
+                grant_type: 'authorization_code'
+            };
+
+            fetch(tokenUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Access Token:', data.access_token);
+                // 여기서 액세스 토큰을 사용하여 추가 작업 수행
+                // 예: 서버에 토큰 전송, 사용자 정보 요청 등
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 </script>
 </body>
 </html>

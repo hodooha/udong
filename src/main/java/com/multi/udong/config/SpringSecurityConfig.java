@@ -63,7 +63,8 @@ public class SpringSecurityConfig {
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
-                        .permitAll());
+                        .permitAll()
+                );
 
         http.userDetailsService(customUserDetailsService);
 

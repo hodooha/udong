@@ -17,12 +17,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void signup(MemberDTO m) throws Exception {
-        System.out.println("회원가입 시작:serviceImpl");
         String encPw = bCryptPasswordEncoder.encode(m.getMemberPw());
         m.setMemberPw(encPw);
         try {
             int result = memberDAO.signup(m);
-            if (result <= 0) {
+            if (result != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
             }
         } catch (Exception e) {
@@ -30,5 +29,10 @@ public class MemberServiceImpl implements MemberService {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    @Override
+    public boolean isIdDuplicate(String memberId) {
+        return memberDAO.findMemberById(memberId) != null;
     }
 }

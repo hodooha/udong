@@ -3,21 +3,35 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
-    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
     <style>
         .container {
             display: flex;
             justify-content: center;
+            margin-top: 70px;
+            height: 70vh
         }
         .signup {
-            width: 600px;
+            display: flex;
+            justify-content: center;
+            width: 500px;
             border: 1px solid #ddd;
             border-radius: 10px;
             padding: 20px;
-            display: flex;
             flex-direction: column;
             align-items: center;
+        }
+        .vertical-line {
+            border-left: medium solid #A4A4A4;
+            margin: 0 30px;
+        }
+        .bus-reg {
+            width: 500px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
         }
         .signup form {
             width: 100%;
@@ -45,6 +59,27 @@
             font-size: 12px;
             color: #666;
         }
+        .id-input-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .id-input-wrapper input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .id-input-wrapper .clear-input {
+            position: absolute;
+            right: 120px;
+        }
+        #checkDuplicate {
+            width: auto;
+            padding: 10px;
+            white-space: nowrap;
+        }
+        .input-group {
+            width: 80%;
+        }
         .clear-input {
             position: absolute;
             right: 10px;
@@ -69,11 +104,14 @@
 <div class="container">
     <div class="signup">
         <form action="/signup" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="input-group">
-                <label>아이디</label>
-                <input type="text" name="memberId" placeholder="아이디">
-                <button class="clear-input" type="button">&times;</button>
+                <div class="id-input-wrapper">
+                    <label>아이디</label>
+                    <input type="text" name="memberId" placeholder="아이디">
+                    <button class="clear-input" type="button">&times;</button>
+                    <button class="btn btn-udh-blue" type="button" id="checkDuplicate">중복검사</button>
+                </div>
             </div>
             <div class="input-group">
                 <label>비밀번호</label>
@@ -98,31 +136,174 @@
             <button type="submit" class="btn btn-udh-blue">회원가입</button>
         </form>
     </div>
-    <div class="building">
+    <div class="vertical-line"></div>
+    <div class="bus-reg">
+        <div class="bus-reg-img">
+            <img class="bus-reg-info" id="bus-reg-info">
+            <input type="file" id="bus-reg-input" style="display: none;">
+            <button class="btn" onclick="document.getElementById('bus-reg-input').click()">사업자등록증 업로드</button>
+        </div>
     </div>
 </div>
+</body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const memberIdInput = document.querySelector('input[name="memberId"]');
+        const passwordInput = document.querySelector('input[name="memberPw"]');
+        const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const checkDuplicateButton = document.getElementById('checkDuplicate');
         const inputs = document.querySelectorAll('.input-group input');
         const clearButtons = document.querySelectorAll('.clear-input');
 
-        inputs.forEach((input, index) => {
-            const clearButton = clearButtons[index];
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-            clearButton.addEventListener('click', function() {
-                input.value = '';
-                input.focus();
+        let isIdChecked = false;
+
+        // 비밀번호 유효성 검사 함수
+        function isValidPassword(password) {
+            const regex = /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,15}$/;
+            return regex.test(password);
+        }
+
+        // 전화번호 유효성 검사 함수
+        function isValidPhone(phone) {
+            return /^\d{11}$/.test(phone);
+        }
+
+        // 아이디 유효성 검사 함수
+        function isValidId(id) {
+            return id.trim().length > 0;
+        }
+
+        // 폼 제출 이벤트 리스너
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 빈 필드 확인 및 포커스
+            for (let input of inputs) {
+                if (!input.value) {
+                    alert(input.previousElementSibling.textContent + '을(를) 입력해주세요.');
+                    input.focus();
+                    return;
+                }
+            }
+
+            // 아이디 유효성 검사
+            if (!isValidId(memberIdInput.value)) {
+                alert('아이디를 입력해주세요.');
+                memberIdInput.focus();
+                return;
+            }
+
+            // 아이디 중복 검사 확인
+            if (!isIdChecked) {
+                alert('아이디 중복 검사를 완료해주세요.');
+                return;
+            }
+
+            // 비밀번호 일치 확인
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                alert('비밀번호가 일치하지 않습니다.');
+                confirmPasswordInput.focus();
+                return;
+            }
+
+            // 비밀번호 유효성 검사
+            if (!isValidPassword(passwordInput.value)) {
+                alert('비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.');
+                passwordInput.focus();
+                return;
+            }
+
+            // 전화번호 유효성 검사
+            if (!isValidPhone(phoneInput.value)) {
+                alert('전화번호는 11자리 숫자여야 합니다.');
+                phoneInput.focus();
+                return;
+            }
+
+            this.submit();
+            alert('회원가입이 완료되었습니다. 홈으로 이동합니다.');
+        });
+
+        // 아이디 중복 검사
+        function checkDuplicateId() {
+            const memberId = memberIdInput.value;
+
+            if (!isValidId(memberId)) {
+                alert('아이디를 입력해주세요.');
+                memberIdInput.focus();
+                return;
+            }
+
+            fetch('/isIdDuplicate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [header]: token
+                },
+                body: JSON.stringify({ memberId: memberId })
+            })
+            .then(response => response.text())
+            .then(result => {
+                if(result === 'available') {
+                    alert('사용 가능한 아이디입니다.');
+                    memberIdInput.readOnly = true;
+                    checkDuplicateButton.disabled = true;
+                    isIdChecked = true;
+                } else {
+                    alert('이미 사용 중인 아이디입니다. 다른 아이디를 사용해주세요');
+                    isIdChecked = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버 오류가 발생했습니다.');
             });
+        }
+
+        // input 내용 초기화
+        function clearInput(input) {
+            input.value = '';
+            input.focus();
+
+            if (input === memberIdInput) {
+                input.readOnly = false;
+                checkDuplicateButton.disabled = false;
+                isIdChecked = false;
+            }
+        }
+
+        // 이벤트 리스너 설정
+        checkDuplicateButton.addEventListener('click', checkDuplicateId);
+
+        clearButtons.forEach((button, index) => {
+            button.addEventListener('click', () => clearInput(inputs[index]));
         });
     });
 </script>
-<script th:inline="javascript">
-    /*<![CDATA[*/
-        var errorMessage = /*[[${errorMessage}]]*/ null;
-        if (errorMessage) {
-            alert(errorMessage);
+<script>
+    const fileInput = document.getElementById('bus-reg-input');
+    const preview = document.getElementById('bus-reg-info');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
         }
-    /*]]>*/
+    });
 </script>
-</body>
 </html>
