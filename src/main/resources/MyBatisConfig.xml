@@ -36,11 +36,18 @@
 
         <typeAlias
                 type="com.multi.udong.share.model.dto.ShaCatDTO"
-                alias="ShaCatDTO"/>
+                alias="shaCatDTO"/>
         <typeAlias
                 type="com.multi.udong.share.model.dto.ShaItemDTO"
-                alias="ShaItemDTO"/>
+                alias="shaItemDTO"/>
+        <typeAlias
+                type="com.multi.udong.share.model.dto.ShaReqDTO"
+                alias="shaReqDTO"/>
+
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>
+
+        <typeAlias type="com.multi.udong.common.model.dto.AttachmentDTO" alias="attachmentDTO"/>
+
     </typeAliases>
     <mappers>
         <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->

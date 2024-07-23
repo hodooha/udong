@@ -2,12 +2,17 @@ package com.multi.udong.share.model.dto;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 물건 DTO
+ *
+ * @author 하지은
+ * @since 2024 -07-21
+ */
 @Data
 public class ShaItemDTO {
     private int itemNo;
@@ -16,20 +21,21 @@ public class ShaItemDTO {
     private String title;
     private String content;
     private int ownerNo;
+    private String nickName;
+    private int level;
     private int locCode;
-    private Timestamp createdAt;
-    private Timestamp modifiedAt;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private String locName;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
     private LocalDate expiryDate;
     private String statusCode;
     private int dealCnt;
     private int likeCnt;
     private int viewCnt;
     private int reqCnt;
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
     private String img;
     private List<AttachmentDTO> imgList;
-
 
 
 }

@@ -7,14 +7,17 @@
         <result property="catName" column="cat_name" />
     </resultMap>
 
-    <resultMap type="ShaItemDTO" id="shaItemMap">
+    <resultMap type="shaItemDTO" id="shaItemMap">
         <id property="itemNo" column="item_no" />
         <result property="itemGroup" column="item_group" />
         <result property="itemCatCode" column="item_cat_code" />
         <result property="title" column="title" />
         <result property="content" column="content" />
         <result property="ownerNo" column="owner_no" />
+        <result property="nickName" column="nickname" />
+        <result property="level" column="level" />
         <result property="locCode" column="loc_code" />
+        <result property="locName" column="eup_myeon_dong_name" />
         <result property="createdAt" column="created_at" />
         <result property="modifiedAt" column="modified_at" />
         <result property="expiryDate" column="expiry_date" />
@@ -63,6 +66,7 @@
         ) c on a.item_no = c.target_no
         where a.loc_code = #{locCode}
         and a.item_group = 'rent'
+        and a.deleted_at is null
     </select>
 
     <select id="giveItemList" resultMap="shaItemMap">
@@ -79,6 +83,24 @@
         ) c on a.item_no = c.target_no
         where a.loc_code = #{locCode}
         and a.item_group = 'give'
+        and a.deleted_at is null
+    </select>
+
+    <select id="getItemDetail" resultMap="shaItemMap">
+        select a.*, b.nickname, b.level, c.eup_myeon_dong_name
+        from sha_items a
+        inner join member b
+        on a.owner_no = b.member_no
+        inner join location c
+        on a.loc_code = c.location_code
+        where a.item_no = #{itemNo}
+    </select>
+
+    <select id="getItemImgs" resultType="attachmentDTO">
+        select *
+        from attachment
+        where target_no = #{itemNo}
+        and type_code = #{itemGroup}
     </select>
 
 </mapper>
