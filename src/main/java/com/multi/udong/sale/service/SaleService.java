@@ -1,4 +1,7 @@
 package com.multi.udong.sale.service;
 
-public class SaleService {
+import com.multi.udong.sale.model.dto.SaleDTO;
+
+public interface SaleService {
+    void insertSale(SaleDTO saleDTO);
 }
