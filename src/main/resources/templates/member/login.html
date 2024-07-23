@@ -3,8 +3,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
-    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
+    <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .container {
             display: flex;
@@ -89,7 +93,7 @@
 <div class="container">
     <div class="login">
         <form action="/login" method="post">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <div class="input-group">
                 <label>아이디</label>
                 <input type="text" name="memberId" placeholder="아이디">
@@ -101,12 +105,15 @@
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <button class="btn btn-udh-blue">로그인</button>
-        </form><br>
+        </form>
+        <br>
         <form action="/signup" method="get">
             <button class="btn btn-udh-blue">회원가입</button>
-        </form><br>
-        <button class="btn google-login" id="googleLogin">구글 로그인 </button><br>
-        <button class="btn kakao-login">kakao 카카오 로그인</button>
+        </form>
+        <br>
+        <button class="btn google-login" id="googleLogin">구글 로그인</button>
+        <br>
+        <button class="btn kakao-login" id="kakoLogin">kakao 카카오 로그인</button>
     </div>
     <div class="vertical-line"></div>
     <div class="image"></div>
@@ -141,51 +148,118 @@
         const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=${responseType}&scope=${encodeURIComponent(scope)}`;
 
         // 새 창에서 구글 로그인 페이지 열기
-        const popup = window.open(url, 'googleLogin', 'width=600,height=700');
+        window.open(url, 'googleLogin', 'width=600,height=700');
+    }
+</script>
+<script> // 카카오 로그인 스크립트
+    document.addEventListener('DOMContentLoaded', function() {
+        const kakoLoginBtn = document.getElementById('kakoLogin');
+        kakoLoginBtn.addEventListener('click', kakaoLogin);
+    });
 
-        // 팝업 창이 닫힐 때까지 대기
-        const checkPopup = setInterval(() => {
-            if (popup.closed) {
-                clearInterval(checkPopup);
-                handleGoogleLoginComplete();
+    function kakaoLogin() {
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        $.ajax({
+            type: "GET",
+            url: '/kakao/getKakaoApiKey',
+            success: function(apiKey) {
+                Kakao.init(apiKey); // Kakao API 키 초기화
+                Kakao.Auth.login({
+                    success: function(response) {
+                        Kakao.API.request({
+                            url: '/v2/user/me', // 카카오 API 엔드포인트, 사용자 정보를 요청함
+                            success: function(response) { // 받아오는 데이터: id(고유ID), nickname, email, profile_image_url
+                                var kakaoid = response.id + "K"; // K를 붙여 카카오회원 구분
+                                $.ajax({
+                                    type: "post",
+                                    url: '/kakao/idDuplicateCheck', // ID중복체크(카카오회원인지 확인)
+                                    data: {"memberId": kakaoid},
+                                    dataType: "json",
+
+                                    beforeSend: function(xhr) {
+                                        xhr.setRequestHeader(csrfHeader, csrfToken);
+                                    },
+
+                                    success: function(json) {
+                                        if (json.idExists) {
+                                            createHiddenLoginForm(kakaoid); // 아이디가 존재하면 HiddenLoginForm으로 kakaoid를 전달
+                                        } else { // 아이디가 없으면(신규회원)
+                                            $.ajax({
+                                                type: "post",
+                                                url: '/kakao/kakaoSignUp', // 회원가입 url
+                                                data: { // 보내는 데이터: kakaoid, nickname, email
+                                                    "memberId": kakaoid,
+                                                    "nickname": response.properties.nickname,
+                                                    "email": response.kakao_account.email
+                                                },
+                                                dataType: "json",
+
+                                                beforeSend: function(xhr) {
+                                                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                                                },
+
+                                                success: function(json) {
+                                                    if (json.success) { // 회원가입 성공시
+                                                        createHiddenLoginForm(kakaoid); // HiddenLoginForm으로 kakaoid를 전달
+                                                    } else {
+                                                        alert('카카오 회원가입 실패. 일반계정으로 로그인하시기 바랍니다.');
+                                                    }
+                                                },
+                                                error: function(request, status, error) {
+                                                    alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
+                                                }
+                                            });
+                                        }
+                                    },
+                                    error: function(request, status, error) {
+                                        alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
+                                    }
+                                });
+                            }
+                        });
+                    },
+                    fail: function(error) {
+                        alert(error);
+                    }
+                });
+            },
+            error: function(request, status, error) {
+                console.error('Error fetching Kakao API Key:', error);
             }
-        }, 1000);
+        });
+    }
 
-        function handleGoogleLoginComplete() {
-            // URL에서 인증 코드 추출
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
+    function createHiddenLoginForm(kakaoid) {
+        var frm = document.createElement('form'); 		 	 // 제출을 위한 form 태그 생성
+        frm.setAttribute('method', 'post'); 				 // post방식으로 요청보냄
+        frm.setAttribute('action', '/login'); // 제출할 로그인 url
 
-            if (code) {
-                fetchAccessToken(code);
-            }
-        }
+        var hiddenInputId = document.createElement('input'); // input 태그 생성
+        hiddenInputId.setAttribute('type', 'hidden'); 		 // 사용자에게 보이지 않음
+        hiddenInputId.setAttribute('name', 'memberId');		 // name="memberId"
+        hiddenInputId.setAttribute('value', kakaoid); 		 // memberId값으로 kakaoid 입력
 
-        function fetchAccessToken(code) {
-            const tokenUrl = 'https://oauth2.googleapis.com/token';
-            const data = {
-                code: code,
-                client_id: '556739333707-rb7087lkeh4l6jgqnar3rc0bsv0gagfb.apps.googleusercontent.com',
-                redirect_uri: 'http://localhost:8090/login/oauth2/google',
-                grant_type: 'authorization_code'
-            };
+        var hiddenInputPw = document.createElement('input'); // input 태그 생성
+        var kakaoPw = 'kakaoPw';							 // 카카오 비밀번호는 kakaoPw로 통일
+        hiddenInputPw.setAttribute('type', 'hidden'); 		 // 사용자에게 보이지 않음
+        hiddenInputPw.setAttribute('name', 'memberPw');		 // name="memberPw"
+        hiddenInputPw.setAttribute('value', kakaoPw); 		 // memberPw값으로 kakaoPw 입력
 
-            fetch(tokenUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Access Token:', data.access_token);
-                // 여기서 액세스 토큰을 사용하여 추가 작업 수행
-                // 예: 서버에 토큰 전송, 사용자 정보 요청 등
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        frm.appendChild(hiddenInputId); 					 // form태그에 생성한 input태그 추가
+        frm.appendChild(hiddenInputPw); 					 // form태그에 생성한 input태그 추가
+
+        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        var csrfInput = document.createElement('input');
+        csrfInput.setAttribute('type', 'hidden');
+        csrfInput.setAttribute('name', '_csrf');
+        csrfInput.setAttribute('value', csrfToken);
+
+        frm.appendChild(csrfInput);
+
+        document.body.appendChild(frm);						 // body에 form태그 추가
+        frm.submit();										 // form 제출
     }
 </script>
 </body>

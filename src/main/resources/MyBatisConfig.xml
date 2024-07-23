@@ -40,7 +40,10 @@
         <typeAlias
                 type="com.multi.udong.share.model.dto.ShaItemDTO"
                 alias="ShaItemDTO"/>
+
+        <!-- 재식 -->
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>
+        <typeAlias type="com.multi.udong.member.model.dto.MemBusDTO" alias="memBusDTO"/>
     </typeAliases>
     <mappers>
         <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
@@ -54,6 +57,8 @@
         <mapper resource="mappers/ClubMapper.xml"/>
 
         <mapper resource="mappers/ShareMapper.xml"/>
+
+        <!-- 재식 -->
         <mapper resource="mappers/MemberDAO.xml"/>
     </mappers>
 </configuration>

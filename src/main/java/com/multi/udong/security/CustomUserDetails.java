@@ -11,6 +11,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+/**
+ * @author : 재식
+ * @since : 24. 7. 22.
+ */
 @Getter
 @RequiredArgsConstructor
 @ToString

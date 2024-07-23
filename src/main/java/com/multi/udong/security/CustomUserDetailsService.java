@@ -1,6 +1,5 @@
 package com.multi.udong.security;
 
-
 import com.multi.udong.member.model.dao.MemberDAO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author : 재식
+ * @since : 24. 7. 22.
+ */
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {

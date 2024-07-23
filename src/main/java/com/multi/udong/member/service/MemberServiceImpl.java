@@ -1,12 +1,17 @@
 package com.multi.udong.member.service;
 
 import com.multi.udong.member.model.dao.MemberDAO;
+import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * @author : 재식
+ * @since : 24. 7. 21.
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,5 +39,26 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean isIdDuplicate(String memberId) {
         return memberDAO.findMemberById(memberId) != null;
+    }
+
+    @Override
+    public void signupSeller(MemberDTO m, MemBusDTO memBusDTO) throws Exception {
+        String encPw = bCryptPasswordEncoder.encode(m.getMemberPw());
+        m.setMemberPw(encPw);
+        try {
+            int result = memberDAO.signup(m);
+            int memberNo = memberDAO.selectLastInsertId();
+
+            memBusDTO.setMemberNo(memberNo);
+            int result2 = memberDAO.insertBusReg(memBusDTO);
+
+            if (result != 1 && result2 != 1) {
+                throw new Exception("회원가입에 실패하였습니다");
+            }
+        } catch (Exception e) {
+            System.out.println("회원가입 예외 발생: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }

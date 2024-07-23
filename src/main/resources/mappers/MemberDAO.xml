@@ -14,4 +14,14 @@
         INSERT INTO MEMBER (member_id, member_pw, nickname, phone, email) VALUES
         (#{memberId}, #{memberPw}, #{nickname}, #{phone}, #{email})
     </insert>
+
+    <select id="selectLastInsertId" resultType="int">
+        <!-- LAST_INSERT_ID(): MySQL에서 마지막으로 AUTO_INCREMENT된 값을 반환하는 함수 -->
+        SELECT LAST_INSERT_ID()
+    </select>
+
+    <insert id="insertBusReg" parameterType="memBusDTO">
+        INSERT INTO MEM_BUS (member_no, business_number, representative_name, opening_date) VALUES
+        (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
+    </insert>
 </mapper>

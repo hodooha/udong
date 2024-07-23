@@ -1,16 +1,16 @@
 package com.multi.udong.member.model.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
+/**
+ * @author : 재식
+ * @since : 24. 7. 21.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class MemberDTO {
     private Integer memberNo;
     private String memberId;
@@ -19,14 +19,14 @@ public class MemberDTO {
     private String phone;
     private String email;
     private String authority;
-    private LocalDateTime signupAt;
-    private LocalDateTime modifiedAt;
+    private String signupAt;
+    private String modifiedAt;
     private Integer score;
     private Integer level;
-    private LocalDateTime lastLoginAt;
+    private String lastLoginAt;
     private Integer reportedCnt;
     private Character isBlacked;
-    private LocalDateTime blackedAt;
+    private String blackedAt;
 
-    private Long locationCode;
+    private MemAddressDTO memAddressDTO;
 }

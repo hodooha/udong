@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author : 재식
+ * @since : 24. 7. 22.
+ */
 @Service
 public class AuthenticationService {
 
