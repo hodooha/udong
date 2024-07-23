@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .errorArea{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .sorryFace{
+            width: 200px;
+            margin-top: 40px;
+        }
+        .errorMessage{
+            font-family: 'Freesentation-7Bold' !important;
+            font-size: 25px;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        .errorReason{
+            font-family: 'Freesentation-3Light' !important;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="margin: 40px;">
+    <div class="errorArea">
+        <img class="sorryFace" th:src="@{/img/sorryFace.png}">
+        <p class="errorMessage">이런, 문제가 발생했어요.</p>
+        <p class="errorReason" th:text="${msg}">특정 과정에서 문제가 발생했습니다.</p>
+        <a th:href="@{/}">
+            <span>메인으로 돌아가기</span>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
