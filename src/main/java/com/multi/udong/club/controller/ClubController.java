@@ -7,8 +7,6 @@ import com.multi.udong.club.model.dto.MasterDTO;
 import com.multi.udong.club.service.ClubService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.security.CustomUserDetails;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -61,7 +59,7 @@ public class ClubController {
 
     // 모임 생성
     @PostMapping("/insertClub")
-    public String insertClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, HttpServletRequest request, Model model) {
+    public String insertClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, Model model) {
 
         // 로그인된 유저의 no를 principal에서 받아와 모임 생성자(master)로 clubDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -72,7 +70,7 @@ public class ClubController {
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
         // long mastersLocation = c.getMemberDTO().getLocationCode();
         LocationDTO locationDTO = new LocationDTO();
-        //locationDTO.setLocationCode(mastersLocation);
+        // locationDTO.setLocationCode(mastersLocation);
         locationDTO.setLocationCode(1117013100);
         clubDTO.setLocation(locationDTO);
 
@@ -82,12 +80,8 @@ public class ClubController {
         System.out.println("###### insert할 모임 데이터: " + clubDTO);
 
         // 이미지 저장할 경로 설정
-        HttpSession session = request.getSession();
-        String root = session.getServletContext().getRealPath("resources");
-
-        System.out.println("###### resources 경로: " + root);
-
-        String filePath = root + "/static/uploadFiles";
+        String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+        String filePath = root + "/uploadFiles";
 
         // 이미지 이름 변경 처리
         String savedName = "";

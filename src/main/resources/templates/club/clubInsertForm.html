@@ -102,9 +102,10 @@
             <span style="margin-left: 50px">모임명</span>
             <input type="text" class="input club-name-input" name="clubName" maxlength="40" required>
             <span style="margin-left: 50px">모임장</span>
-            <input type="text" class="input club-master-input" value="변필)로그인한 회원의 닉네임" disabled>
+            <input type="text" class="input club-master-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
             <span style="margin-left: 50px">동네</span>
             <input type="text" class="input club-location-input" value="변필)로그인한 회원의 행정동" disabled>
+            <!-- <input type="text" class="input club-location-input" th:value="${#authentication.principal.memberDTO.address.eupMyeonDongName}" disabled> -->
             <table style="margin: 30px 0 70px 0">
                 <tr>
                     <td>
