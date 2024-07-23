@@ -4,12 +4,10 @@ import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.member.service.MemberServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Random;
 
@@ -24,20 +22,17 @@ public class MemberController {
     }
 
     @RequestMapping("/myPage")
-    public String myPage(){
+    public String myPage() {
         return "member/myPage";
     }
 
     @GetMapping("/login")
-    public String login(@RequestParam(value = "error", required = false) String error, Model model){
-        if (error != null) {
-            model.addAttribute("errorMessage", "아이디 또는 비밀번호가 올바르지 않습니다.");
-        }
+    public String login() {
         return "member/login";
     }
 
     @GetMapping("/signup")
-    public String signup(Model model){
+    public String signup(Model model) {
         System.out.println("회원가입 시작");
         model.addAttribute("memberDTO", new MemberDTO());
         return "member/signup";
@@ -61,4 +56,20 @@ public class MemberController {
             return "redirect:/signup";
         }
     }
+
+    @PostMapping("/isIdDuplicate")
+    public ResponseEntity<String> isIdDuplicate(@RequestBody MemberDTO request) {
+        boolean isDuplicate = memberService.isIdDuplicate(request.getMemberId());
+        if (isDuplicate) {
+            return ResponseEntity.ok("duplicate");
+        } else {
+            return ResponseEntity.ok("available");
+        }
+    }
+
+    @GetMapping("/login/oauth2/google")
+    public String googleCallback(@RequestParam String code) {
+        return "redirect:/login";
+    }
 }
+
