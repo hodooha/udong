@@ -1,11 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="Sale">
+<mapper namespace="SaleMapper">
 
-    <insert id="insertSale" parameterType="SaleDTO">
+    <insert id="insertSale" parameterType="SaleDTO" useGeneratedKeys="true" keyProperty="saleNo">
         INSERT INTO SAL (writer, title, started_at, ended_at, original_price, sale_price, address, content, location_code)
-    VALUES (#{writer}, #{title}, #{startedAt}, #{endedAt}, #{originalPrice}, #{salePrice}, #{address}, #{content}, 1111010100)
+    VALUES (#{writer}, #{title}, #{startedAt}, #{endedAt}, #{originalPrice}, #{salePrice}, #{address}, #{content}, #{locationCode})
     </insert>
+
+    <insert id="insertAttachments" parameterType="java.util.List">
+        INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name)
+        VALUES
+        <foreach collection="list" item="img" separator=",">
+        (#{img.typeCode}, #{img.targetNo}, #{img.originalName}, #{img.savedName})
+        </foreach>
+    </insert>
+
+    <select id="getAllSales" resultType="SaleDTO">
+        SELECT * FROM SAL ORDER BY started_at DESC
+    </select>
 
 </mapper>

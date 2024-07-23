@@ -1,17 +1,24 @@
 package com.multi.udong.sale.model.dao;
 
-import org.apache.ibatis.session.SqlSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.sale.model.dto.SaleDTO;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
-import com.multi.udong.sale.model.dto.SaleDTO;
+import java.util.List;
 
 @Repository
 public class SaleDAO {
-    @Autowired
-    private SqlSession sqlSession;
 
-    public void insertSale(SaleDTO saleDTO) {
-        sqlSession.insert("Sale.insertSale", saleDTO);
+    public int insertSale(SqlSessionTemplate sqlSession, SaleDTO saleDTO) throws Exception{
+        sqlSession.insert("SaleMapper.insertSale", saleDTO);
+        return saleDTO.getSaleNo();
     }
+    public int insertAttachments(SqlSessionTemplate sqlSession, List<AttachmentDTO> imgList) {
+        return sqlSession.insert("SaleMapper.insertAttachments", imgList);
+    }
+    public List<SaleDTO> getAllSales(SqlSessionTemplate sqlSession) {
+        return sqlSession.selectList("SaleMapper.getAllSales");
+    }
+
 }

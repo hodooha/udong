@@ -22,7 +22,7 @@ public class MyBatisConfig {
     }
 
     @Bean
-    public SqlSessionFactory sqlSessoinFactory(DataSource datasource) throws Exception{
+    public SqlSessionFactory sqlSessionFactory(DataSource datasource) throws Exception{
         SqlSessionFactoryBean seb  = new SqlSessionFactoryBean();
         seb.setDataSource(datasource);
         seb.setConfigLocation(new ClassPathResource("MyBatisConfig.xml"));

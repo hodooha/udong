@@ -1,8 +1,12 @@
 package com.multi.udong.sale.model.dto;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class SaleDTO {
+    private int saleNo;
     private int writer;
     private String title;
     private LocalDateTime startedAt;
@@ -13,6 +17,17 @@ public class SaleDTO {
     private String content;
     private long locationCode;
     private String status;
+    private String img;
+    private List<AttachmentDTO> imgList;
+    private String imagePath;
+
+    public int getSaleNo() {
+        return saleNo;
+    }
+
+    public void setSaleNo(int saleNo) {
+        this.saleNo = saleNo;
+    }
 
     public int getWriter() {
         return writer;
@@ -94,10 +109,35 @@ public class SaleDTO {
         this.status = status;
     }
 
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
+    }
+
+    public List<AttachmentDTO> getImgList() {
+        return imgList;
+    }
+
+    public void setImgList(List<AttachmentDTO> imgList) {
+        this.imgList = imgList;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
     @Override
     public String toString() {
         return "SaleDTO{" +
-                "writer=" + writer +
+                "saleNo=" + saleNo +
+                ", writer=" + writer +
                 ", title='" + title + '\'' +
                 ", startedAt=" + startedAt +
                 ", endedAt=" + endedAt +
@@ -107,6 +147,9 @@ public class SaleDTO {
                 ", content='" + content + '\'' +
                 ", locationCode=" + locationCode +
                 ", status='" + status + '\'' +
+                ", img='" + img + '\'' +
+                ", imgList=" + imgList +
+                ", imagePath='" + imagePath + '\'' +
                 '}';
     }
 }
