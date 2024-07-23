@@ -27,28 +27,49 @@
     <script type="text/javascript">
         $(function(){
 
-        $('.input-daterange').datepicker({
-        format: 'yyyy-mm-dd',
-        todayHighlight: true,
-        startDate: '+1d'
-        });
+            $('.input-daterange').datepicker({
+            format: 'yyyy-mm-dd',
+            todayHighlight: true,
+            startDate: '+1d'
+            })
 
-        $("a[name='img-delete']").on("click", function(e){
-                e.preventDefault();
-                deleteImg($(this));
+            $("a[name='img-delete']").on("click", function(e){
+                    e.preventDefault();
+                    deleteImg($(this));
+                });
+
+            $("input[name='itemGroup']").change(function(){
+                let checked = $("input[name='itemGroup']:checked").val();
+                if(checked == 'rent'){
+                    $("#expiryDate").css("visibility", "hidden");
+                    dateRefresh();
+                } else {
+                    $("#expiryDate").css("visibility", "visible");
+                    dateRefresh();
+                }
             });
 
         });
 
+        function dateRefresh() {
+            $('.input-daterange input').datepicker("setDate", null);
+            $('.input-daterange').datepicker({
+            format: 'yyyy-mm-dd',
+            todayHighlight: true,
+            startDate: '+1d'
+            });
+        }
+
 
         function addImg() {
             let len = $(".img-group").length;
+            if(len < 3){
             let addform = "<div class='img-group'><input class='form-control' type='file' name='imgs'><a href='#this' name='img-delete'>삭제</a><div>"
             $("#item-imgList").append(addform);
             $("a[name='img-delete']").on("click", function(e){
                 e.preventDefault();
                 deleteImg($(this));
-            })
+            })}
         }
 
         function deleteImg(img){
@@ -86,11 +107,11 @@
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-6" style="visibility:hidden" id="expiryDate"> <!--style="visibility:hidden"-->
                 <label class="form-label">마감일</label>
 
                 <div class="input-group input-daterange">
-                    <input type="text" class="form-control" placeholder="마감일 선택" readonly>
+                    <input type="date" class="form-control" placeholder="마감일 선택" name="expiryDate" readonly>
                 </div>
 
                 <span style="font-size:0.7em">*마감일은 등록일 기준 다음날 이후로만 선택 가능합니다.</span>

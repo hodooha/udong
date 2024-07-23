@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+<script
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -56,7 +58,7 @@
     </div>
     <div class="shaMenu-btn-group2">
     <button id="rentBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2" th:onclick="|location.href='@{/share/rent}'|">대여</button>
-    <button id="giveBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2" th:onclick="|location.href='@{/share/give}'|">나눔</button>
+    <button id="giveBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2 gray" th:onclick="|location.href='@{/share/give}'|">나눔</button>
     </div>
 </div>
 </body>
