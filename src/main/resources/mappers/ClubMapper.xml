@@ -4,10 +4,55 @@
 
 <mapper namespace="clubMapper">
 
-    <resultMap type="categoryDTO" id="categoryResultMap">
+    <resultMap id="clubResultMap" type="com.multi.udong.club.model.dto.ClubDTO">
+
+        <id property="clubNo" column="club_no"/>
+
+        <result property="clubName" column="club_name"/>
+        <result property="introduction" column="introduction"/>
+        <result property="maxPersonnel" column="max_personnel"/>
+        <result property="chatroomCode" column="chatroom_code"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="modifiedAt" column="modified_at"/>
+
+        <association property="category" resultMap="categoryResultMap"/>
+        <association property="location" resultMap="locationResultMap"/>
+        <association property="master" resultMap="masterResultMap"/>
+        <association property="attachment" resultMap="attachmentResultMap"/>
+
+    </resultMap>
+    
+    <resultMap id="categoryResultMap" type="categoryDTO">
 
         <id property="categoryCode" column="category_code"/>
         <result property="categoryName" column="category_name"/>
+
+    </resultMap>
+
+    <resultMap id="locationResultMap" type="com.multi.udong.club.model.dto.LocationDTO">
+
+        <id property="locationCode" column="location_code"/>
+        <result property="siDoName" column="si_do_name"/>
+        <result property="siGunGuName" column="si_gun_gu_name"/>
+        <result property="eupMyeonDongName" column="eup_myeon_dong_name"/>
+        <result property="riName" column="ri_name"/>
+
+    </resultMap>
+
+    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.MasterDTO">
+
+        <id property="memberNo" column="member_no"/>
+        <result property="nickname" column="nickname"/>
+
+    </resultMap>
+
+    <resultMap id="attachmentResultMap" type="com.multi.udong.common.model.dto.AttachmentDTO">
+
+        <id property="fileNo" column="file_no"/>
+        <result property="typeCode" column="type_code"/>
+        <result property="targetNo" column="target_no"/>
+        <result property="originalName" column="original_name"/>
+        <result property="savedName" column="saved_name"/>
 
     </resultMap>
 
@@ -24,5 +69,49 @@
             END,
         category_code;
     </select>
+
+    <insert id="insertClub" parameterType="com.multi.udong.club.model.dto.ClubDTO" useGeneratedKeys="true" keyProperty="clubNo">
+        INSERT INTO CL
+            (category_code, location_code, club_name, introduction, master, max_personnel)
+        VALUES
+            (
+            #{ category.categoryCode },
+            #{ location.locationCode },
+            #{ clubName },
+            #{ introduction },
+            #{ master.memberNo },
+            #{ maxPersonnel }
+        )
+    </insert>
+
+    <insert id="insertClubImg" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        INSERT INTO ATTACHMENT
+        (type_code, target_no, original_name, saved_name)
+        VALUES
+        (
+        #{ typeCode },
+        #{ targetNo },
+        #{ originalName },
+        #{ savedName }
+        )
+    </insert>
+
+    <update id="updateChatroomCode" parameterType="com.multi.udong.club.model.dto.ClubDTO">
+        UPDATE CL
+        SET chatroom_code = #{ chatroomCode }
+        WHERE club_no = #{ clubNo }
+    </update>
+
+    <insert id="insertMaster" parameterType="com.multi.udong.club.model.dto.ClubDTO">
+        INSERT INTO CL_MEMBER
+        (club_no, member_no, join_status, approved_at)
+        VALUES
+        (
+        #{ clubNo },
+        #{ master.memberNo },
+        'Y',
+        NOW()
+        )
+    </insert>
 
 </mapper>
