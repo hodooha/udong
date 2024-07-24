@@ -14,5 +14,6 @@ public interface NTSAPI {
     Map<String, Object> validateBusinessRegistration(
         @RequestParam("serviceKey") String serviceKey,
         @RequestBody Map<String, Object> requestBody
+
     );
 }

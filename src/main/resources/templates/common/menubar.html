@@ -122,7 +122,7 @@
         </div>
         <div class="auth-links">
             <th:block th:if="${#authorization.expression('isAuthenticated()')}">
-                <a href="/myPage" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
+                <a href="/member/dashBoard" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
                 <span>|</span>
                 <a href="#" onclick="document.getElementById('logoutForm').submit();">로그아웃</a>
                 <form id="logoutForm" method="post" action="/logout" style="display:none;">

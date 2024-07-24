@@ -118,6 +118,13 @@
     <div class="vertical-line"></div>
     <div class="image"></div>
 </div>
+<div th:if="${errorMessage}" th:text="${errorMessage}" style="display:none;" id="errorMessage"></div>
+<form id="loginForm" action="/login" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <input type="hidden" name="memberId" Id="kakaoId"/>
+    <input type="hidden" name="memberPw" Id="kakaoPw"/>
+</form>
+</body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const inputs = document.querySelectorAll('.input-group input');
@@ -133,7 +140,7 @@
         });
     });
 </script>
-<script> // 구글 로그인 스크립트
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         const googleLoginBtn = document.getElementById('googleLogin');
         googleLoginBtn.addEventListener('click', handleGoogleLogin);
@@ -150,8 +157,8 @@
         // 새 창에서 구글 로그인 페이지 열기
         window.open(url, 'googleLogin', 'width=600,height=700');
     }
-</script>
-<script> // 카카오 로그인 스크립트
+</script> <!--구글 로그인 스크립트-->
+<script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const kakoLoginBtn = document.getElementById('kakoLogin');
         kakoLoginBtn.addEventListener('click', kakaoLogin);
@@ -232,35 +239,20 @@
     }
 
     function createHiddenLoginForm(kakaoid) {
-        var frm = document.createElement('form'); 		 	 // 제출을 위한 form 태그 생성
-        frm.setAttribute('method', 'post'); 				 // post방식으로 요청보냄
-        frm.setAttribute('action', '/login'); // 제출할 로그인 url
+        const kakaoPw = 'kakaoPw1234';
 
-        var hiddenInputId = document.createElement('input'); // input 태그 생성
-        hiddenInputId.setAttribute('type', 'hidden'); 		 // 사용자에게 보이지 않음
-        hiddenInputId.setAttribute('name', 'memberId');		 // name="memberId"
-        hiddenInputId.setAttribute('value', kakaoid); 		 // memberId값으로 kakaoid 입력
+        document.getElementById("kakaoId").value = kakaoid;
+        document.getElementById("kakaoPw").value = kakaoPw;
 
-        var hiddenInputPw = document.createElement('input'); // input 태그 생성
-        var kakaoPw = 'kakaoPw';							 // 카카오 비밀번호는 kakaoPw로 통일
-        hiddenInputPw.setAttribute('type', 'hidden'); 		 // 사용자에게 보이지 않음
-        hiddenInputPw.setAttribute('name', 'memberPw');		 // name="memberPw"
-        hiddenInputPw.setAttribute('value', kakaoPw); 		 // memberPw값으로 kakaoPw 입력
-
-        frm.appendChild(hiddenInputId); 					 // form태그에 생성한 input태그 추가
-        frm.appendChild(hiddenInputPw); 					 // form태그에 생성한 input태그 추가
-
-        var csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        var csrfInput = document.createElement('input');
-        csrfInput.setAttribute('type', 'hidden');
-        csrfInput.setAttribute('name', '_csrf');
-        csrfInput.setAttribute('value', csrfToken);
-
-        frm.appendChild(csrfInput);
-
-        document.body.appendChild(frm);						 // body에 form태그 추가
-        frm.submit();										 // form 제출
+        document.getElementById('loginForm').submit();
     }
-</script>
-</body>
+</script> <!--카카오 로그인 스크립트-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var errorMessage = document.getElementById('errorMessage');
+        if (errorMessage && errorMessage.textContent) {
+            alert(errorMessage.textContent);
+        }
+    });
+</script> <!--에러 alert-->
 </html>

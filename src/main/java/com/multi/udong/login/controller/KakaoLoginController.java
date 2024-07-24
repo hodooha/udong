@@ -1,4 +1,4 @@
-package com.multi.udong.member.controller;
+package com.multi.udong.login.controller;
 
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberServiceImpl;
