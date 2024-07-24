@@ -2,6 +2,7 @@ package com.multi.udong.share.model.dao;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
+import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -109,5 +110,9 @@ public class ShareDAO {
     public List<AttachmentDTO> getItemImgs(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
 
         return (ArrayList) sqlSession.selectList("ShareMapper.getItemImgs", itemDTO);
+    }
+
+    public List<ShaItemDTO> searchItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) {
+        return (ArrayList) sqlSession.selectList("ShareMapper.searchItems", criteriaDTO);
     }
 }

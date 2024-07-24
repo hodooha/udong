@@ -37,9 +37,17 @@
 
     <insert id="insertItem" useGeneratedKeys="true" keyColumn="item_no" keyProperty="itemNo">
         insert into sha_items
-        (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date)
-        values
-        (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate})
+        <if test="itemGroup == 'rent'">
+            (item_group, item_cat_code, title, content, owner_no, loc_code)
+            values
+            (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
+        </if>
+        <if test="itemGroup == 'give'">
+            (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
+            values
+            (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
+        </if>
+
     </insert>
 
     <insert id="insertImg" >
@@ -101,6 +109,29 @@
         from attachment
         where target_no = #{itemNo}
         and type_code = #{itemGroup}
+    </select>
+
+    <select id="searchItems" resultMap="shaItemMap">
+        select a.*, c.saved_name
+        from sha_items a
+        left join (
+        select target_no, saved_name
+        from (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        where type_code = #{group}
+        ) sub
+        where rn = 1
+        ) c on a.item_no = c.target_no
+        <where>
+        <if test="locCode != null and locCode != ''">and a.loc_code = #{locCode}</if>
+        <if test="group != null and group != ''">and a.item_group = #{group}</if>
+        <if test="catCode != null and catCode != ''">and a.item_cat_code = #{catCode}</if>
+        <if test="1 == 1">and a.deleted_at is null</if>
+        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
+        </where>
+
     </select>
 
 </mapper>

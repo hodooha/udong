@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
         span{
@@ -36,20 +39,10 @@
 <script
         src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript">
-    <!--    $(function(){-->
-    <!--        $.ajax({-->
-    <!--            url : "itemList",-->
-    <!--            type: "get",-->
-    <!--            success: function(result){-->
-    <!--                alert("아이템 불러오기 성공");-->
-    <!--            },-->
-    <!--            error : function(){-->
-    <!--                alert("아이템 불러오기 실패");-->
+    $(function(){
 
-    <!--            }-->
+    })
 
-    <!--        })-->
-    <!--    })-->
 
 
 </script>
@@ -58,22 +51,25 @@
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
 
 <div class="container">
-    <h4>추천</h4>
+    <!--<h4>추천</h4>-->
     <h4 class="m-2">All</h4>
+    <input type="hidden" name="group" value="rent">
+    <input type="hidden" name="locCode" th:value=1111010100>
+    <!--th:value="${#authentication.principal.memberDTO.memAddressDTO.locationCode}"-->
     <div class="headBar">
-        <select class="form-select catSelect" name="itemCatCode">
+        <select class="form-select catSelect" name="itemCatCode" onchange="chageCat()">
             <option value="">== 카테고리 선택 ==</option>
             <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
         </select>
 
         <div class="form-check checkbox">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
-            <label class="form-check-label" for="flexCheckChecked">
+            <input class="form-check-input" type="checkbox" value="AVL" id="availableCheck" onchange="chageCat()" checked>
+            <label class="form-check-label" for="availableCheck">
                 대여가능물품만 보기
             </label>
         </div>
         <form class="d-flex" role="search">
-            <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요.">
+            <input class="form-control me-2" type="search" name="keyword" placeholder="검색어를 입력하세요.">
             <button class="btn btn-udh-blue searchBtn" type="submit">검색</button>
         </form>
     </div>
@@ -100,6 +96,9 @@
     </div>
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
 <script type="text/javascript" th:src="@{/js/sha.js}"></script>
 </body>
 </html>
