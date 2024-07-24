@@ -38,6 +38,9 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
         }
         .search-input {
             width: 300px;
@@ -66,52 +69,113 @@
         .sale-cards {
             display: flex;
             flex-wrap: wrap;
-            justify-content: space-around;
-            margin: 20px;
+            justify-content: space-between;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 50px auto;
         }
         .sale-card {
-            width: 300px;
+            width: 500px;
+            height: 300px;
             border: 1px solid #ddd;
             border-radius: 8px;
             margin-bottom: 20px;
             overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
         }
         .sale-card img {
-            width: 100%;
-            height: 200px;
+            width: 250px;
+            height: calc(100% - 30px);
             object-fit: cover;
+            object-position: center;
+            margin-left: 20px;
         }
         .sale-card-content {
+            width: 60%;
             padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 1.0em;
+        }
+        .sale-card-description {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        .sale-card-header {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .sale-card-title {
             font-weight: bold;
+            font-size: 1.5em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sale-card-content {
+            flex: 1;
             margin-bottom: 10px;
         }
         .sale-card-price {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: flex-end;
         }
         .original-price {
             text-decoration: line-through;
             color: #888;
+            margin-bottom: 5px;
         }
         .sale-price {
             font-weight: bold;
             color: #ff4500;
-            font-size: 1.2em;
+            font-size: 1.5em;
         }
         .sale-card-timer {
             font-weight: bold;
-            color: #4a4a4a;
-            text-align: center;
-            background-color: #f0f0f0;
-            padding: 5px;
-            border-radius: 5px;
+            color: #ffffff;
+            background-color: #CB3333;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            display: inline-block;
+            max-width: 45%;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+        .sale-card-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .page-button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border: 1px solid #ddd;
+        background-color: #27447B;
+        cursor: pointer;
+        color: white;
+    }
+
+    .page-button.active {
+        background-color: #142657;
+        color: white;
+    }
+
     </style>
 
 </head>
@@ -130,19 +194,29 @@
     <input type="text" class="search-input" placeholder="검색어를 입력하세요.">
     <button class="search-button">검색</button>
 </div>
-<div class="sale-cards">
-    <!-- 여기서 Thymeleaf를 사용하여 실제 데이터를 반복 표시합니다 -->
+<div class="sale-cards" id="saleCards">
+
     <div th:each="sale : ${sales}" class="sale-card">
-        <img th:src="@{${sale.imagePath}}" alt="상품 이미지">
-        <div class="sale-card-content">
-            <div class="sale-card-title" th:text="${sale.title}">상품 제목</div>
-            <div class="sale-card-price">
-                <span class="original-price" th:text="${#numbers.formatDecimal(sale.originalPrice, 0, 'COMMA', 0, 'POINT')} + '원'">12,000원</span>
-                <span class="sale-price" th:text="${#numbers.formatDecimal(sale.salePrice, 0, 'COMMA', 0, 'POINT')} + '원'">10,000원</span>
+        <div class="sale-card-header">
+            <h3 class="sale-card-title" th:text="${sale.title}">땡처리 제목</h3>
+            <div class="sale-card-timer" th:attr="data-end-time=${sale.endedAt}">00:00:00</div>
+        </div>
+        <div class="sale-card-body">
+            <div th:if="${sale.attachments != null and !sale.attachments.empty}">
+                <img th:src="@{'/uploadFiles/' + ${sale.attachments[0].savedName}}" alt="상품 이미지">
             </div>
-            <div class="sale-card-timer" th:attr="data-end-time=${sale.endedAt}">남은 시간: 계산 중...</div>
+            <div class="sale-card-content">
+                <p class="sale-card-description" th:text="${sale.content}">땡처리 설명</p>
+                <div class="sale-card-price">
+                    <span class="original-price" th:text="${#numbers.formatDecimal(sale.originalPrice, 0, 'COMMA', 0, 'POINT')} + '원'">정상 가격</span>
+                    <span class="sale-price" th:text="${#numbers.formatDecimal(sale.salePrice, 0, 'COMMA', 0, 'POINT')} + '원'">할인 가격</span>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+<div class="pagination" id="pagination">
+
 </div>
 
 <script th:inline="javascript">
@@ -153,19 +227,86 @@
             const distance = endTime - now;
 
             if (distance < 0) {
-                timer.innerHTML = "판매 종료";
+                timer.innerHTML = "땡처리 마감";
             } else {
                 const hours = Math.floor(distance / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-                timer.innerHTML = `남은 시간: ${hours}:${minutes}:${seconds}`;
+                timer.innerHTML = `🕓 ${hours}:${minutes}:${seconds}`;
             }
         });
     }
 
     setInterval(updateTimers, 1000);
     updateTimers(); // 초기 실행
+
+    // 페이지네이션
+    const sales = /*[[${sales}]]*/ [];
+    let currentPage = 1;
+    const itemsPerPage = 4;
+
+    function displaySales(page) {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const salesToDisplay = sales.slice(startIndex, endIndex);
+
+        const saleCardsContainer = document.getElementById('saleCards');
+        saleCardsContainer.innerHTML = '';
+
+        salesToDisplay.forEach(sale => {
+            const saleCard = document.createElement('div');
+            saleCard.className = 'sale-card';
+            saleCard.innerHTML = `
+                <div class="sale-card-header">
+                    <h3 class="sale-card-title">${sale.title}</h3>
+                    <div class="sale-card-timer" data-end-time="${sale.endedAt}">00:00:00</div>
+                </div>
+                <div class="sale-card-body">
+                    <div>
+                        ${sale.attachments && sale.attachments.length > 0
+                            ? `<img src="/uploadFiles/${sale.attachments[0].savedName}" alt="상품 이미지">`
+                            : ''}
+                    </div>
+                    <div class="sale-card-content">
+                        <p class="sale-card-description">${sale.content}</p>
+                        <div class="sale-card-price">
+                            <span class="original-price">${sale.originalPrice.toLocaleString()}원</span>
+                            <span class="sale-price">${sale.salePrice.toLocaleString()}원</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            saleCardsContainer.appendChild(saleCard);
+        });
+
+        updateTimers();
+        updatePagination();
+    }
+
+    function updatePagination() {
+    const totalPages = Math.ceil(sales.length / itemsPerPage);
+    const paginationContainer = document.getElementById('pagination');
+    paginationContainer.innerHTML = '';
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.classList.add('page-button');
+        if (i === currentPage) {
+            pageButton.classList.add('active');
+        }
+        pageButton.addEventListener('click', () => {
+            currentPage = i;
+            displaySales(currentPage);
+        });
+        paginationContainer.appendChild(pageButton);
+    }
+}
+
+
+displaySales(currentPage);
+
 </script>
 
 </body>
