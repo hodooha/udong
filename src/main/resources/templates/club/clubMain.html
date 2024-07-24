@@ -10,6 +10,7 @@
         .top{
             display: flex;
             align-items: center;
+            margin-bottom: 30px;
         }
         .search-form{
             flex: 1;
@@ -48,7 +49,7 @@
             font-family: 'Freesentation-5Medium' !important;
         }
         .club-list{
-            height: 800px;
+            height: 720px;
         }
         .club-img{
             width: 100px;
@@ -92,6 +93,9 @@
     </style>
     <script type="text/javascript">
 
+        var filterCategoryCode = "[[${filter.categoryCode}]]";
+        var filterSearchWord = "[[${filter.searchWord}]]";
+
         $(document).ready(function() {
 
             $.ajax({
@@ -99,7 +103,17 @@
                 success: function(data) {
                     var categorySelect = $('select[name="categoryCode"]');
                     data.forEach(function(category) {
-                        categorySelect.append($('<option></option>').attr('value', category.categoryCode).text(category.categoryName));
+
+                        var option = $('<option></option>')
+                        .attr('value', category.categoryCode)
+                        .text(category.categoryName);
+
+                        if(category.categoryCode === filterCategoryCode) {
+                            option.attr('selected', 'selected');
+                        }
+
+                        categorySelect.append(option);
+
                     });
                 },
                 error: function() {
@@ -131,12 +145,13 @@
     <div class="top">
         <form class="search-form" action="clubMain" method="get">
             <div class="search-bar">
+                <input type="hidden" name="page" value="1">
                 <span>주제</span>
                 <select class="category-select" name="categoryCode">
-                    <option value="0">전체</option>
+                    <option value="ALL">전체</option>
                 </select>
                 <span style="margin-left: 50px">모임명 검색</span>
-                <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력...">
+                <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력..." th:value="${filter.searchWord}">
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>
         </form>
@@ -178,7 +193,10 @@
 <script type="text/javascript">
 
     function selectClubList(page) {
-		window.location.href = "/club/clubMain?page=" + page;
+
+        var encodedCategoryCode = encodeURIComponent(filterCategoryCode);
+        var encodedSearchWord = encodeURIComponent(filterSearchWord);
+		window.location.href = "/club/clubMain?page="+page+"&categoryCode="+encodedCategoryCode+"&searchWord="+encodedSearchWord;
 	}
 
 </script>

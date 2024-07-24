@@ -30,7 +30,7 @@
 
     </resultMap>
 
-    <resultMap id="locationResultMap" type="com.multi.udong.club.model.dto.LocationDTO">
+    <resultMap id="locationResultMap" type="com.multi.udong.common.model.dto.LocationDTO">
 
         <id property="locationCode" column="location_code"/>
         <result property="siDoName" column="si_do_name"/>
@@ -128,6 +128,12 @@
         LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
         LEFT JOIN LOCATION C ON A.location_code = C.location_code
         WHERE A.location_code = #{ locationCode }
+        <if test="categoryCode != 'ALL' and categoryCode != null">
+            AND A.category_code = #{ categoryCode }
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND A.club_name LIKE CONCAT('%', #{ searchWord }, '%')
+        </if>
         ORDER BY current_personnel ASC
         LIMIT #{ startIndex }, #{ pageCount }
     </select>
@@ -135,6 +141,12 @@
     <select id="selectClubCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
         SELECT COUNT(*) club_count FROM CL
         WHERE location_code = #{ locationCode }
+        <if test="categoryCode != 'ALL' and categoryCode != null">
+            AND category_code = #{ categoryCode }
+        </if>
+        <if test="searchWord != null and searchWord != ''">
+            AND club_name LIKE CONCAT('%', #{ searchWord }, '%')
+        </if>
     </select>
 
 </mapper>

@@ -3,6 +3,7 @@ package com.multi.udong.club.controller;
 import com.multi.udong.club.model.dto.*;
 import com.multi.udong.club.service.ClubService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.security.CustomUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -54,8 +55,12 @@ public class ClubController {
         // 받아온 page로 시작 및 시작 index를 설정
         filterDTO.setStartAndStartIndex(filterDTO.getPage());
 
+        // 검색 조건 확인
+        System.out.println("###### 검색하는 카테고리 코드: " + filterDTO.getCategoryCode());
+        System.out.println("###### 검색하는 검색어: " + filterDTO.getSearchWord());
+
         // 로그인된 유저의 locationCode를 principal에서 받아와 filterDTO에 set
-        // long membersLocation = c.getMemberDTO().getLocationCode();
+        // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
         long membersLocation = 1117013100;
         filterDTO.setLocationCode(membersLocation);
 
@@ -70,7 +75,7 @@ public class ClubController {
             int clubCount = clubService.selectClubCount(filterDTO);
             System.out.println("###### 모임 총 개수: " + clubCount);
 
-            int pages = 1;
+            int pages = 0;
             if(clubCount != 0) {
 
                 pages = clubCount / 5;
@@ -152,7 +157,7 @@ public class ClubController {
         clubDTO.setMaster(masterDTO);
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
-        // long mastersLocation = c.getMemberDTO().getLocationCode();
+        // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
         LocationDTO locationDTO = new LocationDTO();
         // locationDTO.setLocationCode(mastersLocation);
         locationDTO.setLocationCode(1117013100);
@@ -238,7 +243,6 @@ public class ClubController {
             return "common/errorPage";
 
         }
-
 
     }
 

@@ -1,4 +1,4 @@
-package com.multi.udong.club.model.dto;
+package com.multi.udong.common.model.dto;
 
 import lombok.Data;
 

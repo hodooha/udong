@@ -1,6 +1,7 @@
 package com.multi.udong.club.model.dto;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.common.model.dto.LocationDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
