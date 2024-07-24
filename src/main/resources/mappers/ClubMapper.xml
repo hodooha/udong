@@ -128,7 +128,7 @@
         LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
         LEFT JOIN LOCATION C ON A.location_code = C.location_code
         WHERE A.location_code = #{ locationCode }
-        <if test="categoryCode != 'ALL' and categoryCode != null">
+        <if test="categoryCode != 'ALL' and categoryCode != null and categoryCode != ''">
             AND A.category_code = #{ categoryCode }
         </if>
         <if test="searchWord != null and searchWord != ''">
@@ -141,7 +141,7 @@
     <select id="selectClubCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
         SELECT COUNT(*) club_count FROM CL
         WHERE location_code = #{ locationCode }
-        <if test="categoryCode != 'ALL' and categoryCode != null">
+        <if test="categoryCode != 'ALL' and categoryCode != null and categoryCode != ''">
             AND category_code = #{ categoryCode }
         </if>
         <if test="searchWord != null and searchWord != ''">
