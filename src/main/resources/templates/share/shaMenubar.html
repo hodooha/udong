@@ -1,10 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<script
-        src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
+</head>
+<body>
+<div id="shaMenubar">
+    <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <div>
+        <div class="shaMenu-btn-group1">
+            <button type="button" class="btn btn-udh-blue shaMenu-btn1"
+                    th:onclick="|location.href='@{/share/register}'|">물건등록
+            </button>
+            <button type="button" class="btn btn-udh-blue shaMenu-btn1">나의 드림목록</button>
+        </div>
+        <div class="shaMenu-btn-group2">
+            <button id="rentBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2"
+                    th:onclick="|location.href='@{/share/rent}'|">대여
+            </button>
+            <button id="giveBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2 gray"
+                    th:onclick="|location.href='@{/share/give}'|">나눔
+            </button>
+        </div>
+        <p class="rentCom">⚠ 반납 예정일은 정확하지 않을 수 있으니 참고만 해주세요.</p>
+    </div>
     <style>
         .shaMenu-btn-group1{
             display: flex;
@@ -13,16 +36,12 @@
         }
 
         .shaMenu-btn1{
-
             margin-right: 2px;
-
         }
 
         .shaMenu-btn-group2{
             display: flex;
             justify-content:center;
-
-
         }
 
         .shaMenu-btn2{
@@ -33,33 +52,16 @@
             background-color: lightgray;
         }
 
+        .rentCom{
+            text-align : center;
+        }
 
+        .card:hover {
+            cursor: pointer;
+        }
 
     </style>
-    <script
-            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-</head>
-<body>
-<script type="text/javascript">
-    $(function(){
-        if(window.location.pathname.includes("/share/rent")){
-            $('#giveBtn').addClass("gray");
-            $('#rentBtn').removeClass("gray");
-        } else if(window.location.pathname.includes("/share/give")){
-            $('#rentBtn').addClass("gray");
-            $('#giveBtn').removeClass("gray");}
-    })
 
-</script>
-<div >
-    <div class="shaMenu-btn-group1">
-    <button type="button" class="btn btn-udh-blue shaMenu-btn1" th:onclick="|location.href='@{/share/register}'|">물건등록</button>
-    <button type="button" class="btn btn-udh-blue shaMenu-btn1">나의 드림목록</button>
-    </div>
-    <div class="shaMenu-btn-group2">
-    <button id="rentBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2" th:onclick="|location.href='@{/share/rent}'|">대여</button>
-    <button id="giveBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2 gray" th:onclick="|location.href='@{/share/give}'|">나눔</button>
-    </div>
 </div>
 </body>
 </html>

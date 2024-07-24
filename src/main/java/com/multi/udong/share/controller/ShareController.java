@@ -22,6 +22,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+
+/**
+ * 대여 및 나눔 Controller
+ *
+ * @author 하지은
+ * @since 2024 -07-21
+ */
 @RequiredArgsConstructor
 @RequestMapping("/share")
 @Controller
@@ -29,14 +36,24 @@ public class ShareController {
 
     private final ShareService shareService;
 
+    /**
+     * 대여 메인페이지 이동 및 목록 조회
+     *
+     * @param c     the c
+     * @param model the model
+     * @return the string
+     * @since 2024 -07-22
+     */
     @GetMapping("/rent")
     public String rentMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
         int locCode = 1111010100; // 추후 변경 필요!
 
         try {
             List<ShaItemDTO> itemList = shareService.rentItemList(locCode);
+            List<ShaCatDTO> catList = shareService.getShaCat();
             System.out.println(itemList);
             model.addAttribute("itemList", itemList);
+            model.addAttribute("catList", catList);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -45,14 +62,24 @@ public class ShareController {
     }
 
 
+    /**
+     * 나눔 메인페이지 이동 및 목록 조회
+     *
+     * @param c     the c
+     * @param model the model
+     * @return the string
+     * @since 2024 -07-22
+     */
     @GetMapping("/give")
     public String giveMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
         int locCode = 1111010100; // 추후 변경 필요!
 
         try {
             List<ShaItemDTO> itemList = shareService.giveItemList(locCode);
+            List<ShaCatDTO> catList = shareService.getShaCat();
             System.out.println(itemList);
             model.addAttribute("itemList", itemList);
+            model.addAttribute("catList", catList);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,6 +87,13 @@ public class ShareController {
         return "share/giveMain";
     }
 
+    /**
+     * 물건 등록 페이지 이동 및 카테고리 목록 조회
+     *
+     * @param model the model
+     * @return the string
+     * @since 2024 -07-22
+     */
     @GetMapping("/register")
     public String register(Model model) {
 
@@ -73,7 +107,41 @@ public class ShareController {
         return "share/registerForm";
     }
 
-    @PostMapping("/insert")
+    /**
+     * 물건 상세 조회 페이지 이동 및 상세 조회
+     *
+     * @param itemDTO the item dto
+     * @param model   the model
+     * @return the string
+     * @since 2024 -07-23
+     */
+    @GetMapping(value= {"/rent/detail", "/give/detail"})
+    public String itemDetail(ShaItemDTO itemDTO, Model model){
+
+        try {
+            ShaItemDTO item = shareService.getItemDetail(itemDTO);
+            model.addAttribute("item", item);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        return "share/itemDetail";
+    }
+
+    /**
+     * 물건 등록 및 첨부파일 저장 기능
+     *
+     * @param model     the model
+     * @param itemDTO   the item dto
+     * @param principal the principal
+     * @param fileList  the file list
+     * @return the string
+     * @since 2024 -07-22
+     */
+    @PostMapping("/register")
     public String insertItem(Model model, ShaItemDTO itemDTO, Principal principal, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
 
         fileList = fileList.stream().filter((x) -> x.isEmpty() == false).collect(Collectors.toList());
@@ -105,7 +173,6 @@ public class ShareController {
                     f.transferTo(new File(imgPath + "\\" + savedName));
 
                 }
-                System.out.println("여기!" + imgList);
 
             }
 
@@ -123,7 +190,7 @@ public class ShareController {
 
         }
 
-        return "share/rentMain";
+        return "redirect:/share/rent";
     }
 
 }

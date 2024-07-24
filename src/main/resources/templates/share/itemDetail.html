@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
+
+    <style>
+        .owner{
+            display: flex;
+            align-items: center;
+            font-size: 30px;
+        }
+
+        .level{
+            width:25px;
+            margin-left: 5px;
+
+
+        }
+
+        p > span{
+            margin-right: 30px;
+
+
+        }
+
+        .returnDate{
+            margin-bottom: 20px;
+            width: 50%;
+
+        }
+
+
+
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
+
+<div class="container">
+
+    <div class="row mt-5 align-items-center">
+        <div class="col-md-6">
+            <div id="carouselExample" class="carousel carousel-dark" style="width: 100%">
+                <div class="carousel-inner">
+                    <div th:if="${item.imgList == null || #lists.isEmpty(item.imgList)}">
+                        <div class="carousel-item active">
+                            <img th:src="@{/img/noimg.jpg}" class="d-block" alt="기본이미지" style="height:350px; margin: auto;">
+                        </div>
+                    </div>
+                    <div th:unless="${item.imgList == null || #lists.isEmpty(item.imgList)}" th:each="img, stat : ${item.imgList}" class="carousel-item"
+                         th:classappend="${stat.first ? 'active' : ''}">
+
+                        <img th:src="@{'/uploadFiles/'+${img.savedName}}" class="d-block " alt="물건이미지"
+                             style="height:350px; margin: auto;">
+                    </div>
+
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+
+        </div>
+        <div class="col-md-6 px-5">
+            <h2>[[${item.title}]]</h2>
+            <p class="owner">
+                [[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
+            <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️ <span
+                    th:text="${item.reqCnt}"></span></p>
+            <p>
+                <span>[[${item.locName}]]</span> <span>[[${item.modifiedAt}]]</span>
+            </p>
+            <th:block th:if="${item.itemGroup} eq 'give'">
+                <p><h3><span class="badge text-bg-danger">마감일: [[${item.expiryDate}]]</span></h3></p>
+                <button class="btn btn-udh-yellow">응모하기</button>
+                <button class="btn btn-udh-yellow">찜</button>
+            </th:block>
+            <th:block th:if="${item.itemGroup} eq 'rent'">
+                <div class="returnDate">
+                    <label class="form-label">📅반납희망일 설정</label>
+
+                    <div class="input-group input-daterange">
+                        <input type="date" class="form-control" name="return" readonly>
+                    </div>
+                </div>
+                <button class="btn btn-udh-yellow">대여신청</button>
+                <button class="btn btn-udh-yellow">찜</button>
+            </th:block>
+
+        </div>
+
+        <div class="row mt-5 justify-content-center">
+            <div class="col-md-10">
+                <textarea class="form-control p-5" id="itemContent" rows="6" readonly
+                          th:text="${item.content}"></textarea>
+            </div>
+
+        </div>
+    </div>
+
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
+<script type="text/javascript" th:src="@{/js/sha.js}"></script>
+</body>
+</html>
