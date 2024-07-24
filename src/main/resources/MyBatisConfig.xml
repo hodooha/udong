@@ -41,12 +41,17 @@
                 type="com.multi.udong.share.model.dto.ShaItemDTO"
                 alias="ShaItemDTO"/>
 
+        <typeAlias
+                type="com.multi.udong.share.model.dto.ShaReqDTO"
+                alias="shaReqDTO"/>
+
         <!-- 재식 -->
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>
 
         <typeAlias type="com.multi.udong.member.model.dto.MemBusDTO" alias="memBusDTO"/>
 
         <typeAlias type="com.multi.udong.sale.model.dto.SaleDTO" alias="saleDTO"/>
+
     </typeAliases>
     <mappers>
         <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
