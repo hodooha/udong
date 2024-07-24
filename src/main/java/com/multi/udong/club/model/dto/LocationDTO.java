@@ -9,6 +9,5 @@ public class LocationDTO {
     private String siDoName;
     private String siGunGuName;
     private String eupMyeonDongName;
-    private String riName;
 
 }

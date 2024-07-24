@@ -10,6 +10,7 @@
 
         <result property="clubName" column="club_name"/>
         <result property="introduction" column="introduction"/>
+        <result property="currentPersonnel" column="current_personnel"/>
         <result property="maxPersonnel" column="max_personnel"/>
         <result property="chatroomCode" column="chatroom_code"/>
         <result property="createdAt" column="created_at"/>
@@ -35,7 +36,6 @@
         <result property="siDoName" column="si_do_name"/>
         <result property="siGunGuName" column="si_gun_gu_name"/>
         <result property="eupMyeonDongName" column="eup_myeon_dong_name"/>
-        <result property="riName" column="ri_name"/>
 
     </resultMap>
 
@@ -113,5 +113,28 @@
         NOW()
         )
     </insert>
+
+    <select id="selectClubList" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultMap="clubResultMap">
+        SELECT
+            A.club_no,
+            A.club_name,
+            A.introduction,
+            A.max_personnel,
+            B.category_name,
+            C.eup_myeon_dong_name,
+            (SELECT COUNT(*) FROM CL_MEMBER D WHERE D.club_no = A.club_no) AS current_personnel,
+            (SELECT E.saved_name FROM ATTACHMENT E WHERE E.type_code = 'CL' AND E.target_no = A.club_no) AS saved_name
+        FROM CL A
+        LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
+        LEFT JOIN LOCATION C ON A.location_code = C.location_code
+        WHERE A.location_code = #{ locationCode }
+        ORDER BY current_personnel ASC
+        LIMIT #{ startIndex }, #{ pageCount }
+    </select>
+
+    <select id="selectClubCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
+        SELECT COUNT(*) club_count FROM CL
+        WHERE location_code = #{ locationCode }
+    </select>
 
 </mapper>
