@@ -70,10 +70,17 @@ public class ClubController {
             int clubCount = clubService.selectClubCount(filterDTO);
             System.out.println("###### 모임 총 개수: " + clubCount);
 
-            int pages = clubCount / 5;
-            if(pages % 5 != 0) {
-                pages += 1;
+            int pages = 1;
+            if(clubCount != 0) {
+
+                pages = clubCount / 5;
+
+                if(clubCount % 5 != 0) {
+                    pages += 1;
+                }
+
             }
+            System.out.println("###### 페이지 개수: " + pages);
 
             model.addAttribute("pages", pages);
 
@@ -217,7 +224,7 @@ public class ClubController {
 
             // 생성한 모임의 홈으로 바로 이동
             // return "redirect:/club/clubHome?clubNo="+clubNo;
-            return "redirect:/club/clubMain";
+            return "redirect:/club/clubMain?page=1";
 
         } catch (Exception e) {
 
