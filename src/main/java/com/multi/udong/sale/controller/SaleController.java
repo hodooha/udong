@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/sale")
+@RequestMapping("/sale") //sale에 대한 경로 요청 처리
 public class SaleController {
 
     private final SaleService saleService;
@@ -32,13 +32,14 @@ public class SaleController {
 
     @GetMapping("/saleMain")
     public String saleMain(Model model) {
-        List<SaleDTO> sales = saleService.getAllSales();
+        List<SaleDTO> sales = saleService.getAllSalesWithAttachments(); //모든 땡처리 정보 가져와서 모델에 추가하고 뷰 반환
         model.addAttribute("sales", sales);
+
         return "sale/saleMain";
     }
 
     @GetMapping("/saleInsertForm")
-    public String saleInsertForm() {
+    public String saleInsertForm() { //땡처리 작성 폼 페이지 반환
         return "sale/saleInsertForm";
     }
 
@@ -47,9 +48,9 @@ public class SaleController {
                              @RequestParam(value = "startedAtCombined", required = false) String startedAtCombined,
                              @RequestParam(value = "endedAtCombined", required = false) String endedAtCombined,
                              @AuthenticationPrincipal User user, Model model) throws Exception {
-        saleDTO.setLocationCode(1111010100); //location_code 임의설정
-        saleDTO.setWriter(1); // 사용자 ID 설정
 
+        saleDTO.setLocationCode(1111010100); // location_code 임의설정
+        saleDTO.setWriter(1); // 사용자 ID 임의설정
 
         if (startedAtCombined != null && endedAtCombined != null) {
             try {
@@ -88,10 +89,15 @@ public class SaleController {
 
                     imgList.add(img);
                     f.transferTo(new File(imgPath + "\\" + savedName));
+
+
+                    if (saleDTO.getImagePath() == null) {
+                        saleDTO.setImagePath("/uploadFiles/" + savedName);
+                    }
                 }
             }
 
-            saleService.insertSale(saleDTO, imgList);
+            saleService.insertSale(saleDTO, imgList); // 땡처리 정보와 이미지 저장
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -99,7 +105,7 @@ public class SaleController {
             return "redirect:/error";
         }
 
-        return "redirect:/sale/saleMain";
+        return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트
     }
 
 }

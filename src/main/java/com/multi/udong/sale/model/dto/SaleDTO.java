@@ -18,7 +18,7 @@ public class SaleDTO {
     private long locationCode;
     private String status;
     private String img;
-    private List<AttachmentDTO> imgList;
+    private List<AttachmentDTO> attachments;
     private String imagePath;
 
     public int getSaleNo() {
@@ -117,12 +117,12 @@ public class SaleDTO {
         this.img = img;
     }
 
-    public List<AttachmentDTO> getImgList() {
-        return imgList;
+    public List<AttachmentDTO> getAttachments() {
+        return attachments;
     }
 
-    public void setImgList(List<AttachmentDTO> imgList) {
-        this.imgList = imgList;
+    public void setAttachments(List<AttachmentDTO> attachments) {
+        this.attachments = attachments;
     }
 
     public String getImagePath() {
@@ -148,7 +148,7 @@ public class SaleDTO {
                 ", locationCode=" + locationCode +
                 ", status='" + status + '\'' +
                 ", img='" + img + '\'' +
-                ", imgList=" + imgList +
+                ", attachments=" + attachments +
                 ", imagePath='" + imagePath + '\'' +
                 '}';
     }
