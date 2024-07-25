@@ -135,4 +135,20 @@ public class ShareServiceImpl implements ShareService {
 
         return itemList;
     }
+
+
+    /**
+     * 물건 총 개수 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the item counts
+     * @throws Exception the exception
+     */
+    @Override
+    public int getItemCounts(ShaCriteriaDTO criteriaDTO) throws Exception {
+
+        int totalCount = shareDAO.getItemCounts(sqlSession, criteriaDTO);
+
+        return totalCount;
+    }
 }

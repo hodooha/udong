@@ -74,4 +74,14 @@ public interface ShareService {
      * @since 2024 -07-24
      */
     List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception;
+
+
+    /**
+     * 물건 총 개수 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the item counts
+     * @throws Exception the exception
+     */
+    int getItemCounts(ShaCriteriaDTO criteriaDTO) throws Exception;
 }

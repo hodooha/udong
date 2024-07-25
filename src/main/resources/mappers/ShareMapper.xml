@@ -33,6 +33,12 @@
     <select id="getShaCat" resultMap="shaCatMap">
         select *
         from sha_cat
+        order by
+        case
+            when cat_code = 'OTH' then 1
+            else 0
+        end,
+        cat_code
     </select>
 
     <insert id="insertItem" useGeneratedKeys="true" keyColumn="item_no" keyProperty="itemNo">
@@ -75,6 +81,7 @@
         where a.loc_code = #{locCode}
         and a.item_group = 'rent'
         and a.deleted_at is null
+        order by a.created_at desc
     </select>
 
     <select id="giveItemList" resultMap="shaItemMap">
@@ -92,6 +99,7 @@
         where a.loc_code = #{locCode}
         and a.item_group = 'give'
         and a.deleted_at is null
+        order by a.created_at desc
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
@@ -113,25 +121,45 @@
 
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
-        from sha_items a
-        left join (
-        select target_no, saved_name
         from (
-        select *,
-        row_number() over (partition by target_no order by file_no) as rn
-        from attachment
-        where type_code = #{group}
-        ) sub
-        where rn = 1
+            select b.*,
+                    row_number() over (order by b.created_at desc) as rn
+            from sha_items b
+            <where>
+                <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
+                <if test="group != null and group != ''">and b.item_group = #{group}</if>
+                <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
+                <if test="1 == 1">and b.deleted_at is null</if>
+                <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
+                <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
+            </where>
+        ) a
+        left join (
+            select target_no, saved_name
+            from (
+                select *,
+                    row_number() over (partition by target_no order by file_no) as rn
+                from attachment
+                where type_code = #{group}
+            ) sub
+            where rn = 1
         ) c on a.item_no = c.target_no
-        <where>
-        <if test="locCode != null and locCode != ''">and a.loc_code = #{locCode}</if>
-        <if test="group != null and group != ''">and a.item_group = #{group}</if>
-        <if test="catCode != null and catCode != ''">and a.item_cat_code = #{catCode}</if>
-        <if test="1 == 1">and a.deleted_at is null</if>
-        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
-        </where>
+        where a.rn between #{start} and #{end}
+        order by a.rn
+    </select>
 
+    <select id="getItemCounts" resultType="Integer">
+        select count(*)
+        from
+        sha_items
+        <where>
+            <if test="locCode != null and locCode != ''">and loc_code = #{locCode}</if>
+            <if test="group != null and group != ''">and item_group = #{group}</if>
+            <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
+            <if test="1 == 1">and deleted_at is null</if>
+            <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
+            <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
+        </where>
     </select>
 
 </mapper>
