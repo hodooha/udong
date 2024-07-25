@@ -3,6 +3,7 @@ package com.multi.udong.share.service;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dao.ShareDAO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
+import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -115,5 +116,23 @@ public class ShareServiceImpl implements ShareService {
         item.setImgList(imgList);
 
         return item;
+    }
+
+
+    /**
+     * 물건 검색
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-24
+     */
+    @Override
+    public List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception {
+
+        List<ShaItemDTO> itemList = shareDAO.searchItems(sqlSession, criteriaDTO);
+
+
+        return itemList;
     }
 }

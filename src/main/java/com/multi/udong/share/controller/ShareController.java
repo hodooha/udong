@@ -3,16 +3,14 @@ package com.multi.udong.share.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.share.model.dto.ShaCatDTO;
+import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -145,7 +143,7 @@ public class ShareController {
     public String insertItem(Model model, ShaItemDTO itemDTO, Principal principal, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
 
         fileList = fileList.stream().filter((x) -> x.isEmpty() == false).collect(Collectors.toList());
-        itemDTO.setLocCode(1111010100); // 추후 수정 필요!
+        itemDTO.setLocCode(1111010100L); // 추후 수정 필요!
         itemDTO.setOwnerNo(1); // 추후 수정필요!
 
         try {
@@ -191,6 +189,31 @@ public class ShareController {
         }
 
         return "redirect:/share/rent";
+    }
+
+
+    /**
+     * 물건 검색
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the list
+     * @since 2024 -07-24
+     */
+    @PostMapping("/searchByCat")
+    @ResponseBody
+    public List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO){
+
+        System.out.println(criteriaDTO);
+        List<ShaItemDTO> itemList = null;
+        try {
+            itemList = shareService.searchItems(criteriaDTO);
+            System.out.println(itemList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        return itemList;
     }
 
 }

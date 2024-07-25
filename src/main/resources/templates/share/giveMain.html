@@ -2,6 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
         span{
@@ -43,14 +45,16 @@
 
 <div class="container">
     <h4 class="m-2">All</h4>
+    <input type="hidden" name="group" value="give">
+    <input type="hidden" name="locCode" th:value=1111010100>
     <div class="headBar">
-        <select class="form-select catSelect" name="itemCatCode">
+        <select class="form-select catSelect" name="itemCatCode" onchange="chageCat()">
             <option value="">== 카테고리 선택 ==</option>
             <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
         </select>
         <div class="form-check checkbox">
-            <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
-            <label class="form-check-label" for="flexCheckChecked">
+            <input class="form-check-input" type="checkbox" value="GIV" id="availableCheck" onchange="chageCat()" checked>
+            <label class="form-check-label" for="availableCheck">
                 나눔가능물품만 보기
             </label>
         </div>
@@ -81,6 +85,9 @@
     </div>
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
 <script type="text/javascript" th:src="@{/js/sha.js}"></script>
 </body>
 </html>

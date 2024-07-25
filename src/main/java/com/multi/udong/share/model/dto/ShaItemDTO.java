@@ -23,7 +23,7 @@ public class ShaItemDTO {
     private int ownerNo;
     private String nickName;
     private int level;
-    private int locCode;
+    private Long locCode;
     private String locName;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

@@ -2,6 +2,7 @@ package com.multi.udong.share.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
+import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
 
 import java.util.List;
@@ -62,4 +63,15 @@ public interface ShareService {
      * @since 2024 -07-23
      */
     ShaItemDTO getItemDetail(ShaItemDTO itemDTO) throws Exception;
+
+
+    /**
+     * 물건 검색
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-24
+     */
+    List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception;
 }
