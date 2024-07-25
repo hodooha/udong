@@ -116,7 +116,7 @@
 
     function updateFields(data) {
 
-        console.log(data);
+        console.log("searchAddr: ", data);
 
         let roadAddress = data.roadAddress; // 도로명 주소 변수
         let jibunAddress = data.jibunAddress || data.autoJibunAddress; // 지번 주소 변수
@@ -126,10 +126,11 @@
 
         let roadAddressParts = roadAddress.split(' ');
         searchedRoadAddress = {
-            siDoName: roadAddressParts[0],
             siGunGuName: roadAddressParts[1],
             eupMyeonDongName: roadAddressParts[2]
         };
+
+        console.log("roadAddressParts :", roadAddressParts);
 
         let jibunAddressParts = jibunAddress.split(' ');
         searchedJibunAddress = {
@@ -169,21 +170,23 @@
         geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
             if (status === kakao.maps.services.Status.OK) {
 
-                console.log(result);
+                console.log("currentAddr: ", result);
 
+                let currentRoadAddress = result[0].road_address.address_name;
+                let currentRoadAddressParts = currentRoadAddress.split(' ');
                 currentAddress = {
-                    siDoName: result[0].road_address.region_1depth_name,
-                    siGunGuName: result[0].road_address.region_2depth_name,
-                    eupMyeonDongName: result[0].road_address.region_3depth_name
+                    siGunGuName: currentRoadAddressParts[1],
+                    eupMyeonDongName: currentRoadAddressParts[2]
                 };
                 compareAddresses();
+
+                console.log("currentRoadAddressParts: ", currentRoadAddressParts);
             }
         });
     }
 
     function compareAddresses() {
-        if (searchedRoadAddress.siDoName === currentAddress.siDoName &&
-            searchedRoadAddress.siGunGuName === currentAddress.siGunGuName &&
+        if (searchedRoadAddress.siGunGuName === currentAddress.siGunGuName &&
             searchedRoadAddress.eupMyeonDongName === currentAddress.eupMyeonDongName) {
             document.getElementById("submit-address").disabled = false;
             alert("주소 인증이 완료되었습니다. 등록 완료 버튼을 누르시면 주소가 저장됩니다.");

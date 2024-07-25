@@ -78,7 +78,7 @@ public class LoginController {
      * @since 2024 -07-23
      */
     @PostMapping("/signup")
-    public String signup(MemberDTO memberDTO, HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+    public String signup(MemberDTO memberDTO, HttpServletRequest request, @RequestParam(value = "file", required = false) MultipartFile file) {
 
         Random random = new Random();
         int randomNumber = random.nextInt(100000);
