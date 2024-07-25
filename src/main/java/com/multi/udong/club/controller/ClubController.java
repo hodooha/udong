@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 우동 모임 컨트롤러
+ * 모임 Controller
  *
  * @author 강성현
  * @since 2024 -07-23
@@ -31,7 +31,7 @@ public class ClubController {
     private final ClubService clubService;
 
     /**
-     * 우동 모임 컨트롤러 생성자
+     * 모임 controller 생성자
      *
      * @param clubService the club service
      */
@@ -152,9 +152,9 @@ public class ClubController {
 
         // 로그인된 유저의 no를 principal에서 받아와 모임 생성자(master)로 clubDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
-        MasterDTO masterDTO = new MasterDTO();
-        masterDTO.setMemberNo(memberNo);
-        clubDTO.setMaster(masterDTO);
+        ClubMemberDTO clubMemberDTO = new ClubMemberDTO();
+        clubMemberDTO.setMemberNo(memberNo);
+        clubDTO.setMaster(clubMemberDTO);
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
         // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();

@@ -12,6 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * 모임 service
+ *
+ * @author 강성현
+ * @since 2024 -07-25
+ */
 @Transactional(rollbackFor = {Exception.class})
 @Service
 public class ClubServiceImpl implements ClubService {
@@ -21,10 +27,23 @@ public class ClubServiceImpl implements ClubService {
 
     private final ClubDAO clubDAO;
 
+    /**
+     * 모임 service 생성자
+     *
+     * @param clubDAO the club dao
+     */
     public ClubServiceImpl(ClubDAO clubDAO) {
         this.clubDAO = clubDAO;
     }
 
+
+    /**
+     * 모임의 주제(카테고리) 리스트 조회
+     *
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
     @Override
     public List<CategoryDTO> selectCategoryList() throws Exception {
 
@@ -32,6 +51,15 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+
+    /**
+     * 모임 생성
+     *
+     * @param clubDTO the club dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
     @Override
     public int insertClub(ClubDTO clubDTO) throws Exception {
 
@@ -78,6 +106,15 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+
+    /**
+     * 모임 리스트 조회
+     *
+     * @param filterDTO the filter dto
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
     @Override
     public List<ClubDTO> selectClubList(FilterDTO filterDTO) throws Exception {
 
@@ -85,6 +122,15 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+
+    /**
+     * 모임의 개수 조회
+     *
+     * @param filterDTO the filter dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
     @Override
     public int selectClubCount(FilterDTO filterDTO) throws Exception {
 

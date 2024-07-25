@@ -39,7 +39,7 @@
 
     </resultMap>
 
-    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.MasterDTO">
+    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
 
         <id property="memberNo" column="member_no"/>
         <result property="nickname" column="nickname"/>
