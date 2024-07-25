@@ -189,11 +189,12 @@
     <button class="btn-udh-blue">글 작성</button></a>
 </div>
 
-
-<div class="search-container">
-    <input type="text" class="search-input" placeholder="검색어를 입력하세요.">
-    <button class="search-button">검색</button>
-</div>
+<form method="GET" th:action="@{/sale/saleMain}">
+    <div class="search-container">
+        <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요." th:value="${param.search}">
+        <button class="search-button" type="submit">검색</button>
+    </div>
+</form>
 <div class="sale-cards" id="saleCards">
 
     <div th:each="sale : ${sales}" class="sale-card">

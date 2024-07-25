@@ -52,5 +52,10 @@ public class SaleDAO {
         return sqlSession.selectList("SaleMapper.getAllSalesWithAttachments");
     }
 
+    public List<SaleDTO> search(SqlSessionTemplate sqlSession, String keyword) {
+        return sqlSession.selectList("SaleMapper.searchSales", keyword);
+    }
+
+
 
 }

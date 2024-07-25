@@ -50,5 +50,13 @@
         ORDER BY s.sale_no DESC
     </select>
 
+    <select id="searchSales" resultMap="saleWithAttachment">
+        SELECT s.*, a.*
+        FROM SAL s
+        LEFT JOIN ATTACHMENT a ON s.sale_no = a.target_no AND a.type_code = 'SAL'
+        WHERE s.title LIKE CONCAT('%', #{keyword}, '%') OR s.content LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY s.sale_no DESC
+    </select>
+
 
 </mapper>

@@ -29,5 +29,6 @@ public interface SaleService {
      */
 
     List<SaleDTO> getAllSalesWithAttachments(); //모든 판매정보 조회 메서드
+    List<SaleDTO> search(String keyword);
 
 }

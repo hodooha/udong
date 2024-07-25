@@ -41,4 +41,8 @@ public class SaleServiceImpl implements SaleService {
         }
         return sales;
     }
+    @Override
+    public List<SaleDTO> search(String keyword) {
+        return saleDAO.search(sqlSession, keyword);
+    }
 }
