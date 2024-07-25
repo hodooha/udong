@@ -92,7 +92,7 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="margin: 40px;">
+<div class="content" style="padding: 40px;">
     <form action="insertClub" method="post" encType="multipart/form-data">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="insert-area">

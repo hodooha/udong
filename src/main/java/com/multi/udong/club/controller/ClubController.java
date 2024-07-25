@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -152,9 +153,9 @@ public class ClubController {
 
         // 로그인된 유저의 no를 principal에서 받아와 모임 생성자(master)로 clubDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
-        ClubMemberDTO clubMemberDTO = new ClubMemberDTO();
-        clubMemberDTO.setMemberNo(memberNo);
-        clubDTO.setMaster(clubMemberDTO);
+        MasterDTO masterDTO = new MasterDTO();
+        masterDTO.setMemberNo(memberNo);
+        clubDTO.setMaster(masterDTO);
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
         // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
@@ -196,8 +197,13 @@ public class ClubController {
             attachmentDTO.setSavedName(savedName);
             attachmentDTO.setTypeCode("CL");
 
-            // 그 attachmentDTO를 clubDTO에 set
-            clubDTO.setAttachment(attachmentDTO);
+            // 리스트에 그 attachmentDTO를 add
+            // 이미지 한 개라 index는 0 밖에 없음
+            List<AttachmentDTO> attachmentList = new ArrayList<>();
+            attachmentList.add(attachmentDTO);
+
+            // attachmentList를 clubDTO에 set
+            clubDTO.setAttachment(attachmentList);
 
             try {
 
@@ -221,6 +227,8 @@ public class ClubController {
 
         try {
 
+            System.out.println("###### insert할 모임 데이터: " + clubDTO);
+
             // service의 모임 insert 메소드 호출
             clubService.insertClub(clubDTO);
 
@@ -239,6 +247,48 @@ public class ClubController {
             new File(filePath + "/" + savedName).delete();
 
             model.addAttribute("msg", "모임 생성 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 모임 홈 조회
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-26
+     */
+    @RequestMapping("/clubHome")
+    public String clubHome(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        System.out.println("###### 상세 조회할 모임 no: " + requestDTO.getClubNo());
+
+        try {
+
+            // service의 모임 홈 select 메소드 호출
+            ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
+
+            System.out.println("###### 가져온 clubHome: " + clubDTO);
+
+            model.addAttribute("clubHome", clubDTO);
+
+            return "club/clubHome";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 홈 조회 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
 

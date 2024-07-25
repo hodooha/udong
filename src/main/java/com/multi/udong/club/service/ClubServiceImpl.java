@@ -4,6 +4,7 @@ import com.multi.udong.club.model.dao.ClubDAO;
 import com.multi.udong.club.model.dto.CategoryDTO;
 import com.multi.udong.club.model.dto.ClubDTO;
 import com.multi.udong.club.model.dto.FilterDTO;
+import com.multi.udong.club.model.dto.RequestDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +71,7 @@ public class ClubServiceImpl implements ClubService {
 
         // insert한 모임no를 targetNo에 set한 후 모임 이미지 insert
         int clubNo = clubDTO.getClubNo();
-        AttachmentDTO attachmentDTO = clubDTO.getAttachment();
+        AttachmentDTO attachmentDTO = clubDTO.getAttachment().get(0);
         attachmentDTO.setTargetNo(clubNo);
         int attachmentResult = clubDAO.insertClubImg(sqlSession, attachmentDTO);
 
@@ -135,6 +136,22 @@ public class ClubServiceImpl implements ClubService {
     public int selectClubCount(FilterDTO filterDTO) throws Exception {
 
         return clubDAO.selectClubCount(sqlSession, filterDTO);
+
+    }
+
+
+    /**
+     * 모임 홈 조회
+     *
+     * @param requestDTO the request dto
+     * @return the club dto
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
+    @Override
+    public ClubDTO selectClubHome(RequestDTO requestDTO) throws Exception {
+
+        return clubDAO.selectClubHome(sqlSession, requestDTO);
 
     }
 

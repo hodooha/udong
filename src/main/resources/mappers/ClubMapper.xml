@@ -15,11 +15,13 @@
         <result property="chatroomCode" column="chatroom_code"/>
         <result property="createdAt" column="created_at"/>
         <result property="modifiedAt" column="modified_at"/>
+        <result property="joinStatus" column="join_status"/>
 
         <association property="category" resultMap="categoryResultMap"/>
         <association property="location" resultMap="locationResultMap"/>
         <association property="master" resultMap="masterResultMap"/>
-        <association property="attachment" resultMap="attachmentResultMap"/>
+
+        <collection property="attachment" resultMap="attachmentResultMap"/>
 
     </resultMap>
     
@@ -39,10 +41,10 @@
 
     </resultMap>
 
-    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.MasterDTO">
 
-        <id property="memberNo" column="member_no"/>
-        <result property="nickname" column="nickname"/>
+        <id property="memberNo" column="master"/>
+        <result property="nickname" column="master_nickname"/>
 
     </resultMap>
 
@@ -53,6 +55,13 @@
         <result property="targetNo" column="target_no"/>
         <result property="originalName" column="original_name"/>
         <result property="savedName" column="saved_name"/>
+
+    </resultMap>
+
+    <resultMap id="clubMemberResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+
+        <id property="memberNo" column="member_no"/>
+        <result property="nickname" column="member_nickname"/>
 
     </resultMap>
 
@@ -147,6 +156,22 @@
         <if test="searchWord != null and searchWord != ''">
             AND club_name LIKE CONCAT('%', #{ searchWord }, '%')
         </if>
+    </select>
+
+    <select id="selectClubHome" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="clubResultMap">
+        SELECT
+            A.*,
+            B.category_name,
+            C.*,
+            (SELECT D.nickname FROM MEMBER D WHERE D.member_no = A.master) AS master_nickname,
+            (SELECT COUNT(*) FROM CL_MEMBER E WHERE E.club_no = A.club_no) AS current_personnel,
+            (SELECT E.join_status FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.member_no = #{ memberNo }) AS join_status,
+            F.*
+        FROM CL A
+        LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
+        LEFT JOIN LOCATION C ON A.location_code = C.location_code
+        LEFT JOIN ATTACHMENT F ON 'CL' = F.type_code AND A.club_no = F.target_no
+        WHERE A.club_no = #{ clubNo }
     </select>
 
 </mapper>
