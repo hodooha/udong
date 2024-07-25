@@ -39,7 +39,7 @@
             white-space: nowrap;
         }
         .nav-menu li {
-            margin-right: 40px;
+            margin-right: 35px;
         }
         .nav-menu li:last-child {
             margin-right: 0;
@@ -90,7 +90,7 @@
         }
         .auth-links span {
             margin: 0 5px;
-            color: #ccc;
+            color: #000;
         }
     </style>
 </head>
@@ -111,24 +111,26 @@
         </nav>
     </div>
     <div class="right-section">
-        <div class="location-btn">
-            <svg class="location-icon" viewBox="0 0 24 24" width="16" height="16">
-                <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            대방동
-        </div>
-        <div class="user-icon" th:if="${#authorization.expression('isAuthenticated()')}">
-            <img th:src="@{/img/defaultProfile.png}" class="user-icon">
-        </div>
-        <div class="auth-links">
-            <th:block th:if="${#authorization.expression('isAuthenticated()')}">
-                <a href="/myPage" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
+        <th:block th:if="${#authorization.expression('isAuthenticated()')}">
+            <div class="location-btn">
+                <svg class="location-icon" viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                <div sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></div>
+            </div>
+            <div class="user-icon">
+                <img th:src="@{/img/defaultProfile.png}" class="user-icon">
+            </div>
+            <div class="auth-links">
+                <a href="/member/dashBoard" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
                 <span>|</span>
                 <a href="#" onclick="document.getElementById('logoutForm').submit();">로그아웃</a>
                 <form id="logoutForm" method="post" action="/logout" style="display:none;">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 </form>
-            </th:block>
+            </div>
+        </th:block>
+        <div class="auth-links">
             <th:block th:unless="${#authorization.expression('isAuthenticated()')}">
                 <a href="/login">로그인</a>
                 <span>|</span>

@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
 </head>
 <body>
-<h1>로그인 처리 중입니다. 잠시만 기다려주세요.</h1>
+    <form id="loginForm" action="/login" method="post">
+        <input type="hidden" name="memberId" th:value="${member.memberId}" />
+        <input type="hidden" name="memberPw" th:value="${member.memberPw}" />
+    </form>
 </body>
-<script>
+<script th:inline="javascript">
     window.onload = function() {
-        window.opener.location.href = "/";
-        window.close();
+        var loginForm = document.getElementById('loginForm');
+        var formData = new FormData(loginForm);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/login', true);
+        xhr.setRequestHeader('X-CSRF-TOKEN', [[${_csrf.token}]]);
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                window.opener.location.href = '/';
+                window.close();
+            } else {
+                console.error('Login failed');
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error('Request failed');
+        };
+
+        xhr.send(formData);
     }
 </script>
 </html>

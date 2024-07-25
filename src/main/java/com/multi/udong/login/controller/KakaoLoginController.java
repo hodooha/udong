@@ -1,4 +1,4 @@
-package com.multi.udong.member.controller;
+package com.multi.udong.login.controller;
 
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberServiceImpl;
@@ -46,12 +46,12 @@ public class KakaoLoginController {
 	// 카카오 회원 가입
 	@PostMapping("/kakaoSignUp")
     @ResponseBody
-    public ResponseEntity<?> kakaoSignUp(MemberDTO m) {
+    public ResponseEntity<?> kakaoSignUp(MemberDTO memberDTO) {
 		String kakaoPw = "kakaoPw1234";
-		m.setMemberPw(kakaoPw);
+		memberDTO.setMemberPw(kakaoPw);
 
 		try {
-			memberService.signup(m);
+			memberService.signup(memberDTO);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

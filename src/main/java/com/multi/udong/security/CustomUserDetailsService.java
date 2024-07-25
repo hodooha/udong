@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 /**
+ * The type Custom user details service.
+ *
  * @author : 재식
  * @since : 24. 7. 22.
  */
@@ -17,6 +19,14 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailsService implements UserDetailsService {
     private final MemberDAO memberDAO;
 
+    /**
+     * Load user by username user details.
+     *
+     * @param memberId the member id
+     * @return the user details
+     * @throws UsernameNotFoundException the username not found exception
+     * @since 2024 -07-22
+     */
     @Override
     public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 

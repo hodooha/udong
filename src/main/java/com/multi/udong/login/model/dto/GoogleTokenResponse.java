@@ -1,4 +1,4 @@
-package com.multi.udong.member.model.dto;
+package com.multi.udong.login.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

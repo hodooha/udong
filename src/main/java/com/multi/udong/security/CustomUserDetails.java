@@ -12,6 +12,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
+ * The type Custom user details.
+ *
  * @author : 재식
  * @since : 24. 7. 22.
  */

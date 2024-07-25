@@ -6,14 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
@@ -81,7 +83,17 @@ public class SpringSecurityConfig {
                         .usernameParameter("memberId")
                         .passwordParameter("memberPw")
                         .defaultSuccessUrl("/", true)
-                        .failureUrl("/login?error=true")
+                        .failureHandler((request, response, exception) -> {
+                            String errorMessage;
+                            if (exception instanceof BadCredentialsException) {
+                                errorMessage = "비밀번호가 올바르지 않습니다.";
+                            } else if (exception instanceof UsernameNotFoundException) {
+                                errorMessage = "존재하지 않는 아이디입니다.";
+                            } else {
+                                errorMessage = "로그인에 실패했습니다.";
+                            }
+                            response.sendRedirect("/login?error=true&message=" + URLEncoder.encode(errorMessage, "UTF-8"));
+                        })
                         .permitAll()
                 )
                 .logout((logout) -> logout
@@ -96,12 +108,6 @@ public class SpringSecurityConfig {
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
                         .expiredUrl("/")
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-                )
-                .sessionManagement(session -> session
-                        .invalidSessionUrl("/login")
                 )
                 .userDetailsService(customUserDetailsService);
         return http.build();
