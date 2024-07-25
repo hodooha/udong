@@ -192,9 +192,11 @@
         <div class="bus-reg">
             <img class="preview" id="preview">
             <input type="file" name="file" id="bus-reg-input" accept="image/*" disabled="disabled">
+            <br><h3>사업자등록증 업로드</h3>
         </div>
     </div>
 </form>
+<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -354,8 +356,8 @@
             button.addEventListener('click', () => clearInput(inputs[index]));
         });
     });
-</script>
-<script> // 이미지 미리보기
+</script> <!--유효성 검사 스크립트-->
+<script>
     const fileInput = document.getElementById('bus-reg-input');
     const preview = document.getElementById('preview');
 
@@ -376,5 +378,13 @@
             }
         }
     });
-</script>
+</script> <!--이미지 미리보기 스크립트-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!--msg alert-->
 </html>

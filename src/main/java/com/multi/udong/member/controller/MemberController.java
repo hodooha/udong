@@ -32,7 +32,8 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/dashBoard")
-    public void dashBoard(){}
+    public void dashBoard() {
+    }
 
     /**
      * Mem info.
@@ -40,16 +41,29 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/memInfo")
-    public void memInfo(){}
+    public void memInfo() {
+    }
 
     /**
      * Address.
      *
+     * @param c     the c
      * @param model the model
      * @since 2024 -07-24
      */
     @GetMapping("/address")
-    public void address(Model model) {
+    public void address(@AuthenticationPrincipal CustomUserDetails c, Model model) {
+        if (c != null) {
+            MemAddressDTO addressDTO = c.getMemberDTO().getMemAddressDTO();
+            String currentFullAddress = null;
+            if (addressDTO.getLocationCode() != null) {
+                currentFullAddress = addressDTO.getSiDoName() + " " +
+                        addressDTO.getSiGunGuName() + " " +
+                        addressDTO.getEupMyeonDongName() + " " +
+                        (addressDTO.getDetailAddress() != null ? addressDTO.getDetailAddress() : "");
+            }
+            model.addAttribute("currentFullAddress", currentFullAddress);
+        }
         model.addAttribute("kakaoApiKey", kakaoLoginController.getKakaoApiKey());
     }
 
@@ -59,7 +73,8 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/act")
-    public void act(){}
+    public void act() {
+    }
 
     /**
      * Message.
@@ -67,7 +82,8 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/message")
-    public void message(){}
+    public void message() {
+    }
 
     /**
      * Noti set.
@@ -75,7 +91,8 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/notiSet")
-    public void notiSet(){}
+    public void notiSet() {
+    }
 
     /**
      * Mem del.
@@ -83,25 +100,54 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/memDel")
-    public void memDel(){}
+    public void memDel() {
+    }
 
     /**
      * Insert address string.
      *
      * @param c             the c
      * @param memAddressDTO the mem address dto
+     * @param model         the model
      * @return the string
      * @since 2024 -07-25
      */
     @PostMapping("/insertAddress")
-    public String insertAddress(@AuthenticationPrincipal CustomUserDetails c, MemAddressDTO memAddressDTO) {
+    public String insertAddress(@AuthenticationPrincipal CustomUserDetails c,
+                                MemAddressDTO memAddressDTO,
+                                Model model) {
+        Long currentLocationCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+        System.out.println("currentLocationCode:" + currentLocationCode);
+        if (currentLocationCode == null) {
+            memAddressDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+            try {
+                memberService.insertAddress(memAddressDTO);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            memberService.updateMemberSession();
+        } else {
+            updateAddress(c, memAddressDTO);
+            model.addAttribute("msg", "주소 수정이 완료되었습니다.");
+        }
+
+        return "member/address";
+    }
+
+    /**
+     * Update address string.
+     *
+     * @param c             the c
+     * @param memAddressDTO the mem address dto
+     * @since 2024 -07-25
+     */
+    public void updateAddress(@AuthenticationPrincipal CustomUserDetails c, MemAddressDTO memAddressDTO) {
         memAddressDTO.setMemberNo(c.getMemberDTO().getMemberNo());
         try {
-            memberService.insertAddress(memAddressDTO);
+            memberService.updateAddress(memAddressDTO);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        memberService.updateMemberSession(c.getMemberDTO().getMemberId());
-        return "member/address";
+        memberService.updateMemberSession();
     }
 }

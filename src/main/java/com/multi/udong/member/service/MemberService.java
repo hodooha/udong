@@ -18,5 +18,7 @@ public interface MemberService {
 
     void insertAddress(MemAddressDTO memAddressDTO) throws Exception;
 
-    void updateMemberSession(String memberId);
+    void updateMemberSession();
+
+    void updateAddress(MemAddressDTO memAddressDTO) throws Exception;
 }

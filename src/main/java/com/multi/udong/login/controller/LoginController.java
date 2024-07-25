@@ -74,11 +74,15 @@ public class LoginController {
      * @param memberDTO the memberDTO
      * @param request   the request
      * @param file      the file
+     * @param model     the model
      * @return the string
      * @since 2024 -07-23
      */
     @PostMapping("/signup")
-    public String signup(MemberDTO memberDTO, HttpServletRequest request, @RequestParam(value = "file", required = false) MultipartFile file) {
+    public String signup(MemberDTO memberDTO,
+                         HttpServletRequest request,
+                         @RequestParam(value = "file", required = false) MultipartFile file,
+                         Model model) {
 
         Random random = new Random();
         int randomNumber = random.nextInt(100000);
@@ -162,6 +166,7 @@ public class LoginController {
 
         try {
             memberService.signup(memberDTO);
+            model.addAttribute("msg","회원가입이 완료되었습니다.");
             return "redirect:/login";
         } catch (Exception e) {
             return "redirect:/signup";

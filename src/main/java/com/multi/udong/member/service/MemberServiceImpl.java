@@ -8,6 +8,7 @@ import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -117,13 +118,40 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * 시큐리티 세션 업데이트
+     * Update address.
      *
-     * @param memberId the member id
+     * @param memAddressDTO the mem address dto
      * @since 2024 -07-25
      */
     @Override
-    public void updateMemberSession(String memberId) {
+    public void updateAddress(MemAddressDTO memAddressDTO) throws Exception {
+        Long locationCode = memberDAO.findCodeByAddress(memAddressDTO);
+
+        if (locationCode != null) {
+            memAddressDTO.setLocationCode(locationCode);
+            int result = memberDAO.updateAddress(memAddressDTO);
+
+            if (result != 1) {
+                throw new Exception("주소 등록에 실패하였습니다.");
+            }
+
+        } else {
+            throw new Exception("주소가 유효하지 않습니다.");
+        }
+    }
+
+    /**
+     * Update member session.
+     *
+     * @since 2024 -07-25
+     */
+    @Override
+    public void updateMemberSession() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails c = (CustomUserDetails) authentication.getPrincipal();
+        String memberId = c.getMemberDTO().getMemberId();
+
         CustomUserDetails customUserDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(memberId);
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(

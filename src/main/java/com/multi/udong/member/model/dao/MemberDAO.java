@@ -23,4 +23,6 @@ public interface MemberDAO{
     int insertAddress(MemAddressDTO memAddressDTO);
 
     Long findCodeByAddress(MemAddressDTO memAddressDTO);
+
+    int updateAddress(MemAddressDTO memAddressDTO);
 }
