@@ -35,6 +35,9 @@ public class LoginController {
     /**
      * Login string.
      *
+     * @param error   the error
+     * @param message the message
+     * @param model   the model
      * @return the string
      * @since 2024 -07-23
      */
@@ -68,21 +71,21 @@ public class LoginController {
     /**
      * Signup string.
      *
-     * @param m       the m
-     * @param request the request
-     * @param file    the file
+     * @param memberDTO the memberDTO
+     * @param request   the request
+     * @param file      the file
      * @return the string
      * @since 2024 -07-23
      */
     @PostMapping("/signup")
-    public String signup(MemberDTO m, HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+    public String signup(MemberDTO memberDTO, HttpServletRequest request, @RequestParam("file") MultipartFile file) {
 
         Random random = new Random();
         int randomNumber = random.nextInt(100000);
         String randomNickname = String.format("member-%05d", randomNumber);
-        m.setNickname(randomNickname);
+        memberDTO.setNickname(randomNickname);
 
-        System.out.println("m" + m);
+        System.out.println("memberDTO" + memberDTO);
 
         if (file != null && !file.isEmpty()) {
             // 파일명 랜덤 저장
@@ -146,7 +149,7 @@ public class LoginController {
                     memBusDTO.setBusinessNumber(b_no);
                     memBusDTO.setRepresentativeName(p_nm);
                     memBusDTO.setOpeningDate(start_dt);
-                    memberService.signupSeller(m, memBusDTO);
+                    memberService.signupSeller(memberDTO, memBusDTO);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -158,7 +161,7 @@ public class LoginController {
         }
 
         try {
-            memberService.signup(m);
+            memberService.signup(memberDTO);
             return "redirect:/login";
         } catch (Exception e) {
             return "redirect:/signup";

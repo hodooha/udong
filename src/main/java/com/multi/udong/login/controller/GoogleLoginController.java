@@ -65,17 +65,17 @@ public class GoogleLoginController {
             String googleEmail = googleUserInfo.getEmail();
             String googleNickname = googleUserInfo.getName();
 
-            MemberDTO m = new MemberDTO();
-            m.setMemberId(googleMemberId);
-            m.setMemberPw(googleMemberPw);
-            m.setEmail(googleEmail);
-            m.setNickname(googleNickname);
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setMemberId(googleMemberId);
+            memberDTO.setMemberPw(googleMemberPw);
+            memberDTO.setEmail(googleEmail);
+            memberDTO.setNickname(googleNickname);
 
             if (memberDAO.findMemberById(googleMemberId) == null) {
-                memberService.signup(m);
+                memberService.signup(memberDTO);
             }
 
-            model.addAttribute("member", m);
+            model.addAttribute("member", memberDTO);
         }
         return "member/googleClose";
     }

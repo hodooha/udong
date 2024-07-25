@@ -4,26 +4,51 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+        body {
+            font-size: 20px;
+        }
         .sidebar {
-            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
             border: 1px solid #000000;
             border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
-            margin: 10px;
+            margin: 40px;
+            font-size: 20px;
         }
-        .side-menu ul {
+        .sidebar ul {
             list-style: none;
+            padding: 0;
+            margin: 0;
         }
         .sidebar ul li {
-            margin-left: 10px;
+            margin-bottom: 0.5rem;
         }
         .sidebar ul li a {
             text-decoration: none;
+            color: #333;
             display: block;
             padding: 10px;
+            border-radius: 8px;
+            white-space: nowrap;
+            width: 90%;
+
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
         .sidebar ul li a:hover {
+            color: white;
             background-color: #FFB83D;
+            transform: translateX(10px);
+        }
+        .sidebar ul li:last-child a {
+            color: #e74c3c;
+        }
+        .sidebar ul li:last-child a:hover {
+            color: white;
+            background-color: #e74c3c;
         }
     </style>
 </head>

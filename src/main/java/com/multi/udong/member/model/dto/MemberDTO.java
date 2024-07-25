@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * The type Member dto.
+ *
  * @author : 재식
  * @since : 24. 7. 21.
  */

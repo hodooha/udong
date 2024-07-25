@@ -2,9 +2,37 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.multi.udong.member.model.dao.MemberDAO">
 
+    <resultMap id="memberResultMap" type="memberDTO">
+        <id property="memberNo" column="member_no"/>
+        <result property="memberId" column="member_id"/>
+        <result property="memberPw" column="member_pw"/>
+        <result property="nickname" column="nickname"/>
+        <result property="phone" column="phone"/>
+        <result property="email" column="email"/>
+        <result property="authority" column="authority"/>
+        <result property="signupAt" column="signup_at"/>
+        <result property="modifiedAt" column="modified_at"/>
+        <result property="score" column="score"/>
+        <result property="level" column="level"/>
+        <result property="lastLoginAt" column="last_login_at"/>
+        <result property="reportedCnt" column="reported_cnt"/>
+        <result property="isBlacked" column="is_blacked"/>
+        <result property="blackedAt" column="blacked_at"/>
+        <association property="memAddressDTO" javaType="memAddressDTO">
+            <result property="memberNo" column="member_no"/>
+            <result property="siDoName" column="si_do_name"/>
+            <result property="siGunGuName" column="si_gun_gu_name"/>
+            <result property="eupMyeonDongName" column="eup_myeon_dong_name"/>
+            <result property="detailAddress" column="detail_address"/>
+            <result property="locationCode" column="location_code"/>
+            <result property="createdAt" column="created_at"/>
+            <result property="modifiedAt" column="modified_at"/>
+        </association>
+    </resultMap>
+
     <!--시큐리티 쿼리-->
-    <select id="findMemberById" resultType="memberDTO">
-        SELECT m.*, ma.location_code
+    <select id="findMemberById" resultMap="memberResultMap">
+        SELECT m.*, ma.*
         FROM MEMBER m
         LEFT JOIN MEM_ADDRESS ma ON m.member_no = ma.member_no
         WHERE m.member_id = #{memberId}
@@ -24,4 +52,18 @@
         INSERT INTO MEM_BUS (member_no, business_number, representative_name, opening_date) VALUES
         (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
     </insert>
+
+    <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">
+        SELECT location_code
+        FROM LOCATION
+        WHERE si_do_name = #{siDoName}
+        AND si_gun_gu_name = #{siGunGuName}
+        AND eup_myeon_dong_name = #{eupMyeonDongName}
+    </select>
+
+    <insert id="insertAddress" parameterType="memAddressDTO">
+        INSERT INTO MEM_ADDRESS (member_no, si_do_name, si_gun_gu_name, eup_myeon_dong_name, detail_address, location_code) VALUES
+        (#{memberNo}, #{siDoName}, #{siGunGuName}, #{eupMyeonDongName}, #{detailAddress}, #{locationCode})
+    </insert>
+
 </mapper>

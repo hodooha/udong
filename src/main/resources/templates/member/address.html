@@ -1,116 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY&libraries=services"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var KakaoApiKey = /*[[${KakaoApiKey}]]*/ 'default';
+        /*]]>*/
+        console.log("KakaoApiKey:",KakaoApiKey);
+    </script>
+    <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoApiKey} + '&libraries=services'}"></script>
     <style>
         main {
             display: flex;
             flex: 1;
             overflow: hidden;
+            flex-wrap: wrap; <!--flex : 공간이 부족하면 다음 줄로 넘어감-->
+            gap: 20px;
         }
         .body {
             display: flex;
-            flex-direction: column;
-        }
-        .address {
-            display: flex;
-            flex: 1;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
+            min-height: 100vh;
+        }
+        .address-insert {
             text-align: center;
             border: 1px solid #000000;
             border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            height: auto;
-            margin: 10px 10px 0 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            margin: 40px 40px 40px 0;
             padding: 20px;
         }
         .input-group {
+            display: flex;
+            flex-direction: column;
             width: 100px;
+            gap: 1rem;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="text"]:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1rem;
         }
         .btn {
             width: 100px;
+            flex: 1;
         }
     </style>
 </head>
 <body>
-    <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/menubar}"></div>
     <main>
     <div th:replace="~{/member/sidebar}"></div>
-        <div class="address">
+        <div class="address-insert">
             <h2>주소 등록</h2>
             <form action="/member/insertAddress" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="input-group">
-                    <input type="text" name="address" id="address" placeholder="검색을 클릭해 주소를 입력하세요." disabled="disabled">
-                    <button class="btn btn-udh-blue" type="button" id="search-address">주소 검색</button>
-                    <button class="btn btn-udh-blue" type="button" id="check-address">위치 인증</button>
-                    <button class="btn btn-udh-blue" type="submit" id="submit-address">등록 완료</button>
+                    <input type="text" name="roadAddress" id="roadAddress" placeholder="도로명주소" readonly>
+                    <input type="text" name="jibunAddress" id="jibunAddress" placeholder="지번주소" readonly>
+
+                    <div class="button-group">
+                        <button class="btn btn-udh-yellow" type="button" id="search-address">주소 검색</button>
+                        <button class="btn btn-udh-yellow" type="button" id="check-address" disabled>위치 인증</button>
+                        <button class="btn btn-udh-yellow" type="submit" id="submit-address" disabled>등록 완료</button>
+                    </div>
+
+                    <input type="hidden" name="siDoName" id="siDoName">
+                    <input type="hidden" name="siGunGuName" id="siGunGuName">
+                    <input type="hidden" name="eupMyeonDongName" id="eupMyeonDongName">
+                    <input type="hidden" name="detailAddress" id="detailAddress">
                 </div>
             </form>
         </div>
     </main>
 </body>
 <script>
+    let searchedAddress = null;
+    let currentAddress = null;
+
     document.addEventListener('DOMContentLoaded', function() {
         const searchAddressBtn = document.getElementById('search-address');
         const checkAddressBtn = document.getElementById('check-address');
+        const submitAddressBtn = document.getElementById('submit-address');
 
         searchAddressBtn.addEventListener('click', DaumPostcode);
         checkAddressBtn.addEventListener('click', checkCurrentLocation);
     });
 
-    // search-address 클릭 시 카카오 주소 API 이벤트
     function DaumPostcode() {
         new daum.Postcode({
-            oncomplete: function(data) {
-                // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-
-                // 도로명 주소의 노출 규칙에 따라 주소를 표시한다.
-                // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-                var roadAddr = data.roadAddress; // 도로명 주소 변수
-                var extraRoadAddr = ''; // 참고 항목 변수
-
-                // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-                    extraRoadAddr += data.bname;
-                }
-                // 건물명이 있고, 공동주택일 경우 추가한다.
-                if(data.buildingName !== '' && data.apartment === 'Y'){
-                   extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                }
-                // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-                if(extraRoadAddr !== ''){
-                    extraRoadAddr = ' (' + extraRoadAddr + ')';
-                }
-
-                // 우편번호와 주소 정보를 해당 필드에 넣는다.
-                document.getElementById("address").value = roadAddr;
-            }
+            oncomplete: updateFields
         }).open();
     }
 
-    // check-address 클릭 시 현재 주소 불러옴, 카카오 주소와 일치 확인
+    function updateFields(data) {
+
+        console.log(data);
+
+        let roadAddress = data.roadAddress; // 도로명 주소 변수
+        let jibunAddress = data.jibunAddress || data.autoJibunAddress; // 지번 주소 변수
+
+        document.getElementById("roadAddress").value = roadAddress;
+        document.getElementById("jibunAddress").value = jibunAddress;
+
+        let roadAddressParts = roadAddress.split(' ');
+        searchedRoadAddress = {
+            siDoName: roadAddressParts[0],
+            siGunGuName: roadAddressParts[1],
+            eupMyeonDongName: roadAddressParts[2]
+        };
+
+        let jibunAddressParts = jibunAddress.split(' ');
+        searchedJibunAddress = {
+            siDoName: jibunAddressParts[0],
+            siGunGuName: jibunAddressParts[1],
+            eupMyeonDongName: jibunAddressParts[2],
+            detailAddress: jibunAddressParts.slice(3).join(' ')
+        };
+
+        document.getElementById("siDoName").value = searchedJibunAddress.siDoName;
+        document.getElementById("siGunGuName").value = searchedJibunAddress.siGunGuName;
+        document.getElementById("eupMyeonDongName").value = searchedJibunAddress.eupMyeonDongName;
+        document.getElementById("detailAddress").value = searchedJibunAddress.detailAddress;
+
+        document.getElementById("check-address").disabled = false;
+        document.getElementById("submit-address").disabled = true;
+    }
+
     function checkCurrentLocation() {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
-                var lat = position.coords.latitude,
-                    lon = position.coords.longitude;
-                    console.log("lat:",lat);
-                    console.log("lon:",lon);
+                let lat = position.coords.latitude,
+                    lng = position.coords.longitude;
+                getAddr(lat, lng);
             }, function(error) {
                 console.error("Error: " + error.message);
-                alert("위치 정보를 가져오는데 실패했습니다.");
+                alert("위치 정보를 가져오는데 실패했습니다. 위치 권한을 확인해주세요.");
             });
         } else {
             alert("이 브라우저에서는 Geolocation이 지원되지 않습니다.");
         }
     }
-</script>
+
+    function getAddr(lat,lng){
+        let geocoder = new kakao.maps.services.Geocoder();
+        let coord = new kakao.maps.LatLng(lat, lng);
+        geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+
+                console.log(result);
+
+                currentAddress = {
+                    siDoName: result[0].road_address.region_1depth_name,
+                    siGunGuName: result[0].road_address.region_2depth_name,
+                    eupMyeonDongName: result[0].road_address.region_3depth_name
+                };
+                compareAddresses();
+            }
+        });
+    }
+
+    function compareAddresses() {
+        if (searchedRoadAddress.siDoName === currentAddress.siDoName &&
+            searchedRoadAddress.siGunGuName === currentAddress.siGunGuName &&
+            searchedRoadAddress.eupMyeonDongName === currentAddress.eupMyeonDongName) {
+            document.getElementById("submit-address").disabled = false;
+            alert("주소 인증이 완료되었습니다. 등록 완료 버튼을 누르시면 주소가 저장됩니다.");
+        } else {
+            alert("현재 주소가 입력된 주소와 일치하지 않습니다.");
+        }
+    }
+</script> <!--주소 등록 스크립트-->
 </html>

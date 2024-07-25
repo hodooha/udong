@@ -4,7 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
+ * The type Mem address dto.
+ *
  * @author : 재식
  * @since : 24. 7. 23.
  */
@@ -13,9 +17,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MemAddressDTO {
     private Integer memberNo;
-    private String address;
-    private String detailedAddress;
+    private String siDoName;
+    private String siGunGuName;
+    private String eupMyeonDongName;
+    private String detailAddress;
     private Long locationCode;
-    private String createdAt;
-    private String modifiedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 }
