@@ -31,12 +31,18 @@ public class SaleController {
     }
 
     @GetMapping("/saleMain")
-    public String saleMain(Model model,  @RequestParam(value = "search", required = false) String search) {
+    public String saleMain(Model model,
+                           @RequestParam(value = "search", required = false) String search,
+                           @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired) {
         List<SaleDTO> sales;
         if (search == null || search.isEmpty()) {
-            sales = saleService.getAllSalesWithAttachments();
+            if (Boolean.TRUE.equals(excludeExpired)) {
+                sales = saleService.getAllActiveWithAttachments();
+            } else {
+                sales = saleService.getAllSalesWithAttachments();
+            }
         } else {
-            sales = saleService.search(search);
+            sales = saleService.search(search, excludeExpired);
         }
         model.addAttribute("sales", sales);
         return "sale/saleMain";

@@ -42,7 +42,12 @@ public class SaleServiceImpl implements SaleService {
         return sales;
     }
     @Override
-    public List<SaleDTO> search(String keyword) {
-        return saleDAO.search(sqlSession, keyword);
+    public List<SaleDTO> getAllActiveWithAttachments() {
+        return saleDAO.getAllActiveWithAttachments(sqlSession);
+    }
+
+    @Override
+    public List<SaleDTO> search(String keyword, Boolean excludeExpired) {
+        return saleDAO.search(sqlSession, keyword, excludeExpired);
     }
 }

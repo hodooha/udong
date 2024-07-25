@@ -5,7 +5,9 @@ import com.multi.udong.sale.model.dto.SaleDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Sale dao.
@@ -53,7 +55,17 @@ public class SaleDAO {
     }
 
     public List<SaleDTO> search(SqlSessionTemplate sqlSession, String keyword) {
-        return sqlSession.selectList("SaleMapper.searchSales", keyword);
+        return search(sqlSession, keyword, false);
+    }
+    public List<SaleDTO> getAllActiveWithAttachments(SqlSessionTemplate sqlSession) {
+        return sqlSession.selectList("SaleMapper.getAllActiveWithAttachments");
+    }
+
+    public List<SaleDTO> search(SqlSessionTemplate sqlSession, String keyword, Boolean excludeExpired) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("keyword", keyword);
+        params.put("excludeExpired", excludeExpired);
+        return sqlSession.selectList("SaleMapper.searchSales", params);
     }
 
 
