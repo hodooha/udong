@@ -1,5 +1,6 @@
 package com.multi.udong.member.service;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dao.MemberDAO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
@@ -67,13 +68,14 @@ public class MemberServiceImpl implements MemberService {
     /**
      * Signup seller.
      *
-     * @param memberDTO the member dto
-     * @param memBusDTO the mem bus dto
+     * @param memberDTO     the member dto
+     * @param memBusDTO     the mem bus dto
+     * @param attachmentDTO
      * @throws Exception the exception
      * @since 2024 -07-22
      */
     @Override
-    public void signupSeller(MemberDTO memberDTO, MemBusDTO memBusDTO) throws Exception {
+    public void signupSeller(MemberDTO memberDTO, MemBusDTO memBusDTO, AttachmentDTO attachmentDTO) throws Exception {
         String encPw = bCryptPasswordEncoder.encode(memberDTO.getMemberPw());
         memberDTO.setMemberPw(encPw);
         try {
@@ -81,9 +83,12 @@ public class MemberServiceImpl implements MemberService {
             int memberNo = memberDAO.selectLastInsertId();
 
             memBusDTO.setMemberNo(memberNo);
-            int result2 = memberDAO.insertBusReg(memBusDTO);
+            attachmentDTO.setTargetNo(memberNo);
 
-            if (result != 1 && result2 != 1) {
+            int result2 = memberDAO.insertBusReg(memBusDTO);
+            int result3 = memberDAO.insertAttachment(attachmentDTO);
+
+            if (result != 1 && result2 != 1 && result3 != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
             }
         } catch (Exception e) {
@@ -121,6 +126,7 @@ public class MemberServiceImpl implements MemberService {
      * Update address.
      *
      * @param memAddressDTO the mem address dto
+     * @throws Exception the exception
      * @since 2024 -07-25
      */
     @Override
@@ -138,6 +144,17 @@ public class MemberServiceImpl implements MemberService {
         } else {
             throw new Exception("주소가 유효하지 않습니다.");
         }
+    }
+
+    /**
+     * Update profile.
+     *
+     * @param memberDTO the member dto
+     * @since 2024 -07-26
+     */
+    @Override
+    public void updateProfile(MemberDTO memberDTO) {
+
     }
 
     /**

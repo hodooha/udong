@@ -53,6 +53,11 @@
         (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
     </insert>
 
+    <insert id="insertAttachment" parameterType="attachmentDTO">
+        INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name) VALUES
+        (#{typeCode}, #{targetNo}, #{originalName}, #{savedName})
+    </insert>
+
     <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">
         SELECT location_code
         FROM LOCATION

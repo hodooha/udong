@@ -1,5 +1,7 @@
 package com.multi.udong.login.controller;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
@@ -11,11 +13,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -30,7 +34,7 @@ public class LoginController {
 
     private final MemberService memberService;
     private final NTSAPI ntsapi;
-
+    private final MemberController memberController;
 
     /**
      * Login string.
@@ -91,36 +95,15 @@ public class LoginController {
 
         System.out.println("memberDTO" + memberDTO);
 
-        if (file != null && !file.isEmpty()) {
-            // 파일명 랜덤 저장
-            String originalFilename = file.getOriginalFilename();
-            String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+        if (!file.isEmpty()) {
+            AttachmentDTO attachmentDTO = memberController.settingFile(file);
+            attachmentDTO.setTypeCode("BRG");
 
-            // 저장 경로 설정
             String savePath = "C:\\workspace\\local\\udong\\src\\main\\resources\\static\\uploadFiles\\";
-            System.out.println(savePath);
-
-            // 저장될 폴더 설정
-            File mkdir = new File(savePath);
-            if (!mkdir.exists()) {
-                mkdir.mkdirs();
-            }
-
-            // File 객체 생성
-            File target = new File(savePath + savedName);
-            System.out.println(target);
-
-            // file 저장
-            try {
-                file.transferTo(target);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            String fileName = savePath + attachmentDTO.getSavedName();
 
             // NaverOcr로 사업자등록증 추출요청
             NaverOcr ocr = new NaverOcr();
-            String fileName = savePath + savedName;
             ArrayList<String> list = ocr.ocr(fileName);
             System.out.println("list:" + list);
 
@@ -146,19 +129,19 @@ public class LoginController {
             String valid = (String) data.get("valid");
             System.out.println("valid:" + valid);
 
-            // valid값이 01 이면 파일과 MemBusDTO를 저장
+            // valid값이 01 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
             if (valid.equals("01")) {
                 try {
                     MemBusDTO memBusDTO = new MemBusDTO();
                     memBusDTO.setBusinessNumber(b_no);
                     memBusDTO.setRepresentativeName(p_nm);
                     memBusDTO.setOpeningDate(start_dt);
-                    memberService.signupSeller(memberDTO, memBusDTO);
+                    memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
                 return "redirect:/login";
-            } else {
+            } else { // 유효하지 않으면 파일 삭제
                 new File(fileName).delete();
                 return "redirect:/signup";
             }

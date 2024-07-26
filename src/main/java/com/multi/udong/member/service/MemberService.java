@@ -1,5 +1,6 @@
 package com.multi.udong.member.service;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
@@ -14,11 +15,13 @@ public interface MemberService {
 
     boolean isIdDuplicate(String memberId);
 
-    void signupSeller(MemberDTO memberDTO, MemBusDTO memBusDTO) throws Exception;
+    void signupSeller(MemberDTO memberDTO, MemBusDTO memBusDTO, AttachmentDTO attachmentDTO) throws Exception;
 
     void insertAddress(MemAddressDTO memAddressDTO) throws Exception;
 
     void updateMemberSession();
 
     void updateAddress(MemAddressDTO memAddressDTO) throws Exception;
+
+    void updateProfile(MemberDTO memberDTO);
 }
