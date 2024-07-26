@@ -14,5 +14,14 @@
 <body>
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{/member/sidebar}"></div>
+<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!--msg alert-->
 </html>

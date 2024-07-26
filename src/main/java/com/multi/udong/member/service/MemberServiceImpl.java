@@ -39,13 +39,29 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void signup(MemberDTO memberDTO) throws Exception {
+
         String encPw = bCryptPasswordEncoder.encode(memberDTO.getMemberPw());
         memberDTO.setMemberPw(encPw);
+
         try {
+
             int result = memberDAO.signup(memberDTO);
-            if (result != 1) {
+
+            int memberNo = memberDAO.selectLastInsertId();
+            AttachmentDTO attachmentDTO = new AttachmentDTO();
+            attachmentDTO.setTargetNo(memberNo);
+            attachmentDTO.setTypeCode("MEM");
+            attachmentDTO.setOriginalName("defaultProfile.png");
+            attachmentDTO.setSavedName("defaultProfile.png");
+
+            int result2 = memberDAO.insertProfileImg(attachmentDTO);
+
+            if (result != 1 && result2 != 1) {
+
                 throw new Exception("회원가입에 실패하였습니다");
+
             }
+
         } catch (Exception e) {
             System.out.println("회원가입 예외 발생: " + e.getMessage());
             e.printStackTrace();
@@ -63,6 +79,18 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean isIdDuplicate(String memberId) {
         return memberDAO.findMemberById(memberId) != null;
+    }
+
+    /**
+     * Is nickname duplicate boolean.
+     *
+     * @param nickname the nickname
+     * @return the boolean
+     * @since 2024 -07-27
+     */
+    @Override
+    public boolean isNicknameDuplicate(String nickname) {
+        return memberDAO.findMemberByNickname(nickname) != null;
     }
 
     /**
@@ -155,6 +183,25 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updateProfile(MemberDTO memberDTO, AttachmentDTO attachmentDTO) {
 
+        if (attachmentDTO != null && !attachmentDTO.getSavedName().isEmpty()) {
+            memberDAO.updateProfileImg(attachmentDTO);
+        }
+
+        if (memberDTO.getNickname() != null && !memberDTO.getNickname().isEmpty()) {
+            memberDAO.updateNickname(memberDTO);
+        }
+
+        if (memberDTO.getEmail() != null && !memberDTO.getEmail().isEmpty()) {
+            memberDAO.updateEmail(memberDTO);
+        }
+
+        if (memberDTO.getPhone() != null && !memberDTO.getPhone().isEmpty()) {
+            memberDAO.updatePhone(memberDTO);
+        }
+
+        if (memberDTO.getMemberPw() != null && !memberDTO.getMemberPw().isEmpty()) {
+            memberDAO.updateMemberPw(memberDTO);
+        }
     }
 
     /**

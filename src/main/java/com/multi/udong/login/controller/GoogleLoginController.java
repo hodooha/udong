@@ -44,7 +44,7 @@ public class GoogleLoginController {
     private String redirectUri;
 
     /**
-     * Google callback string.
+     * 구글 사용자정보로 로그인함
      *
      * @param code               the code
      * @param httpServletRequest the http servlet request
@@ -55,39 +55,49 @@ public class GoogleLoginController {
      */
     @GetMapping("/google")
     public String googleLogin(@RequestParam("code") String code, HttpServletRequest httpServletRequest, Model model) throws Exception {
+        
+        // code로 엑세스토큰을 받아옴
         GoogleTokenResponse googleTokenResponse = getAccessToken(code);
+        
+        // 엑세스토큰으로 구글 사용자정보를 받아옴
         GoogleUserInfo googleUserInfo = getUserInfo(googleTokenResponse.getAccess_token());
 
+        // 제대로 사용자정보를 받아왔다면
         if (googleUserInfo != null) {
 
+            // 사용자정보 전처리
             String googleMemberId = googleUserInfo.getId() + "g";
             String googleMemberPw = "googlePw1234";
             String googleEmail = googleUserInfo.getEmail();
             String googleNickname = googleUserInfo.getName();
 
+            // 전처리 정보를 memberDTO에 저장
             MemberDTO memberDTO = new MemberDTO();
             memberDTO.setMemberId(googleMemberId);
             memberDTO.setMemberPw(googleMemberPw);
             memberDTO.setEmail(googleEmail);
             memberDTO.setNickname(googleNickname);
 
+            // 가입되어있지 않다면 회원가입 진행
             if (memberDAO.findMemberById(googleMemberId) == null) {
                 memberService.signup(memberDTO);
             }
 
+            // 로그인 작업 수행
             model.addAttribute("member", memberDTO);
         }
         return "member/googleClose";
     }
 
     /**
-     * Get access token google token response.
+     * 구글 리디렉션 URL에서 받은 code로 엑세스토큰을 받아옴
      *
      * @param code the code
      * @return the google token response
      * @since 2024 -07-24
      */
     public GoogleTokenResponse getAccessToken(String code) {
+        
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("code", code);
         body.add("client_id", clientId);
@@ -99,7 +109,7 @@ public class GoogleLoginController {
     }
 
     /**
-     * Get user info google user info.
+     * 엑세스토큰으로 사용자정보를 받아옴
      *
      * @param accessToken the access token
      * @return the google user info

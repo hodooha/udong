@@ -37,7 +37,7 @@ public class LoginController {
     private final MemberController memberController;
 
     /**
-     * Login string.
+     * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
      *
      * @param error   the error
      * @param message the message
@@ -71,7 +71,7 @@ public class LoginController {
     private String serviceKey;
 
     /**
-     * Signup string.
+     * 입력한 사용자 정보로 회원가입
      *
      * @param memberDTO the memberDTO
      * @param request   the request
@@ -86,12 +86,15 @@ public class LoginController {
                          @RequestParam(value = "file", required = false) MultipartFile file,
                          Model model) {
 
+        // 초기가입시 닉네임을 랜덤하게 저장
         Random random = new Random();
         int randomNumber = random.nextInt(100000);
         String randomNickname = String.format("member-%05d", randomNumber);
         memberDTO.setNickname(randomNickname);
 
+        // 사업자등록증 파일이 있다면
         if (!file.isEmpty()) {
+            
             // 파일 저장 메소드
             AttachmentDTO attachmentDTO = memberController.settingFile(file);
             attachmentDTO.setTypeCode("BRG");
@@ -104,7 +107,9 @@ public class LoginController {
             ArrayList<String> list = ocr.ocr(fileName);
             System.out.println("list:" + list);
 
+            // 추출된 결과가 있다면
             if (!list.isEmpty()) {
+                
                 // 추출한 결과 전처리
                 String b_no = list.get(0).trim().replaceAll("-", "");
                 String p_nm = list.get(2).trim();
@@ -135,25 +140,30 @@ public class LoginController {
 
                 // valid값이 01이면 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
                 if (valid.equals("01")) {
+                    
                     try {
                         MemBusDTO memBusDTO = new MemBusDTO();
                         memBusDTO.setBusinessNumber(b_no);
                         memBusDTO.setRepresentativeName(p_nm);
                         memBusDTO.setOpeningDate(start_dt);
                         memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
+                        
                     } catch (Exception e) {
                         new File(fileName).delete();
                         model.addAttribute("msg", "회원가입에 실패했습니다.");
-                        return "common/errorPage";
+                        return "member/login";
                     }
+                    
                     model.addAttribute("msg", "회원가입이 완료되었습니다.");
                     return "member/login";
-                } else {
+                    
+                } else { // valid=02 일 경우
                     new File(fileName).delete();
                     model.addAttribute("msg", "유효하지 않은 사업자등록증입니다");
                     return "member/signup";
                 }
-            } else {
+                
+            } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
                 model.addAttribute("msg", "유효하지 않은 이미지입니다");
                 return "member/signup";
@@ -164,6 +174,7 @@ public class LoginController {
             memberService.signup(memberDTO);
             model.addAttribute("msg","회원가입이 완료되었습니다.");
             return "member/login";
+            
         } catch (Exception e) {
             model.addAttribute("msg","회원가입에 실패하였습니다.");
             return "member/signup";
@@ -171,7 +182,7 @@ public class LoginController {
     }
 
     /**
-     * Is id duplicate response entity.
+     * ID 중복확인 메소드
      *
      * @param request the request
      * @return the response entity

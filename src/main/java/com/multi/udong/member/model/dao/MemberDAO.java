@@ -15,7 +15,11 @@ public interface MemberDAO{
 
     int signup(MemberDTO memberDTO);
 
+    int insertProfileImg(AttachmentDTO attachmentDTO);
+
     MemberDTO findMemberById(String memberId);
+
+    MemberDTO findMemberByNickname(String nickname);
 
     int insertBusReg(MemBusDTO memBusDTO);
 
@@ -28,4 +32,14 @@ public interface MemberDAO{
     int updateAddress(MemAddressDTO memAddressDTO);
 
     int insertAttachment(AttachmentDTO attachmentDTO);
+
+    void updateProfileImg(AttachmentDTO attachmentDTO);
+
+    void updateNickname(MemberDTO memberDTO);
+
+    void updateEmail(MemberDTO memberDTO);
+
+    void updatePhone(MemberDTO memberDTO);
+
+    void updateMemberPw(MemberDTO memberDTO);
 }

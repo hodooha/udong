@@ -18,6 +18,7 @@
         <result property="reportedCnt" column="reported_cnt"/>
         <result property="isBlacked" column="is_blacked"/>
         <result property="blackedAt" column="blacked_at"/>
+        <result property="savedName" column="SAVED_NAME"/>
         <association property="memAddressDTO" javaType="memAddressDTO">
             <result property="memberNo" column="member_no"/>
             <result property="siDoName" column="si_do_name"/>
@@ -32,15 +33,37 @@
 
     <!--시큐리티 쿼리-->
     <select id="findMemberById" resultMap="memberResultMap">
-        SELECT m.*, ma.*
+        SELECT m.*, ma.*, a.SAVED_NAME
         FROM MEMBER m
         LEFT JOIN MEM_ADDRESS ma ON m.member_no = ma.member_no
+        LEFT JOIN (
+            SELECT TARGET_NO, SAVED_NAME
+            FROM ATTACHMENT
+            WHERE TYPE_CODE = 'MEM'
+            AND FILE_NO = (
+                SELECT MAX(FILE_NO)
+                FROM ATTACHMENT
+                WHERE TYPE_CODE = 'MEM'
+                AND TARGET_NO = ATTACHMENT.TARGET_NO
+            )
+        ) a ON m.member_no = a.TARGET_NO
         WHERE m.member_id = #{memberId}
+    </select>
+
+    <select id="findMemberByNickname" resultType="memberDTO">
+        SELECT nickname
+        FROM MEMBER
+        WHERE nickname = #{nickname}
     </select>
 
     <insert id="signup" parameterType="memberDTO" useGeneratedKeys="true" keyProperty="memberNo">
         INSERT INTO MEMBER (member_id, member_pw, nickname, phone, email) VALUES
         (#{memberId}, #{memberPw}, #{nickname}, #{phone}, #{email})
+    </insert>
+
+    <insert id="insertProfileImg" parameterType="attachmentDTO">
+        INSERT INTO ATTACHMENT (ORIGINAL_NAME, SAVED_NAME, TYPE_CODE, TARGET_NO) VALUES
+        (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
     </insert>
 
     <select id="selectLastInsertId" resultType="int">
@@ -61,9 +84,10 @@
     <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">
         SELECT location_code
         FROM LOCATION
-        WHERE si_do_name = #{siDoName}
-        AND si_gun_gu_name LIKE CONCAT(#{siGunGuName}, '%')
-        AND eup_myeon_dong_name = #{eupMyeonDongName}
+        WHERE
+            si_do_name = #{siDoName}
+            AND si_gun_gu_name LIKE CONCAT(#{siGunGuName}, '%')
+            AND eup_myeon_dong_name = #{eupMyeonDongName}
     </select>
 
     <insert id="insertAddress" parameterType="memAddressDTO">
@@ -73,12 +97,47 @@
 
     <update id="updateAddress" parameterType="memAddressDTO">
         UPDATE MEM_ADDRESS
-        SET si_do_name = #{siDoName},
-        si_gun_gu_name = #{siGunGuName},
-        eup_myeon_dong_name = #{eupMyeonDongName},
-        detail_address = #{detailAddress},
-        location_code = #{locationCode},
-        modified_at = CURRENT_TIMESTAMP
+        SET
+            si_do_name = #{siDoName},
+            si_gun_gu_name = #{siGunGuName},
+            eup_myeon_dong_name = #{eupMyeonDongName},
+            detail_address = #{detailAddress},
+            location_code = #{locationCode},
+            modified_at = CURRENT_TIMESTAMP
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <update id="updateProfileImg" parameterType="attachmentDTO">
+        UPDATE ATTACHMENT
+        SET
+            ORIGINAL_NAME = #{originalName},
+            SAVED_NAME = #{savedName}
+        WHERE
+            TYPE_CODE = #{typeCode}
+            AND TARGET_NO = #{targetNo}
+    </update>
+
+    <update id="updateNickname" parameterType="memberDTO">
+        UPDATE MEMBER
+        SET nickname = #{nickname}
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <update id="updateEmail" parameterType="memberDTO">
+        UPDATE MEMBER
+        SET email = #{email}
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <update id="updatePhone" parameterType="memberDTO">
+        UPDATE MEMBER
+        SET phone = #{phone}
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <update id="updateMemberPw" parameterType="memberDTO">
+        UPDATE MEMBER
+        SET member_pw = #{memberPw}
         WHERE member_no = #{memberNo}
     </update>
 

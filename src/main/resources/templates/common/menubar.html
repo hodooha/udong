@@ -81,7 +81,6 @@
             margin-right: 5px;
             fill: currentColor;
         }
-
         .user-icon {
             width: 50px;
             height: 50px;
@@ -131,7 +130,12 @@
             </button>
 
             <div class="user-icon">
-                <img th:src="@{/img/defaultProfile.png}" class="user-icon">
+                <img th:src="${#authentication.principal.memberDTO.savedName == null
+                   || #authentication.principal.memberDTO.savedName == ''
+                   || #authentication.principal.memberDTO.savedName == 'defaultProfile.png'
+                      ? '/img/defaultProfile.png'
+                      : '/uploadFiles/' + #authentication.principal.memberDTO.savedName}"
+                         class="user-icon">
             </div>
 
             <div class="auth-links">

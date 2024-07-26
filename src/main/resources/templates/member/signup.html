@@ -12,7 +12,8 @@
             display: flex;
             justify-content: center;
             margin-top: 70px;
-            height: 80vh
+            height: 80vh;
+            font-family: 'Freesentation-5Medium';
         }
         .signup, .bus-reg {
             display: flex;
@@ -27,6 +28,14 @@
         .vertical-line {
             border-left: medium solid #A4A4A4;
             margin: 0 30px;
+        }
+        .warning {
+            background-color: #F5DA81;
+            border-left: 8px solid #FFBF00;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 18px;
         }
         .signup form {
             width: 100%;
@@ -142,11 +151,11 @@
 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <div class="container">
         <div class="signup">
-            <h5>
-                * 판매자로 가입하실 경우 사업자등록증을 제출해주시기 바랍니다.<br>
-                * 승인은 1~2일 내로 완료됩니다.<br>
-                * 승인여부에 관계없이 회원으로 활동하실 수 있습니다.
-            </h5>
+            <div class="warning">
+                판매자로 가입하실 경우 사업자등록증을 제출해주시기 바랍니다.<br>
+                승인은 1~2일 내로 완료됩니다.<br>
+                승인여부에 관계없이 회원으로 활동하실 수 있습니다.
+            </div>
             <div class="member-type">
                 <label>
                     <input type="radio" name="memberType" value="general" checked> 일반회원
