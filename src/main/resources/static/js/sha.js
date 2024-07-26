@@ -99,6 +99,7 @@ function updateItems(params){
             data: params,
             success: function(data) {
                 renderItems(data.itemList);
+                renderPageNation(data.pageInfo);
                 console.log(data)
             },
             error: function() {
@@ -121,6 +122,39 @@ function renderItems(items){
     }).join("");
     $("#itemList").html(itemResult);
 }
+
+function renderPageNation(pageInfo){
+    let totalCounts = pageInfo.totalCounts;
+    let startPage = pageInfo.startPage;
+    let endPage = pageInfo.endPage;
+    let totalPage = pageInfo.totalPage;
+    let currentPage = pageInfo.currentPage;
+
+    let pageResult = "";
+    if(pageInfo.currentPage != 1){
+        pageResult += `<li class="page-item me-1">
+            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
+             <span>&laquo;</span></a></li>`
+
+
+    }
+    `<li th:if="${pageInfo.currentPage != 1}" class="page-item me-1">
+                            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
+                                <span>&laquo;</span>
+                            </a>
+                        </li>
+                        <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}" class="page-item active me-1" aria-current="page">
+                            <button th:text="${page}" class="page-link btn-udh-blue" th:onclick="search([[${page}]])"></button>
+                        </li>
+                        <li th:if="${pageInfo.currentPage != totalPage}" class="page-item me-1">
+                            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
+                                <span>&raquo;</span>
+                            </a>
+                        </li>
+                    `
+    $('.pagination').html(pageResult);
+}
+
 
 function search(page){
     let params = getSearchParams(page);
