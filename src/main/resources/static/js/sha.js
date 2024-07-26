@@ -1,6 +1,6 @@
 $(function(){
 
-        if(window.location.pathname.includes("/share/rent")){
+    if(window.location.pathname.includes("/share/rent")){
             $('#giveBtn').addClass("gray");
             $('#rentBtn').removeClass("gray");
             $('.rentCom').css('visibility', 'visible');
@@ -10,14 +10,37 @@ $(function(){
             $('.rentCom').css('visibility', 'hidden');
         }
 
-        $('#datePicker').datepicker({
-        format: 'yyyy-mm-dd',
-        todayHighlight: true,
-        startDate: '+1d',
-        autoclose : true,
-        endDate: '+1m'
-        })
+    const bodyId = $("body").attr("id");
+    if(bodyId == "giveMain" || bodyId == "rentMain"){
+       const savedState = history.state;
+               if (savedState) {
+                   restoreFormState(savedState);
+                   updateItems(savedState);
+                   console.log(savedState);
+               } else {
+                   search(1);
+               }
 
+     window.addEventListener("popstate", function(event) {
+            if (event.state) {
+                restoreFormState(event.state);
+                updateItems(event.state);
+            }
+        });
+
+     getCatList();
+
+
+    }
+
+    if(bodyId == "itemDetail" || bodyId == "registerForm"){
+        $('#datePicker').datepicker({
+            format: 'yyyy-mm-dd',
+            todayHighlight: true,
+            startDate: '+1d',
+            autoclose : true,
+            endDate: '+1m'
+        })
 
         $("input[name='itemGroup']").change(function(){
             let checked = $("input[name='itemGroup']:checked").val();
@@ -29,7 +52,35 @@ $(function(){
                 dateRefresh();
             }
         });
+    }
+
+});
+
+function getCatList() {
+    $.ajax({
+            url: "getCatList",
+            type: "get",
+            success: function(catList) {
+                console.log(catList);
+                renderCatList(catList);
+
+            },
+            error: function() {
+                alert("카테고리 불러오기 실패");
+            }
     });
+}
+
+function renderCatList(catList) {
+    let catResult = catList.map( (cat) => {
+        return `
+            <option value=${cat.catCode}>${cat.catName}</option>
+        `}).join("");
+
+    $('.catSelect').append(catResult);
+
+}
+
 
 function dateRefresh() {
     $('#datePicker').datepicker("setDate", null);
@@ -72,7 +123,7 @@ function isValid() {
 }
 
 function getSearchParams(page){
-    let selectedCat = $('.catSelect').val();
+    selectedCat = $('.catSelect').val();
     let group = $("input[name='group']").val();
     let locCode = $("input[name='locCode']").val();
     let isChecked = $('#availableCheck').is(':checked');
@@ -81,7 +132,7 @@ function getSearchParams(page){
     if (page == null || page == '') {
         page = 1;
     }
-
+    console.log(selectedCat);
     return {
         catCode: selectedCat,
         group: group,
@@ -101,6 +152,10 @@ function updateItems(params){
                 renderItems(data.itemList);
                 renderPageNation(data.pageInfo);
                 console.log(data)
+
+                // url에 검색한 쿼리들 넣어주기.
+                const newUrl = createUrlWithParams(params);
+                history.pushState(params, '', newUrl);
             },
             error: function() {
                 alert("아이템 불러오기 실패");
@@ -131,27 +186,31 @@ function renderPageNation(pageInfo){
     let currentPage = pageInfo.currentPage;
 
     let pageResult = "";
-    if(pageInfo.currentPage != 1){
-        pageResult += `<li class="page-item me-1">
-            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
-             <span>&laquo;</span></a></li>`
+    pageResult += `
+        <li class="page-item me-1">
+            <button class="page-link btn-udh-blue" onclick="search(${currentPage-1})" style="${currentPage == 1 ? 'visibility:hidden' : ''}" aria-label="Previous">
+                <span>&laquo;</span>
+            </button>
+        </li>`
 
 
+    for(i = startPage; i <= endPage; i++){
+        pageResult += `
+            <li class="page-item active me-1" aria-current="page">
+                <button class="page-link btn-udh-blue ${currentPage == i ? 'pageActive' : ''}" onclick="search(${i})">${i}</button>
+            </li>`
     }
-    `<li th:if="${pageInfo.currentPage != 1}" class="page-item me-1">
-                            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
-                                <span>&laquo;</span>
-                            </a>
-                        </li>
-                        <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}" class="page-item active me-1" aria-current="page">
-                            <button th:text="${page}" class="page-link btn-udh-blue" th:onclick="search([[${page}]])"></button>
-                        </li>
-                        <li th:if="${pageInfo.currentPage != totalPage}" class="page-item me-1">
-                            <a class="page-link btn-udh-blue " href="#" aria-label="Previous">
-                                <span>&raquo;</span>
-                            </a>
-                        </li>
-                    `
+
+
+
+    pageResult += `
+        <li class="page-item me-1">
+           <button class="page-link btn-udh-blue " style="${currentPage == totalPage ? 'visibility:hidden' : ''}" onclick="search(${currentPage+1})" aria-label="Next">
+               <span>&raquo;</span>
+           </button>
+        </li>`
+
+
     $('.pagination').html(pageResult);
 }
 
@@ -163,5 +222,22 @@ function search(page){
 
 }
 
+function createUrlWithParams(params) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('catCode', params.catCode);
+    url.searchParams.set('group', params.group);
+    url.searchParams.set('locCode', params.locCode);
+    url.searchParams.set('statusCode', params.statusCode);
+    url.searchParams.set('keyword', params.keyword);
+    url.searchParams.set('page', params.page);
+    return url.toString();
+}
 
+function restoreFormState(params) {
+    $('.catSelect').val(params.catCode);
+    $("input[name='group']").val(params.group);
+    $("input[name='locCode']").val(params.locCode);
+    $('#availableCheck').prop('checked', params.statusCode ? true : false);
+    $('#keyword').val(params.keyword);
+}
 
