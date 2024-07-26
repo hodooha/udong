@@ -61,8 +61,7 @@ public class ClubController {
         System.out.println("###### 검색하는 검색어: " + filterDTO.getSearchWord());
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 filterDTO에 set
-        // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
-        long membersLocation = 1117013100;
+        long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
         filterDTO.setLocationCode(membersLocation);
 
         try {
@@ -158,10 +157,9 @@ public class ClubController {
         clubDTO.setMaster(masterDTO);
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
-        // long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+        long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
         LocationDTO locationDTO = new LocationDTO();
-        // locationDTO.setLocationCode(mastersLocation);
-        locationDTO.setLocationCode(1117013100);
+        locationDTO.setLocationCode(membersLocation);
         clubDTO.setLocation(locationDTO);
 
         // insertForm에서 받아온 카테고리 코드를 clubDTO에 set
@@ -236,8 +234,7 @@ public class ClubController {
             int clubNo = clubDTO.getClubNo();
 
             // 생성한 모임의 홈으로 바로 이동
-            // return "redirect:/club/clubHome?clubNo="+clubNo;
-            return "redirect:/club/clubMain?page=1";
+            return "redirect:/club/clubHome?clubNo="+clubNo;
 
         } catch (Exception e) {
 
