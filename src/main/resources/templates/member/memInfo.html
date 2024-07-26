@@ -6,6 +6,24 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
+        .profile-update, .contact-update {
+            width: calc(50% - 20px);
+            min-width: 600px;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .password-update {
+            width: 100%;
+            min-width: 600px;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
         .btn {
             width: 100px;
         }
@@ -13,6 +31,44 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<main>
 <div th:replace="~{/member/sidebar}"></div>
+    <div class="content-area">
+        <div class="profile-update">
+            <form action="/member/updateProfile" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <h2>프로필 수정</h2>
+                <img class="preview" id="preview">
+                <input type="file" class="profile-pic" name="file" id="profile-pic" accept="image/*">
+                <input type="text" class="nickname" name="nickname" id="nickname" placeholder="닉네임은 최대 20글자까지 가능합니다.">
+                <button type="button" class="btn btn-udh-yellow" id="checkDuplicate">닉네임 중복 검사</button>
+                <button type="submit" class="btn btn-udh-blue" id="updateProfile">수정 완료</button>
+            </form>
+        </div>
+        <div class="contact-update">
+            <form action="/member/updateProfile" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <h2>연락처 수정</h2>
+                <input type="text" class="contact" name="email" id="email" placeholder="새 이메일">
+                <button type="submit" class="btn btn-udh-blue" id="updateEmail">수정 완료</button>
+            </form>
+            <form action="/member/updateProfile" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="text" class="contact" name="phone" id="phone" placeholder="새 전화번호">
+                <button type="submit" class="btn btn-udh-blue" id="updatePhone">수정 완료</button>
+            </form>
+        </div>
+        <div class="password-update">
+            <form action="/member/updateProfile" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <h2>비밀번호 수정</h2>
+                <input type="password" class="password" name="current-password" id="current-password" placeholder="현재 비밀번호">
+                <input type="password" class="password" name="password" id="password" placeholder="새 비밀번호">
+                <input type="password" class="password" name="confirm-password" id="confirm-password" placeholder="새 비밀번호 확인">
+                <button type="submit" class="btn btn-udh-blue" id="updatePw">수정 완료</button>
+            </form>
+        </div>
+    </div>
+</main>
 </body>
 </html>

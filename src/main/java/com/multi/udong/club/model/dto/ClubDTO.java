@@ -5,7 +5,14 @@ import com.multi.udong.common.model.dto.LocationDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+/**
+ * 모임 DTO
+ *
+ * @author 강성현
+ * @since 2024 -07-25
+ */
 @Data
 public class ClubDTO {
 
@@ -20,6 +27,7 @@ public class ClubDTO {
     private String chatroomCode;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
-    private AttachmentDTO attachment;
+    private String joinStatus;
+    private List<AttachmentDTO> attachment;
 
 }

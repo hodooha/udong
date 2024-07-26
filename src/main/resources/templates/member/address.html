@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -15,33 +14,17 @@
     </script>
     <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoApiKey} + '&libraries=services'}"></script>
     <style>
-        main {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-            flex-wrap: wrap; <!--flex : 공간이 부족하면 다음 줄로 넘어감-->
-            gap: 20px;
-        }
-        .body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
         .address-insert {
+            min-width: 600px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            margin: 40px 40px 40px 0;
             padding: 20px;
         }
         .input-group {
             display: flex;
             flex-direction: column;
-            width: 100px;
             gap: 1rem;
         }
         input[type="text"] {
@@ -70,20 +53,28 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
-    <main>
-    <div th:replace="~{/member/sidebar}"></div>
+<main>
+<div th:replace="~{/member/sidebar}"></div>
+    <div class="content-area">
         <div class="address-insert">
             <h2>주소 등록</h2>
             <form action="/member/insertAddress" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="input-group">
-                    <input type="text" name="roadAddress" id="roadAddress" placeholder="도로명주소" readonly>
-                    <input type="text" name="jibunAddress" id="jibunAddress" placeholder="지번주소" readonly>
+                    <label for="currentFullAddress">현재 지번 주소</label>
+                    <input type="text" name="currentFullAddress" id="currentFullAddress" th:value="${currentFullAddress}" readonly>
+
+                    <label for="roadAddress">도로명 주소</label>
+                    <input type="text" name="roadAddress" id="roadAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
+
+                    <label for="jibunAddress">지번 주소</label>
+                    <input type="text" name="jibunAddress" id="jibunAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
 
                     <div class="button-group">
                         <button class="btn btn-udh-yellow" type="button" id="search-address">주소 검색</button>
                         <button class="btn btn-udh-yellow" type="button" id="check-address" disabled>위치 인증</button>
-                        <button class="btn btn-udh-yellow" type="submit" id="submit-address" disabled>등록 완료</button>
+                        <button class="btn btn-udh-yellow" type="submit" id="submit-address" disabled>등록하기</button>
+                        <button class="btn btn-udh-yellow" type="submit" id="update-address" disabled>수정하기</button>
                     </div>
 
                     <input type="hidden" name="siDoName" id="siDoName">
@@ -93,7 +84,9 @@
                 </div>
             </form>
         </div>
-    </main>
+    </div>
+</main>
+<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
 <script>
     let searchedAddress = null;
@@ -103,6 +96,9 @@
         const searchAddressBtn = document.getElementById('search-address');
         const checkAddressBtn = document.getElementById('check-address');
         const submitAddressBtn = document.getElementById('submit-address');
+        const updateAddressBtn = document.getElementById('update-address');
+
+        const currentFullAddressInput = document.getElementById('currentFullAddress');
 
         searchAddressBtn.addEventListener('click', DaumPostcode);
         checkAddressBtn.addEventListener('click', checkCurrentLocation);
@@ -124,20 +120,27 @@
         document.getElementById("roadAddress").value = roadAddress;
         document.getElementById("jibunAddress").value = jibunAddress;
 
-        let roadAddressParts = roadAddress.split(' ');
-        searchedRoadAddress = {
-            siGunGuName: roadAddressParts[1],
-            eupMyeonDongName: roadAddressParts[2]
-        };
-
-        console.log("roadAddressParts :", roadAddressParts);
-
         let jibunAddressParts = jibunAddress.split(' ');
+        let searchSiDoName = jibunAddressParts[0];
+        let searchSiGunGuName = jibunAddressParts[1];
+        let searchEupMyeonDongName;
+        let detailAddress;
+
+        if (jibunAddressParts[2].endsWith('시') ||
+            jibunAddressParts[2].endsWith('군') ||
+            jibunAddressParts[2].endsWith('구')) {
+            searchEupMyeonDongName = jibunAddressParts[3];
+            detailAddress = jibunAddressParts.slice(4).join(' ') || '';
+        } else {
+            searchEupMyeonDongName = jibunAddressParts[2];
+            detailAddress = jibunAddressParts.slice(3).join(' ') || '';
+        }
+
         searchedJibunAddress = {
-            siDoName: jibunAddressParts[0],
-            siGunGuName: jibunAddressParts[1],
-            eupMyeonDongName: jibunAddressParts[2],
-            detailAddress: jibunAddressParts.slice(3).join(' ')
+            siDoName: searchSiDoName,
+            siGunGuName: searchSiGunGuName,
+            eupMyeonDongName: searchEupMyeonDongName,
+            detailAddress: detailAddress
         };
 
         document.getElementById("siDoName").value = searchedJibunAddress.siDoName;
@@ -145,8 +148,8 @@
         document.getElementById("eupMyeonDongName").value = searchedJibunAddress.eupMyeonDongName;
         document.getElementById("detailAddress").value = searchedJibunAddress.detailAddress;
 
-        document.getElementById("check-address").disabled = false;
-        document.getElementById("submit-address").disabled = true;
+        document.getElementById('check-address').disabled = false;
+        document.getElementById('update-address').disabled = true;
     }
 
     function checkCurrentLocation() {
@@ -164,35 +167,65 @@
         }
     }
 
-    function getAddr(lat,lng){
-        let geocoder = new kakao.maps.services.Geocoder();
-        let coord = new kakao.maps.LatLng(lat, lng);
-        geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
-            if (status === kakao.maps.services.Status.OK) {
+function getAddr(lat, lng) {
+    let geocoder = new kakao.maps.services.Geocoder();
+    let coord = new kakao.maps.LatLng(lat, lng);
+    geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
+        if (status === kakao.maps.services.Status.OK) {
 
-                console.log("currentAddr: ", result);
+            console.log("currentAddr: ", result);
 
-                let currentRoadAddress = result[0].road_address.address_name;
-                let currentRoadAddressParts = currentRoadAddress.split(' ');
-                currentAddress = {
-                    siGunGuName: currentRoadAddressParts[1],
-                    eupMyeonDongName: currentRoadAddressParts[2]
-                };
-                compareAddresses();
+            let currentJibunAddress = result[0].address.address_name;
+            let currentJibunAddressParts = currentJibunAddress.split(' ');
 
-                console.log("currentRoadAddressParts: ", currentRoadAddressParts);
+            let siDoName = currentJibunAddressParts[0];
+            let siGunGuName = currentJibunAddressParts[1];
+            let eupMyeonDongName;
+
+            if (currentJibunAddressParts[2].endsWith('시') ||
+                currentJibunAddressParts[2].endsWith('군') ||
+                currentJibunAddressParts[2].endsWith('구')) {
+                eupMyeonDongName = currentJibunAddressParts[3];
+            } else {
+                eupMyeonDongName = currentJibunAddressParts[2];
             }
-        });
-    }
+
+            currentAddress = {
+                siDoName: siDoName,
+                siGunGuName: siGunGuName,
+                eupMyeonDongName: eupMyeonDongName
+            };
+
+            compareAddresses();
+        }
+    });
+}
 
     function compareAddresses() {
-        if (searchedRoadAddress.siGunGuName === currentAddress.siGunGuName &&
-            searchedRoadAddress.eupMyeonDongName === currentAddress.eupMyeonDongName) {
-            document.getElementById("submit-address").disabled = false;
+        if (searchedJibunAddress.siDoName === currentAddress.siDoName &&
+            searchedJibunAddress.siGunGuName === currentAddress.siGunGuName &&
+            searchedJibunAddress.eupMyeonDongName === currentAddress.eupMyeonDongName) {
+
+            if (document.getElementById('currentFullAddress').value) {
+                document.getElementById('submit-address').disabled = true;
+                document.getElementById('update-address').disabled = false;
+            } else {
+                document.getElementById('submit-address').disabled = false;
+                document.getElementById('update-address').disabled = true;
+            }
+
             alert("주소 인증이 완료되었습니다. 등록 완료 버튼을 누르시면 주소가 저장됩니다.");
         } else {
             alert("현재 주소가 입력된 주소와 일치하지 않습니다.");
         }
     }
 </script> <!--주소 등록 스크립트-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!-- alert 스크립트-->
 </html>

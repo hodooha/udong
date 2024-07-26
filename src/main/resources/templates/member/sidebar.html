@@ -7,15 +7,26 @@
         body {
             font-size: 20px;
         }
+        main {
+            flex: 1;
+            display: flex;
+            width: 100%;
+        }
+        .content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 40px 40px 40px 0;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
         .sidebar {
-            min-width: 200px;
-            max-width: 200px;
+            width: 200px;
             border: 1px solid #000000;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
             margin: 40px;
-            font-size: 20px;
             height: 100vh;
         }
         .sidebar ul {
@@ -39,16 +50,31 @@
             position: relative;
             overflow: hidden;
         }
+        .sidebar ul li a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: #FFB83D;
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
         .sidebar ul li a:hover {
             color: white;
-            background-color: #FFB83D;
             transform: translateX(10px);
+        }
+        .sidebar ul li a:hover::before {
+            left: 0;
         }
         .sidebar ul li:last-child a {
             color: #e74c3c;
         }
         .sidebar ul li:last-child a:hover {
             color: white;
+        }
+        .sidebar ul li:last-child a::before {
             background-color: #e74c3c;
         }
     </style>

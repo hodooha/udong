@@ -58,7 +58,7 @@
         .club-max-personnel-input{
             width: 70px;
         }
-        .btn-container{
+        .create-club-btn-container{
             display: flex;
             justify-content: center;
         }
@@ -92,8 +92,8 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="margin: 40px;">
-    <form action="insertClub" method="post" encType="multipart/form-data">
+<div class="content" style="padding: 40px;">
+    <form th:action="@{/club/insertClub}" method="post" encType="multipart/form-data">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="insert-area">
             <span>주제</span>
@@ -104,8 +104,7 @@
             <span style="margin-left: 50px">모임장</span>
             <input type="text" class="input club-master-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
             <span style="margin-left: 50px">동네</span>
-            <input type="text" class="input club-location-input" value="변필)로그인한 회원의 행정동" disabled>
-            <!-- <input type="text" class="input club-location-input" th:value="${#authentication.principal.memberDTO.memAddressDTO.eupMyeonDongName}" disabled> -->
+            <input type="text" class="input club-location-input" th:value="${#authentication.principal.memberDTO.memAddressDTO.eupMyeonDongName}" disabled>
             <table style="margin: 30px 0 70px 0">
                 <tr>
                     <td>
@@ -132,7 +131,7 @@
             <input type="number" class="input club-max-personnel-input" name="maxPersonnel" min=1 max=500 required>
             <span>명</span>
         </div>
-        <div class="btn-container">
+        <div class="create-club-btn-container">
             <button type="submit" class="btn btn-udh-blue btn-create-club">모임 생성</button>
         </div>
     </form>

@@ -1,5 +1,6 @@
 package com.multi.udong.member.model.dao;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
@@ -23,4 +24,8 @@ public interface MemberDAO{
     int insertAddress(MemAddressDTO memAddressDTO);
 
     Long findCodeByAddress(MemAddressDTO memAddressDTO);
+
+    int updateAddress(MemAddressDTO memAddressDTO);
+
+    int insertAttachment(AttachmentDTO attachmentDTO);
 }

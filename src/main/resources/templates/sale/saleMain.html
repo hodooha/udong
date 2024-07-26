@@ -38,9 +38,6 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
         }
         .search-input {
             width: 300px;
@@ -157,24 +154,43 @@
             overflow: hidden;
         }
         .pagination {
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
 
-    .page-button {
-        margin: 0 5px;
-        padding: 5px 10px;
-        border: 1px solid #ddd;
-        background-color: #27447B;
-        cursor: pointer;
-        color: white;
-    }
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            background-color: #27447B;
+            cursor: pointer;
+            color: white;
+         }
 
-    .page-button.active {
-        background-color: #142657;
-        color: white;
-    }
+        .page-button.active {
+            background-color: #142657;
+            color: white;
+        }
+        .filter-container {
+            position: absolute;
+            right: 0;
+            bottom: -30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .filter-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .search-and-filter-container {
+            max-width: 1200px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
 
     </style>
 
@@ -189,11 +205,18 @@
     <button class="btn-udh-blue">글 작성</button></a>
 </div>
 
-
-<div class="search-container">
-    <input type="text" class="search-input" placeholder="검색어를 입력하세요.">
-    <button class="search-button">검색</button>
-</div>
+<form method="GET" th:action="@{/sale/saleMain}">
+    <div class="search-and-filter-container">
+        <div class="search-container">
+            <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요." th:value="${param.search}">
+            <button class="search-button" type="submit">검색</button>
+        </div>
+        <div class="filter-container">
+            <input type="checkbox" id="excludeExpired" name="excludeExpired" th:checked="${param.excludeExpired}">
+            <label for="excludeExpired">마감제외</label>
+        </div>
+    </div>
+</form>
 <div class="sale-cards" id="saleCards">
 
     <div th:each="sale : ${sales}" class="sale-card">
@@ -220,6 +243,34 @@
 </div>
 
 <script th:inline="javascript">
+    document.querySelector('.search-button').addEventListener('click', function() {
+    const searchTerm = document.querySelector('.search-input').value;
+    const excludeExpired = document.getElementById('excludeExpired').checked;
+
+    window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}&excludeExpired=${excludeExpired}`;
+});
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const excludeExpiredCheckbox = document.getElementById('excludeExpired');
+    excludeExpiredCheckbox.addEventListener('change', filterSales);
+});
+
+function filterSales() {
+    const excludeExpired = document.getElementById('excludeExpired').checked;
+    const now = new Date().getTime();
+
+    document.querySelectorAll('.sale-card').forEach(card => {
+        const timerElement = card.querySelector('.sale-card-timer');
+        const endTime = new Date(timerElement.getAttribute('data-end-time')).getTime();
+
+        if (excludeExpired && endTime < now) {
+            card.style.display = 'none';
+        } else {
+            card.style.display = '';
+        }
+    });
+}
     function updateTimers() {
         const now = new Date().getTime();
         document.querySelectorAll('.sale-card-timer').forEach(timer => {
@@ -228,15 +279,18 @@
 
             if (distance < 0) {
                 timer.innerHTML = "땡처리 마감";
-            } else {
-                const hours = Math.floor(distance / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                timer.innerHTML = `🕓 ${hours}:${minutes}:${seconds}`;
+            if (document.getElementById('excludeExpired').checked) {
+                timer.closest('.sale-card').style.display = 'none';
             }
-        });
-    }
+        } else {
+            const hours = Math.floor(distance / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            timer.innerHTML = `🕓 ${hours}:${minutes}:${seconds}`;
+        }
+    });
+}
 
     setInterval(updateTimers, 1000);
     updateTimers(); // 초기 실행

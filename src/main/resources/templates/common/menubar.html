@@ -12,7 +12,6 @@
     <style>
         body {
             margin: 0;
-            font-family: Freesentation-7Bold;
         }
         .header {
             background-color: #ffffff;
@@ -37,6 +36,7 @@
             margin: 0;
             padding: 0;
             white-space: nowrap;
+            font-family: Freesentation-7Bold;
         }
         .nav-menu li {
             margin-right: 35px;
@@ -49,12 +49,18 @@
             color: #333;
             font-size: 20px;
         }
+        .nav-menu a:hover {
+            color: #FFB83D;
+        }
+        .nav-menu a.active {
+            color: #FFB83D;
+        }
         .right-section {
             display: flex;
             align-items: center;
         }
         .location-btn {
-            background-color: #FFA500;
+            background-color: #FFB83D;
             color: white;
             border: none;
             padding: 8px 15px 8px 8px;
@@ -66,12 +72,16 @@
             font-size: 18px;
             font-family: Freesentation-5Medium;
         }
+        .location-btn:hover {
+            background-color: #FFA11E;
+        }
         .location-btn svg {
             width: 25px;
             height: 25px;
             margin-right: 5px;
             fill: currentColor;
         }
+
         .user-icon {
             width: 50px;
             height: 50px;
@@ -82,11 +92,11 @@
         .auth-links {
             font-size: 18px;
             white-space: nowrap;
+            font-family: Freesentation-5Medium;
         }
         .auth-links a {
             text-decoration: none;
             color: #333;
-            font-family: Freesentation-5Medium;
         }
         .auth-links span {
             margin: 0 5px;
@@ -111,16 +121,19 @@
         </nav>
     </div>
     <div class="right-section">
+
         <th:block th:if="${#authorization.expression('isAuthenticated()')}">
-            <div class="location-btn">
+            <button class="location-btn" onclick="location.href='/member/address'">
                 <svg class="location-icon" viewBox="0 0 24 24" width="16" height="16">
                     <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                 </svg>
-                <div sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></div>
-            </div>
+                <span sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></span>
+            </button>
+
             <div class="user-icon">
                 <img th:src="@{/img/defaultProfile.png}" class="user-icon">
             </div>
+
             <div class="auth-links">
                 <a href="/member/dashBoard" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
                 <span>|</span>
@@ -130,16 +143,34 @@
                 </form>
             </div>
         </th:block>
-        <div class="auth-links">
-            <th:block th:unless="${#authorization.expression('isAuthenticated()')}">
+
+        <th:block th:unless="${#authorization.expression('isAuthenticated()')}">
+            <div class="auth-links">
                 <a href="/login">로그인</a>
                 <span>|</span>
                 <a href="/signup">회원가입</a>
-            </th:block>
-        </div>
+            </div>
+        </th:block>
+
     </div>
 </header>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll(".nav-menu a");
+
+        navLinks.forEach(link => {
+
+            const linkPath = new URL(link.href).pathname;
+            const linkPrefix = linkPath.split('/').slice(0, 2).join('/');
+
+            if (currentPath.startsWith(linkPrefix)) {
+                link.classList.add("active");
+            }
+        });
+    });
+</script>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </html>

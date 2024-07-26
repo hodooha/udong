@@ -50,5 +50,25 @@
         ORDER BY s.sale_no DESC
     </select>
 
+    <select id="searchSales" parameterType="map" resultMap="saleWithAttachment">
+        SELECT s.*, a.*
+        FROM SAL s
+        LEFT JOIN ATTACHMENT a ON s.sale_no = a.target_no AND a.type_code = 'SAL'
+        WHERE (s.title LIKE CONCAT('%', #{keyword}, '%') OR s.content LIKE CONCAT('%', #{keyword}, '%'))
+        <if test="excludeExpired != null and excludeExpired">
+            AND s.ended_at > NOW()
+        </if>
+        ORDER BY s.sale_no DESC
+    </select>
+
+
+    <select id="getAllActiveWithAttachments" resultMap="saleWithAttachment">
+        SELECT s.*, a.*
+        FROM SAL s
+        LEFT JOIN ATTACHMENT a ON s.sale_no = a.target_no AND a.type_code = 'SAL'
+        WHERE s.ended_at > NOW()
+        ORDER BY s.sale_no DESC
+    </select>
+
 
 </mapper>
