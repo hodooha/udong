@@ -70,7 +70,7 @@ public class MemberServiceImpl implements MemberService {
      *
      * @param memberDTO     the member dto
      * @param memBusDTO     the mem bus dto
-     * @param attachmentDTO
+     * @param attachmentDTO the attachment dto
      * @throws Exception the exception
      * @since 2024 -07-22
      */
@@ -92,7 +92,6 @@ public class MemberServiceImpl implements MemberService {
                 throw new Exception("회원가입에 실패하였습니다");
             }
         } catch (Exception e) {
-            System.out.println("회원가입 예외 발생: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
@@ -149,11 +148,12 @@ public class MemberServiceImpl implements MemberService {
     /**
      * Update profile.
      *
-     * @param memberDTO the member dto
+     * @param memberDTO     the member dto
+     * @param attachmentDTO the attachment dto
      * @since 2024 -07-26
      */
     @Override
-    public void updateProfile(MemberDTO memberDTO) {
+    public void updateProfile(MemberDTO memberDTO, AttachmentDTO attachmentDTO) {
 
     }
 

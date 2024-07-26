@@ -23,5 +23,5 @@ public interface MemberService {
 
     void updateAddress(MemAddressDTO memAddressDTO) throws Exception;
 
-    void updateProfile(MemberDTO memberDTO);
+    void updateProfile(MemberDTO memberDTO, AttachmentDTO attachmentDTO);
 }

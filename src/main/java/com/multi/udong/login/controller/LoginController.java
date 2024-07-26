@@ -50,7 +50,7 @@ public class LoginController {
                             @RequestParam(value = "message", required = false) String message,
                             Model model) {
         if (error != null) {
-            model.addAttribute("errorMessage", message);
+            model.addAttribute("msg", message);
         }
         return "member/login";
     }
@@ -64,8 +64,6 @@ public class LoginController {
      */
     @GetMapping("/signup")
     public String signup(Model model) {
-        System.out.println("회원가입 시작");
-        model.addAttribute("memberDTO", new MemberDTO());
         return "member/signup";
     }
 
@@ -93,9 +91,8 @@ public class LoginController {
         String randomNickname = String.format("member-%05d", randomNumber);
         memberDTO.setNickname(randomNickname);
 
-        System.out.println("memberDTO" + memberDTO);
-
         if (!file.isEmpty()) {
+            // 파일 저장 메소드
             AttachmentDTO attachmentDTO = memberController.settingFile(file);
             attachmentDTO.setTypeCode("BRG");
 
@@ -107,52 +104,69 @@ public class LoginController {
             ArrayList<String> list = ocr.ocr(fileName);
             System.out.println("list:" + list);
 
-            String b_no = list.get(0).replaceAll("-","");
-            String p_nm = list.get(2);
-            String start_dt = list.get(3).replaceAll(" ","").replaceAll("년","").replaceAll("월","").replaceAll("일","");
+            if (!list.isEmpty()) {
+                // 추출한 결과 전처리
+                String b_no = list.get(0).trim().replaceAll("-", "");
+                String p_nm = list.get(2).trim();
+                String start_dt = list.get(3).trim()
+                        .replaceAll(" ", "")
+                        .replaceAll("년", "")
+                        .replaceAll("월", "")
+                        .replaceAll("일", "");
 
-            // 추출한 정보를 국세청API로 검증요청
-            Map<String, Object> requestBody = new HashMap<>();
-            List<Map<String, String>> businesses = new ArrayList<>();
-            Map<String, String> business = new HashMap<>();
+                // 전처리된 추출 결과를 국세청API로 검증요청
+                Map<String, Object> requestBody = new HashMap<>();
+                List<Map<String, String>> businesses = new ArrayList<>();
+                Map<String, String> business = new HashMap<>();
 
-            business.put("b_no", b_no);
-            business.put("p_nm", p_nm);
-            business.put("start_dt", start_dt);
-            businesses.add(business);
-            requestBody.put("businesses", businesses);
+                business.put("b_no", b_no);
+                business.put("p_nm", p_nm);
+                business.put("start_dt", start_dt);
+                businesses.add(business);
+                requestBody.put("businesses", businesses);
 
-            // 검증결과에서 "data": [{"valid": "01"}] 값 추출
-            Map<String, Object> result = ntsapi.validateBusinessRegistration(serviceKey, requestBody);
-            List<Map<String, Object>> dataList = (List<Map<String, Object>>) result.get("data");
-            Map<String, Object> data = dataList.get(0);
-            String valid = (String) data.get("valid");
-            System.out.println("valid:" + valid);
+                Map<String, Object> result = ntsapi.validateBusinessRegistration(serviceKey, requestBody);
 
-            // valid값이 01 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
-            if (valid.equals("01")) {
-                try {
-                    MemBusDTO memBusDTO = new MemBusDTO();
-                    memBusDTO.setBusinessNumber(b_no);
-                    memBusDTO.setRepresentativeName(p_nm);
-                    memBusDTO.setOpeningDate(start_dt);
-                    memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                // 검증결과에서 "data": [{"valid": "01"}] 값 추출, 01 = 유효, 02 = 유효하지 않음
+                List<Map<String, Object>> dataList = (List<Map<String, Object>>) result.get("data");
+                Map<String, Object> data = dataList.get(0);
+                String valid = (String) data.get("valid");
+                System.out.println("사업자등록증 유효코드 - valid: " + valid);
+
+                // valid값이 01이면 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
+                if (valid.equals("01")) {
+                    try {
+                        MemBusDTO memBusDTO = new MemBusDTO();
+                        memBusDTO.setBusinessNumber(b_no);
+                        memBusDTO.setRepresentativeName(p_nm);
+                        memBusDTO.setOpeningDate(start_dt);
+                        memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
+                    } catch (Exception e) {
+                        new File(fileName).delete();
+                        model.addAttribute("msg", "회원가입에 실패했습니다.");
+                        return "common/errorPage";
+                    }
+                    model.addAttribute("msg", "회원가입이 완료되었습니다.");
+                    return "member/login";
+                } else {
+                    new File(fileName).delete();
+                    model.addAttribute("msg", "유효하지 않은 사업자등록증입니다");
+                    return "member/signup";
                 }
-                return "redirect:/login";
-            } else { // 유효하지 않으면 파일 삭제
+            } else {
                 new File(fileName).delete();
-                return "redirect:/signup";
+                model.addAttribute("msg", "유효하지 않은 이미지입니다");
+                return "member/signup";
             }
         }
 
         try {
             memberService.signup(memberDTO);
             model.addAttribute("msg","회원가입이 완료되었습니다.");
-            return "redirect:/login";
+            return "member/login";
         } catch (Exception e) {
-            return "redirect:/signup";
+            model.addAttribute("msg","회원가입에 실패하였습니다.");
+            return "member/signup";
         }
     }
 

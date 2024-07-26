@@ -69,6 +69,8 @@ public class MemberController {
                         addressDTO.getSiGunGuName() + " " +
                         addressDTO.getEupMyeonDongName() + " " +
                         (addressDTO.getDetailAddress() != null ? addressDTO.getDetailAddress() : "");
+            } else {
+                currentFullAddress = "등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요.";
             }
             model.addAttribute("currentFullAddress", currentFullAddress);
         }
@@ -131,6 +133,7 @@ public class MemberController {
             try {
                 memberService.insertAddress(memAddressDTO);
             } catch (Exception e) {
+                model.addAttribute("msg", "주소 등록에 실패하였습니다.");
                 throw new RuntimeException(e);
             }
             memberService.updateMemberSession();
@@ -139,6 +142,7 @@ public class MemberController {
             model.addAttribute("msg", "주소 수정이 완료되었습니다.");
         }
 
+        model.addAttribute("msg", "주소 등록이 완료되었습니다.");
         return "member/address";
     }
 
@@ -173,6 +177,8 @@ public class MemberController {
         memberDTO.setMemberNo(c.getMemberDTO().getMemberNo());
         if (file != null) {
             AttachmentDTO attachmentDTO = settingFile(file);
+
+            memberService.updateProfile(memberDTO, attachmentDTO);
 
         }
 
