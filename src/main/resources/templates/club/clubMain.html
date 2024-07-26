@@ -144,7 +144,7 @@
 
 <div class="content" style="padding: 40px;">
     <div class="top">
-        <form class="search-form" action="clubMain" method="get">
+        <form class="search-form" th:action="@{/club/clubMain}" method="get">
             <div class="search-bar">
                 <input type="hidden" name="page" value="1">
                 <span>주제</span>
@@ -156,7 +156,7 @@
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>
         </form>
-        <a href="clubInsertForm">
+        <a th:href="@{/club/clubInsertForm}">
             <button type="button" class="btn btn-udh-blue btn-create-club">모임 생성</button>
         </a>
     </div>

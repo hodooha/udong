@@ -59,6 +59,13 @@
             font-family: 'Freesentation-5Medium' !important;
             font-size: 18px;
         }
+        .club-main-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-club-main {
+            font-family: 'Freesentation-5Medium' !important;
+        }
     </style>
     <script type="text/javascript">
 
@@ -136,6 +143,13 @@
                 </td>
             </tr>
         </table>
+        <div class="club-main-btn-container">
+            <a th:href="@{/club/clubMain(page=1)}">
+                <button class="btn btn-udh-blue btn-club-main">
+                    모임 목록으로
+                </button>
+            </a>
+        </div>
 
     </div>
 
