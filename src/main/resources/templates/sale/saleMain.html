@@ -192,6 +192,10 @@
             margin: 0 auto 20px;
             position: relative;
         }
+        .filter-container .spacer {
+            display: inline-block;
+            width: 10px; 
+        }
 
     </style>
 
@@ -215,6 +219,12 @@
         <div class="filter-container">
             <input type="checkbox" id="excludeExpired" name="excludeExpired" th:checked="${param.excludeExpired}">
             <label for="excludeExpired">마감제외</label>
+            <span class="spacer"></span>
+            <select id="sortOption" name="sortOption">
+                <option value="latest" th:selected="${param.sortOption == 'latest'}">최신순</option>
+                <option value="deadline" th:selected="${param.sortOption == 'deadline'}">마감임박순</option>
+                <option value="lowPrice" th:selected="${param.sortOption == 'lowPrice'}">낮은가격순</option>
+            </select>
         </div>
     </div>
 </form>
@@ -251,8 +261,15 @@ let filteredSales = [...sales];
 
 document.addEventListener('DOMContentLoaded', function() {
     const excludeExpiredCheckbox = document.getElementById('excludeExpired');
+    const sortOptionSelect = document.getElementById('sortOption');
     excludeExpiredCheckbox.addEventListener('change', () => {
         filterSales();
+        applySorting();
+        displaySales(1);
+    });
+
+    sortOptionSelect.addEventListener('change', () => {
+        applySorting();
         displaySales(1);
     });
 
@@ -260,10 +277,12 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
         const searchTerm = document.querySelector('.search-input').value;
         const excludeExpired = document.getElementById('excludeExpired').checked;
-        window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}&excludeExpired=${excludeExpired}`;
+        const excludeExpiredParam = excludeExpired ? `&excludeExpired=${excludeExpired}` : '';
+        window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}${excludeExpiredParam}`;
     });
 
     filterSales();
+    applySorting();
     displaySales(currentPage);
     updateTimers();
     setInterval(updateTimers, 1000);
@@ -277,6 +296,26 @@ function filterSales() {
         const endTime = new Date(sale.endedAt).getTime();
         return !(excludeExpired && endTime < now);
     });
+}
+function applySorting() {
+    const sortOption = document.getElementById('sortOption').value;
+
+    switch(sortOption) {
+        case 'latest':
+            filteredSales.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+            break;
+        case 'deadline':
+    filteredSales.sort((a, b) => {
+        const now = new Date().getTime();
+        const aTimeLeft = new Date(a.endedAt).getTime() - now;
+        const bTimeLeft = new Date(b.endedAt).getTime() - now;
+        return aTimeLeft - bTimeLeft;  // 남은 시간이 적은 순으로 정렬
+    });
+    break;
+        case 'lowPrice':
+            filteredSales.sort((a, b) => a.salePrice - b.salePrice);
+            break;
+    }
 }
 
 function updateTimers() {
@@ -311,7 +350,7 @@ function displaySales(page) {
     const saleCardsContainer = document.getElementById('saleCards');
     saleCardsContainer.innerHTML = '';
 
-    salesToDisplay.forEach(sale => {
+    salesToDisplay.forEach((sale, index) => {
         const saleCard = document.createElement('div');
         saleCard.className = 'sale-card';
         saleCard.innerHTML = `
@@ -335,6 +374,7 @@ function displaySales(page) {
             </div>
         `;
         saleCardsContainer.appendChild(saleCard);
+        console.log(`Card ${index}: EndedAt - ${sale.endedAt}, TimeLeft - ${new Date(sale.endedAt) - new Date()}`);
     });
 
     updateTimers();
@@ -359,6 +399,7 @@ function updatePagination() {
         paginationContainer.appendChild(pageButton);
     }
 }
+
 
 </script>
 
