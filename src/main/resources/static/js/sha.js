@@ -71,50 +71,63 @@ function isValid() {
     }
 }
 
-function chageCat(){
-    const token = $("meta[name='_csrf']").attr("content");
-    const header = $("meta[name='_csrf_header']").attr("content");
-    let selectedCat = $('.catSelect').val() == "" ? null : $('.catSelect').val();
+function getSearchParams(page){
+    let selectedCat = $('.catSelect').val();
     let group = $("input[name='group']").val();
     let locCode = $("input[name='locCode']").val();
     let isChecked = $('#availableCheck').is(':checked');
-    let statusCode = null;
-    if(isChecked){
-       statusCode = $('#availableCheck').val();
+    let statusCode = isChecked ? $('#availableCheck').val() : null;
+    let keyword = $('#keyword').val();
+    if (page == null || page == '') {
+        page = 1;
+    }
+
+    return {
+        catCode: selectedCat,
+        group: group,
+        locCode: locCode,
+        statusCode: statusCode,
+        keyword: keyword,
+        page: page
     };
-    console.log(statusCode);
-    $.ajax({
-            url : "searchByCat",
-            type: "post",
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader(header, token);
-                },
-            data: {
-                catCode: selectedCat,
-                group: group,
-                locCode: locCode,
-                statusCode: statusCode
-                },
-            success: function(data){
-                console.log(data);
-                let result = data.map((item)=>{
-                    return `<div class="col">
-        <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
-<img src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/'+item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
-<div class="card-body">
-                <h4>${item.title}</h4>
-                <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-            </div>
-        </div>
-    </div>`}).join("");
-
-                console.log(result);
-                $("#itemList").html(result);
-
-                },
-            error : function(){
-                alert("아이템 불러오기 실패");
-                }
-        })
 }
+
+function updateItems(params){
+    $.ajax({
+            url: "search",
+            type: "get",
+            data: params,
+            success: function(data) {
+                renderItems(data.itemList);
+                console.log(data)
+            },
+            error: function() {
+                alert("아이템 불러오기 실패");
+            }
+    });
+}
+
+function renderItems(items){
+    let itemResult = items.map((item) => {
+        return `<div class="col">
+            <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
+                <img src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
+                <div class="card-body">
+                    <h4>${item.title}</h4>
+                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                </div>
+            </div>
+        </div>`;
+    }).join("");
+    $("#itemList").html(itemResult);
+}
+
+function search(page){
+    let params = getSearchParams(page);
+    console.log(params);
+    updateItems(params);
+
+}
+
+
 

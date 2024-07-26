@@ -16,5 +16,13 @@ public class ShaCriteriaDTO {
     private String group;
     private Long locCode;
     private String statusCode;
+    private int page;
+    private int start;
+    private int end;
+
+    public void setPageRange(int page){
+        this.start = ShaPageDTO.ITEM_COUNTS_FOR_PAGE * (page - 1) + 1;
+        this.end = page * ShaPageDTO.ITEM_COUNTS_FOR_PAGE;
+    }
 
 }

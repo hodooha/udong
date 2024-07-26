@@ -71,25 +71,7 @@
                 <select class="form-select" name="itemCatCode" required>
                     <option value="">=== 카테고리 선택 ===</option>
                     <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
-                    <!--<option value="DIG" >디지털기기</option>
-                    <option value="HAP">생활가전</option>
-                    <option value="FUR">가구/인테리어</option>
-                    <option value="LKT">생활/주방</option>
-                    <option value="KID">유아동</option>
-                    <option value="KDB">유아도서</option>
-                    <option value="WCL">여성의류</option>
-                    <option value="WAC">여성잡화</option>
-                    <option value="MAC">남성패션/잡화 </option>
-                    <option value="BTY">뷰티/미용</option>
-                    <option value="SPT">스포츠/레저</option>
-                    <option value="HBB">취미/게임/음반</option>
-                    <option value="BKS">도서</option>
-                    <option value="TKT">티켓/교환권</option>
-                    <option value="FPP">가공식품</option>
-                    <option value="HFS">건강기능식품</option>
-                    <option value="PET">반려동물용품</option>
-                    <option value="PLT">식물</option>
-                    <option value="OTH">기타</option>-->
+
                 </select>
             </div>
             <div class="col-md-6">

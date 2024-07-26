@@ -5,6 +5,7 @@ import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.share.model.dto.ShaCatDTO;
 import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
+import com.multi.udong.share.model.dto.ShaPageDTO;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,9 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -44,14 +43,24 @@ public class ShareController {
      */
     @GetMapping("/rent")
     public String rentMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
-        int locCode = 1111010100; // 추후 변경 필요!
+        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
+        ShaPageDTO pageInfo = new ShaPageDTO();
+        criteriaDTO.setLocCode(1111010100L); // 추후 변경 필요!
+        criteriaDTO.setGroup("rent");
+        criteriaDTO.setPage(1);
+        criteriaDTO.setPageRange(1);
 
         try {
-            List<ShaItemDTO> itemList = shareService.rentItemList(locCode);
+            List<ShaItemDTO> itemList = shareService.searchItems(criteriaDTO);
             List<ShaCatDTO> catList = shareService.getShaCat();
+            int totalCounts = shareService.getItemCounts(criteriaDTO);
+            pageInfo.setCurrentPage(criteriaDTO.getPage());
+            pageInfo.setPageInfo(totalCounts);
             System.out.println(itemList);
             model.addAttribute("itemList", itemList);
             model.addAttribute("catList", catList);
+            model.addAttribute("totalCount", totalCounts);
+            model.addAttribute("pageInfo", pageInfo);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -70,10 +79,15 @@ public class ShareController {
      */
     @GetMapping("/give")
     public String giveMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
-        int locCode = 1111010100; // 추후 변경 필요!
+        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
+        criteriaDTO.setLocCode(1111010100L); // 추후 변경 필요!
+        criteriaDTO.setGroup("give");
+        criteriaDTO.setStatusCode("GIV");
+        criteriaDTO.setPageRange(1);
+
 
         try {
-            List<ShaItemDTO> itemList = shareService.giveItemList(locCode);
+            List<ShaItemDTO> itemList = shareService.searchItems(criteriaDTO);
             List<ShaCatDTO> catList = shareService.getShaCat();
             System.out.println(itemList);
             model.addAttribute("itemList", itemList);
@@ -199,21 +213,30 @@ public class ShareController {
      * @return the list
      * @since 2024 -07-24
      */
-    @PostMapping("/searchByCat")
+    @GetMapping("/search")
     @ResponseBody
-    public List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO){
+    public Map<String, Object> searchItems(ShaCriteriaDTO criteriaDTO){
 
-        System.out.println(criteriaDTO);
+        Map<String, Object> result = new HashMap<>();
+        criteriaDTO.setPageRange(criteriaDTO.getPage());
+        ShaPageDTO pageInfo = new ShaPageDTO();
+        System.out.println("여기!!!!!"+criteriaDTO);
         List<ShaItemDTO> itemList = null;
         try {
             itemList = shareService.searchItems(criteriaDTO);
+            int totalCounts = shareService.getItemCounts(criteriaDTO);
+            pageInfo.setCurrentPage(criteriaDTO.getPage());
+            pageInfo.setPageInfo(totalCounts);
             System.out.println(itemList);
+            result.put("itemList", itemList);
+            result.put("pageInfo", pageInfo);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
 
-        return itemList;
+
+        return result;
     }
 
 }

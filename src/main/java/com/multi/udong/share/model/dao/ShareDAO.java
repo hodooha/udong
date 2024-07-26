@@ -53,9 +53,10 @@ public class ShareDAO {
      * @param sqlSession the sql session
      * @param imgList    the img list
      * @return the int
+     * @throws Exception the exception
      * @since 2024 -07-23
      */
-    public int insertImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> imgList) {
+    public int insertImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> imgList) throws Exception{
 
 
         return sqlSession.insert("ShareMapper.insertImg", imgList);
@@ -67,9 +68,10 @@ public class ShareDAO {
      * @param sqlSession the sql session
      * @param locCode    the loc code
      * @return the list
+     * @throws Exception the exception
      * @since 2024 -07-23
      */
-    public List<ShaItemDTO> rentItemList(SqlSessionTemplate sqlSession, int locCode) {
+    public List<ShaItemDTO> rentItemList(SqlSessionTemplate sqlSession, int locCode) throws Exception{
         return (ArrayList) sqlSession.selectList("ShareMapper.rentItemList", locCode);
     }
 
@@ -79,9 +81,10 @@ public class ShareDAO {
      * @param sqlSession the sql session
      * @param locCode    the loc code
      * @return the list
+     * @throws Exception the exception
      * @since 2024 -07-23
      */
-    public List<ShaItemDTO> giveItemList(SqlSessionTemplate sqlSession, int locCode) {
+    public List<ShaItemDTO> giveItemList(SqlSessionTemplate sqlSession, int locCode) throws Exception{
         return (ArrayList) sqlSession.selectList("ShareMapper.giveItemList", locCode);
     }
 
@@ -91,9 +94,10 @@ public class ShareDAO {
      * @param sqlSession the sql session
      * @param itemDTO    the item dto
      * @return the item detail
+     * @throws Exception the exception
      * @since 2024 -07-23
      */
-    public ShaItemDTO getItemDetail(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
+    public ShaItemDTO getItemDetail(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
 
         return sqlSession.selectOne("ShareMapper.getItemDetail", itemDTO);
 
@@ -105,14 +109,40 @@ public class ShareDAO {
      * @param sqlSession the sql session
      * @param itemDTO    the item dto
      * @return the item imgs
+     * @throws Exception the exception
      * @since 2024 -07-23
      */
-    public List<AttachmentDTO> getItemImgs(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
+    public List<AttachmentDTO> getItemImgs(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
 
         return (ArrayList) sqlSession.selectList("ShareMapper.getItemImgs", itemDTO);
     }
 
-    public List<ShaItemDTO> searchItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) {
+
+    /**
+     * 물건 검색
+     *
+     * @param sqlSession  the sql session
+     * @param criteriaDTO the criteria dto
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -07-24
+     */
+    public List<ShaItemDTO> searchItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) throws Exception{
         return (ArrayList) sqlSession.selectList("ShareMapper.searchItems", criteriaDTO);
+    }
+
+
+    /**
+     * 물건 총 개수 조회
+     *
+     * @param sqlSession  the sql session
+     * @param criteriaDTO the criteria dto
+     * @return the item counts
+     * @throws Exception the exception
+     * @since 2024 -07-25
+     */
+    public int getItemCounts(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) throws Exception{
+        return sqlSession.selectOne("ShareMapper.getItemCounts", criteriaDTO);
+
     }
 }
