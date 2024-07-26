@@ -28,6 +28,7 @@ public interface SaleService {
      * @return the all sales
      */
 
-    List<SaleDTO> getAllSalesWithAttachments(); //모든 판매정보 조회 메서드
-
+    List<SaleDTO> getAllSalesWithAttachments();
+    List<SaleDTO> getAllActiveWithAttachments();
+    List<SaleDTO> search(String keyword, Boolean excludeExpired);
 }

@@ -31,10 +31,20 @@ public class SaleController {
     }
 
     @GetMapping("/saleMain")
-    public String saleMain(Model model) {
-        List<SaleDTO> sales = saleService.getAllSalesWithAttachments(); //모든 땡처리 정보 가져와서 모델에 추가하고 뷰 반환
+    public String saleMain(Model model,
+                           @RequestParam(value = "search", required = false) String search,
+                           @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired) {
+        List<SaleDTO> sales;
+        if (search == null || search.isEmpty()) {
+            if (Boolean.TRUE.equals(excludeExpired)) {
+                sales = saleService.getAllActiveWithAttachments();
+            } else {
+                sales = saleService.getAllSalesWithAttachments();
+            }
+        } else {
+            sales = saleService.search(search, excludeExpired);
+        }
         model.addAttribute("sales", sales);
-
         return "sale/saleMain";
     }
 
