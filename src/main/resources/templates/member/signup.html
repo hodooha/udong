@@ -12,9 +12,9 @@
             display: flex;
             justify-content: center;
             margin-top: 70px;
-            height: 70vh
+            height: 80vh
         }
-        .signup {
+        .signup, .bus-reg {
             display: flex;
             justify-content: center;
             width: 500px;
@@ -100,15 +100,12 @@
             font-size: 30px;
             color: #999;
         }
-        .bus-reg {
-            display: flex;
-            justify-content: center;
+        .image {
             width: 500px;
-            border: 1px solid #ddd;
+            background-image: url('img/neighbor.jpg');
+            background-size: cover;
+            background-position: center;
             border-radius: 10px;
-            padding: 20px;
-            flex-direction: column;
-            align-items: center;
         }
         .bus-reg input {
             width: 70%;
@@ -118,15 +115,10 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .bus-reg input:hover{
-            width: 70%;
-            padding: 10px;
+        .bus-reg input:hover {
             background-color: #142657;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
         .bus-reg input::file-selector-button {
             display: none;
@@ -150,6 +142,11 @@
 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
     <div class="container">
         <div class="signup">
+            <h5>
+                * 판매자로 가입하실 경우 사업자등록증을 제출해주시기 바랍니다.<br>
+                * 승인은 1~2일 내로 완료됩니다.<br>
+                * 승인여부에 관계없이 회원으로 활동하실 수 있습니다.
+            </h5>
             <div class="member-type">
                 <label>
                     <input type="radio" name="memberType" value="general" checked> 일반회원
@@ -189,12 +186,15 @@
             <button type="submit" class="btn btn-udh-blue">회원가입</button>
         </div>
         <div class="vertical-line"></div>
-        <div class="bus-reg">
+        <div class="image"></div>
+        <div class="bus-reg" style="display: none">
             <img class="preview" id="preview">
-            <input type="file" name="file" id="bus-reg-input" accept="image/*" disabled="disabled">
+            <input type="file" name="file" id="bus-reg-input" accept="image/*">
+            <br><h3>사업자등록증 업로드</h3>
         </div>
     </div>
 </form>
+<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -208,6 +208,8 @@
         const checkDuplicateButton = document.getElementById('checkDuplicate');
         const inputs = document.querySelectorAll('.input-group input');
         const clearButtons = document.querySelectorAll('.clear-input');
+        const imageDiv = document.querySelector('.image');
+        const busRegDiv = document.querySelector('.bus-reg');
         const busRegInput = document.getElementById('bus-reg-input');
 
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -218,9 +220,13 @@
         memberTypeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'seller') {
-                    busRegInput.disabled = false;
+                    imageDiv.style.display = 'none';
+                    busRegDiv.style.display = 'flex';
                 } else {
-                    busRegInput.disabled = true;
+                    imageDiv.style.display = 'flex';
+                    busRegDiv.style.display = 'none';
+                    busRegInput.value = '';
+                    document.getElementById('preview').src = '';
                 }
             });
         });
@@ -354,8 +360,8 @@
             button.addEventListener('click', () => clearInput(inputs[index]));
         });
     });
-</script>
-<script> // 이미지 미리보기
+</script> <!--유효성 검사 스크립트-->
+<script>
     const fileInput = document.getElementById('bus-reg-input');
     const preview = document.getElementById('preview');
 
@@ -376,5 +382,13 @@
             }
         }
     });
-</script>
+</script> <!--이미지 미리보기 스크립트-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!--msg alert-->
 </html>

@@ -53,11 +53,16 @@
         (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
     </insert>
 
+    <insert id="insertAttachment" parameterType="attachmentDTO">
+        INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name) VALUES
+        (#{typeCode}, #{targetNo}, #{originalName}, #{savedName})
+    </insert>
+
     <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">
         SELECT location_code
         FROM LOCATION
         WHERE si_do_name = #{siDoName}
-        AND si_gun_gu_name = #{siGunGuName}
+        AND si_gun_gu_name LIKE CONCAT(#{siGunGuName}, '%')
         AND eup_myeon_dong_name = #{eupMyeonDongName}
     </select>
 
@@ -65,5 +70,16 @@
         INSERT INTO MEM_ADDRESS (member_no, si_do_name, si_gun_gu_name, eup_myeon_dong_name, detail_address, location_code) VALUES
         (#{memberNo}, #{siDoName}, #{siGunGuName}, #{eupMyeonDongName}, #{detailAddress}, #{locationCode})
     </insert>
+
+    <update id="updateAddress" parameterType="memAddressDTO">
+        UPDATE MEM_ADDRESS
+        SET si_do_name = #{siDoName},
+        si_gun_gu_name = #{siGunGuName},
+        eup_myeon_dong_name = #{eupMyeonDongName},
+        detail_address = #{detailAddress},
+        location_code = #{locationCode},
+        modified_at = CURRENT_TIMESTAMP
+        WHERE member_no = #{memberNo}
+    </update>
 
 </mapper>
