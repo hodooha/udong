@@ -40,16 +40,16 @@ body {
     color: #FFFFFF;
 }
 .btn-udh-yellow:hover {
-    background-color: #FFA11E;
+    background-color: #FF9909;
     color: #FFFFFF;
 }
 
 .btn-udh-blue {
-    background-color: #27447B;
+    background-color: #3B5C9A;
     color: #FFFFFF;
 }
 .btn-udh-blue:hover {
-    background-color: #142657;
+    background-color: #0B1D40;
     color: #FFFFFF;
 }
 
@@ -58,7 +58,7 @@ body {
     color: #FFFFFF;
 }
 .btn-udh-red:hover {
-    background-color: #AA0000;
+    background-color: #9D1717;
     color: #FFFFFF;
 }
 
@@ -67,7 +67,7 @@ body {
     color: #FFFFFF;
 }
 .btn-udh-silver:hover {
-    background-color: #6F6F6F;
+    background-color: #6A6A6A;
     color: #FFFFFF;
 }
 

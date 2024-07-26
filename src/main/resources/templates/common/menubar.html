@@ -12,7 +12,6 @@
     <style>
         body {
             margin: 0;
-            font-family: Freesentation-7Bold;
         }
         .header {
             background-color: #ffffff;
@@ -37,6 +36,7 @@
             margin: 0;
             padding: 0;
             white-space: nowrap;
+            font-family: Freesentation-7Bold;
         }
         .nav-menu li {
             margin-right: 35px;
@@ -48,6 +48,12 @@
             text-decoration: none;
             color: #333;
             font-size: 20px;
+        }
+        .nav-menu a:hover {
+            color: #FFB83D;
+        }
+        .nav-menu a.active {
+            color: #FFB83D;
         }
         .right-section {
             display: flex;
@@ -82,11 +88,11 @@
         .auth-links {
             font-size: 18px;
             white-space: nowrap;
+            font-family: Freesentation-5Medium;
         }
         .auth-links a {
             text-decoration: none;
             color: #333;
-            font-family: Freesentation-5Medium;
         }
         .auth-links span {
             margin: 0 5px;
@@ -140,6 +146,22 @@
     </div>
 </header>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll(".nav-menu a");
+
+        navLinks.forEach(link => {
+
+            const linkPath = new URL(link.href).pathname;
+            const linkPrefix = linkPath.split('/').slice(0, 2).join('/');
+
+            if (currentPath.startsWith(linkPrefix)) {
+                link.classList.add("active");
+            }
+        });
+    });
+</script>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </html>

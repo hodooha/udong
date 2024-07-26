@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .club-img {
+            width: 150px;
+            height: 150px;
+            margin-right: 15px;
+            border-radius: 3px;
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .club-category-name {
+            width: 80px;
+            text-align: center;
+            background-color: #E5E5E5;
+            border-radius: 3px;
+            font-size: 15px;
+            padding: 2px;
+            margin-bottom: 8px;
+        }
+        .club-name {
+            font-family: 'Freesentation-7Bold';
+            font-size: 23px;
+        }
+        .club-etc {
+            font-size: 14px;
+            color: #6F6F6F;
+            margin-bottom: 20px;
+        }
+        .btn-join {
+            margin-right: 10px;
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 18px;
+        }
+        .btn-right-area {
+            vertical-align: top;
+            text-align: right;
+            width: 100%;
+        }
+        .btn-right {
+            margin-left: 10px;
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 18px;
+        }
+        .club-main-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-club-main {
+            font-family: 'Freesentation-5Medium' !important;
+        }
+    </style>
+    <script type="text/javascript">
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px;">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <table style="border-collapse: collapse;">
+            <tr style="white-space: nowrap;">
+                <td style="width: 150px">
+                    <img th:src="@{'/uploadFiles/' + ${clubHome.attachment[0].savedName}}" class="club-img">
+                </td>
+                <td>
+                    <p th:text="${clubHome.category.categoryName}" class="p-tag club-category-name"></p>
+                    <p th:text="${clubHome.clubName}" class="p-tag club-name"></p>
+                    <p class="p-tag club-etc">
+                        <span>&#128100;</span>
+                        <span th:text="${clubHome.currentPersonnel}"></span> /
+                        <span th:text="${clubHome.maxPersonnel}"></span> 명
+                        <span style="margin-left: 7px">|</span>
+                        <span th:text="${clubHome.location.eupMyeonDongName}" style="margin-left: 7px"></span>
+                    </p>
+                    <th:block th:if="${clubHome.joinStatus == null}">
+                        <button class="btn btn-udh-blue btn-join">
+                            가입 신청
+                        </button>
+                    </th:block>
+                    <th:block th:if="${clubHome.joinStatus == 'W'}">
+                        <button class="btn btn-udh-red btn-join">
+                            가입 신청 취소
+                        </button>
+                    </th:block>
+                    <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo != #authentication.principal.memberDTO.memberNo}">
+                        <button class="btn btn-udh-red btn-join">
+                            모임 탈퇴
+                        </button>
+                    </th:block>
+                    <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
+                        <button class="btn btn-udh-blue btn-join">
+                            가입 신청자 관리
+                        </button>
+                    </th:block>
+                </td>
+                <td class="btn-right-area">
+                    <th:block th:if="${clubHome.joinStatus == 'Y'}">
+                        <button class="btn btn-udh-blue btn-right">
+                            채팅 참여
+                        </button>
+                    </th:block>
+                    <button class="btn btn-udh-blue btn-right">
+                        모임 신고
+                    </button>
+                    <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
+                        <button class="btn btn-udh-blue btn-right">
+                            모임 수정
+                        </button>
+                    </th:block>
+                    <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
+                        <button class="btn btn-udh-red btn-right">
+                            모임 해체
+                        </button>
+                    </th:block>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3" style="padding-top: 30px;">
+                    <span th:text="${clubHome.introduction}"></span>
+                </td>
+            </tr>
+        </table>
+        <div class="club-main-btn-container">
+            <a th:href="@{/club/clubMain(page=1)}">
+                <button class="btn btn-udh-blue btn-club-main">
+                    모임 목록으로
+                </button>
+            </a>
+        </div>
+
+    </div>
+
+</div>
+<script type="text/javascript">
+
+</script>
+</body>
+</html>
