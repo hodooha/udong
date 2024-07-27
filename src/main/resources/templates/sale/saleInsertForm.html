@@ -229,9 +229,11 @@
             const currentDateTime = new Date();
 
             if (selectedDateTime < currentDateTime) {
+            alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
                 this.value = getCurrentTime();
             }
         });
+         startedAtDateInput.addEventListener('change', updateMinTime);
     });
 
     // 폼 제출 시 유효성 검사 함수
@@ -244,10 +246,7 @@
         var startTime = new Date(startedAtDate + 'T' + startedAtTime);
         var endTime = new Date(endedAtDate + 'T' + endedAtTime);
         var now = new Date();
-        if (startTime < now) {
-        startTime = now;
-        document.getElementById("started_at_time").value = getCurrentTime();
-    }
+
 
         var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
         var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
