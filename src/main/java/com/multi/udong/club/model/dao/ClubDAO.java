@@ -136,4 +136,11 @@ public class ClubDAO {
         return sqlSession.selectOne("clubMapper.selectClubHome", requestDTO);
 
     }
+
+
+    public int requestJoinClub(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.insert("clubMapper.requestJoinClub", requestDTO);
+
+    }
 }

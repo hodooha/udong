@@ -164,7 +164,7 @@
             B.category_name,
             C.*,
             (SELECT D.nickname FROM MEMBER D WHERE D.member_no = A.master) AS master_nickname,
-            (SELECT COUNT(*) FROM CL_MEMBER E WHERE E.club_no = A.club_no) AS current_personnel,
+            (SELECT COUNT(*) FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.join_status = 'Y') AS current_personnel,
             (SELECT E.join_status FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.member_no = #{ memberNo }) AS join_status,
             F.*
         FROM CL A
@@ -173,5 +173,15 @@
         LEFT JOIN ATTACHMENT F ON 'CL' = F.type_code AND A.club_no = F.target_no
         WHERE A.club_no = #{ clubNo }
     </select>
+
+    <insert id="requestJoinClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        INSERT INTO CL_MEMBER
+            (club_no, member_no)
+        VALUES
+            (
+            #{ clubNo },
+            #{ memberNo }
+            )
+    </insert>
 
 </mapper>
