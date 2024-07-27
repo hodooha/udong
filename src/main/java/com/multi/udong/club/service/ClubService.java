@@ -25,4 +25,7 @@ public interface ClubService {
 
     ClubDTO selectClubHome(RequestDTO requestDTO) throws Exception;
 
+    int requestJoinClub(RequestDTO requestDTO) throws Exception;
+
+    String checkJoinStatus(RequestDTO requestDTO) throws Exception;
 }

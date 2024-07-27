@@ -155,4 +155,12 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+
+    @Override
+    public int requestJoinClub(RequestDTO requestDTO) throws Exception {
+
+        return clubDAO.requestJoinClub(sqlSession, requestDTO);
+
+    }
+
 }

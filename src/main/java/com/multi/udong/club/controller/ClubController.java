@@ -294,4 +294,33 @@ public class ClubController {
     }
 
 
+    @PostMapping("/requestJoinClub")
+    public String requestJoinClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        try {
+
+            clubService.requestJoinClub(requestDTO);
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 가입 신청 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+
 }
