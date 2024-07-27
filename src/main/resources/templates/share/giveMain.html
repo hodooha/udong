@@ -6,8 +6,8 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
-        span{
-            margin-right: 30px;
+        .card-body span{
+            margin-right: 1em;
         }
 
         .headBar{
@@ -37,20 +37,43 @@
             cursor: pointer;
         }
 
+        .page-link{
+            background-color: #3B5C9A !important;
+            border-color: #3B5C9A !important;
+            color: #FFFFFF !important;
+        }
+
+        .pageActive{
+            background-color: #0B1D40 !important;
+            border-color: #0B1D40 !important;
+            color: #FFFFFF !important;
+        }
+
+        .page-link:active,
+        .page-link:focus{
+            background-color: #0B1D40 !important;
+            border-color: #0B1D40 !important;
+            color: #FFFFFF !important;
+        }
+
+        .all{
+            font-weight: bolder;
+
+        }
+
     </style>
 </head>
-<body>
+<body id="giveMain">
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
 
 <div class="container">
-    <h4 class="m-2">All</h4>
+    <h2 class="m-2 all">All</h2>
     <input type="hidden" name="group" value="give">
-    <input type="hidden" name="locCode" th:value=1111010100>
+<!--    <input type="hidden" name="locCode" th:value=1111010100>-->
     <div class="headBar">
         <select class="form-select catSelect" name="itemCatCode" onchange="search()">
             <option value="">== 카테고리 선택 ==</option>
-            <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
         </select>
         <div class="form-check checkbox">
             <input class="form-check-input" type="checkbox" value="GIV" id="availableCheck" onchange="search()" checked>
@@ -65,25 +88,12 @@
     </div>
     <div class="row row-cols-1 row-cols-md-4 g-4 justify-content-md-center" id="itemList">
 
-        <div th:each="item : ${itemList}" class="col">
-            <div class="card" th:onclick="|location.href='@{/share/give/detail(itemNo=${item.itemNo})}'|">
-                <th:block th:if="${item.img} == null">
-                    <img th:src="@{/img/noimg.jpg}" class="card-img-top" alt="..." style="height:20em">
-                </th:block>
-                <th:block th:unless="${item.img} == null">
-                    <img th:src="@{'/uploadFiles/'+${item.img}}" class="card-img-top" alt="..." style="height:20em">
-                </th:block>
-                <div class="card-body">
-                    <h5 th:text="${item.title}"></h5>
-                    <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️ <span
-                            th:text="${item.reqCnt}"></span></p>
-
-                </div>
-            </div>
-        </div>
-
     </div>
 
+    <nav class="row mt-3">
+        <ul class="pagination pagination-sm justify-content-center ">
+        </ul>
+    </nav>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>

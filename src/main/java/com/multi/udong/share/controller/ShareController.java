@@ -8,6 +8,7 @@ import com.multi.udong.share.model.dto.ShaItemDTO;
 import com.multi.udong.share.model.dto.ShaPageDTO;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,70 +33,47 @@ public class ShareController {
 
     private final ShareService shareService;
 
+
     /**
-     * 대여 메인페이지 이동 및 목록 조회
+     * 대여 메인페이지 이동
      *
-     * @param c     the c
-     * @param model the model
      * @return the string
-     * @since 2024 -07-22
+     * @since 2024 -07-26
      */
     @GetMapping("/rent")
-    public String rentMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
-        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
-        ShaPageDTO pageInfo = new ShaPageDTO();
-        criteriaDTO.setLocCode(1111010100L); // 추후 변경 필요!
-        criteriaDTO.setGroup("rent");
-        criteriaDTO.setPage(1);
-        criteriaDTO.setPageRange(1);
-
-        try {
-            List<ShaItemDTO> itemList = shareService.searchItems(criteriaDTO);
-            List<ShaCatDTO> catList = shareService.getShaCat();
-            int totalCounts = shareService.getItemCounts(criteriaDTO);
-            pageInfo.setCurrentPage(criteriaDTO.getPage());
-            pageInfo.setPageInfo(totalCounts);
-            System.out.println(itemList);
-            model.addAttribute("itemList", itemList);
-            model.addAttribute("catList", catList);
-            model.addAttribute("totalCount", totalCounts);
-            model.addAttribute("pageInfo", pageInfo);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    public String rentMain() {
         return "share/rentMain";
     }
 
 
     /**
-     * 나눔 메인페이지 이동 및 목록 조회
+     * 나눔 메인페이지 이동
      *
-     * @param c     the c
-     * @param model the model
      * @return the string
-     * @since 2024 -07-22
+     * @since 2024 -07-26
      */
     @GetMapping("/give")
-    public String giveMain(@AuthenticationPrincipal CustomUserDetails c, Model model) {
-        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
-        criteriaDTO.setLocCode(1111010100L); // 추후 변경 필요!
-        criteriaDTO.setGroup("give");
-        criteriaDTO.setStatusCode("GIV");
-        criteriaDTO.setPageRange(1);
+    public String giveMain() {
+        return "share/giveMain";
+    }
 
-
+    /**
+     * 카테고리 목록 조회
+     *
+     * @return the list
+     * @since 2024 -07-26
+     */
+    @GetMapping("/getCatList")
+    @ResponseBody
+    public List<ShaCatDTO> getCatList() {
+        List<ShaCatDTO> catList = null;
         try {
-            List<ShaItemDTO> itemList = shareService.searchItems(criteriaDTO);
-            List<ShaCatDTO> catList = shareService.getShaCat();
-            System.out.println(itemList);
-            model.addAttribute("itemList", itemList);
-            model.addAttribute("catList", catList);
+            catList = shareService.getShaCat();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return "share/giveMain";
+        return catList;
     }
 
     /**
@@ -127,8 +104,8 @@ public class ShareController {
      * @return the string
      * @since 2024 -07-23
      */
-    @GetMapping(value= {"/rent/detail", "/give/detail"})
-    public String itemDetail(ShaItemDTO itemDTO, Model model){
+    @GetMapping(value = {"/rent/detail", "/give/detail"})
+    public String itemDetail(ShaItemDTO itemDTO, Model model) {
 
         try {
             ShaItemDTO item = shareService.getItemDetail(itemDTO);
@@ -146,24 +123,22 @@ public class ShareController {
     /**
      * 물건 등록 및 첨부파일 저장 기능
      *
-     * @param model     the model
-     * @param itemDTO   the item dto
-     * @param principal the principal
-     * @param fileList  the file list
+     * @param model    the model
+     * @param itemDTO  the item dto
+     * @param c        the principal
+     * @param fileList the file list
      * @return the string
      * @since 2024 -07-22
      */
     @PostMapping("/register")
-    public String insertItem(Model model, ShaItemDTO itemDTO, Principal principal, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
+    public String insertItem(Model model, ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
 
         fileList = fileList.stream().filter((x) -> x.isEmpty() == false).collect(Collectors.toList());
-        itemDTO.setLocCode(1111010100L); // 추후 수정 필요!
-        itemDTO.setOwnerNo(1); // 추후 수정필요!
 
         try {
 
             List<AttachmentDTO> imgList = new ArrayList<>();
-            String imgPath = "C:\\workspace\\multi\\final\\udong\\src\\main\\resources\\static\\uploadFiles";
+            String imgPath = "C:\\Users\\user\\uploadFiles";
 
             if (!fileList.isEmpty()) {
                 File mkdir = new File(imgPath);
@@ -188,6 +163,8 @@ public class ShareController {
 
             }
 
+            itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
+            itemDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
             int result = shareService.insertItem(itemDTO, imgList);
 
             if (result < 1) {
@@ -199,10 +176,10 @@ public class ShareController {
 
         } catch (Exception e) {
             e.printStackTrace();
-
+            return "common/errorPage";
         }
 
-        return "redirect:/share/rent";
+        return itemDTO.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
     }
 
 
@@ -215,14 +192,24 @@ public class ShareController {
      */
     @GetMapping("/search")
     @ResponseBody
-    public Map<String, Object> searchItems(ShaCriteriaDTO criteriaDTO){
+    public ResponseEntity<Map<String, Object>> searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c) {
 
         Map<String, Object> result = new HashMap<>();
-        criteriaDTO.setPageRange(criteriaDTO.getPage());
         ShaPageDTO pageInfo = new ShaPageDTO();
-        System.out.println("여기!!!!!"+criteriaDTO);
         List<ShaItemDTO> itemList = null;
+
+        System.out.println("여기!!!!!" + criteriaDTO);
+
         try {
+            criteriaDTO.setPageRange(criteriaDTO.getPage());
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+            criteriaDTO.setLocCode(locCode);
             itemList = shareService.searchItems(criteriaDTO);
             int totalCounts = shareService.getItemCounts(criteriaDTO);
             pageInfo.setCurrentPage(criteriaDTO.getPage());
@@ -230,13 +217,13 @@ public class ShareController {
             System.out.println(itemList);
             result.put("itemList", itemList);
             result.put("pageInfo", pageInfo);
+
+            return ResponseEntity.ok().body(result);
+
         } catch (Exception e) {
+            result.put("msg", e.getMessage());
             e.printStackTrace();
+            return ResponseEntity.badRequest().body(result);
         }
-
-
-
-        return result;
     }
-
 }

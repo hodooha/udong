@@ -57,35 +57,7 @@ public class ShareDAO {
      * @since 2024 -07-23
      */
     public int insertImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> imgList) throws Exception{
-
-
         return sqlSession.insert("ShareMapper.insertImg", imgList);
-    }
-
-    /**
-     * 대여 물건 목록 조회
-     *
-     * @param sqlSession the sql session
-     * @param locCode    the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-23
-     */
-    public List<ShaItemDTO> rentItemList(SqlSessionTemplate sqlSession, int locCode) throws Exception{
-        return (ArrayList) sqlSession.selectList("ShareMapper.rentItemList", locCode);
-    }
-
-    /**
-     * 나눔 물건 목록 조회
-     *
-     * @param sqlSession the sql session
-     * @param locCode    the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-23
-     */
-    public List<ShaItemDTO> giveItemList(SqlSessionTemplate sqlSession, int locCode) throws Exception{
-        return (ArrayList) sqlSession.selectList("ShareMapper.giveItemList", locCode);
     }
 
     /**
