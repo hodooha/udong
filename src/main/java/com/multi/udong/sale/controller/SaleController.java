@@ -3,21 +3,20 @@ package com.multi.udong.sale.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
+import com.multi.udong.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.time.Duration;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,27 +36,7 @@ public class SaleController {
                            @RequestParam(value = "search", required = false) String search,
                            @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired,
                            @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption) {
-        List<SaleDTO> sales;
-        if (search == null || search.isEmpty()) {
-            if (Boolean.TRUE.equals(excludeExpired)) {
-                sales = saleService.getAllActiveWithAttachments();
-            } else {
-                sales = saleService.getAllSalesWithAttachments();
-            }
-        } else {
-            sales = saleService.search(search, excludeExpired != null ? excludeExpired : false);
-        }
-        switch (sortOption) {
-            case "deadline":
-                sales.sort(Comparator.comparing(sale ->
-                        Duration.between(sale.getStartedAt(), sale.getEndedAt())));
-                break;
-            case "lowPrice":
-                sales.sort(Comparator.comparing(SaleDTO::getSalePrice));
-                break;
-            default: // "latest"
-                sales.sort(Comparator.comparing(SaleDTO::getStartedAt).reversed());
-        }
+        List<SaleDTO> sales = saleService.getSales(search, excludeExpired, sortOption);
         model.addAttribute("sales", sales);
         return "sale/saleMain";
     }
@@ -71,10 +50,10 @@ public class SaleController {
     public String insertSale(@ModelAttribute SaleDTO saleDTO, @RequestParam("imageFiles") List<MultipartFile> imageFiles,
                              @RequestParam(value = "startedAtCombined", required = false) String startedAtCombined,
                              @RequestParam(value = "endedAtCombined", required = false) String endedAtCombined,
-                             @AuthenticationPrincipal User user, Model model) throws Exception {
+                             @AuthenticationPrincipal CustomUserDetails member, Model model) {
 
-        saleDTO.setLocationCode(1111010100); // location_code 임의설정
-        saleDTO.setWriter(1); // 사용자 ID 임의설정
+        saleDTO.setLocationCode(member.getMemberDTO().getMemAddressDTO().getLocationCode());
+        saleDTO.setWriter(member.getMemberDTO().getMemberNo());
 
         if (startedAtCombined != null && endedAtCombined != null) {
             try {
@@ -88,7 +67,7 @@ public class SaleController {
                 System.out.println("EndedAt set to: " + endedAt);
             } catch (DateTimeParseException e) {
                 System.err.println("Error parsing dates: " + e.getMessage());
-                return "redirect:/error";
+                return "redirect:/error?message=DateParsingError";
             }
         }
 
@@ -114,7 +93,6 @@ public class SaleController {
                     imgList.add(img);
                     f.transferTo(new File(imgPath + "\\" + savedName));
 
-
                     if (saleDTO.getImagePath() == null) {
                         saleDTO.setImagePath("/uploadFiles/" + savedName);
                     }
@@ -123,10 +101,14 @@ public class SaleController {
 
             saleService.insertSale(saleDTO, imgList); // 땡처리 정보와 이미지 저장
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error saving file: " + e.getMessage());
-            return "redirect:/error";
+            return "redirect:/error?message=FileSaveError";
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Unexpected error: " + e.getMessage());
+            return "redirect:/error?message=UnexpectedError";
         }
 
         return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트

@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -49,5 +51,31 @@ public class SaleServiceImpl implements SaleService {
     @Override
     public List<SaleDTO> search(String keyword, Boolean excludeExpired) {
         return saleDAO.search(sqlSession, keyword, excludeExpired);
+    }
+
+    @Override
+    public List<SaleDTO> getSales(String search, Boolean excludeExpired, String sortOption) {
+        List<SaleDTO> sales;
+        if (search == null || search.isEmpty()) {
+            if (Boolean.TRUE.equals(excludeExpired)) {
+                sales = getAllActiveWithAttachments();
+            } else {
+                sales = getAllSalesWithAttachments();
+            }
+        } else {
+            sales = search(search, excludeExpired != null ? excludeExpired : false);
+        }
+        switch (sortOption) {
+            case "deadline":
+                sales.sort(Comparator.comparing(sale ->
+                        Duration.between(sale.getStartedAt(), sale.getEndedAt())));
+                break;
+            case "lowPrice":
+                sales.sort(Comparator.comparing(SaleDTO::getSalePrice));
+                break;
+            default: // "latest"
+                sales.sort(Comparator.comparing(SaleDTO::getStartedAt).reversed());
+        }
+        return sales;
     }
 }
