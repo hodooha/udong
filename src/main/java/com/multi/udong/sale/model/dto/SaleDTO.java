@@ -20,6 +20,9 @@ public class SaleDTO {
     private String img;
     private List<AttachmentDTO> attachments;
     private String imagePath;
+    private LocalDateTime createdAt;
+    private int views;
+
 
     public int getSaleNo() {
         return saleNo;
@@ -133,6 +136,22 @@ public class SaleDTO {
         this.imagePath = imagePath;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public int getViews() {
+        return views;
+    }
+
+    public void setViews(int views) {
+        this.views = views;
+    }
+
     @Override
     public String toString() {
         return "SaleDTO{" +
@@ -150,6 +169,8 @@ public class SaleDTO {
                 ", img='" + img + '\'' +
                 ", attachments=" + attachments +
                 ", imagePath='" + imagePath + '\'' +
+                ", createdAt=" + createdAt +
+                ", views=" + views +
                 '}';
     }
 }

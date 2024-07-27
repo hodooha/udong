@@ -5,11 +5,13 @@ import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
 import com.multi.udong.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -112,6 +114,28 @@ public class SaleController {
         }
 
         return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트
+    }
+
+    @Value("${kakao.api.key}")
+    private String kakaoApiKey;
+
+    @GetMapping("/detail/{saleNo}")
+    public String saleDetail(@PathVariable("saleNo") int saleNo, Model model) {
+        SaleDTO sale = saleService.getSaleWithAttachments(saleNo);
+        saleService.incrementViews(saleNo);
+        model.addAttribute("sale", sale);
+        model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
+        return "sale/saleDetail";
+    }
+    @PostMapping("/deleteSale")
+    public String deleteSale(@RequestParam("saleNo") int saleNo, RedirectAttributes redirectAttributes) {
+        try {
+            saleService.deleteSale(saleNo);
+            redirectAttributes.addFlashAttribute("message", "성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "삭제 중 오류가 발생했습니다.");
+        }
+        return "redirect:/sale/saleMain";
     }
 
 }

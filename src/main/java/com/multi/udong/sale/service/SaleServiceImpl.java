@@ -78,4 +78,32 @@ public class SaleServiceImpl implements SaleService {
         }
         return sales;
     }
+    @Override
+    public SaleDTO getSaleById(int saleNo) {
+        return saleDAO.getSaleById(sqlSession, saleNo); // DAO 메서드 호출
+    }
+    @Override
+    public void incrementViews(int saleNo) {
+        saleDAO.incrementViews(saleNo);
+    }
+
+    @Override
+    public SaleDTO getSaleWithAttachments(int saleNo) {
+        SaleDTO sale = saleDAO.getSaleById(sqlSession, saleNo);
+        if (sale != null) {
+            List<AttachmentDTO> attachments = saleDAO.getAttachmentsBySaleNo(sqlSession, saleNo);
+            sale.setAttachments(attachments);
+
+            // imagePath 설정 (첫 번째 첨부파일의 경로를 사용)
+            if (!attachments.isEmpty()) {
+                sale.setImagePath("/uploadFiles/" + attachments.get(0).getSavedName());
+            }
+        }
+        return sale;
+    }
+    @Override
+    @Transactional
+    public void deleteSale(int saleNo) throws Exception {
+        saleDAO.deleteSale(saleNo);
+    }
 }
