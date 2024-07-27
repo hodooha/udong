@@ -57,7 +57,7 @@
                     <div th:unless="${item.imgList == null || #lists.isEmpty(item.imgList)}" th:each="img, stat : ${item.imgList}" class="carousel-item"
                          th:classappend="${stat.first ? 'active' : ''}">
 
-                        <img th:src="@{'/uploadFiles/'+${img.savedName}}" class="d-block " alt="물건이미지"
+                        <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" class="d-block " alt="물건이미지"
                              style="height:350px; margin: auto;">
                     </div>
 

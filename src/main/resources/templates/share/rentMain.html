@@ -53,6 +53,11 @@
             color: #FFFFFF !important;
         }
 
+        .all{
+            font-weight: bolder;
+
+        }
+
     </style>
 </head>
 <body id="rentMain">
@@ -61,9 +66,9 @@
 
 <div class="container">
     <!--<h4>추천</h4>-->
-    <h2 class="m-2">All</h2>
+    <h2 class="m-2 all">All</h2>
     <input type="hidden" name="group" value="rent">
-    <input type="hidden" name="locCode" th:value=1111010100>
+<!--    <input type="hidden" name="locCode" th:value=1111010100>-->
     <!--th:value="${#authentication.principal.memberDTO.memAddressDTO.locationCode}"-->
     <div class="headBar">
         <select class="form-select catSelect" name="itemCatCode" onchange="search()">

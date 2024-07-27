@@ -68,38 +68,6 @@ public class ShareServiceImpl implements ShareService {
     }
 
     /**
-     * 대여 물건 목록 조회
-     *
-     * @param locCode the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-22
-     */
-    @Override
-    public List<ShaItemDTO> rentItemList(int locCode) throws Exception {
-
-        List<ShaItemDTO> itemList = shareDAO.rentItemList(sqlSession, locCode);
-
-        return itemList;
-    }
-
-    /**
-     * 나눔 물건 목록 조회
-     *
-     * @param locCode the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-22
-     */
-    @Override
-    public List<ShaItemDTO> giveItemList(int locCode) throws Exception {
-
-        List<ShaItemDTO> itemList = shareDAO.giveItemList(sqlSession, locCode);
-
-        return itemList;
-    }
-
-    /**
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
      *
      * @param itemDTO the item dto

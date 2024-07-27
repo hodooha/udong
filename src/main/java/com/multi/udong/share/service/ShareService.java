@@ -34,25 +34,6 @@ public interface ShareService {
      */
     int insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception;
 
-    /**
-     * 대여 물건 목록 조회
-     *
-     * @param locCode the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-22
-     */
-    List<ShaItemDTO> rentItemList(int locCode) throws Exception;
-
-    /**
-     * 나눔 물건 목록 조회
-     *
-     * @param locCode the loc code
-     * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-22
-     */
-    List<ShaItemDTO> giveItemList(int locCode) throws Exception;
 
     /**
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
@@ -64,7 +45,6 @@ public interface ShareService {
      */
     ShaItemDTO getItemDetail(ShaItemDTO itemDTO) throws Exception;
 
-
     /**
      * 물건 검색
      *
@@ -74,7 +54,6 @@ public interface ShareService {
      * @since 2024 -07-24
      */
     List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception;
-
 
     /**
      * 물건 총 개수 조회
