@@ -118,20 +118,28 @@ public class ClubController {
 
 
     /**
-     * 모임 카테고리 리스트를 조회 (json, ajax)
+     * 모임 카테고리 리스트 조회
      *
      * @return the list
-     * @throws Exception the exception
-     * @since 2024 -07-23
+     * @since 2024 -07-27
      */
     @RequestMapping("/categoryList")
     @ResponseBody // 요청한 곳으로 json 데이터 전달
-    public List<CategoryDTO> categoryList() throws Exception {
+    public List<CategoryDTO> categoryList() {
 
-        List<CategoryDTO> categoryList = clubService.selectCategoryList();
-        System.out.println("###### 가져온 카테고리 리스트: " + categoryList);
+        try {
 
-        return categoryList;
+            List<CategoryDTO> categoryList = clubService.selectCategoryList();
+
+            System.out.println("###### 가져온 카테고리 리스트: " + categoryList);
+
+            return categoryList;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(e);
+
+        }
 
     }
 
@@ -152,9 +160,9 @@ public class ClubController {
 
         // 로그인된 유저의 no를 principal에서 받아와 모임 생성자(master)로 clubDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
-        MasterDTO masterDTO = new MasterDTO();
-        masterDTO.setMemberNo(memberNo);
-        clubDTO.setMaster(masterDTO);
+        ClubMemberDTO clubMemberDTO = new ClubMemberDTO();
+        clubMemberDTO.setMemberNo(memberNo);
+        clubDTO.setMaster(clubMemberDTO);
 
         // 로그인된 유저의 locationCode를 principal에서 받아와 모임 동네로 clubDTO에 set
         long membersLocation = c.getMemberDTO().getMemAddressDTO().getLocationCode();
@@ -294,6 +302,15 @@ public class ClubController {
     }
 
 
+    /**
+     * 모임 가입 신청
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-27
+     */
     @PostMapping("/requestJoinClub")
     public String requestJoinClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
 
@@ -305,9 +322,28 @@ public class ClubController {
 
         try {
 
-            clubService.requestJoinClub(requestDTO);
+            // 서버단에서 회원이 모임에 가입 신청을 하거나 이미 가입되지 않았는지 한 번 더 검증
+            String joinStatus = clubService.checkJoinStatus(requestDTO);
+            System.out.println("###### 가입 신청한 유저의 가입 상태: " + joinStatus);
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
+            // 서버단에서 현재 인원이 최대 인원보다 적은지 한 번 더 검증
+            ClubDTO personnel = clubService.checkPersonnel(clubNo);
+            int currentPersonnel = personnel.getCurrentPersonnel();
+            int maxPersonnel = personnel.getMaxPersonnel();
+            System.out.println("###### 현재 모임 인원: " + currentPersonnel + " / " + maxPersonnel);
+
+            if(joinStatus == null && currentPersonnel < maxPersonnel) {
+
+                clubService.requestJoinClub(requestDTO);
+
+                return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+            }
+            else {
+
+                return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+            }
 
         } catch (Exception e) {
 

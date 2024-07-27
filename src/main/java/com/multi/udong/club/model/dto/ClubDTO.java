@@ -21,7 +21,7 @@ public class ClubDTO {
     private LocationDTO location;
     private String clubName;
     private String introduction;
-    private MasterDTO master;
+    private ClubMemberDTO master;
     private int currentPersonnel;
     private int maxPersonnel;
     private String chatroomCode;
@@ -29,5 +29,6 @@ public class ClubDTO {
     private LocalDateTime modifiedAt;
     private String joinStatus;
     private List<AttachmentDTO> attachment;
+    private List<ClubMemberDTO> clubMember;
 
 }

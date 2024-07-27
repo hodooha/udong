@@ -138,9 +138,48 @@ public class ClubDAO {
     }
 
 
+    /**
+     * 모임 가입 신청
+     *
+     * @param sqlSession the sql session
+     * @param requestDTO the request dto
+     * @return the int
+     * @since 2024 -07-27
+     */
     public int requestJoinClub(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
 
         return sqlSession.insert("clubMapper.requestJoinClub", requestDTO);
 
     }
+
+
+    /**
+     * 모임 가입 상태 확인
+     *
+     * @param sqlSession the sql session
+     * @param requestDTO the request dto
+     * @return the string
+     * @since 2024 -07-27
+     */
+    public String checkJoinStatus(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectOne("clubMapper.checkJoinStatus", requestDTO);
+
+    }
+
+
+    /**
+     * 모임 인원 현황 확인
+     *
+     * @param sqlSession the sql session
+     * @param clubNo     the club no
+     * @return the club dto
+     * @since 2024 -07-27
+     */
+    public ClubDTO checkPersonnel(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.selectOne("clubMapper.checkPersonnel", clubNo);
+
+    }
+
 }

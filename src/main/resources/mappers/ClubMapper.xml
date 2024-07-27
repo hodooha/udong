@@ -22,6 +22,7 @@
         <association property="master" resultMap="masterResultMap"/>
 
         <collection property="attachment" resultMap="attachmentResultMap"/>
+        <collection property="clubMember" resultMap="clubMemberResultMap"/>
 
     </resultMap>
     
@@ -41,7 +42,7 @@
 
     </resultMap>
 
-    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.MasterDTO">
+    <resultMap id="masterResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
 
         <id property="memberNo" column="master"/>
         <result property="nickname" column="master_nickname"/>
@@ -61,9 +62,10 @@
     <resultMap id="clubMemberResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
 
         <id property="memberNo" column="member_no"/>
-        <result property="nickname" column="member_nickname"/>
+        <result property="nickname" column="nickname"/>
 
     </resultMap>
+
 
 
     <select id="selectCategoryList" resultMap="categoryResultMap">
@@ -131,7 +133,7 @@
             A.max_personnel,
             B.category_name,
             C.eup_myeon_dong_name,
-            (SELECT COUNT(*) FROM CL_MEMBER D WHERE D.club_no = A.club_no) AS current_personnel,
+            (SELECT COUNT(*) FROM CL_MEMBER D WHERE D.club_no = A.club_no AND D.join_status = 'Y') AS current_personnel,
             (SELECT E.saved_name FROM ATTACHMENT E WHERE E.type_code = 'CL' AND E.target_no = A.club_no) AS saved_name
         FROM CL A
         LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
@@ -143,7 +145,7 @@
         <if test="searchWord != null and searchWord != ''">
             AND A.club_name LIKE CONCAT('%', #{ searchWord }, '%')
         </if>
-        ORDER BY current_personnel ASC
+        ORDER BY current_personnel DESC
         LIMIT #{ startIndex }, #{ pageCount }
     </select>
 
@@ -183,5 +185,19 @@
             #{ memberNo }
             )
     </insert>
+
+    <select id="checkJoinStatus" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultType="String">
+        SELECT join_status
+        FROM CL_MEMBER
+        WHERE club_no = #{ clubNo } AND member_no = #{ memberNo }
+    </select>
+
+    <select id="checkPersonnel" parameterType="Integer" resultMap="clubResultMap">
+        SELECT
+            A.max_personnel,
+            (SELECT COUNT(*) FROM CL_MEMBER B WHERE B.club_no = A.club_no AND B.join_status = 'Y') AS current_personnel
+        FROM CL A
+        WHERE club_no = #{ clubNo }
+    </select>
 
 </mapper>

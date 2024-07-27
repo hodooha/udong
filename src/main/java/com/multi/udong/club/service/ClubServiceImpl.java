@@ -156,10 +156,50 @@ public class ClubServiceImpl implements ClubService {
     }
 
 
+    /**
+     * 모임 가입 신청
+     *
+     * @param requestDTO the request dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-27
+     */
     @Override
     public int requestJoinClub(RequestDTO requestDTO) throws Exception {
 
         return clubDAO.requestJoinClub(sqlSession, requestDTO);
+
+    }
+
+
+    /**
+     * 모임 가입 상태 확인
+     *
+     * @param requestDTO the request dto
+     * @return the string
+     * @throws Exception the exception
+     * @since 2024 -07-27
+     */
+    @Override
+    public String checkJoinStatus(RequestDTO requestDTO) throws Exception {
+
+        return clubDAO.checkJoinStatus(sqlSession, requestDTO);
+
+    }
+
+
+    /**
+     * 모임 인원 현황 확인
+     *
+     * @param clubNo the club no
+     * @return the club dto
+     * @throws Exception the exception
+     * @since 2024 -07-27
+     */
+    @Override
+    public ClubDTO checkPersonnel(int clubNo) throws Exception {
+
+        return clubDAO.checkPersonnel(sqlSession, clubNo);
 
     }
 
