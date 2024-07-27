@@ -30,5 +30,5 @@ public interface SaleService {
 
     List<SaleDTO> getAllSalesWithAttachments();
     List<SaleDTO> getAllActiveWithAttachments();
-    List<SaleDTO> search(String keyword, Boolean excludeExpired);
+    List<SaleDTO> search(String search, Boolean excludeExpired);
 }

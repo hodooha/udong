@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +35,8 @@ public class SaleController {
     @GetMapping("/saleMain")
     public String saleMain(Model model,
                            @RequestParam(value = "search", required = false) String search,
-                           @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired) {
+                           @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired,
+                           @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption) {
         List<SaleDTO> sales;
         if (search == null || search.isEmpty()) {
             if (Boolean.TRUE.equals(excludeExpired)) {
@@ -42,7 +45,18 @@ public class SaleController {
                 sales = saleService.getAllSalesWithAttachments();
             }
         } else {
-            sales = saleService.search(search, excludeExpired);
+            sales = saleService.search(search, excludeExpired != null ? excludeExpired : false);
+        }
+        switch (sortOption) {
+            case "deadline":
+                sales.sort(Comparator.comparing(sale ->
+                        Duration.between(sale.getStartedAt(), sale.getEndedAt())));
+                break;
+            case "lowPrice":
+                sales.sort(Comparator.comparing(SaleDTO::getSalePrice));
+                break;
+            default: // "latest"
+                sales.sort(Comparator.comparing(SaleDTO::getStartedAt).reversed());
         }
         model.addAttribute("sales", sales);
         return "sale/saleMain";

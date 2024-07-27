@@ -200,64 +200,108 @@
         }
     }
 
+    // 시작 시간 제약 추가
+    document.addEventListener('DOMContentLoaded', function() {
+        const startedAtTimeInput = document.getElementById('started_at_time');
+        const startedAtDateInput = document.getElementById('started_at_date');
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.toTimeString().slice(0,5);
+        }
+
+        function updateMinTime() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            if (startedAtDateInput.value === today) {
+                startedAtTimeInput.min = getCurrentTime();
+            } else {
+                startedAtTimeInput.min = "00:00";
+            }
+        }
+
+        // 초기 설정 및 1분마다 업데이트
+        updateMinTime();
+        setInterval(updateMinTime, 60000);
+
+        startedAtTimeInput.addEventListener('change', function() {
+            const selectedDateTime = new Date(startedAtDateInput.value + 'T' + this.value);
+            const currentDateTime = new Date();
+
+            if (selectedDateTime < currentDateTime) {
+            alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
+                this.value = getCurrentTime();
+            }
+        });
+         startedAtDateInput.addEventListener('change', updateMinTime);
+    });
+
     // 폼 제출 시 유효성 검사 함수
     function validateForm(event) {
-    var startedAtTime = document.getElementById("started_at_time").value;
-    var endedAtTime = document.getElementById("ended_at_time").value;
-    var startedAtDate = document.getElementById("started_at_date").value;
-    var endedAtDate = document.getElementById("ended_at_date").value;
+        var startedAtTime = document.getElementById("started_at_time").value;
+        var endedAtTime = document.getElementById("ended_at_time").value;
+        var startedAtDate = document.getElementById("started_at_date").value;
+        var endedAtDate = document.getElementById("ended_at_date").value;
 
-    var startTime = new Date(startedAtDate + 'T' + startedAtTime);
-    var endTime = new Date(endedAtDate + 'T' + endedAtTime);
+        var startTime = new Date(startedAtDate + 'T' + startedAtTime);
+        var endTime = new Date(endedAtDate + 'T' + endedAtTime);
+        var now = new Date();
 
-    var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
-    var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
 
-   if (parseInt(salePrice) > parseInt(originalPrice)) {
-        alert("할인 가격은 정상 가격보다 클 수 없습니다.");
-        event.preventDefault();
-        return false;
+        var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
+        var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
+
+        if (parseInt(salePrice) > parseInt(originalPrice)) {
+            alert("할인 가격은 정상 가격보다 클 수 없습니다.");
+            event.preventDefault();
+            return false;
+        }
+
+        if (startTime < now) {
+            alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
+            event.preventDefault();
+            return false;
+        }
+
+        if (startTime >= endTime) {
+            alert("시작 시간은 종료 시간보다 늦을 수 없습니다.");
+            event.preventDefault();
+            return false;
+        }
+
+        var hiddenOriginalPrice = document.createElement("input");
+        hiddenOriginalPrice.type = "hidden";
+        hiddenOriginalPrice.name = "originalPrice";
+        hiddenOriginalPrice.value = originalPrice;
+        event.target.appendChild(hiddenOriginalPrice);
+
+        var hiddenSalePrice = document.createElement("input");
+        hiddenSalePrice.type = "hidden";
+        hiddenSalePrice.name = "salePrice";
+        hiddenSalePrice.value = salePrice;
+        event.target.appendChild(hiddenSalePrice);
+
+        var startedAtCombined = document.getElementById("started_at_date").value + 'T' + document.getElementById("started_at_time").value;
+        var endedAtCombined = document.getElementById("ended_at_date").value + 'T' + document.getElementById("ended_at_time").value;
+
+        var hiddenStartedAt = document.createElement("input");
+        hiddenStartedAt.type = "hidden";
+        hiddenStartedAt.name = "startedAt";
+        hiddenStartedAt.value = startedAtCombined;
+        event.target.appendChild(hiddenStartedAt);
+
+        var hiddenEndedAt = document.createElement("input");
+        hiddenEndedAt.type = "hidden";
+        hiddenEndedAt.name = "endedAt";
+        hiddenEndedAt.value = endedAtCombined;
+        event.target.appendChild(hiddenEndedAt);
+
+        return true;
     }
-
-    var hiddenOriginalPrice = document.createElement("input");
-    hiddenOriginalPrice.type = "hidden";
-    hiddenOriginalPrice.name = "originalPrice";
-    hiddenOriginalPrice.value = originalPrice;
-    event.target.appendChild(hiddenOriginalPrice);
-
-    var hiddenSalePrice = document.createElement("input");
-    hiddenSalePrice.type = "hidden";
-    hiddenSalePrice.name = "salePrice";
-    hiddenSalePrice.value = salePrice;
-    event.target.appendChild(hiddenSalePrice);
-    //db에 값이 0으로 들어와서 쉼표 제거하고 순수 값만 들어오게 설정
-
-    if (startTime >= endTime) {
-        alert("시작 시간은 종료 시간보다 늦을 수 없습니다.");
-        event.preventDefault();
-        return false;
-    }
-
-
-
-    var startedAtCombined = document.getElementById("started_at_date").value + 'T' + document.getElementById("started_at_time").value;
-    var endedAtCombined = document.getElementById("ended_at_date").value + 'T' + document.getElementById("ended_at_time").value;
-
-    var hiddenStartedAt = document.createElement("input");
-    hiddenStartedAt.type = "hidden";
-    hiddenStartedAt.name = "startedAt";
-    hiddenStartedAt.value = startedAtCombined;
-    event.target.appendChild(hiddenStartedAt);
-
-    var hiddenEndedAt = document.createElement("input");
-    hiddenEndedAt.type = "hidden";
-    hiddenEndedAt.name = "endedAt";
-    hiddenEndedAt.value = endedAtCombined;
-    event.target.appendChild(hiddenEndedAt);
-
-    return true;
-
-    }
+    function getCurrentTime() {
+    const now = new Date();
+    return now.toTimeString().slice(0,5);
+}
 </script>
 
 </body>
