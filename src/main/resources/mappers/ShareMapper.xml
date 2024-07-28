@@ -35,15 +35,27 @@
         from sha_cat
         order by
         case
-            when cat_code = 'OTH' then 1
-            else 0
+        when cat_code = 'OTH' then 1
+        else 0
         end,
         cat_code
     </select>
 
     <insert id="insertItem" useGeneratedKeys="true" keyColumn="item_no" keyProperty="itemNo">
         insert into sha_items
-        <if test="itemGroup == 'rent'">
+        <choose>
+            <when test="itemGroup == 'rent'">
+                (item_group, item_cat_code, title, content, owner_no, loc_code)
+                values
+                (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
+            </when>
+            <otherwise>
+                (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
+                values
+                (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
+            </otherwise>
+        </choose>
+        <!--<if test="itemGroup == 'rent'">
             (item_group, item_cat_code, title, content, owner_no, loc_code)
             values
             (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
@@ -52,8 +64,7 @@
             (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
             values
             (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
-        </if>
-
+        </if>-->
     </insert>
 
     <insert id="insertImg" >
@@ -135,14 +146,14 @@
             </where>
         ) a
         left join (
-            select target_no, saved_name
-            from (
-                select *,
-                    row_number() over (partition by target_no order by file_no) as rn
-                from attachment
-                where type_code = #{group}
-            ) sub
-            where rn = 1
+        select target_no, saved_name
+        from (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        where type_code = #{group}
+        ) sub
+        where rn = 1
         ) c on a.item_no = c.target_no
         where a.rn between #{start} and #{end}
         order by a.rn
@@ -160,6 +171,30 @@
             <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
             <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
         </where>
+    </select>
+
+    <insert id="shaRequest">
+        insert into sha_req
+        <choose>
+            <when test="reqGroup == 'rent'">
+                (req_item, rqst_no, return_date)
+                values
+                (#{reqItem}, #{rqstNo}, #{returnDate})
+            </when>
+            <otherwise>
+                (req_item, rqst_no)
+                values
+                (#{reqItem}, #{rqstNo})
+            </otherwise>
+        </choose>
+    </insert>
+
+    <select id="findRequest" resultType="shaReqDTO">
+        select *
+        from sha_req
+        where req_item = #{reqItem}
+        and rqst_no = #{rqstNo}
+        and status_code = "RQD"
     </select>
 
 </mapper>

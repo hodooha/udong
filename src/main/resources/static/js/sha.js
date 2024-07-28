@@ -12,26 +12,14 @@ $(function(){
 
     const bodyId = $("body").attr("id");
     if(bodyId == "giveMain" || bodyId == "rentMain"){
-       getCatList();
-      /* const savedState = history.state;
-               if (savedState) {
-                   restoreFormState(savedState);
-                   updateItems(savedState);
-                   console.log(savedState);
-               } else {
-                   search(1);
-               }*/
+        getCatList();
 
-     window.addEventListener("popstate", function(event) {
+        window.addEventListener("popstate", function(event) {
             if (event.state) {
                 restoreFormState(event.state);
                 updateItems(event.state);
             }
         });
-
-
-
-
     }
 
     if(bodyId == "itemDetail" || bodyId == "registerForm"){
@@ -54,13 +42,11 @@ $(function(){
             }
         });
     }
-
-
 });
 
 function getCatList() {
     $.ajax({
-            url: "getCatList",
+            url: "/share/getCatList",
             type: "get",
             success: function(catList) {
                 console.log(catList);
@@ -135,7 +121,6 @@ function isValid() {
 function getSearchParams(page){
     selectedCat = $('.catSelect').val();
     let group = $("input[name='group']").val();
-//    let locCode = $("input[name='locCode']").val();
     let isChecked = $('#availableCheck').is(':checked');
     let statusCode = isChecked ? $('#availableCheck').val() : '';
     let keyword = $('#keyword').val();
@@ -146,7 +131,6 @@ function getSearchParams(page){
     return {
         catCode: selectedCat,
         group: group,
-//        locCode: locCode,
         statusCode: statusCode,
         keyword: keyword,
         page: page
@@ -155,7 +139,7 @@ function getSearchParams(page){
 
 function updateItems(params){
     $.ajax({
-            url: "search",
+            url: "/share/search",
             type: "get",
             data: params,
             success: function(data) {
@@ -189,7 +173,7 @@ function renderItems(items){
         itemResult = items.map((item) => {
             return `<div class="col">
                 <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
-                    <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
+                    <img src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
 
                     <div class="card-body">
                         <h4>${item.title}</h4>
@@ -252,7 +236,6 @@ function createUrlWithParams(params) {
     const url = new URL(window.location.href);
     url.searchParams.set('catCode', params.catCode);
     url.searchParams.set('group', params.group);
-//    url.searchParams.set('locCode', params.locCode);
     url.searchParams.set('statusCode', params.statusCode);
     url.searchParams.set('keyword', params.keyword);
     url.searchParams.set('page', params.page);
@@ -262,8 +245,48 @@ function createUrlWithParams(params) {
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
     $("input[name='group']").val(params.group);
-//    $("input[name='locCode']").val(params.locCode);
     $('#availableCheck').prop('checked', params.statusCode ? true : false);
     $('#keyword').val(params.keyword);
+}
+
+function shaRequest(item) {
+    console.log(item);
+    let returnDate = $('#datePicker').val();
+
+    if(item.itemGroup == 'rent'){
+        if(returnDate == ''){
+            alert("반납희망일을 설정해주세요.");
+            return;
+        }
+    }
+
+    let data = {
+        reqItem: item.itemNo,
+        returnDate: returnDate,
+        reqGroup: item.itemGroup,
+        ownerNo: item.ownerNo
+    }
+    insertReq(data);
+
+}
+
+function insertReq(data){
+    const token = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        url: "/share/request",
+        type: "post",
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
+        data: data,
+        success: function(msg){
+            alert(msg);
+        },
+        error: function(msg){
+            alert(msg);
+        }
+    })
 }
 

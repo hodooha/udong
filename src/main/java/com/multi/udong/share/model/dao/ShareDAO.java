@@ -4,6 +4,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
 import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
+import com.multi.udong.share.model.dto.ShaReqDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,7 +20,6 @@ import java.util.List;
  */
 @Repository
 public class ShareDAO {
-
 
     /**
      * 물건 카테고리 목록 조회
@@ -116,5 +116,33 @@ public class ShareDAO {
     public int getItemCounts(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) throws Exception{
         return sqlSession.selectOne("ShareMapper.getItemCounts", criteriaDTO);
 
+    }
+
+    /**
+     * 대여 및 나눔 신청
+     *
+     * @param sqlSession the sql session
+     * @param reqDTO     the req dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    public int insertRequest(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) throws Exception{
+
+        return sqlSession.insert("ShareMapper.shaRequest", reqDTO);
+    }
+
+    /**
+     * 기존 대여 및 나눔 신청 내역 조회
+     *
+     * @param sqlSession the sql session
+     * @param reqDTO     the req dto
+     * @return the sha req dto
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    public ShaReqDTO findRequest(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) throws Exception{
+
+        return sqlSession.selectOne("ShareMapper.findRequest", reqDTO);
     }
 }

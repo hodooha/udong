@@ -17,9 +17,11 @@ public class ShaReqDTO {
 
     private int reqNo;
     private int reqItem;
+    private int ownerNo;
+    private String reqGroup;
     private int rqstNo;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private LocalDate returnDate;
-    private String StatusCode;
+    private String statusCode;
 }

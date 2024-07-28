@@ -10,7 +10,7 @@ public class ShaFileUploadConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/shaUploadFiles/**")
+        registry.addResourceHandler("/uploadFiles/**")
                 .addResourceLocations("file:///C:/Users/user/uploadFiles/");
     }
 }

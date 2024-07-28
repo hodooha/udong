@@ -5,6 +5,7 @@ import com.multi.udong.share.model.dao.ShareDAO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
 import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
+import com.multi.udong.share.model.dto.ShaReqDTO;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Service;
@@ -119,4 +120,39 @@ public class ShareServiceImpl implements ShareService {
 
         return totalCount;
     }
+
+    /**
+     * 대여 및 나눔 신청
+     *
+     * @param reqDTO the req dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    @Override
+    public int insertRequest(ShaReqDTO reqDTO) throws Exception {
+
+        int result = shareDAO.insertRequest(sqlSession, reqDTO);
+
+        return result;
+    }
+
+    
+    /**
+     * 기조 대여 및 나눔 신청 내역 조회
+     *
+     * @param reqDTO the req dto
+     * @return the sha req dto
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    @Override
+    public ShaReqDTO findRequest(ShaReqDTO reqDTO) throws Exception {
+
+        ShaReqDTO result = shareDAO.findRequest(sqlSession, reqDTO);
+
+        return result;
+    }
+
+
 }
