@@ -69,7 +69,7 @@ public class SaleController {
                 System.out.println("EndedAt set to: " + endedAt);
             } catch (DateTimeParseException e) {
                 System.err.println("Error parsing dates: " + e.getMessage());
-                return "redirect:/error?message=DateParsingError";
+                return "redirect:/common/errorPage?message=DateParsingError";
             }
         }
 
@@ -106,11 +106,11 @@ public class SaleController {
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error saving file: " + e.getMessage());
-            return "redirect:/error?message=FileSaveError";
+            return "redirect:/common/errorPage?message=FileSaveError";
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Unexpected error: " + e.getMessage());
-            return "redirect:/error?message=UnexpectedError";
+            return "redirect:/common/errorPage?message=UnexpectedError";
         }
 
         return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트
