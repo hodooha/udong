@@ -200,4 +200,25 @@
         WHERE club_no = #{ clubNo }
     </select>
 
+    <select id="checkClubMaster" parameterType="Integer" resultType="Integer">
+        SELECT master
+        FROM CL
+        WHERE club_no = #{ clubNo }
+    </select>
+
+    <delete id="cancelJoinRequest" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        DELETE FROM CL_MEMBER
+        WHERE club_no = #{ clubNo } AND member_no = #{ memberNo } AND join_status = 'W'
+    </delete>
+
+    <delete id="leaveClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        DELETE FROM CL_MEMBER
+        WHERE club_no = #{ clubNo } AND member_no = #{ memberNo } AND join_status = 'Y'
+    </delete>
+
+    <delete id="deleteClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        DELETE FROM CL
+        WHERE club_no = #{ clubNo } AND master = #{ memberNo }
+    </delete>
+
 </mapper>

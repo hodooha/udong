@@ -30,4 +30,12 @@ public interface ClubService {
     String checkJoinStatus(RequestDTO requestDTO) throws Exception;
 
     ClubDTO checkPersonnel(int clubNo) throws Exception;
+
+    int checkClubMaster(int clubNo) throws Exception;
+
+    int cancelJoinRequest(RequestDTO requestDTO) throws Exception;
+
+    int leaveClub(RequestDTO requestDTO) throws Exception;
+
+    int deleteClub(RequestDTO requestDTO) throws Exception;
 }

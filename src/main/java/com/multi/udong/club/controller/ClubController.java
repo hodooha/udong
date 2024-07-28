@@ -332,18 +332,14 @@ public class ClubController {
             int maxPersonnel = personnel.getMaxPersonnel();
             System.out.println("###### 현재 모임 인원: " + currentPersonnel + " / " + maxPersonnel);
 
+            // 가입 안 돼 있고, 정원 가득 차지 않았을 때만 가입 신청 메소드 호출
             if(joinStatus == null && currentPersonnel < maxPersonnel) {
 
                 clubService.requestJoinClub(requestDTO);
 
-                return "redirect:/club/clubHome?clubNo=" + clubNo;
-
             }
-            else {
 
-                return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-            }
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
 
         } catch (Exception e) {
 
@@ -358,5 +354,149 @@ public class ClubController {
     }
 
 
+    /**
+     * 모임 가입 신청 취소
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-28
+     */
+    @PostMapping("/cancelJoinRequest")
+    public String cancelJoinRequest(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        try {
+
+            // 서버단에서 회원이 가입 신청 후 대기 중 상태인지 한 번 더 검증
+            String joinStatus = clubService.checkJoinStatus(requestDTO);
+            System.out.println("###### 가입 신청 취소한 유저의 가입 상태: " + joinStatus);
+
+            // 가입 신청 후 대기 상태일 때만 가입 신청 취소 메소드 호출
+            if(joinStatus.equals("W")) {
+
+                clubService.cancelJoinRequest(requestDTO);
+
+            }
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 모임 탈퇴
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-28
+     */
+    @PostMapping("/leaveClub")
+    public String leaveClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        try {
+
+            // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
+            String joinStatus = clubService.checkJoinStatus(requestDTO);
+            System.out.println("###### 탈퇴 신청한 유저의 가입 상태: " + joinStatus);
+
+            // 가입된 상태일 때만 모임 탈퇴 메소드 호출
+            if(joinStatus.equals("Y")) {
+
+                clubService.leaveClub(requestDTO);
+
+            }
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 탈퇴 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 모임 해체
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-28
+     */
+    @PostMapping("/deleteClub")
+    public String deleteClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        try {
+
+            // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
+            String joinStatus = clubService.checkJoinStatus(requestDTO);
+            System.out.println("###### 모임 해체 요청한 유저의 가입 상태: " + joinStatus);
+
+            int master = clubService.checkClubMaster(clubNo);
+            System.out.println("###### 모임장 no: " + master);
+
+            // 가입된 상태이고, 모임장일 때만 모임 해체 메소드 호출
+            if(joinStatus.equals("Y") && memberNo == master) {
+
+                clubService.deleteClub(requestDTO);
+
+            }
+            else {
+
+                return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+            }
+
+            return "redirect:/club/clubMain?page=1";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
 
 }

@@ -105,19 +105,28 @@
                         </form>
                     </th:block>
                     <th:block th:if="${clubHome.joinStatus == null && clubHome.currentPersonnel >= clubHome.maxPersonnel}">
-                            <button class="btn btn-udh-blue btn-join" disabled>
-                                가입 신청
-                            </button>
+                        <button class="btn btn-udh-silver btn-join" disabled>
+                            가입 신청
+                        </button>
+                        <span>모임 정원이 가득 찼습니다.</span>
                     </th:block>
                     <th:block th:if="${clubHome.joinStatus == 'W'}">
-                        <button class="btn btn-udh-red btn-join">
-                            가입 신청 취소
-                        </button>
+                        <form th:action="@{/club/cancelJoinRequest}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />
+                            <button type="submit" class="btn btn-udh-red btn-join">
+                                가입 신청 취소
+                            </button>
+                        </form>
                     </th:block>
                     <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo != #authentication.principal.memberDTO.memberNo}">
-                        <button class="btn btn-udh-red btn-join">
-                            모임 탈퇴
-                        </button>
+                        <form th:action="@{/club/leaveClub}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />
+                            <button class="btn btn-udh-red btn-join">
+                                모임 탈퇴
+                            </button>
+                        </form>
                     </th:block>
                     <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
                         <button class="btn btn-udh-blue btn-join">
@@ -140,9 +149,13 @@
                         </button>
                     </th:block>
                     <th:block th:if="${clubHome.joinStatus == 'Y' && clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
-                        <button class="btn btn-udh-red btn-right">
-                            모임 해체
-                        </button>
+                        <form th:action="@{/club/deleteClub}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />
+                            <button class="btn btn-udh-red btn-right">
+                                모임 해체
+                            </button>
+                        </form>
                     </th:block>
                 </td>
             </tr>
