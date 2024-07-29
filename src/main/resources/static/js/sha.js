@@ -201,7 +201,7 @@ function renderItems(items){
         itemResult = items.map((item) => {
             return `<div class="col">
                 <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
-                    <img src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
+                    <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
 
                     <div class="card-body">
                         <h4>${item.title}</h4>

@@ -331,7 +331,8 @@ public class ShareController {
             // 신청자 no에 로그인한 유저 no 설정
             reqDTO.setRqstNo(c.getMemberDTO().getMemberNo());
 
-            // 동일 물건에 대한 대여 및 나눔 요청 유무 확인
+            // 동일 물건에 대한 대여 및 나눔 요청 유무 확인(status:"신청완료"만!)
+            reqDTO.setStatusCode("RQD");
             if(shareService.findRequest(reqDTO) != null){
                 throw new Exception("이미 신청하셨습니다.");
             }
@@ -353,6 +354,15 @@ public class ShareController {
     }
 
 
+    /**
+     * 물건 수정 페이지 이동
+     *
+     * @param itemDTO the item dto
+     * @param model   the model
+     * @param c       the c
+     * @return the string
+     * @since 2024 -07-29
+     */
     @GetMapping("/update")
     public String editForm(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c){
 

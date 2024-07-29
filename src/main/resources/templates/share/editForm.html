@@ -83,18 +83,25 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-9">
                 <label for="item-imgList" class="form-label">사진</label>
 
                 <div id="item-imgList">
-
+                    <div th:each="img, imgStat : ${item.imgList}" class='img-group'>
+                        <input th:id="'img-input-'+${imgStat.count}" class='form-control' type='file' name='imgs' th:onchange='setImgPreview(${this})' th:data-img-id="'img-'+${imgStat.count}" >
+                        <a href='#this' name='img-delete' th:data-img-id="'img-'+${imgStat.count}" th:onclick="deleteImg($(this))">삭제</a>
+                    </div>
                 </div>
                 <button type="button" class="btn btn-udh-blue" onclick="addImg()">사진추가</button>
 
                 <span style="font-size:0.7em">*사진은 최대 3개까지 등록 가능합니다.</span>
             </div>
-            <div id="imgPreview" class="col-md-6 mt-3">
+            <div id="imgPreview" class="col-md-3 mt-3">
+                <div th:each="img, imgStat : ${item.imgList}" th:id="'img-input-'+${imgStat.count}">
+                    <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" style="height:60px" th:id="'img-'+${imgStat.count}">
 
+
+                </div>
 
             </div>
         </div>

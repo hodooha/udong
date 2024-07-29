@@ -194,7 +194,9 @@
         from sha_req
         where req_item = #{reqItem}
         and rqst_no = #{rqstNo}
-        and status_code = "RQD"
+        <if test="statusCode != null and statusCode != ''">
+            and status_code = #{statusCode}
+        </if>
     </select>
 
 </mapper>
