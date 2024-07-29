@@ -1,6 +1,9 @@
 package com.multi.udong.sale.controller;
 
+import com.multi.udong.admin.model.dto.ReportDTO;
+import com.multi.udong.admin.service.ReportService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
 import com.multi.udong.security.CustomUserDetails;
@@ -26,7 +29,11 @@ import java.util.UUID;
 @RequestMapping("/sale") //sale에 대한 경로 요청 처리
 public class SaleController {
 
+    @Autowired
     private final SaleService saleService;
+    @Autowired
+    private ReportService reportService;
+
 
     @Autowired
     public SaleController(SaleService saleService) {
@@ -127,6 +134,7 @@ public class SaleController {
         model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
         return "sale/saleDetail";
     }
+
     @PostMapping("/deleteSale")
     public String deleteSale(@RequestParam("saleNo") int saleNo, RedirectAttributes redirectAttributes) {
         try {
@@ -138,4 +146,60 @@ public class SaleController {
         return "redirect:/sale/saleMain";
     }
 
+    @GetMapping("/saleReport")
+    public String showSaleReportForm(@RequestParam("saleNo") int saleNo,
+                                     Model model,
+                                     @AuthenticationPrincipal CustomUserDetails member) {
+        SaleDTO sale = saleService.getSaleById(saleNo);
+
+        if (member != null) {
+            MemberDTO memberDTO = member.getMemberDTO();
+            model.addAttribute("currentUser", memberDTO);
+        }
+
+        model.addAttribute("sale", sale);
+        return "sale/saleReport";
+    }
+
+    @PostMapping("/saleReport")
+    public String submitSaleReport(@RequestParam("title") String title,
+                                   @RequestParam("reason") String reason,
+                                   @RequestParam("file") MultipartFile file,
+                                   @RequestParam("saleNo") int saleNo,
+                                   @AuthenticationPrincipal CustomUserDetails member,
+                                   RedirectAttributes redirectAttributes) {
+
+        try {
+            SaleDTO sale = saleService.getSaleById(saleNo);
+            ReportDTO report = new ReportDTO();
+            report.setTypeCode("SAL");
+            report.setReportedNo(saleNo);
+            report.setReportedMember(sale.getWriter());
+            report.setReporterMember(member.getMemberDTO().getMemberNo());
+            report.setReason(reason);
+            report.setUrl("/sale/detail/" + saleNo);
+            report.setStatus("W");
+
+            if (!file.isEmpty()) {
+                String imgPath = new File("src/main/resources/static/uploadFiles").getAbsolutePath();
+                File mkdir = new File(imgPath);
+                if (!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+                String originalFileName = file.getOriginalFilename();
+                String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                file.transferTo(new File(imgPath + "\\" + savedName));
+                report.setUrl(report.getUrl() + "?file=" + savedName);
+            }
+
+            reportService.saveReport(report);
+
+            return "redirect:/sale/saleMain";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/common/errorPage?message=UnexpectedError";
+        }
+    }
 }

@@ -116,6 +116,7 @@
             text-align: center;
             padding: 0;
             margin-right: 10px;
+            margin-bottom: 50px;
         }
         .btn-submit:hover {
             background-color: #142657;
@@ -200,7 +201,10 @@
     </script>
     <div class="button-container">
         <button class="btn-submit btn-udh-blue" onclick="history.back()">뒤로가기</button>
-        <button class="btn-submit btn-udh-red" th:onclick="'location.href=' + @{/sale/saleReport(saleNo=${sale.saleNo})}">신고하기</button>
+        <form th:action="@{/sale/saleReport}" method="get">
+            <input type="hidden" name="saleNo" th:value="${sale.saleNo}" />
+            <button class="btn-submit btn-udh-yellow" type="submit">신고하기</button>
+        </form>
         <form th:action="@{/sale/deleteSale}" method="post" style="display: inline;" onsubmit="return confirm('정말로 이 땡처리를 삭제하시겠습니까?');">
             <input type="hidden" name="saleNo" th:value="${sale.saleNo}">
             <button type="submit" class="btn-submit btn-udh-red">삭제하기</button>

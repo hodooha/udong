@@ -1,6 +1,7 @@
 package com.multi.udong.sale.model.dto;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.member.model.dto.MemberDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +23,7 @@ public class SaleDTO {
     private String imagePath;
     private LocalDateTime createdAt;
     private int views;
+    private MemberDTO member;
 
 
     public int getSaleNo() {
@@ -152,6 +154,14 @@ public class SaleDTO {
         this.views = views;
     }
 
+    public MemberDTO getMember() {
+        return member;
+    }
+
+    public void setMember(MemberDTO member) {
+        this.member = member;
+    }
+
     @Override
     public String toString() {
         return "SaleDTO{" +
@@ -171,6 +181,7 @@ public class SaleDTO {
                 ", imagePath='" + imagePath + '\'' +
                 ", createdAt=" + createdAt +
                 ", views=" + views +
+                ", member=" + member +
                 '}';
     }
 }

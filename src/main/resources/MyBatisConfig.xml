@@ -63,5 +63,6 @@
         <!-- 재식 -->
         <mapper resource="mappers/MemberDAO.xml"/>
         <mapper resource="mappers/SaleMapper.xml"/>
+        <mapper resource="mappers/ReportMapper.xml"/>
     </mappers>
 </configuration>
