@@ -98,7 +98,8 @@
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow">수정하기</button>
+                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+
                 </span>
             </th:block>
 
@@ -118,7 +119,7 @@
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow">수정하기</button>
+                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
                 </span>
             </th:block>
 

@@ -352,4 +352,46 @@ public class ShareController {
         return msg;
     }
 
+
+    @GetMapping("/update")
+    public String editForm(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c){
+
+        System.out.println(itemDTO);
+
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // 물건 정보 불러오기
+            ShaItemDTO target = shareService.getItemDetail(itemDTO);
+            model.addAttribute("item", target);
+
+            // 물건 소유자가 아닐 경우 예외 던지기
+            if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
+                throw new Exception("수정 권한이 없습니다.");
+            }
+
+            // db에서 카테고리 목록 조회
+            List<ShaCatDTO> list = shareService.getShaCat();
+            model.addAttribute("catList", list);
+
+
+
+            return "share/editForm";
+
+        } catch(Exception e){
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+            return "common/error";
+        }
+    }
+
 }

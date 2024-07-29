@@ -88,10 +88,14 @@ function dateRefresh() {
     });
 }
 
+let imgCounter = 0;
+
 function addImg() {
     let len = $(".img-group").length;
     if(len < 3){
-    let addform = "<div class='img-group'><input class='form-control' type='file' name='imgs'><a href='#this' name='img-delete'>삭제</a><div>"
+    imgCounter++;
+    let imgId = `img-${imgCounter}`;
+    let addform = `<div class='img-group'><input id='img-input-${imgCounter}' class='form-control' type='file' name='imgs' onchange='setImgPreview(this)' data-img-id='${imgId}'><a href='#this' name='img-delete' data-img-id='${imgId}'>삭제</a><div>`
     $("#item-imgList").append(addform);
     $("a[name='img-delete']").on("click", function(e){
         e.preventDefault();
@@ -100,8 +104,32 @@ function addImg() {
 }
 
 function deleteImg(img){
+    let imgId = img.data('img-id');
+    $(`#${imgId}`).parent().remove();
     img.parent().remove();
 }
+
+function setImgPreview(input){
+    if(input.files && input.files[0]){
+        let reader = new FileReader();
+        reader.onload = function(e){
+            let imgId = input.getAttribute('data-img-id');
+            let img = document.createElement("img");
+            img.setAttribute("src", e.target.result);
+            img.setAttribute("style", "height:60px");
+            img.setAttribute("id", imgId);
+
+            let imgDiv = document.createElement("div");
+            imgDiv.setAttribute("id", `${imgId}-div`);
+            imgDiv.appendChild(img);
+
+            $('#imgPreview').append(imgDiv);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+
+}
+
 
 function isValid() {
     let isGive = $('input[name=itemGroup]:checked').val();

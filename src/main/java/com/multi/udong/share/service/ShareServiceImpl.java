@@ -139,7 +139,7 @@ public class ShareServiceImpl implements ShareService {
 
     
     /**
-     * 기조 대여 및 나눔 신청 내역 조회
+     * 기존 대여 및 나눔 신청 내역 조회
      *
      * @param reqDTO the req dto
      * @return the sha req dto
