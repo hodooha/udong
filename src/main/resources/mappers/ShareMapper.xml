@@ -155,7 +155,12 @@
         ) sub
         where rn = 1
         ) c on a.item_no = c.target_no
-        where a.rn between #{start} and #{end}
+        left join
+        select is_deleted
+        from member d
+        on a.owner_no = d.member_no
+        where d.is_deleted = 'N'
+        and a.rn between #{start} and #{end}
         order by a.rn
     </select>
 
