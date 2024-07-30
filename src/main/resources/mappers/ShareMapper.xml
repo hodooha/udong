@@ -133,17 +133,18 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-            select b.*,
-                    row_number() over (order by b.created_at desc) as rn
-            from sha_items b
-            <where>
-                <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
-                <if test="group != null and group != ''">and b.item_group = #{group}</if>
-                <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
-                <if test="1 == 1">and b.deleted_at is null</if>
-                <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
-                <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
-            </where>
+        select b.*,
+        row_number() over (order by b.created_at desc) as rn
+        from sha_items b
+        left join member d
+        on b.owner_no = d.member_no
+        where b.deleted_at is null
+        and d.is_deleted = 'N'
+        <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
+        <if test="group != null and group != ''">and b.item_group = #{group}</if>
+        <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
+        <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
         ) a
         left join (
         select target_no, saved_name
@@ -155,30 +156,25 @@
         ) sub
         where rn = 1
         ) c on a.item_no = c.target_no
-        left join
-        select is_deleted
-        from member d
-        on a.owner_no = d.member_no
-        where d.is_deleted = 'N'
-        and a.rn between #{start} and #{end}
+        where a.rn between #{start} and #{end}
         order by a.rn
     </select>
 
     <select id="getItemCounts" resultType="Integer">
         select count(*)
-        from
-        sha_items
-        <where>
-            <if test="locCode != null and locCode != ''">and loc_code = #{locCode}</if>
-            <if test="group != null and group != ''">and item_group = #{group}</if>
-            <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
-            <if test="1 == 1">and deleted_at is null</if>
-            <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
-            <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
-        </where>
+        from sha_items a
+        left join member b
+        on a.owner_no = b.member_no
+        where a.deleted_at is null
+        and b.is_deleted = 'N'
+        <if test="locCode != null and locCode != ''">and a.loc_code = #{locCode}</if>
+        <if test="group != null and group != ''">and a.item_group = #{group}</if>
+        <if test="catCode != null and catCode != ''">and a.item_cat_code = #{catCode}</if>
+        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (a.title like concat('%', #{keyword}, '%') or a.content like concat('%', #{keyword}, '%')) </if>
     </select>
 
-    <insert id="shaRequest">
+    <insert id="insertRequest">
         insert into sha_req
         <choose>
             <when test="reqGroup == 'rent'">

@@ -129,7 +129,7 @@ public class ShareDAO {
      */
     public int insertRequest(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) throws Exception{
 
-        return sqlSession.insert("ShareMapper.shaRequest", reqDTO);
+        return sqlSession.insert("ShareMapper.insertRequest", reqDTO);
     }
 
     /**
