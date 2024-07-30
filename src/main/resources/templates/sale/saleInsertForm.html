@@ -104,7 +104,214 @@
         .file-names {
             margin-top: 5px;
         }
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
     </style>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script>
+        function openPostcodePopup() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    document.getElementById("address").value = data.address;
+                }
+            }).open();
+        }
+
+        window.onload = function() {
+            var today = new Date().toISOString().substr(0, 10);
+            document.getElementById("started_at_date").value = today;
+            document.getElementById("ended_at_date").value = today;
+        }
+
+        function formatPrice(input) {
+            var value = input.value.replace(/,/g, '');
+            if (!isNaN(value) && value.length > 0) {
+                input.value = parseInt(value).toLocaleString('ko-KR');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function showPreview(event) {
+            var files = event.target.files;
+            var container = document.getElementById('image-preview-container');
+            container.innerHTML = "";
+            for (var i = 0; i < files.length; i++) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var img = document.createElement('img');
+                    img.src = e.target.result;
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const startedAtTimeInput = document.getElementById('started_at_time');
+            const startedAtDateInput = document.getElementById('started_at_date');
+
+            function getCurrentTime() {
+                const now = new Date();
+                return now.toTimeString().slice(0, 5); // HH:MM 형식으로 반환
+            }
+
+            function updateMinTime() {
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                if (startedAtDateInput.value === today) {
+                    startedAtTimeInput.min = getCurrentTime();
+                } else {
+                    startedAtTimeInput.min = "00:00";
+                }
+            }
+
+            updateMinTime();
+            setInterval(updateMinTime, 60000);
+
+            startedAtTimeInput.addEventListener('change', function() {
+                const selectedDateTime = new Date(startedAtDateInput.value + 'T' + this.value);
+                const currentDateTime = new Date();
+
+                if (selectedDateTime < currentDateTime) {
+                    alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
+                    this.value = ""; // 유효하지 않은 시간을 초기화
+                }
+            });
+
+            startedAtDateInput.addEventListener('change', updateMinTime);
+        });
+
+        function validateForm(event) {
+            var startedAtTime = document.getElementById("started_at_time").value;
+            var endedAtTime = document.getElementById("ended_at_time").value;
+            var startedAtDate = document.getElementById("started_at_date").value;
+            var endedAtDate = document.getElementById("ended_at_date").value;
+
+            if (!startedAtTime) {
+                alert("시작 시간을 입력해 주세요.");
+                event.preventDefault();
+                return false;
+            }
+
+            var startTime = new Date(startedAtDate + 'T' + startedAtTime);
+            var endTime = new Date(endedAtDate + 'T' + endedAtTime);
+            var now = new Date();
+
+            var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
+            var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
+
+            if (parseInt(salePrice) > parseInt(originalPrice)) {
+                alert("할인가격은 정상가격보다 높을 수 없습니다.");
+                event.preventDefault();
+                return false;
+            }
+
+            if (startTime < now) {
+                alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
+                event.preventDefault();
+                return false;
+            }
+
+            if (startTime >= endTime) {
+                alert("시작 시간은 종료 시간보다 이전이어야 합니다.");
+                event.preventDefault();
+                return false;
+            }
+
+            var hiddenOriginalPrice = document.createElement("input");
+            hiddenOriginalPrice.type = "hidden";
+            hiddenOriginalPrice.name = "originalPrice";
+            hiddenOriginalPrice.value = originalPrice;
+            event.target.appendChild(hiddenOriginalPrice);
+
+            var hiddenSalePrice = document.createElement("input");
+            hiddenSalePrice.type = "hidden";
+            hiddenSalePrice.name = "salePrice";
+            hiddenSalePrice.value = salePrice;
+            event.target.appendChild(hiddenSalePrice);
+
+            var startedAtCombined = document.getElementById("started_at_date").value + 'T' + document.getElementById("started_at_time").value;
+            var endedAtCombined = document.getElementById("ended_at_date").value + 'T' + document.getElementById("ended_at_time").value;
+
+            var hiddenStartedAt = document.createElement("input");
+            hiddenStartedAt.type = "hidden";
+            hiddenStartedAt.name = "startedAt";
+            hiddenStartedAt.value = startedAtCombined;
+            event.target.appendChild(hiddenStartedAt);
+
+            var hiddenEndedAt = document.createElement("input");
+            hiddenEndedAt.type = "hidden";
+            hiddenEndedAt.name = "endedAt";
+            hiddenEndedAt.value = endedAtCombined;
+            event.target.appendChild(hiddenEndedAt);
+
+            return true;
+        }
+
+        function addRealTimeValidation(inputElement, validationFunction, errorMessageElement) {
+            inputElement.addEventListener('input', function() {
+                const isValid = validationFunction(this);
+                if (!isValid) {
+                    errorMessageElement.textContent = '유효하지 않은 값입니다.';
+                } else {
+                    errorMessageElement.textContent = '';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const originalPriceInput = document.getElementById('original_price');
+            const salePriceInput = document.getElementById('sale_price');
+            const startedAtTimeInput = document.getElementById('started_at_time');
+            const endedAtTimeInput = document.getElementById('ended_at_time');
+            const startedAtDateInput = document.getElementById('started_at_date');
+            const endedAtDateInput = document.getElementById('ended_at_date');
+
+            const originalPriceError = document.createElement('div');
+            originalPriceError.className = 'error-message';
+            originalPriceInput.parentNode.appendChild(originalPriceError);
+
+            const salePriceError = document.createElement('div');
+            salePriceError.className = 'error-message';
+            salePriceInput.parentNode.appendChild(salePriceError);
+
+            const startedAtTimeError = document.createElement('div');
+            startedAtTimeError.className = 'error-message';
+            startedAtTimeInput.parentNode.appendChild(startedAtTimeError);
+
+            const endedAtTimeError = document.createElement('div');
+            endedAtTimeError.className = 'error-message';
+            endedAtTimeInput.parentNode.appendChild(endedAtTimeError);
+
+            addRealTimeValidation(originalPriceInput, function(input) {
+                const salePrice = parseInt(salePriceInput.value.replace(/,/g, '')) || 0;
+                const originalPrice = parseInt(input.value.replace(/,/g, '')) || 0;
+                return originalPrice >= salePrice;
+            }, originalPriceError);
+
+            addRealTimeValidation(salePriceInput, function(input) {
+                const originalPrice = parseInt(originalPriceInput.value.replace(/,/g, '')) || 0;
+                const salePrice = parseInt(input.value.replace(/,/g, '')) || 0;
+                return salePrice <= originalPrice;
+            }, salePriceError);
+
+            addRealTimeValidation(startedAtTimeInput, function(input) {
+                const selectedDateTime = new Date(startedAtDateInput.value + 'T' + input.value);
+                const currentDateTime = new Date();
+                return selectedDateTime >= currentDateTime;
+            }, startedAtTimeError);
+
+            addRealTimeValidation(endedAtTimeInput, function(input) {
+                const startTime = new Date(startedAtDateInput.value + 'T' + startedAtTimeInput.value);
+                const endTime = new Date(endedAtDateInput.value + 'T' + input.value);
+                return endTime > startTime;
+            }, endedAtTimeError);
+        });
+    </script>
 </head>
 <body>
 
@@ -117,44 +324,43 @@
     <form th:action="@{/sale/insert}" method="post" enctype="multipart/form-data" onsubmit="return validateForm(event)">
         <div class="form-group">
             <label for="title">제목</label>
-            <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
+            <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required autocomplete="off">
         </div>
         <div class="form-group-half">
             <div class="form-group">
-                <label for="started_at">시작시간</label>
-                <input type="time" id="started_at_time" name="started_at_time" required>
+                <label for="started_at_time">시작시간</label>
+                <input type="time" id="started_at_time" name="started_at_time" required autocomplete="off">
                 <input type="hidden" id="started_at_date" name="started_at_date">
             </div>
             <div class="form-group">
-                <label for="ended_at">종료시간</label>
-                <input type="time" id="ended_at_time" name="ended_at_time" required>
+                <label for="ended_at_time">종료시간</label>
+                <input type="time" id="ended_at_time" name="ended_at_time" required autocomplete="off">
                 <input type="hidden" id="ended_at_date" name="ended_at_date">
             </div>
         </div>
         <div class="form-group-half">
             <div class="form-group">
                 <label for="original_price">정상가격</label>
-                <input type="text" id="original_price" name="original_price" placeholder="정상가격을 입력하세요" required oninput="formatPrice(this)">
+                <input type="text" id="original_price" name="original_price" placeholder="정상가격을 입력하세요" required oninput="formatPrice(this)" autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="sale_price">할인가격</label>
-                <input type="text" id="sale_price" name="sale_price" placeholder="할인가격을 입력하세요" required oninput="formatPrice(this)">
+                <input type="text" id="sale_price" name="sale_price" placeholder="할인가격을 입력하세요" required oninput="formatPrice(this)" autocomplete="off">
             </div>
         </div>
         <div class="form-group">
             <label for="address">주소</label>
-            <input type="text" id="address" name="address" placeholder="주소를 입력하세요" required>
+            <input type="text" id="address" name="address" placeholder="주소를 입력하세요" required readonly onclick="openPostcodePopup()" autocomplete="off">
         </div>
         <div class="image-and-content">
             <div class="form-group content">
                 <label for="image">이미지첨부</label>
                 <input type="file" id="image" name="imageFiles" multiple onchange="showPreview(event)" required>
                 <div id="image-preview-container" class="image-preview-container"></div>
-                <div id="file-names" class="file-names"></div>
             </div>
             <div class="form-group content">
                 <label for="content">내용</label>
-                <textarea id="content" name="content" rows="10" placeholder="내용을 입력하세요" required></textarea>
+                <textarea id="content" name="content" rows="10" placeholder="내용을 입력하세요" required autocomplete="off"></textarea>
             </div>
         </div>
         <div class="btn-submit-container">
@@ -162,147 +368,6 @@
         </div>
     </form>
 </div>
-
-<script>
-    // 오늘 날짜를 기본값으로 설정
-    window.onload = function() {
-        var today = new Date().toISOString().substr(0, 10);
-        document.getElementById("started_at_date").value = today;
-        document.getElementById("ended_at_date").value = today;
-    }
-
-    // 가격을 3자리마다 쉼표로 포맷팅하는 함수
-    function formatPrice(input) {
-        var value = input.value.replace(/,/g, '');
-        if (!isNaN(value) && value.length > 0) {
-            input.value = parseInt(value).toLocaleString('ko-KR');
-        } else {
-            input.value = '';
-        }
-         console.log("Formatted price:", input.value);
-    }
-
-    // 이미지 미리보기 및 파일 이름 표시 함수
-    function showPreview(event) {
-        var files = event.target.files;
-        var container = document.getElementById('image-preview-container');
-        var fileNamesContainer = document.getElementById('file-names');
-        container.innerHTML = "";
-        fileNamesContainer.innerHTML = "";
-        for (var i = 0; i < files.length; i++) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(files[i]);
-        }
-    }
-
-    // 시작 시간 제약 추가
-    document.addEventListener('DOMContentLoaded', function() {
-        const startedAtTimeInput = document.getElementById('started_at_time');
-        const startedAtDateInput = document.getElementById('started_at_date');
-
-        function getCurrentTime() {
-            const now = new Date();
-            return now.toTimeString().slice(0,5);
-        }
-
-        function updateMinTime() {
-            const now = new Date();
-            const today = now.toISOString().split('T')[0];
-            if (startedAtDateInput.value === today) {
-                startedAtTimeInput.min = getCurrentTime();
-            } else {
-                startedAtTimeInput.min = "00:00";
-            }
-        }
-
-        // 초기 설정 및 1분마다 업데이트
-        updateMinTime();
-        setInterval(updateMinTime, 60000);
-
-        startedAtTimeInput.addEventListener('change', function() {
-            const selectedDateTime = new Date(startedAtDateInput.value + 'T' + this.value);
-            const currentDateTime = new Date();
-
-            if (selectedDateTime < currentDateTime) {
-            alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
-                this.value = getCurrentTime();
-            }
-        });
-         startedAtDateInput.addEventListener('change', updateMinTime);
-    });
-
-    // 폼 제출 시 유효성 검사 함수
-    function validateForm(event) {
-        var startedAtTime = document.getElementById("started_at_time").value;
-        var endedAtTime = document.getElementById("ended_at_time").value;
-        var startedAtDate = document.getElementById("started_at_date").value;
-        var endedAtDate = document.getElementById("ended_at_date").value;
-
-        var startTime = new Date(startedAtDate + 'T' + startedAtTime);
-        var endTime = new Date(endedAtDate + 'T' + endedAtTime);
-        var now = new Date();
-
-
-        var originalPrice = document.getElementById("original_price").value.replace(/,/g, '');
-        var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
-
-        if (parseInt(salePrice) > parseInt(originalPrice)) {
-            alert("할인 가격은 정상 가격보다 클 수 없습니다.");
-            event.preventDefault();
-            return false;
-        }
-
-        if (startTime < now) {
-            alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
-            event.preventDefault();
-            return false;
-        }
-
-        if (startTime >= endTime) {
-            alert("시작 시간은 종료 시간보다 늦을 수 없습니다.");
-            event.preventDefault();
-            return false;
-        }
-
-        var hiddenOriginalPrice = document.createElement("input");
-        hiddenOriginalPrice.type = "hidden";
-        hiddenOriginalPrice.name = "originalPrice";
-        hiddenOriginalPrice.value = originalPrice;
-        event.target.appendChild(hiddenOriginalPrice);
-
-        var hiddenSalePrice = document.createElement("input");
-        hiddenSalePrice.type = "hidden";
-        hiddenSalePrice.name = "salePrice";
-        hiddenSalePrice.value = salePrice;
-        event.target.appendChild(hiddenSalePrice);
-
-        var startedAtCombined = document.getElementById("started_at_date").value + 'T' + document.getElementById("started_at_time").value;
-        var endedAtCombined = document.getElementById("ended_at_date").value + 'T' + document.getElementById("ended_at_time").value;
-
-        var hiddenStartedAt = document.createElement("input");
-        hiddenStartedAt.type = "hidden";
-        hiddenStartedAt.name = "startedAt";
-        hiddenStartedAt.value = startedAtCombined;
-        event.target.appendChild(hiddenStartedAt);
-
-        var hiddenEndedAt = document.createElement("input");
-        hiddenEndedAt.type = "hidden";
-        hiddenEndedAt.name = "endedAt";
-        hiddenEndedAt.value = endedAtCombined;
-        event.target.appendChild(hiddenEndedAt);
-
-        return true;
-    }
-    function getCurrentTime() {
-    const now = new Date();
-    return now.toTimeString().slice(0,5);
-}
-</script>
 
 </body>
 </html>

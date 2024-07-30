@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ReportMapper">
+
+    <resultMap id="ReportResultMap" type="com.multi.udong.admin.model.dto.ReportDTO">
+        <id property="reportNo" column="report_no"/>
+        <result property="reportedNo" column="reported_no"/>
+        <result property="typeCode" column="type_code"/>
+        <result property="reportedMember" column="reported_member"/>
+        <result property="reporterMember" column="reporter_member"/>
+        <result property="reason" column="reason"/>
+        <result property="url" column="url"/>
+        <result property="status" column="status"/>
+    </resultMap>
+
+    <insert id="insertReport" parameterType="com.multi.udong.admin.model.dto.ReportDTO">
+        INSERT INTO ADM_REPORT (reported_no, type_code, reported_member, reporter_member, reason, url, status)
+        VALUES (#{reportedNo}, #{typeCode}, #{reportedMember}, #{reporterMember}, #{reason}, #{url}, #{status})
+    </insert>
+
+</mapper>

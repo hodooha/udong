@@ -70,5 +70,21 @@
         ORDER BY s.sale_no DESC
     </select>
 
+    <select id="getSaleById" resultType="com.multi.udong.sale.model.dto.SaleDTO">
+        SELECT sale_no, writer, title, started_at, ended_at, original_price, sale_price,
+        address, content, location_code, status, created_at, views
+        FROM SAL
+        WHERE sale_no = #{saleNo}
+    </select>
+
+    <select id="getAttachmentsBySaleNo" resultType="com.multi.udong.common.model.dto.AttachmentDTO">
+        SELECT * FROM ATTACHMENT WHERE type_code = 'SAL' AND target_no = #{saleNo}
+    </select>
+    <update id="incrementViews" parameterType="int">
+        UPDATE SAL SET views = views + 1 WHERE sale_no = #{saleNo}
+    </update>
+    <delete id="deleteSale" parameterType="int">
+        DELETE FROM SAL WHERE sale_no = #{saleNo}
+    </delete>
 
 </mapper>
