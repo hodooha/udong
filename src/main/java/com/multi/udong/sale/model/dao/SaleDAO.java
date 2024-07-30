@@ -2,7 +2,9 @@ package com.multi.udong.sale.model.dao;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
+import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -17,6 +19,12 @@ import java.util.Map;
  */
 @Repository //@Repository 데이터접근객체임을 나타냄
 public class SaleDAO {
+    private final SqlSession sqlSession;
+
+    @Autowired
+    public SaleDAO(SqlSession sqlSession) {
+        this.sqlSession = sqlSession;
+    }
 
     /**
      * Insert sale int.
@@ -67,7 +75,19 @@ public class SaleDAO {
         params.put("excludeExpired", excludeExpired);
         return sqlSession.selectList("SaleMapper.searchSales", params);
     }
+    public SaleDTO getSaleById(SqlSession sqlSession, int saleNo) {
+        return sqlSession.selectOne("SaleMapper.getSaleById", saleNo);
+    }
 
 
-
+    public void incrementViews(int saleNo) {
+        sqlSession.update("SaleMapper.incrementViews", saleNo);
+    
+    }
+    public List<AttachmentDTO> getAttachmentsBySaleNo(SqlSessionTemplate sqlSession, int saleNo) {
+        return sqlSession.selectList("SaleMapper.getAttachmentsBySaleNo", saleNo);
+    }
+    public void deleteSale(int saleNo) throws Exception {
+        sqlSession.delete("SaleMapper.deleteSale", saleNo);
+    }
 }
