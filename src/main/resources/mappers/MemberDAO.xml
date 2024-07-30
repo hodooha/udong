@@ -477,4 +477,56 @@
         WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
+    <select id="getNewsData" resultType="map">
+        SELECT news_no, title, created_at, views
+        FROM NS_POST
+        WHERE writer = #{memberNo}
+        ORDER BY created_at DESC
+        LIMIT 3
+    </select>
+
+    <select id="getLendData" resultType="map">
+        SELECT item_no, title, expiry_date, status_code
+        FROM SHA_ITEMS
+        WHERE owner_no = #{memberNo} AND item_group = 'RENT'
+        ORDER BY created_at DESC
+        LIMIT 3
+    </select>
+
+    <select id="getRentData" resultType="map">
+        SELECT si.item_no, si.title, sr.return_date, sr.status_code
+        FROM SHA_REQ sr
+        JOIN SHA_ITEMS si ON sr.req_item = si.item_no
+        WHERE sr.rqst_no = #{memberNo}
+        ORDER BY sr.created_at DESC
+        LIMIT 3
+    </select>
+
+    <select id="getGiveData" resultType="map">
+        SELECT item_no, title, created_at, status_code
+        FROM SHA_ITEMS
+        WHERE owner_no = #{memberNo} AND item_group = 'GIVE'
+        ORDER BY created_at DESC
+        LIMIT 3
+    </select>
+
+    <select id="getClubData" resultType="map">
+        SELECT c.club_no, c.club_name
+        FROM CL c
+        JOIN CL_MEMBER cm ON c.club_no = cm.club_no
+        WHERE cm.member_no = #{memberNo}
+        ORDER BY c.created_at DESC
+        LIMIT 3
+    </select>
+
+    <select id="getScheduleData" resultType="map">
+        SELECT cs.schedule_no, cs.title, cs.gathering_at, c.club_name
+        FROM CL_SCHEDULE cs
+        JOIN CL_SCHEDULE_PARTICIPANT csp ON cs.schedule_no = csp.schedule_no
+        JOIN CL c ON cs.club_no = c.club_no
+        WHERE csp.member_no = #{memberNo} AND cs.gathering_at > NOW()
+        ORDER BY cs.gathering_at ASC
+        LIMIT 3
+    </select>
+
 </mapper>

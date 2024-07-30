@@ -16,9 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * The type Member service.
@@ -131,6 +129,21 @@ public class MemberServiceImpl implements MemberService {
             }
             result.add(list);
         }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> selectAllDashBoard(int memberNo) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("newsData", memberDAO.getNewsData(memberNo));
+        result.put("lendData", memberDAO.getLendData(memberNo));
+        result.put("rentData", memberDAO.getRentData(memberNo));
+        result.put("giveData", memberDAO.getGiveData(memberNo));
+        result.put("clubData", memberDAO.getClubData(memberNo));
+        result.put("scheduleData", memberDAO.getScheduleData(memberNo));
 
         return result;
     }

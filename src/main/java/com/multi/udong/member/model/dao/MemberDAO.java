@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : 재식
@@ -64,4 +65,16 @@ public interface MemberDAO{
     List<LinkedHashMap<String, Object>> selectShareLike(MemPageDTO memberNo);
 
     List<LinkedHashMap<String, Object>> selectSaleBoard(MemPageDTO memberNo);
+
+    List<Map<String, Object>> getNewsData(int memberNo);
+
+    List<Map<String, Object>> getLendData(int memberNo);
+
+    List<Map<String, Object>> getRentData(int memberNo);
+
+    List<Map<String, Object>> getGiveData(int memberNo);
+
+    List<Map<String, Object>> getClubData(int memberNo);
+
+    List<Map<String, Object>> getScheduleData(int memberNo);
 }

@@ -7,6 +7,7 @@ import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : 재식
@@ -31,4 +32,6 @@ public interface MemberService {
     boolean isNicknameDuplicate(String nickname);
 
     List<List<String>> selectAllAct(String table, MemPageDTO pageDTO);
+
+    Map<String, Object> selectAllDashBoard(int memberNo);
 }

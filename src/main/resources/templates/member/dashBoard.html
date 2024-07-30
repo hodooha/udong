@@ -25,6 +25,10 @@
         h2 {
             text-align: left;
         }
+        .recent-board {
+            flex: 1;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -42,27 +46,51 @@
         </div>
         <div class="dashBoard">
             <h2>나의 우동 소식</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataNews}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
         <div class="dashBoard">
             <h2>올린 대여글</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataLend}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
         <div class="dashBoard">
             <h2>대여한 물건</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataRent}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
         <div class="dashBoard">
             <h2>올린 나눔글</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataGive}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
         <div class="dashBoard">
             <h2>가입한 모임</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataClub}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
         <div class="dashBoard">
             <h2>다가오는 일정</h2>
-            <div class="recent-board"></div>
+            <table class="recent-board">
+                <tr th:each="data : ${dataSchedule}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
         </div>
     </div>
 </main>

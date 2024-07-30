@@ -39,7 +39,18 @@ public class MemberController {
      * @since 2024 -07-24
      */
     @GetMapping("/dashBoard")
-    public void dashBoard() {
+    public void dashBoard(@AuthenticationPrincipal CustomUserDetails c, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
+
+        model.addAttribute("dataNews", map.get("dataNews"));
+        model.addAttribute("dataLend", map.get("dataLend"));
+        model.addAttribute("dataRent", map.get("dataRent"));
+        model.addAttribute("dataGive", map.get("dataGive"));
+        model.addAttribute("dataClub", map.get("dataClub"));
+        model.addAttribute("dataSchedule", map.get("dataSchedule"));
     }
 
     /**
@@ -92,10 +103,12 @@ public class MemberController {
     /**
      * Act.
      *
-     * @param c     the c
-     * @param table the table
-     * @param page  the page
-     * @param model the model
+     * @param c              the c
+     * @param table          the table
+     * @param page           the page
+     * @param searchCategory the search category
+     * @param searchWord     the search word
+     * @param model          the model
      * @since 2024 -07-24
      */
     @GetMapping("/act")
@@ -266,9 +279,9 @@ public class MemberController {
      */
     @PostMapping("/updateProfile")
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails c,
-                              @RequestParam(value = "file", required = false) MultipartFile file,
-                              MemberDTO memberDTO,
-                              Model model) {
+                                @RequestParam(value = "file", required = false) MultipartFile file,
+                                MemberDTO memberDTO,
+                                Model model) {
 
         // memberDTO에 현재 사용자의 회원번호를 입력
         memberDTO.setMemberNo(c.getMemberDTO().getMemberNo());

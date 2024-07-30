@@ -130,17 +130,20 @@
                 <span sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></span>
             </button>
 
+
             <div>
+                <a href="/member/dashBoard">
                 <img th:src="${#authentication.principal.memberDTO.savedName == null
                    || #authentication.principal.memberDTO.savedName == ''
                    || #authentication.principal.memberDTO.savedName == 'defaultProfile.png'
                       ? '/img/defaultProfile.png'
                       : '/uploadFiles/' + #authentication.principal.memberDTO.savedName}"
                          class="user-icon">
+                </a>
             </div>
 
             <div class="auth-links">
-                <a href="/member/dashBoard" ><span sec:authentication="principal.memberDTO.nickname"></span></a>
+                <a href="/member/dashBoard"><span sec:authentication="principal.memberDTO.nickname"></span></a>
                 <span>|</span>
                 <a href="#" onclick="document.getElementById('logoutForm').submit();">로그아웃</a>
                 <form id="logoutForm" method="post" action="/logout" style="display:none;">
