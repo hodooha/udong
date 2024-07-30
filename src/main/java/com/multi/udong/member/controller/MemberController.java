@@ -16,6 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -82,8 +85,6 @@ public class MemberController {
                     addressDTO.getEupMyeonDongName() + " " +
                     (addressDTO.getDetailAddress() != null ? addressDTO.getDetailAddress() : "");
 
-        } else { // 등록된 주소가 없다면
-            currentFullAddress = "등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요.";
         }
         
         model.addAttribute("currentFullAddress", currentFullAddress);
@@ -93,10 +94,35 @@ public class MemberController {
     /**
      * Act.
      *
+     * @param c     the c
+     * @param table the table
+     * @param model the model
      * @since 2024 -07-24
      */
     @GetMapping("/act")
-    public void act() {
+    public void act(@AuthenticationPrincipal CustomUserDetails c,
+                    @RequestParam("table") String table,
+                    Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        List<String> headers = new ArrayList<>();
+        List<List<String>> data = memberService.selectAllAct(table, memberNo);
+
+        headers = switch (table) {
+            case "newsBoard" -> Arrays.asList("주제", "동네", "제목", "작성일", "조회수");
+            case "newsLike" -> Arrays.asList("주제", "동네", "제목", "작성일", "작성자", "조회수");
+            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글", "작성일");
+            case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장", "생성일");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성일", "조회수");
+            case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자", "일시");
+            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명", "마감일", "상태");
+            case "saleBoard" -> Arrays.asList("동네", "물품명", "정상가", "할인가", "작성일", "시작시간", "종료시간");
+            default -> headers;
+        };
+
+        model.addAttribute("tableHeaders", headers);
+        model.addAttribute("tableData", data);
     }
 
     /**
@@ -154,8 +180,8 @@ public class MemberController {
                 memberService.insertAddress(memAddressDTO);
                 
             } catch (Exception e) {
-                model.addAttribute("msg", "주소 등록에 실패하였습니다.");
-                throw new RuntimeException(e);
+                model.addAttribute("msg", e.getMessage());
+                return "common/errorPage";
             }
             
             // 등록 후 사용자 세션 최신화
@@ -169,7 +195,8 @@ public class MemberController {
                 memberService.updateAddress(memAddressDTO);
                 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                model.addAttribute("msg", e.getMessage());
+                return "common/errorPage";
             }
 
             // 수정 후 사용자 세션 최신화
@@ -180,7 +207,7 @@ public class MemberController {
 
         return "member/dashBoard";
     }
-    
+
     /**
      * 입력한 정보로 현재 사용자의 회원정보를 수정함
      *

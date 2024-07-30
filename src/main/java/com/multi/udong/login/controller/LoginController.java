@@ -150,8 +150,8 @@ public class LoginController {
                         
                     } catch (Exception e) {
                         new File(fileName).delete();
-                        model.addAttribute("msg", "회원가입에 실패했습니다.");
-                        return "member/login";
+                        model.addAttribute("msg", e.getMessage());
+                        return "common/errorPage";
                     }
                     
                     model.addAttribute("msg", "회원가입이 완료되었습니다.");
@@ -176,8 +176,8 @@ public class LoginController {
             return "member/login";
             
         } catch (Exception e) {
-            model.addAttribute("msg","회원가입에 실패하였습니다.");
-            return "member/signup";
+            model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
         }
     }
 

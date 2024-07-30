@@ -5,6 +5,8 @@ import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 
+import java.util.List;
+
 /**
  * @author : 재식
  * @since : 24. 7. 21.
@@ -26,4 +28,6 @@ public interface MemberService {
     void updateProfile(MemberDTO memberDTO, AttachmentDTO attachmentDTO);
 
     boolean isNicknameDuplicate(String nickname);
+
+    List<List<String>> selectAllAct(String table, int memberNo);
 }

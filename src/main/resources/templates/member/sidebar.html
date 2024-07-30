@@ -27,13 +27,13 @@
         }
         .sidebar {
             width: 200px;
-            height: calc(100% - 40px);
+            min-height: calc(100% - 40px);
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
             margin: 20px;
-            overflow: hidden;
+            overflow: auto;
         }
         .sidebar ul {
             list-style: none;
@@ -74,14 +74,40 @@
         .sidebar ul li a:hover::before {
             left: 0;
         }
-        .sidebar ul li:last-child a {
-            color: #e74c3c;
-        }
-        .sidebar ul li:last-child a:hover {
+        .sidebar ul li a.active {
+            background-color: #FFB83D;
             color: white;
         }
-        .sidebar ul li:last-child a::before {
+        .sidebar ul li a.active::before {
+            left: 0;
+        }
+        .sidebar ul li:last-child a.delete-account {
+            color: #e74c3c;
+        }
+        .sidebar ul li:last-child a.delete-account:hover {
+            color: white;
+        }
+        .sidebar ul li:last-child a.delete-account::before {
             background-color: #e74c3c;
+        }
+        .sidebar ul li.has-submenu > a::after {
+            content: '\25BC';
+            position: absolute;
+            right: 10px;
+            transition: transform 0.3s ease;
+        }
+        .sidebar ul li.has-submenu.active > a::after {
+            transform: rotate(180deg);
+        }
+        .sidebar ul li ul.submenu {
+            display: none;
+            padding-left: 20px;
+        }
+        .sidebar ul li.active ul.submenu {
+            display: block;
+        }
+        .sidebar ul li ul.submenu li a {
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -91,11 +117,46 @@
             <li><a href="/member/dashBoard">대시보드</a></li>
             <li><a href="/member/memInfo">회원정보 관리</a></li>
             <li><a href="/member/address">주소 관리</a></li>
-            <li><a href="/member/act">나의 활동 기록</a></li>
+            <li class="has-submenu">
+                <a href="/member/act">나의 활동 기록</a>
+                <ul class="submenu">
+                    <li><a href="/member/act?table=newsBoard">우동 소식</a></li>
+                    <li><a href="/member/act?table=newsLike">좋아요</a></li>
+                    <li><a href="/member/act?table=newsReply">댓글</a></li>
+                    <li><a href="/member/act?table=club">우동 모임</a></li>
+                    <li><a href="/member/act?table=clubLog">모임 기록</a></li>
+                    <li><a href="/member/act?table=clubSchedule">모임 일정</a></li>
+                    <li><a href="/member/act?table=shareLike">찜한 물건</a></li>
+                    <li><a href="/member/act?table=saleBoard">땡처리 물건</a></li>
+                </ul>
+            </li>
             <li><a href="/member/message">나의 쪽지</a></li>
             <li><a href="/member/notiSet">알림 설정</a></li>
-            <li><a href="/member/memDel">회원 탈퇴</a></li>
+            <li><a href="/member/memDel" class="delete-account">회원 탈퇴</a></li>
         </ul>
     </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const submenuToggle = document.querySelector('.has-submenu > a');
+        submenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            this.parentNode.classList.toggle('active');
+        });
+
+        const currentPath = window.location.pathname;
+        const currentSearch = window.location.search;
+
+        const menuItems = document.querySelectorAll('.sidebar a');
+        menuItems.forEach(function(item) {
+            if (item.getAttribute('href') === currentPath + currentSearch) {
+                item.classList.add('active');
+                const parentLi = item.closest('.has-submenu');
+                if (parentLi) {
+                    parentLi.classList.add('active');
+                }
+            }
+        });
+    });
+</script>
 </html>

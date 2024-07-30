@@ -14,13 +14,51 @@
             padding: 0px;
             transition: background-color 0.3s ease;
         }
+        .act {
+            min-width: 1000px;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
-    <div class="content-area"></div>
+    <div class="content-area">
+        <div class="act">
+            <h2>나의 활동 기록</h2><br>
+            <h5>우동 소식</h5>
+            <table>
+                <thead>
+                    <tr >
+                        <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="data : ${tableData}">
+                        <td th:each="element : ${data}" th:text="${element}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </main>
 <div id="msg" th:text="${msg}" hidden></div>
 </body>

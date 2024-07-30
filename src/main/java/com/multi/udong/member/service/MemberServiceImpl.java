@@ -15,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+
 /**
  * The type Member service.
  *
@@ -91,6 +95,58 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean isNicknameDuplicate(String nickname) {
         return memberDAO.findMemberByNickname(nickname) != null;
+    }
+
+    /**
+     * Select all act list.
+     *
+     * @param table    the table
+     * @param memberNo
+     * @return the list
+     * @since 2024 -07-30
+     */
+    @Override
+    public List<List<String>> selectAllAct(String table, int memberNo) {
+
+        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
+
+        switch (table) {
+            case "newsBoard":
+                map = memberDAO.selectNewsBoard(memberNo);
+                break;
+            case "newsLike":
+                map = memberDAO.selectNewsLike(memberNo);
+                break;
+            case "newsReply":
+                map = memberDAO.selectNewsReply(memberNo);
+                break;
+            case "club":
+                map = memberDAO.selectClub(memberNo);
+                break;
+            case "clubLog":
+                map = memberDAO.selectClubLog(memberNo);
+                break;
+            case "clubSchedule":
+                map = memberDAO.selectClubSchedule(memberNo);
+                break;
+            case "shareLike":
+                map = memberDAO.selectShareLike(memberNo);
+                break;
+            case "saleBoard":
+                map = memberDAO.selectSaleBoard(memberNo);
+                break;
+        }
+
+        List<List<String>> result = new ArrayList<>();
+        for (LinkedHashMap<String, Object> row : map) {
+            List<String> list = new ArrayList<>();
+            for (Object value : row.values()) {
+                list.add(value != null ? value.toString() : "");
+            }
+            result.add(list);
+        }
+
+        return result;
     }
 
     /**
@@ -185,6 +241,7 @@ public class MemberServiceImpl implements MemberService {
 
         if (attachmentDTO != null && !attachmentDTO.getSavedName().isEmpty()) {
             memberDAO.updateProfileImg(attachmentDTO);
+            memberDAO.updateMember(attachmentDTO);
         }
 
         if (memberDTO.getNickname() != null && !memberDTO.getNickname().isEmpty()) {

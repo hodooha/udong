@@ -62,7 +62,7 @@
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="input-group">
                     <label for="currentFullAddress">현재 지번 주소</label>
-                    <input type="text" name="currentFullAddress" id="currentFullAddress" th:value="${currentFullAddress}" readonly>
+                    <input type="text" name="currentFullAddress" id="currentFullAddress" th:value="${currentFullAddress}" placeholder="등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요." readonly>
 
                     <label for="roadAddress">도로명 주소</label>
                     <input type="text" name="roadAddress" id="roadAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>

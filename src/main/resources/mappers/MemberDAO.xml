@@ -18,6 +18,8 @@
         <result property="reportedCnt" column="reported_cnt"/>
         <result property="isBlacked" column="is_blacked"/>
         <result property="blackedAt" column="blacked_at"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="deletedAt" column="deleted_at"/>
         <result property="savedName" column="SAVED_NAME"/>
         <association property="memAddressDTO" javaType="memAddressDTO">
             <result property="memberNo" column="member_no"/>
@@ -48,12 +50,14 @@
             )
         ) a ON m.member_no = a.TARGET_NO
         WHERE m.member_id = #{memberId}
+        AND m.is_deleted = 'N'
     </select>
 
     <select id="findMemberByNickname" resultType="memberDTO">
         SELECT nickname
         FROM MEMBER
         WHERE nickname = #{nickname}
+        AND is_deleted = 'N'
     </select>
 
     <insert id="signup" parameterType="memberDTO" useGeneratedKeys="true" keyProperty="memberNo">
@@ -117,28 +121,159 @@
             AND TARGET_NO = #{targetNo}
     </update>
 
+    <update id="updateMember" parameterType="attachmentDTO">
+        UPDATE MEMBER
+        SET modified_at = CURRENT_TIMESTAMP
+        WHERE member_no = #{targetNo}
+    </update>
+
     <update id="updateNickname" parameterType="memberDTO">
         UPDATE MEMBER
-        SET nickname = #{nickname}
+        SET
+            nickname = #{nickname},
+            modified_at = CURRENT_TIMESTAMP
         WHERE member_no = #{memberNo}
     </update>
 
     <update id="updateEmail" parameterType="memberDTO">
         UPDATE MEMBER
-        SET email = #{email}
+        SET
+            email = #{email},
+            modified_at = CURRENT_TIMESTAMP
         WHERE member_no = #{memberNo}
     </update>
 
     <update id="updatePhone" parameterType="memberDTO">
         UPDATE MEMBER
-        SET phone = #{phone}
+        SET
+            phone = #{phone},
+            modified_at = CURRENT_TIMESTAMP
         WHERE member_no = #{memberNo}
     </update>
 
     <update id="updateMemberPw" parameterType="memberDTO">
         UPDATE MEMBER
-        SET member_pw = #{memberPw}
+        SET
+            member_pw = #{memberPw},
+            modified_at = CURRENT_TIMESTAMP
         WHERE member_no = #{memberNo}
     </update>
+
+    <select id="selectNewsBoard" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            nc.category_name,
+            l.eup_myeon_dong_name,
+            np.title,
+            np.created_at,
+            np.views
+        FROM NS_POST np
+        JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
+        JOIN LOCATION l ON np.location_code = l.location_code
+        WHERE np.writer = #{memberNo}
+    </select>
+
+    <select id="selectNewsLike" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            nc.category_name,
+            l.eup_myeon_dong_name,
+            np.title,
+            np.created_at,
+            m.nickname,
+            np.views
+        FROM NS_LIKE nl
+        JOIN NS_POST np ON nl.news_no = np.news_no
+        JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
+        JOIN LOCATION l ON np.location_code = l.location_code
+        JOIN MEMBER m ON np.writer = m.member_no
+        WHERE nl.member_no = #{memberNo}
+    </select>
+
+    <select id="selectNewsReply" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            nc.category_name,
+            l.eup_myeon_dong_name,
+            np.title,
+            nr.content,
+            nr.created_at
+        FROM NS_REPLY nr
+        JOIN NS_POST np ON nr.news_no = np.news_no
+        JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
+        JOIN LOCATION l ON np.location_code = l.location_code
+        WHERE nr.writer = #{memberNo}
+    </select>
+
+    <select id="selectClub" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            cc.category_name,
+            l.eup_myeon_dong_name,
+            c.club_name,
+            m.nickname,
+            c.created_at
+        FROM CL c
+        JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
+        JOIN LOCATION l ON c.location_code = l.location_code
+        JOIN MEMBER m ON c.master = m.member_no
+        WHERE c.master = #{memberNo}
+    </select>
+
+    <select id="selectClubLog" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            cc.category_name,
+            l.eup_myeon_dong_name,
+            c.club_name,
+            cl.title,
+            cl.created_at,
+            cl.views
+        FROM CL_LOG cl
+        JOIN CL c ON cl.club_no = c.club_no
+        JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
+        JOIN LOCATION l ON c.location_code = l.location_code
+        WHERE cl.writer = #{memberNo}
+    </select>
+
+    <select id="selectClubSchedule" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            cc.category_name,
+            l.eup_myeon_dong_name,
+            c.club_name,
+            cs.title,
+            m.nickname,
+            cs.gathering_at
+        FROM CL_SCHEDULE cs
+        JOIN CL c ON cs.club_no = c.club_no
+        JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
+        JOIN LOCATION l ON c.location_code = l.location_code
+        JOIN MEMBER m ON cs.maker = m.member_no
+        WHERE cs.maker = #{memberNo}
+    </select>
+
+    <select id="selectShareLike" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            sc.cat_name,
+            l.eup_myeon_dong_name,
+            si.title,
+            si.expiry_date,
+            ss.status_name
+        FROM SHA_LIKE sl
+        JOIN SHA_ITEMS si ON sl.item_no = si.item_no
+        JOIN SHA_CAT sc ON si.item_cat_code = sc.cat_code
+        JOIN LOCATION l ON si.loc_code = l.location_code
+        JOIN SHA_STATUS ss ON si.status_code = ss.status_code
+        WHERE sl.member_no = #{memberNo}
+    </select>
+
+    <select id="selectSaleBoard" parameterType="int" resultType="java.util.LinkedHashMap">
+        SELECT
+            l.eup_myeon_dong_name,
+            s.title,
+            s.original_price,
+            s.sale_price,
+            s.created_at,
+            s.started_at,
+            s.ended_at
+        FROM SAL s
+        JOIN LOCATION l ON s.location_code = l.location_code
+        WHERE s.writer = #{memberNo}
+    </select>
 
 </mapper>
