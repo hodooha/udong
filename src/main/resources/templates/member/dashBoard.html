@@ -7,14 +7,22 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .btn {
-            width: 100px;
+            min-width: 120px;
+            width: 120px;
+            border: none;
+            border-radius: 5px;
+            padding: 0px;
+            transition: background-color 0.3s ease;
         }
     </style>
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
-<div th:replace="~{/member/sidebar}"></div>
-<div id="msg" th:text="${msg}" style="display: none;"></div>
+<main>
+    <div th:replace="~{/member/sidebar}"></div>
+    <div class="content-area"></div>
+</main>
+<div id="msg" th:text="${msg}" hidden></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

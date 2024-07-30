@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.5.1/uicons-regular-rounded/css/uicons-regular-rounded.css'>
     <style>
         body {
             font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
         }
         main {
             flex: 1;
             display: flex;
-            width: 100%;
+            overflow: hidden;
+            height: calc(100vh - 90px);
         }
         .content-area {
             display: flex;
             flex: 1;
-            overflow: hidden;
-            padding: 40px 40px 40px 0;
-            gap: 40px;
+            align-items: start;
+            overflow: auto;
+            padding: 20px 20px 20px 0;
+            gap: 20px;
             flex-wrap: wrap;
         }
         .sidebar {
             width: 200px;
+            height: calc(100% - 40px);
             border: 1px solid #000000;
-            border-radius: 10px;
+            border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
-            margin: 40px;
-            height: 100vh;
+            margin: 20px;
+            overflow: hidden;
         }
         .sidebar ul {
             list-style: none;
@@ -42,7 +48,7 @@
             color: #333;
             display: block;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 5px;
             white-space: nowrap;
             width: 90%;
 
