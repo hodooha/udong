@@ -300,13 +300,7 @@
 
             // 닉네임 유효성 검사
             if (nickname.length < 2 || nickname.length > 20) {
-
-                nicknameCurrentMessage.hidden = true;
-                nicknameLengthMessage.hidden = false;
-                nicknameLengthMessage.style.visibility = 'visible';
-                nicknameDupeMessage.hidden = true;
-                nicknameSuccessMessage.hidden = true;
-
+                showMessage(nicknameMessage, '닉네임은 최대 20글자까지 가능합니다.', true);
                 nicknameInput.focus();
                 return;
             }
@@ -322,26 +316,13 @@
             .then(response => response.text())
             .then(result => {
                 if(result === 'available') {
-
-                    nicknameCurrentMessage.hidden = true;
-                    nicknameLengthMessage.hidden = true;
-                    nicknameDupeMessage.hidden = true;
-                    nicknameSuccessMessage.hidden = false;
-                    nicknameSuccessMessage.style.visibility = 'visible';
-
+                    showMessage(nicknameMessage, '사용 가능한 닉네임입니다.', false);
                     nicknameInput.readOnly = true;
                     checkDuplicateButton.disabled = true;
-
                     isNicknameChecked = true;
 
                 } else {
-
-                    nicknameCurrentMessage.hidden = true;
-                    nicknameLengthMessage.hidden = true;
-                    nicknameDupeMessage.hidden = false;
-                    nicknameDupeMessage.style.visibility = 'visible';
-                    nicknameSuccessMessage.hidden = true;
-
+                    showMessage(nicknameMessage, '이미 사용 중인 닉네임입니다. 다른 닉네임을 사용해 주세요.', true);
                     isNicknameChecked = false;
                 }
             })
@@ -389,7 +370,7 @@
             emailInput.value = email;
 
             if (!isValidEmail(emailInput.value)) {
-                emailInvalidMessage.style.visibility = 'visible';
+                showMessage(emailMessage, '올바른 이메일 주소를 입력해 주세요.', true);
                 emailIdInput.focus();
                 return;
             }
@@ -407,7 +388,7 @@
             e.preventDefault();
 
             if (!isValidPhone(phoneInput.value)) {
-                phoneInvalidMessage.style.visibility = 'visible';
+                showMessage(phoneMessage, ''-' 을 제외한 숫자만 입력해 주세요.', true);
                 phoneInput.focus();
                 return;
             }
@@ -426,28 +407,19 @@
             e.preventDefault();
 
             if (!currentPasswordInput.value) {
-                passwordCurrentMessage.hidden = false;
-                passwordCurrentMessage.style.visibility = 'visible';
-                passwordInvalidMessage.hidden = true;
-                passwordConfirmMessage.hidden = true;
+                showMessage(passwordMessage, '현재 비밀번호를 입력해주세요.', true);
                 currentPasswordInput.focus();
                 return;
             }
 
             if (!isValidPassword(passwordInput.value)) {
-                passwordCurrentMessage.hidden = true;
-                passwordInvalidMessage.hidden = false;
-                passwordInvalidMessage.style.visibility = 'visible';
-                passwordConfirmMessage.hidden = true;
+                showMessage(passwordMessage, '새 비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
                 passwordInput.focus();
                 return;
             }
 
             if (passwordInput.value !== confirmPasswordInput.value) {
-                passwordCurrentMessage.hidden = true;
-                passwordInvalidMessage.hidden = true;
-                passwordConfirmMessage.hidden = false;
-                passwordConfirmMessage.style.visibility = 'visible';
+                showMessage(passwordMessage, '새 비밀번호가 일치하지 않습니다.', true);
                 confirmPasswordInput.focus();
                 return;
             }
