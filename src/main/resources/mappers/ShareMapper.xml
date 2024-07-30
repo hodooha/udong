@@ -200,4 +200,21 @@
         </if>
     </select>
 
+    <update id="updateItem">
+        update sha_items
+        set
+        item_cat_code = #{itemCatCode},
+        title = #{title},
+        content = #{content}
+        where item_no = #{itemNo}
+    </update>
+
+    <delete id="deleteImg">
+        delete
+        from attachment
+        <foreach collection="list" item="img" separator=",">
+            where file_no = #{img.fileNo}
+        </foreach>
+    </delete>
+
 </mapper>

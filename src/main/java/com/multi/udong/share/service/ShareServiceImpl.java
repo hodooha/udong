@@ -137,7 +137,7 @@ public class ShareServiceImpl implements ShareService {
         return result;
     }
 
-    
+
     /**
      * 기존 대여 및 나눔 신청 내역 조회
      *
@@ -150,6 +150,43 @@ public class ShareServiceImpl implements ShareService {
     public ShaReqDTO findRequest(ShaReqDTO reqDTO) throws Exception {
 
         ShaReqDTO result = shareDAO.findRequest(sqlSession, reqDTO);
+
+        return result;
+    }
+
+
+    /**
+     * 물건 수정 (파일 포함)
+     *
+     * @param itemDTO    the item dto
+     * @param newImgList the new img list
+     * @param delImgList the del img list
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception {
+
+        // 물건 정보 수정
+        int result = shareDAO.updateItem(sqlSession, itemDTO);
+
+        // 기존 물건 사진 중에서 유저가 삭제한 사진 삭제
+        if(!delImgList.isEmpty()){
+            int deleteResult = shareDAO.deleteImg(sqlSession, delImgList);
+            if (deleteResult < 1) {
+                result = 0;
+            }
+        }
+
+        // 유저가 등록한 새로운 사진 저장
+        if (!newImgList.isEmpty()) {
+            int imgResult = shareDAO.insertImg(sqlSession, newImgList);
+            if (imgResult < 1) {
+                result = 0;
+            }
+        }
 
         return result;
     }

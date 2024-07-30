@@ -36,6 +36,7 @@ public class ShaItemDTO {
     private LocalDateTime deletedAt;
     private String img;
     private List<AttachmentDTO> imgList;
-
+    private List<String> delFilesNo;
+    private List<String> delFilesName;
 
 }
