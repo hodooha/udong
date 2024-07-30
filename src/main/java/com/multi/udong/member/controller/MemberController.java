@@ -3,6 +3,7 @@ package com.multi.udong.member.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.controller.KakaoLoginController;
 import com.multi.udong.member.model.dto.MemAddressDTO;
+import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.security.CustomUserDetails;
@@ -16,10 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The type Member controller.
@@ -96,33 +94,81 @@ public class MemberController {
      *
      * @param c     the c
      * @param table the table
+     * @param page  the page
      * @param model the model
      * @since 2024 -07-24
      */
     @GetMapping("/act")
     public void act(@AuthenticationPrincipal CustomUserDetails c,
                     @RequestParam("table") String table,
+                    @RequestParam(value = "page", defaultValue = "1") int page,
+                    @RequestParam(value = "searchCategory", required = false) String searchCategory,
+                    @RequestParam(value = "searchWord", required = false) String searchWord,
                     Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
-        List<String> headers = new ArrayList<>();
-        List<List<String>> data = memberService.selectAllAct(table, memberNo);
+        MemPageDTO pageDTO = new MemPageDTO();
+        pageDTO.setPage(page);
+        pageDTO.setMemberNo(memberNo);
+        pageDTO.setStartEnd(pageDTO.getPage());
 
-        headers = switch (table) {
+        pageDTO.setSearchCategory(searchCategory);
+        pageDTO.setSearchWord(searchWord);
+
+        int count;
+        int pages = 1;
+
+        List<List<String>> data = memberService.selectAllAct(table, pageDTO);
+        if (!data.isEmpty()) {
+            count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
+            pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
+
+            for (List<String> list : data) {
+                list.remove(list.size() -1);
+            }
+        }
+
+        List<String> headers = getHeaders(table);
+        List<String> searchCategories = getSearchCategories(table);
+
+        model.addAttribute("tableHeaders", headers);
+        model.addAttribute("tableData", data);
+        model.addAttribute("page", pageDTO.getPage());
+        model.addAttribute("table", table);
+        model.addAttribute("pages", pages);
+
+        model.addAttribute("searchCategories", searchCategories);
+        model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchWord", searchWord);
+    }
+
+    private List<String> getHeaders(String table) {
+        return switch (table) {
             case "newsBoard" -> Arrays.asList("주제", "동네", "제목", "작성일", "조회수");
             case "newsLike" -> Arrays.asList("주제", "동네", "제목", "작성일", "작성자", "조회수");
-            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글", "작성일");
+            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "내용", "작성일");
             case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장", "생성일");
             case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성일", "조회수");
             case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자", "일시");
             case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명", "마감일", "상태");
             case "saleBoard" -> Arrays.asList("동네", "물품명", "정상가", "할인가", "작성일", "시작시간", "종료시간");
-            default -> headers;
+            default -> new ArrayList<>();
         };
+    }
 
-        model.addAttribute("tableHeaders", headers);
-        model.addAttribute("tableData", data);
+    private List<String> getSearchCategories(String table) {
+        return switch (table) {
+            case "newsBoard" -> Arrays.asList("주제", "동네", "제목", "내용");
+            case "newsLike" -> Arrays.asList("주제", "동네", "제목", "내용", "작성자");
+            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글내용");
+            case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "내용");
+            case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자");
+            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명");
+            case "saleBoard" -> Arrays.asList("동네", "물품명");
+            default -> new ArrayList<>();
+        };
     }
 
     /**

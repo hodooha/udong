@@ -120,14 +120,14 @@
             <li class="has-submenu">
                 <a href="/member/act">나의 활동 기록</a>
                 <ul class="submenu">
-                    <li><a href="/member/act?table=newsBoard">우동 소식</a></li>
-                    <li><a href="/member/act?table=newsLike">좋아요</a></li>
-                    <li><a href="/member/act?table=newsReply">댓글</a></li>
-                    <li><a href="/member/act?table=club">우동 모임</a></li>
-                    <li><a href="/member/act?table=clubLog">모임 기록</a></li>
-                    <li><a href="/member/act?table=clubSchedule">모임 일정</a></li>
-                    <li><a href="/member/act?table=shareLike">찜한 물건</a></li>
-                    <li><a href="/member/act?table=saleBoard">땡처리 물건</a></li>
+                    <li><a href="/member/act?table=newsBoard&page=1">우동 소식</a></li>
+                    <li><a href="/member/act?table=newsLike&page=1">좋아요</a></li>
+                    <li><a href="/member/act?table=newsReply&page=1">댓글</a></li>
+                    <li><a href="/member/act?table=club&page=1">우동 모임</a></li>
+                    <li><a href="/member/act?table=clubLog&page=1">모임 기록</a></li>
+                    <li><a href="/member/act?table=clubSchedule&page=1">모임 일정</a></li>
+                    <li><a href="/member/act?table=shareLike&page=1">찜한 물건</a></li>
+                    <li><a href="/member/act?table=saleBoard&page=1">땡처리 물건</a></li>
                 </ul>
             </li>
             <li><a href="/member/message">나의 쪽지</a></li>
@@ -138,25 +138,39 @@
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const submenuToggle = document.querySelector('.has-submenu > a');
-        submenuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            this.parentNode.classList.toggle('active');
-        });
+        const sidebar = document.querySelector('.sidebar');
+        const fullCurrentPath = window.location.pathname + window.location.search;
+        console.log("현재 전체 경로:", fullCurrentPath);  // 디버깅용
 
-        const currentPath = window.location.pathname;
-        const currentSearch = window.location.search;
+        sidebar.addEventListener('click', function(e) {
+            const target = e.target.closest('li');
+            console.log('클릭된 대상:', target);
 
-        const menuItems = document.querySelectorAll('.sidebar a');
-        menuItems.forEach(function(item) {
-            if (item.getAttribute('href') === currentPath + currentSearch) {
-                item.classList.add('active');
-                const parentLi = item.closest('.has-submenu');
-                if (parentLi) {
-                    parentLi.classList.add('active');
-                }
+            if (target.classList.contains('has-submenu') || target.parentNode.classList.contains('has-submenu')) {
+                e.preventDefault();
+                const submenu = target.classList.contains('has-submenu') ? target : target.parentNode;
+                submenu.classList.toggle('active');
             }
         });
+
+        const setActiveMenuItems = function(menuItems) {
+            menuItems.forEach(function(item) {
+                const itemHref = item.getAttribute('href').split('&page=')[0];
+                console.log("메뉴 항목 href:", itemHref);  // 디버깅용
+
+                if (fullCurrentPath.startsWith(itemHref)) {
+                    console.log("활성화된 메뉴 항목:", item);  // 디버깅용
+                    item.classList.add('active');
+                    let parent = item.closest('.has-submenu');
+                    while (parent) {
+                        parent.classList.add('active');
+                        parent = parent.parentElement.closest('.has-submenu');
+                    }
+                }
+            });
+        };
+
+        setActiveMenuItems(sidebar.querySelectorAll('a'));
     });
-</script>
+</script> <!--해당 메뉴일 때 액티브-->
 </html>

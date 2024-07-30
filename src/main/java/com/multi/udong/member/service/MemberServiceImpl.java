@@ -4,6 +4,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dao.MemberDAO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
+import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.security.CustomUserDetailsService;
@@ -101,41 +102,26 @@ public class MemberServiceImpl implements MemberService {
      * Select all act list.
      *
      * @param table    the table
-     * @param memberNo
+     * @param pageDTO
      * @return the list
      * @since 2024 -07-30
      */
     @Override
-    public List<List<String>> selectAllAct(String table, int memberNo) {
+    public List<List<String>> selectAllAct(String table, MemPageDTO pageDTO) {
 
         List<LinkedHashMap<String, Object>> map = new ArrayList<>();
 
-        switch (table) {
-            case "newsBoard":
-                map = memberDAO.selectNewsBoard(memberNo);
-                break;
-            case "newsLike":
-                map = memberDAO.selectNewsLike(memberNo);
-                break;
-            case "newsReply":
-                map = memberDAO.selectNewsReply(memberNo);
-                break;
-            case "club":
-                map = memberDAO.selectClub(memberNo);
-                break;
-            case "clubLog":
-                map = memberDAO.selectClubLog(memberNo);
-                break;
-            case "clubSchedule":
-                map = memberDAO.selectClubSchedule(memberNo);
-                break;
-            case "shareLike":
-                map = memberDAO.selectShareLike(memberNo);
-                break;
-            case "saleBoard":
-                map = memberDAO.selectSaleBoard(memberNo);
-                break;
-        }
+        map = switch (table) {
+            case "newsBoard" -> memberDAO.selectNewsBoard(pageDTO);
+            case "newsLike" -> memberDAO.selectNewsLike(pageDTO);
+            case "newsReply" -> memberDAO.selectNewsReply(pageDTO);
+            case "club" -> memberDAO.selectClub(pageDTO);
+            case "clubLog" -> memberDAO.selectClubLog(pageDTO);
+            case "clubSchedule" -> memberDAO.selectClubSchedule(pageDTO);
+            case "shareLike" -> memberDAO.selectShareLike(pageDTO);
+            case "saleBoard" -> memberDAO.selectSaleBoard(pageDTO);
+            default -> map;
+        };
 
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {

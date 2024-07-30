@@ -43,6 +43,7 @@
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>
         <typeAlias type="com.multi.udong.member.model.dto.MemAddressDTO" alias="memAddressDTO"/>
         <typeAlias type="com.multi.udong.member.model.dto.MemBusDTO" alias="memBusDTO"/>
+        <typeAlias type="com.multi.udong.member.model.dto.MemPageDTO" alias="memPageDTO"/>
 
         <typeAlias type="com.multi.udong.sale.model.dto.SaleDTO" alias="saleDTO"/>
 

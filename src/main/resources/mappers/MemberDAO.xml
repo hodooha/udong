@@ -159,121 +159,322 @@
         WHERE member_no = #{memberNo}
     </update>
 
-    <select id="selectNewsBoard" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectNewsBoard" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
         SELECT
+            sub.news_no,
+            nc.category_name,
+            l.eup_myeon_dong_name,
+            sub.title,
+            sub.created_at,
+            sub.views,
+            sub.total_count
+        FROM (
+            SELECT
+                np.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY np.news_no DESC) AS rownum
+            FROM NS_POST np
+            WHERE np.writer = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND np.category_code IN (SELECT category_code FROM NS_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND np.location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND np.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND np.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN NS_CATEGORY nc ON sub.category_code = nc.category_code
+        JOIN LOCATION l ON sub.location_code = l.location_code
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="selectNewsLike" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
+        SELECT
+            sub.news_no,
+            nc.category_name,
+            l.eup_myeon_dong_name,
+            sub.title,
+            sub.created_at,
+            m.nickname,
+            sub.views,
+            sub.total_count
+        FROM (
+            SELECT
+                np.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY nl.liked_at DESC) AS rownum
+            FROM NS_LIKE nl
+            JOIN NS_POST np ON nl.news_no = np.news_no
+            WHERE nl.member_no = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND np.category_code IN (SELECT category_code FROM NS_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND np.location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND np.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND np.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '작성자'">
+                        AND np.writer IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN NS_CATEGORY nc ON sub.category_code = nc.category_code
+        JOIN LOCATION l ON sub.location_code = l.location_code
+        JOIN MEMBER m ON sub.writer = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="selectNewsReply" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
+        SELECT
+            sub.reply_no,
             nc.category_name,
             l.eup_myeon_dong_name,
             np.title,
-            np.created_at,
-            np.views
-        FROM NS_POST np
+            sub.content,
+            sub.created_at,
+            sub.total_count
+        FROM (
+            SELECT
+                nr.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY nr.created_at DESC) AS rownum
+            FROM NS_REPLY nr
+            WHERE nr.writer = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND nr.news_no IN (SELECT news_no FROM NS_POST WHERE category_code IN (SELECT category_code FROM NS_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND nr.news_no IN (SELECT news_no FROM NS_POST WHERE location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND nr.news_no IN (SELECT news_no FROM NS_POST WHERE title LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '댓글내용'">
+                        AND nr.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN NS_POST np ON sub.news_no = np.news_no
         JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
         JOIN LOCATION l ON np.location_code = l.location_code
-        WHERE np.writer = #{memberNo}
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
-    <select id="selectNewsLike" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectClub" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
         SELECT
-            nc.category_name,
+            sub.club_no,
+            cc.category_name,
             l.eup_myeon_dong_name,
-            np.title,
-            np.created_at,
+            sub.club_name,
             m.nickname,
-            np.views
-        FROM NS_LIKE nl
-        JOIN NS_POST np ON nl.news_no = np.news_no
-        JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
-        JOIN LOCATION l ON np.location_code = l.location_code
-        JOIN MEMBER m ON np.writer = m.member_no
-        WHERE nl.member_no = #{memberNo}
+            sub.created_at,
+            sub.total_count
+        FROM (
+            SELECT
+                c.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY c.created_at DESC) AS rownum
+            FROM CL c
+            WHERE c.master = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND c.category_code IN (SELECT category_code FROM CL_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND c.location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '모임명'">
+                        AND c.club_name LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '모임장'">
+                        AND c.master IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN CL_CATEGORY cc ON sub.category_code = cc.category_code
+        JOIN LOCATION l ON sub.location_code = l.location_code
+        JOIN MEMBER m ON sub.master = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
-    <select id="selectNewsReply" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectClubLog" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
         SELECT
-            nc.category_name,
-            l.eup_myeon_dong_name,
-            np.title,
-            nr.content,
-            nr.created_at
-        FROM NS_REPLY nr
-        JOIN NS_POST np ON nr.news_no = np.news_no
-        JOIN NS_CATEGORY nc ON np.category_code = nc.category_code
-        JOIN LOCATION l ON np.location_code = l.location_code
-        WHERE nr.writer = #{memberNo}
-    </select>
-
-    <select id="selectClub" parameterType="int" resultType="java.util.LinkedHashMap">
-        SELECT
+            sub.log_no,
             cc.category_name,
             l.eup_myeon_dong_name,
             c.club_name,
-            m.nickname,
-            c.created_at
-        FROM CL c
+            sub.title,
+            sub.created_at,
+            sub.views,
+            sub.total_count
+        FROM (
+            SELECT
+                cl.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY cl.created_at DESC) AS rownum
+            FROM CL_LOG cl
+            WHERE cl.writer = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND cl.club_no IN (SELECT club_no FROM CL WHERE category_code IN (SELECT category_code FROM CL_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND cl.club_no IN (SELECT club_no FROM CL WHERE location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '모임명'">
+                        AND cl.club_no IN (SELECT club_no FROM CL WHERE club_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND cl.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND cl.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN CL c ON sub.club_no = c.club_no
         JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
         JOIN LOCATION l ON c.location_code = l.location_code
-        JOIN MEMBER m ON c.master = m.member_no
-        WHERE c.master = #{memberNo}
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
-    <select id="selectClubLog" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectClubSchedule" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
         SELECT
+            sub.schedule_no,
             cc.category_name,
             l.eup_myeon_dong_name,
             c.club_name,
-            cl.title,
-            cl.created_at,
-            cl.views
-        FROM CL_LOG cl
-        JOIN CL c ON cl.club_no = c.club_no
-        JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
-        JOIN LOCATION l ON c.location_code = l.location_code
-        WHERE cl.writer = #{memberNo}
-    </select>
-
-    <select id="selectClubSchedule" parameterType="int" resultType="java.util.LinkedHashMap">
-        SELECT
-            cc.category_name,
-            l.eup_myeon_dong_name,
-            c.club_name,
-            cs.title,
+            sub.title,
             m.nickname,
-            cs.gathering_at
-        FROM CL_SCHEDULE cs
-        JOIN CL c ON cs.club_no = c.club_no
+            sub.gathering_at,
+            sub.total_count
+        FROM (
+            SELECT
+                cs.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY cs.gathering_at DESC) AS rownum
+            FROM CL_SCHEDULE cs
+            WHERE cs.maker = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '주제'">
+                        AND cs.club_no IN (SELECT club_no FROM CL WHERE category_code IN (SELECT category_code FROM CL_CATEGORY WHERE category_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND cs.club_no IN (SELECT club_no FROM CL WHERE location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%')))
+                    </when>
+                    <when test="searchCategory == '모임명'">
+                        AND cs.club_no IN (SELECT club_no FROM CL WHERE club_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND cs.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                    <when test="searchCategory == '작성자'">
+                        AND cs.maker IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN CL c ON sub.club_no = c.club_no
         JOIN CL_CATEGORY cc ON c.category_code = cc.category_code
         JOIN LOCATION l ON c.location_code = l.location_code
-        JOIN MEMBER m ON cs.maker = m.member_no
-        WHERE cs.maker = #{memberNo}
+        JOIN MEMBER m ON sub.maker = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
-    <select id="selectShareLike" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectShareLike" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
+    SELECT
+        sub.like_no,
+        sc.cat_name,
+        l.eup_myeon_dong_name,
+        sub.title,
+        sub.expiry_date,
+        ss.status_name,
+        sub.total_count
+    FROM (
         SELECT
-            sc.cat_name,
-            l.eup_myeon_dong_name,
-            si.title,
-            si.expiry_date,
-            ss.status_name
+            si.*,
+            sl.like_no,
+            COUNT(*) OVER() AS total_count,
+            ROW_NUMBER() OVER (ORDER BY sl.like_no DESC) AS rownum
         FROM SHA_LIKE sl
         JOIN SHA_ITEMS si ON sl.item_no = si.item_no
-        JOIN SHA_CAT sc ON si.item_cat_code = sc.cat_code
-        JOIN LOCATION l ON si.loc_code = l.location_code
-        JOIN SHA_STATUS ss ON si.status_code = ss.status_code
         WHERE sl.member_no = #{memberNo}
+        <if test="searchCategory != null and searchWord != null">
+            <choose>
+                <when test="searchCategory == '카테고리'">
+                    AND si.item_cat_code IN (SELECT cat_code FROM SHA_CAT WHERE cat_name LIKE CONCAT('%', #{searchWord}, '%'))
+                </when>
+                <when test="searchCategory == '동네'">
+                    AND si.loc_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                </when>
+                <when test="searchCategory == '제목'">
+                    AND si.title LIKE CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
+    ) sub
+    JOIN SHA_CAT sc ON sub.item_cat_code = sc.cat_code
+    JOIN LOCATION l ON sub.loc_code = l.location_code
+    JOIN SHA_STATUS ss ON sub.status_code = ss.status_code
+    WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
-    <select id="selectSaleBoard" parameterType="int" resultType="java.util.LinkedHashMap">
+    <select id="selectSaleBoard" parameterType="memPageDTO" resultType="java.util.LinkedHashMap">
         SELECT
+            sub.sale_no,
             l.eup_myeon_dong_name,
-            s.title,
-            s.original_price,
-            s.sale_price,
-            s.created_at,
-            s.started_at,
-            s.ended_at
-        FROM SAL s
-        JOIN LOCATION l ON s.location_code = l.location_code
-        WHERE s.writer = #{memberNo}
+            sub.title,
+            sub.original_price,
+            sub.sale_price,
+            sub.created_at,
+            sub.started_at,
+            sub.ended_at,
+            sub.total_count
+        FROM (
+            SELECT
+                s.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY s.created_at DESC) AS rownum
+            FROM SAL s
+            WHERE s.writer = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '동네'">
+                        AND s.location_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '물품명'">
+                        AND s.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN LOCATION l ON sub.location_code = l.location_code
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
 </mapper>

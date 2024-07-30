@@ -3,6 +3,7 @@ package com.multi.udong.member.model.dao;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
+import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -48,19 +49,19 @@ public interface MemberDAO{
 
     void updateMemberPw(MemberDTO memberDTO);
 
-    List<LinkedHashMap<String, Object>> selectNewsBoard(int memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsBoard(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectNewsLike(int memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsLike(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectNewsReply(int memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsReply(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClub(int memberNo);
+    List<LinkedHashMap<String, Object>> selectClub(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClubLog(int memberNo);
+    List<LinkedHashMap<String, Object>> selectClubLog(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClubSchedule(int memberNo);
+    List<LinkedHashMap<String, Object>> selectClubSchedule(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectShareLike(int memberNo);
+    List<LinkedHashMap<String, Object>> selectShareLike(MemPageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectSaleBoard(int memberNo);
+    List<LinkedHashMap<String, Object>> selectSaleBoard(MemPageDTO memberNo);
 }
