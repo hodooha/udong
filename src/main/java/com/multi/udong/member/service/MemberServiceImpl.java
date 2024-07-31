@@ -99,8 +99,8 @@ public class MemberServiceImpl implements MemberService {
     /**
      * Select all act list.
      *
-     * @param table    the table
-     * @param pageDTO
+     * @param table   the table
+     * @param pageDTO the page dto
      * @return the list
      * @since 2024 -07-30
      */
@@ -133,6 +133,13 @@ public class MemberServiceImpl implements MemberService {
         return result;
     }
 
+    /**
+     * Select all dash board map.
+     *
+     * @param memberNo the member no
+     * @return the map
+     * @since 2024 -07-30
+     */
     @Override
     public Map<String, Object> selectAllDashBoard(int memberNo) {
 
@@ -146,6 +153,39 @@ public class MemberServiceImpl implements MemberService {
         result.put("scheduleData", memberDAO.getScheduleData(memberNo));
 
         return result;
+    }
+
+    /**
+     * Delete member.
+     *
+     * @param memberNo the member no
+     * @return boolean
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    @Override
+    public String deleteMember(int memberNo) {
+
+        Map<String, Object> checkResult = memberDAO.checkMember(memberNo);
+
+        if ((Long) checkResult.get("renting_count") != 0) {
+            return "isRenting";
+        }
+
+        if ((Long) checkResult.get("giving_count") != 0) {
+            return "isGiving";
+        }
+
+        if ((Long) checkResult.get("master_count") != 0) {
+            return "isMaster";
+        }
+
+        if (memberDAO.deleteMember(memberNo) != 1) {
+            return "disable";
+
+        } else {
+            return "able";
+        }
     }
 
     /**

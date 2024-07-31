@@ -32,7 +32,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         MemberDTO memberDTO = memberDAO.findMemberById(memberId);
 
-        if (memberDTO == null) {
+        if (memberDTO == null || memberDTO.getIsDeleted() == 'Y') {
             throw new UsernameNotFoundException("회원정보가 존재하지 않습니다");
         }
 

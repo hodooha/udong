@@ -167,7 +167,7 @@
             <div class="input-group">
                 <div class="id-input-wrapper">
                     <label>아이디</label>
-                    <input type="text" name="memberId" placeholder="아이디">
+                    <input type="text" name="memberId" placeholder="아이디" required>
                     <button class="clear-input" type="button">&times;</button>
                     <button class="btn btn-udh-blue" type="button" id="checkDuplicate">중복검사</button>
                 </div>
@@ -176,12 +176,12 @@
 
             <div class="input-group">
                 <label>비밀번호</label>
-                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자">
+                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <div class="input-group">
                 <label>비밀번호 확인</label>
-                <input type="password" name="confirmPassword" placeholder="비밀번호 확인">
+                <input type="password" name="confirmPassword" placeholder="비밀번호 확인" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <div class="error-message" id="password-confirm-message">비밀번호가 일치하지 않습니다.</div>
@@ -189,14 +189,14 @@
 
             <div class="input-group">
                 <label>전화번호</label>
-                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)">
+                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <div class="error-message" id="phone-invalid-message">'-' 을 제외한 숫자만 입력해 주세요.</div>
 
             <div class="input-group">
                 <label>이메일</label>
-                <input type="email" name="email" placeholder="이메일">
+                <input type="email" name="email" placeholder="이메일" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <div class="error-message" id="nickname-current-message">현재 사용 중인 닉네임과 동일합니다.</div>

@@ -85,10 +85,10 @@ public class SpringSecurityConfig {
                         .defaultSuccessUrl("/", true)
                         .failureHandler((request, response, exception) -> {
                             String errorMessage;
-                            if (exception instanceof BadCredentialsException) {
-                                errorMessage = "비밀번호가 올바르지 않습니다.";
-                            } else if (exception instanceof UsernameNotFoundException) {
+                            if (exception instanceof UsernameNotFoundException) {
                                 errorMessage = "존재하지 않는 아이디입니다.";
+                            } else if (exception instanceof BadCredentialsException) {
+                                errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
                             } else {
                                 errorMessage = "로그인에 실패했습니다.";
                             }

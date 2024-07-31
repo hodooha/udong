@@ -7,9 +7,16 @@ import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.security.CustomUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +43,8 @@ public class MemberController {
     /**
      * Dash board.
      *
+     * @param c     the c
+     * @param model the model
      * @since 2024 -07-24
      */
     @GetMapping("/dashBoard")
@@ -337,6 +346,66 @@ public class MemberController {
 
         } else {
             return ResponseEntity.ok("available");
+        }
+    }
+
+    /**
+     * Delete member string.
+     *
+     * @param c        the c
+     * @param request  the request
+     * @param response the response
+     * @param password the password
+     * @param model    the model
+     * @return the string
+     * @since 2024 -07-30
+     */
+    @PostMapping("/delete")
+    public String deleteMember(@AuthenticationPrincipal CustomUserDetails c,
+                               HttpServletRequest request,
+                               HttpServletResponse response,
+                               @RequestParam("password") String password,
+                               Model model) {
+
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        if (!bCryptPasswordEncoder.matches(password.trim(), c.getMemberDTO().getMemberPw())) {
+            model.addAttribute("msg", "비밀번호가 일치하지 않습니다.");
+            return "member/memDel";
+        }
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        String result = memberService.deleteMember(memberNo);
+
+        switch (result) {
+            case "isRenting":
+                model.addAttribute("msg", "물품을 대여 중인 상태에서는 탈퇴할 수 없습니다. 물품을 반납해주세요.");
+                return "common/errorPage";
+
+            case "isGiving":
+                model.addAttribute("msg", "물품을 나눔 중인 상태에서는 탈퇴할 수 없습니다. 나눔 중인 물품을 삭제해주세요.");
+                return "common/errorPage";
+
+            case "isMaster":
+                model.addAttribute("msg", "모임장인 상태에서는 탈퇴할 수 없습니다. 모임장 권한을 양보해주세요.");
+                return "common/errorPage";
+
+            case "able":
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (auth != null) {
+                    new SecurityContextLogoutHandler().logout(request, response, auth);
+                }
+
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    session.invalidate();
+                }
+
+                return "/index";
+
+            default:
+                model.addAttribute("msg", "회원 탈퇴에 실패하였습니다.");
+                return "common/errorPage";
         }
     }
 

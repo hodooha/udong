@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * The interface Member service.
+ *
  * @author : 재식
  * @since : 24. 7. 21.
  */
@@ -34,4 +36,6 @@ public interface MemberService {
     List<List<String>> selectAllAct(String table, MemPageDTO pageDTO);
 
     Map<String, Object> selectAllDashBoard(int memberNo);
+
+    String deleteMember(int memberNo);
 }

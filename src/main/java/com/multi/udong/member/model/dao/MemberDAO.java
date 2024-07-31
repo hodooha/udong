@@ -77,4 +77,8 @@ public interface MemberDAO{
     List<Map<String, Object>> getClubData(int memberNo);
 
     List<Map<String, Object>> getScheduleData(int memberNo);
+
+    int deleteMember(int memberNo);
+
+    Map<String, Object> checkMember(int memberNo);
 }
