@@ -43,6 +43,10 @@ $(function(){
         });
     }
 
+
+
+
+
 });
 
 function getCatList() {
@@ -234,19 +238,58 @@ function renderItemList(items){
                       </div>`
     } else {
         itemResult = items.map((item) => {
-            return `<div class="col">
-                <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
+
+            let head = `
+                <div class="col">
+                   <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
+            `
+
+            let mid = `
+                <div>
                     <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
 
-                    <div class="card-body">
-                        <h4>${item.title}</h4>
-                        <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+            `
+            let tail = `
                     </div>
+                        <div class="card-body">
+                            <h4>${item.title}</h4>
+                            <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                        </div>
                 </div>
-            </div>`;
+            </div>`
+
+            if(item.statusCode != 'AVL'  && item.statusCode != 'GIV'){
+                mid = `
+                    <div class="div-blur">
+                        <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top img-blur" alt="물건이미지" style="height:20em">
+                `
+
+                if(item.statusCode == 'UNAV'){
+                    mid += `
+                        <div class="blur-info"><h3>대여불가</h3></div>
+                    `
+                } else if(item.statusCode == 'RNT'){
+                    mid += `
+                        <div class="blur-info">
+                            <h3>대여중</h3>
+                            <p>반납예정일: ${item.returnDate}</p>
+                        </div>
+                    `
+                } else if(item.statusCode == 'GVD'){
+                    mid += `
+                        <div class="blur-info">
+                            <h3>나눔완료</h3>
+                            <p>당첨자: </p>
+                        </div>
+                    `
+                }
+            }
+            return head + mid + tail
         }).join("");
     }
     $("#itemList").html(itemResult);
+
+
 }
 
 function renderPageNation(pageInfo){
@@ -352,4 +395,42 @@ function insertReq(data){
         }
     })
 }
+
+
+//function updateItStat(item){
+//    console.log(item);
+//    if(item.statusCode == "RNT"){
+//        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+//        return;
+//    }
+//    let itemNo = item.itemNo;
+//    let status = item.statusCode == "AVL" ? "UNAV" : "AVL";
+//    let url = `/share/updateItStat?itemNo=${itemNo}&statusCode=${status}`
+//
+//    $.ajax({
+//
+//        url: url,
+//        type: "get",
+//        success: function(data){
+//            console.log(data);
+//            let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+//            $('#updateStatBtn').text(btnTxt);
+//
+//
+//        },
+//        error: function(data){
+//            alert(data.msg);
+//
+//
+//        }
+//
+//
+//    })
+//
+//}
+
+
+
+
+//|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, statusCode=${status})}'|
 

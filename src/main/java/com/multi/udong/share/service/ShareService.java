@@ -98,13 +98,25 @@ public interface ShareService {
      */
     int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception;
 
+
     /**
-     * 물건 삭제
+     * 물건 삭제 (파일 포함)
      *
      * @param target the target
+     * @param img    the img
      * @return the int
      * @throws Exception the exception
      * @since 2024 -07-31
      */
-    int deleteItem(ShaItemDTO target) throws Exception;
+    int deleteItem(ShaItemDTO target, AttachmentDTO img) throws Exception;
+
+    /**
+     * 물건 상태 업데이트
+     *
+     * @param itemDTO the item dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    int updateItStat(ShaItemDTO itemDTO) throws Exception;
 }

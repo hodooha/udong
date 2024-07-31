@@ -114,12 +114,20 @@
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.level, c.eup_myeon_dong_name
+        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date
         from sha_items a
         inner join member b
         on a.owner_no = b.member_no
         inner join location c
         on a.loc_code = c.location_code
+        left join
+        (
+        select *
+        from sha_req
+        where status_code = 'RNT'
+        and req_item = #{itemNo}
+        ) d
+        on a.item_no = d.req_item
         where a.item_no = #{itemNo}
     </select>
 
@@ -133,11 +141,18 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-        select b.*,
+        select b.*, e.*,
         row_number() over (order by b.created_at desc) as rn
         from sha_items b
         left join member d
         on b.owner_no = d.member_no
+        left join
+        (
+        select req_item, return_date
+        from sha_req
+        where status_code = 'RNT'
+        ) e
+        on b.item_no = e.req_item
         where b.deleted_at is null
         and d.is_deleted = 'N'
         <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
@@ -155,7 +170,8 @@
         where type_code = #{group}
         ) sub
         where rn = 1
-        ) c on a.item_no = c.target_no
+        ) c
+        on a.item_no = c.target_no
         where a.rn between #{start} and #{end}
         order by a.rn
     </select>
@@ -231,5 +247,12 @@
         where target_no = #{targetNo}
         and type_code = #{typeCode}
     </delete>
+
+    <update id="updateItStat">
+        update sha_items
+        set
+        status_code = #{statusCode}
+        where item_no = #{itemNo}
+    </update>
 
 </mapper>

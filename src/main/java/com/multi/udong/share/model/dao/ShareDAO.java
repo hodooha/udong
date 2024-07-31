@@ -201,4 +201,19 @@ public class ShareDAO {
 
         return sqlSession.delete("ShareMapper.deleteImgByTarget", target);
     }
+
+    /**
+     * 물건 상태 업데이트
+     *
+     * @param sqlSession the sql session
+     * @param itemDTO    the item dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int updateItStat(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+
+        return sqlSession.update("ShareMapper.updateItStat", itemDTO);
+
+    }
 }

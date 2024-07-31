@@ -527,11 +527,11 @@ public class ShareController {
             target = shareService.getItemDetail(itemDTO);
 
             // 삭제할 첨부 사진 dto 설정
-            AttachmentDTO imgs = new AttachmentDTO();
-            imgs.setTargetNo(target.getItemNo());
-            imgs.setTypeCode(target.getItemGroup());
+            AttachmentDTO imgDTO = new AttachmentDTO();
+            imgDTO.setTargetNo(target.getItemNo());
+            imgDTO.setTypeCode(target.getItemGroup());
 
-            // 삭제하려는 유저와 물건 유저가 같은지 확인
+            // 삭제하려는 유저와 물건 소유자가 같은지 확인
             if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
                 throw new Exception("삭제 권한이 없습니다.");
             }
@@ -542,7 +542,7 @@ public class ShareController {
             }
 
             // 물건 삭제
-            int result = shareService.deleteItem(target);
+            int result = shareService.deleteItem(target, imgDTO);
 
             if(result < 0){
                 throw new Exception("물건 삭제를 실패했습니다.");
@@ -560,6 +560,54 @@ public class ShareController {
         }
 
         return target.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
+    }
+
+    /**
+     * 물건 대여 일시중단/해제
+     *
+     * @param itemDTO the item dto
+     * @param c       the c
+     * @param model   the model
+     * @return the string
+     * @since 2024 -07-31
+     */
+    @GetMapping("/updateItStat")
+    public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        System.out.println(itemDTO);
+        // 리턴 페이지 주소
+        String page = "";
+
+        try {
+            // 변경하려는 물건 정보 가져오기
+            ShaItemDTO target = shareService.getItemDetail(itemDTO);
+
+            // 변경하려는 유저와 물건 소유자가 같은지 확인
+            if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
+                throw new Exception("변경 권한이 없습니다.");
+            }
+
+            // 물건의 상태가 '대여중'이면 예외 던지기
+            if(target.getStatusCode().equals("RNT")){
+                throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+            }
+
+            // 물건 상태 업데이트
+            int result = shareService.updateItStat(itemDTO);
+
+            if(result < 1){
+                throw new Exception("물건 상태 변경을 실패했습니다.");
+            }
+
+            page = "redirect:/share/" + target.getItemGroup() + "/detail?itemNo=" + target.getItemNo();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+            page = "/common/errorPage";
+        }
+
+        return page;
     }
 
 

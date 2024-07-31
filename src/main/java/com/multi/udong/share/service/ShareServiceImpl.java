@@ -195,13 +195,14 @@ public class ShareServiceImpl implements ShareService {
      * 물건 삭제
      *
      * @param target the target
+     * @param delImg the del img
      * @return the int
      * @throws Exception the exception
      * @since 2024 -07-31
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public int deleteItem(ShaItemDTO target) throws Exception {
+    public int deleteItem(ShaItemDTO target, AttachmentDTO delImg) throws Exception {
         int result = 1;
 
         // 물건 정보 삭제 (sha_items 테이블)
@@ -210,12 +211,25 @@ public class ShareServiceImpl implements ShareService {
         };
 
         // 물건 첨부사진 삭제 (attachment 테이블)
-        AttachmentDTO delImg = new AttachmentDTO();
-        delImg.setTargetNo(target.getItemNo());
-        delImg.setTypeCode(target.getItemGroup());
         if(shareDAO.deleteImgByTarget(sqlSession, delImg) < 0){
             result = 0;
         };
+
+        return result;
+    }
+
+    /**
+     * 물건 상태 업데이트
+     *
+     * @param itemDTO the item dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    @Override
+    public int updateItStat(ShaItemDTO itemDTO) throws Exception {
+
+        int result = shareDAO.updateItStat(sqlSession, itemDTO);
 
         return result;
     }
