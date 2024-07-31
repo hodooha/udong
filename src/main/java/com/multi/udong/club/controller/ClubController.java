@@ -107,7 +107,7 @@ public class ClubController {
 
 
     /**
-     * 우동 모임 생성폼으로 이동
+     * 모임 생성폼으로 이동
      *
      * @since 2024 -07-23
      */
@@ -492,6 +492,105 @@ public class ClubController {
             e.printStackTrace();
 
             model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 모임 신고폼으로 이동
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -07-31
+     */
+    @RequestMapping("/clubReportForm")
+    public String clubReportForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        System.out.println("###### 신고할 모임 no: " + requestDTO.getClubNo());
+
+        try {
+
+            // service의 모임 홈 select 메소드 호출
+            ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
+
+            System.out.println("###### 가져온 clubHome: " + clubDTO);
+
+            model.addAttribute("clubHome", clubDTO);
+
+            return "club/clubReportForm";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 신고 폼 이동 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 모임 신고
+     *
+     * @param c            the c
+     * @param reportDTO    the report dto
+     * @param customReason the custom reason
+     * @param model        the model
+     * @return the string
+     * @since 2024 -07-31
+     */
+    @PostMapping("/reportClub")
+    public String reportClub(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, Model model) {
+
+        int reportedNo = reportDTO.getReportedNo();
+
+        // 로그인된 유저의 no를 신고자로 reportDTO에 set
+        int reporterMemberNo = c.getMemberDTO().getMemberNo();
+        reportDTO.setReporterMember(reporterMemberNo);
+
+        // 신고 당하는 대상의 타입 코드를 reportDTO에 set
+        reportDTO.setTypeCode("CL");
+
+        // 신고 사유를 확인하여 custom이면 따로 파라미터로 받은 직접 입력 사유를 reportDTO에 set
+        String reason = reportDTO.getReason();
+        if(reason.equals("custom")) {
+            reportDTO.setReason(customReason);
+        }
+        System.out.println("###### 신고 사유: " + reason);
+
+        // 관리자 페이지에서 신고 대상 상세 조회로 갈 때 사용할 url을 reportDTO에 set
+        String url = "/club/clubHome?clubNo=" + reportedNo;
+        reportDTO.setUrl(url);
+
+        try {
+
+            // 신고 당하는 모임의 모임장을 피신고자로 reportDTO에 set
+            int reportedMemberNo = clubService.checkClubMaster(reportedNo);
+            reportDTO.setReportedMember(reportedMemberNo);
+
+            // service의 모임 신고 메서드 호출
+            clubService.reportClub(reportDTO);
+
+            return "redirect:/club/clubHome?clubNo=" +  reportedNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
 

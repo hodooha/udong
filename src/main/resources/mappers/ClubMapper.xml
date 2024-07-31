@@ -221,4 +221,17 @@
         WHERE club_no = #{ clubNo } AND master = #{ memberNo }
     </delete>
 
+    <insert id="reportClub" parameterType="com.multi.udong.club.model.dto.ReportDTO">
+        INSERT INTO ADM_REPORT
+            (type_code, reported_member, reporter_member, reason, url)
+        VALUES
+            (
+            #{ typeCode },
+            #{ reportedMember },
+            #{ reporterMember },
+            #{ reason },
+            #{ url }
+            )
+    </insert>
+
 </mapper>

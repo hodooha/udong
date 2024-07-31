@@ -1,10 +1,7 @@
 package com.multi.udong.club.service;
 
 import com.multi.udong.club.model.dao.ClubDAO;
-import com.multi.udong.club.model.dto.CategoryDTO;
-import com.multi.udong.club.model.dto.ClubDTO;
-import com.multi.udong.club.model.dto.FilterDTO;
-import com.multi.udong.club.model.dto.RequestDTO;
+import com.multi.udong.club.model.dto.*;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -264,6 +261,22 @@ public class ClubServiceImpl implements ClubService {
     public int deleteClub(RequestDTO requestDTO) throws Exception {
 
         return clubDAO.deleteClub(sqlSession, requestDTO);
+
+    }
+
+
+    /**
+     * 모임 신고
+     *
+     * @param reportDTO the report dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    @Override
+    public int reportClub(ReportDTO reportDTO) throws Exception {
+
+        return clubDAO.reportClub(sqlSession, reportDTO);
 
     }
 

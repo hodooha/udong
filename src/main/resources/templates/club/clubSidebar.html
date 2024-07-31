@@ -12,6 +12,7 @@
 
         .club-side-bar{
             width: 150px;
+            height: 100%;
             background-color: #3B5C9A;
             color: white;
             padding: 10px 20px 10px 20px;
@@ -38,12 +39,24 @@
         }
 
     </style>
+    <script>
+
+        const urlParams = new URL(window.location.href).searchParams;
+        const clubNo = urlParams.get('clubNo');
+
+        function moveClubPage(moveUrl) {
+
+            window.location.href = moveUrl + "?clubNo=" + clubNo;
+
+        }
+
+    </script>
 </head>
 <body>
 
 <div class="club-side-bar">
     <ul>
-        <li class="club-side-bar-menu"><a href="#">홈</a></li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubHome');">홈</li>
         <hr class="club-side-bar-hr">
         <li class="club-side-bar-menu"><a href="#">모임 기록</a></li>
         <hr class="club-side-bar-hr">

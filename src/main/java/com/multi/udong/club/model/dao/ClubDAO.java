@@ -1,9 +1,6 @@
 package com.multi.udong.club.model.dao;
 
-import com.multi.udong.club.model.dto.CategoryDTO;
-import com.multi.udong.club.model.dto.ClubDTO;
-import com.multi.udong.club.model.dto.FilterDTO;
-import com.multi.udong.club.model.dto.RequestDTO;
+import com.multi.udong.club.model.dto.*;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -238,6 +235,21 @@ public class ClubDAO {
     public int deleteClub(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
 
         return sqlSession.delete("clubMapper.deleteClub", requestDTO);
+
+    }
+
+
+    /**
+     * 모임 신고
+     *
+     * @param sqlSession the sql session
+     * @param reportDTO  the report dto
+     * @return the int
+     * @since 2024 -07-31
+     */
+    public int reportClub(SqlSessionTemplate sqlSession, ReportDTO reportDTO) {
+
+        return sqlSession.insert("clubMapper.reportClub", reportDTO);
 
     }
 }

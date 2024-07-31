@@ -1,9 +1,6 @@
 package com.multi.udong.club.service;
 
-import com.multi.udong.club.model.dto.CategoryDTO;
-import com.multi.udong.club.model.dto.ClubDTO;
-import com.multi.udong.club.model.dto.FilterDTO;
-import com.multi.udong.club.model.dto.RequestDTO;
+import com.multi.udong.club.model.dto.*;
 
 import java.util.List;
 
@@ -38,4 +35,6 @@ public interface ClubService {
     int leaveClub(RequestDTO requestDTO) throws Exception;
 
     int deleteClub(RequestDTO requestDTO) throws Exception;
+
+    int reportClub(ReportDTO reportDTO) throws Exception;
 }

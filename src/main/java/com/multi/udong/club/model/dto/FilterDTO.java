@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class FilterDTO {
 
-    private int page;
+    private int page = 1;
     private int start;
     private int pageCount = 5; // 5개씩
     private int startIndex;
