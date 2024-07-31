@@ -29,7 +29,11 @@ import java.util.stream.Collectors;
 public class ShareController {
 
     private final ShareService shareService;
-
+    /**
+     * The constant IMAGE_PATH.
+     */
+// 이미지 저장 경로
+    static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
 
     /**
      * 대여 메인페이지 이동
@@ -179,14 +183,13 @@ public class ShareController {
             itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
             itemDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
 
-            // 이미지 저장 경로
-            String imgPath = "C:\\Users\\user\\uploadFiles";
+
 
             // 첨부파일 있을 경우
             if (!fileList.isEmpty()) {
 
                 // 이미지 저장 폴더 만들기
-                File mkdir = new File(imgPath);
+                File mkdir = new File(IMAGE_PATH);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
@@ -204,7 +207,7 @@ public class ShareController {
                     img.setTypeCode(itemDTO.getItemGroup());
 
                     imgList.add(img);
-                    f.transferTo(new File(imgPath + "\\" + savedName));
+                    f.transferTo(new File(IMAGE_PATH + "\\" + savedName));
 
                 }
             }
@@ -215,7 +218,7 @@ public class ShareController {
             // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
             if (result < 1) {
                 for (AttachmentDTO img : imgList) {
-                    new File(imgPath + "\\" + img.getSavedName()).delete();
+                    new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
                 }
                 throw new Exception();
             }
@@ -452,13 +455,11 @@ public class ShareController {
             }
 
             // 새로운 첨부파일 있을 경우
-            // 이미지 저장 경로
-            String imgPath = "C:\\Users\\user\\uploadFiles";
 
             if (!fileList.isEmpty()) {
 
                 // 이미지 저장 폴더 만들기
-                File mkdir = new File(imgPath);
+                File mkdir = new File(IMAGE_PATH);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
@@ -477,7 +478,7 @@ public class ShareController {
                     img.setTargetNo(itemDTO.getItemNo());
 
                     newImgList.add(img);
-                    f.transferTo(new File(imgPath + "\\" + savedName));
+                    f.transferTo(new File(IMAGE_PATH + "\\" + savedName));
 
                 }
             }
@@ -488,14 +489,14 @@ public class ShareController {
             // 물건 정보 수정 실패 시 저장한 첨부파일 삭제
             if (result < 1) {
                 for (AttachmentDTO img : newImgList) {
-                    new File(imgPath + "\\" + img.getSavedName()).delete();
+                    new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
                 }
                 throw new Exception();
             }
 
             // 물건 정보 수정 성공 시 유저가 삭제한 파일 로컬에서 삭제
             for (String f : delFilesName) {
-                new File(imgPath + "\\" + f).delete();
+                new File(IMAGE_PATH + "\\" + f).delete();
             }
 
         } catch (Exception e) {
@@ -507,5 +508,60 @@ public class ShareController {
 
         return page;
     }
+
+    /**
+     * 물건 삭제
+     *
+     * @param itemDTO the item dto
+     * @param c       the c
+     * @param model   the model
+     * @return the string
+     * @since 2024 -07-31
+     */
+    @GetMapping("/delete")
+    public String deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+        System.out.println("삭제할 대상: "+itemDTO);
+            ShaItemDTO target = null;
+        try {
+            // 삭제할 물건 정보 가져오기
+            target = shareService.getItemDetail(itemDTO);
+
+            // 삭제할 첨부 사진 dto 설정
+            AttachmentDTO imgs = new AttachmentDTO();
+            imgs.setTargetNo(target.getItemNo());
+            imgs.setTypeCode(target.getItemGroup());
+
+            // 삭제하려는 유저와 물건 유저가 같은지 확인
+            if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
+                throw new Exception("삭제 권한이 없습니다.");
+            }
+
+            // 현재 대여중인 물건인지 내역 확인
+            if(target.getStatusCode().equals("RNT")){
+                throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 삭제가 가능합니다.");
+            }
+
+            // 물건 삭제
+            int result = shareService.deleteItem(target);
+
+            if(result < 0){
+                throw new Exception("물건 삭제를 실패했습니다.");
+            }
+
+            // 물건 삭제 성공 시 삭제한 파일 로컬에서 삭제
+            for (AttachmentDTO img : target.getImgList()) {
+                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
+        }
+
+        return target.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
+    }
+
+
 
 }

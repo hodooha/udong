@@ -161,7 +161,7 @@ public class ShareDAO {
     }
 
     /**
-     * 물건 첨부사진 삭제 (attachment 테이블)
+     * 첨부파일 no로 물건 첨부 사진 목록 삭제 (attachment 테이블)
      *
      * @param sqlSession the sql session
      * @param delImgList the del img list
@@ -169,8 +169,36 @@ public class ShareDAO {
      * @throws Exception the exception
      * @since 2024 -07-30
      */
-    public int deleteImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> delImgList) throws Exception{
+    public int deleteImgList(SqlSessionTemplate sqlSession, List<AttachmentDTO> delImgList) throws Exception{
 
-        return sqlSession.delete("ShareMapper.deleteImg", delImgList);
+        return sqlSession.delete("ShareMapper.deleteImgList", delImgList);
+    }
+
+    /**
+     * 물건 삭제 (sha_items 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param target     the target
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int deleteItem(SqlSessionTemplate sqlSession, ShaItemDTO target) throws Exception {
+
+        return sqlSession.delete("ShareMapper.deleteItem", target);
+    }
+
+    /**
+     * target 정보로 물건 첨부 사진 삭제 (attachment 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param target     the target
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int deleteImgByTarget(SqlSessionTemplate sqlSession, AttachmentDTO target) throws Exception {
+
+        return sqlSession.delete("ShareMapper.deleteImgByTarget", target);
     }
 }

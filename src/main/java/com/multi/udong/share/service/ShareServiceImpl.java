@@ -174,7 +174,7 @@ public class ShareServiceImpl implements ShareService {
 
         // 기존 물건 사진 중에서 유저가 삭제한 사진 삭제
         if(!delImgList.isEmpty()){
-            int deleteResult = shareDAO.deleteImg(sqlSession, delImgList);
+            int deleteResult = shareDAO.deleteImgList(sqlSession, delImgList);
             if (deleteResult < 1) {
                 result = 0;
             }
@@ -187,6 +187,35 @@ public class ShareServiceImpl implements ShareService {
                 result = 0;
             }
         }
+
+        return result;
+    }
+
+    /**
+     * 물건 삭제
+     *
+     * @param target the target
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public int deleteItem(ShaItemDTO target) throws Exception {
+        int result = 1;
+
+        // 물건 정보 삭제 (sha_items 테이블)
+        if(shareDAO.deleteItem(sqlSession, target) < 0) {
+            result = 0;
+        };
+
+        // 물건 첨부사진 삭제 (attachment 테이블)
+        AttachmentDTO delImg = new AttachmentDTO();
+        delImg.setTargetNo(target.getItemNo());
+        delImg.setTypeCode(target.getItemGroup());
+        if(shareDAO.deleteImgByTarget(sqlSession, delImg) < 0){
+            result = 0;
+        };
 
         return result;
     }
