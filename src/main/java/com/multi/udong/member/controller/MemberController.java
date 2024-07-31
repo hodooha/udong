@@ -3,7 +3,7 @@ package com.multi.udong.member.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.controller.KakaoLoginController;
 import com.multi.udong.member.model.dto.MemAddressDTO;
-import com.multi.udong.member.model.dto.MemPageDTO;
+import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.security.CustomUserDetails;
@@ -130,10 +130,10 @@ public class MemberController {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
-        MemPageDTO pageDTO = new MemPageDTO();
+        PageDTO pageDTO = new PageDTO();
         pageDTO.setPage(page);
         pageDTO.setMemberNo(memberNo);
-        pageDTO.setStartEnd(pageDTO.getPage());
+        pageDTO.setStartEnd(page);
 
         pageDTO.setSearchCategory(searchCategory);
         pageDTO.setSearchWord(searchWord);
@@ -147,7 +147,7 @@ public class MemberController {
             pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
 
             for (List<String> list : data) {
-                list.remove(list.size() -1);
+                list.remove(list.size() - 1);
             }
         }
 
@@ -293,7 +293,8 @@ public class MemberController {
                                 Model model) {
 
         // memberDTO에 현재 사용자의 회원번호를 입력
-        memberDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+        int memberNo = c.getMemberDTO().getMemberNo();
+        memberDTO.setMemberNo(memberNo);
 
         // 프로필 사진를 수정할 때
         if (file != null && !file.isEmpty()) {

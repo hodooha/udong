@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        body {
+            font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            height: calc(100vh - 90px);
+        }
+        .content-area {
+            display: flex;
+            flex: 1;
+            align-items: start;
+            overflow: auto;
+            padding: 20px 20px 20px 0;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<main>
+
+</main>
+<div id="msg" th:text="${msg}" hidden></div>
+</body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!--msg alert-->
+</html>

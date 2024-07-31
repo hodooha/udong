@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        body {
+            font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            height: calc(100vh - 90px);
+        }
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .question {
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            text-align: left;
+        }
+        #alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 35px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            font-size: 20px;
+        }
+        h2 {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<main>
+    <div class="content-area">
+
+        <div class="question">
+            <h2>문의하기</h2>
+            <form action="/cs/insertQueForm" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <label>문의유형
+                    <select name="csType">
+                        <option value="">== 문의유형 선택 ==</option>
+                        <option th:each="type : ${csTypes}"
+                                th:value="${type.typeCode}"
+                                th:text="${type.typeName}"
+                                th:selected="${type.typeCode == csType}">
+                    </select>
+                </label>
+                <label>문의제목
+                    <input type="text" name="title" required>
+                </label>
+                <label>문의내용
+                    <input type="text" name="content" required>
+                </label>
+                <label>첨부파일
+                    <input type="file" name="file">
+                </label>
+                <label>
+                    <input type="checkbox" required>개인정보 수집 및 이용 동의 (필수)
+                </label>
+                <button class="btn btn-udh-blue">문의하기</button>
+            </form>
+        </div>
+
+    </div>
+</main>
+<div id="msg" th:text="${msg}" hidden></div>
+<div id="alert"></div>
+</body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            showAlert(msg.textContent);
+        }
+    });
+
+    function showAlert(msg) {
+        const alertBox = document.querySelector('#alert');
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.opacity = '1';
+        }, 10);
+
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 300);
+        }, 3000);
+    }
+</script> <!--msg alert-->
+</html>

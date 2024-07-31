@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.multi.udong.cs.model.dao.CSMapper">
+
+    <select id="selectQue" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
+        SELECT
+            sub.cs_no,
+            t.type_name,
+            sub.title,
+            sub.content,
+            sub.created_at,
+            sub.is_answered,
+            sub.total_count
+        FROM (
+            SELECT
+                cq.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY cq.created_at DESC) AS rownum
+            FROM CS_QUESTION cq
+            WHERE cq.writer_no = #{memberNo}
+            <if test="searchWord != null">
+                AND (
+                    cq.title LIKE CONCAT('%', #{searchWord}, '%')
+                    OR cq.content LIKE CONCAT('%', #{searchWord}, '%')
+                )
+            </if>
+        ) sub
+        JOIN TYPE t ON sub.cs_type = t.type_code
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="getAllTypes" resultType="typeDTO">
+        SELECT type_code, type_name
+        FROM TYPE
+    </select>
+
+    <insert id="insertFile" parameterType="attachmentDTO">
+        INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
+        (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
+    </insert>
+
+    <insert id="insertQueForm" parameterType="csQuestionDTO" useGeneratedKeys="true" keyProperty="csNo">
+        INSERT INTO CS_QUESTION (writer_no, cs_type, title, content) VALUES
+        (#{writerNo}, #{csType}, #{title}, #{content})
+    </insert>
+    
+</mapper>

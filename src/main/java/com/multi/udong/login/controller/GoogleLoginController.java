@@ -1,6 +1,6 @@
 package com.multi.udong.login.controller;
 
-import com.multi.udong.member.model.dao.MemberDAO;
+import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.login.model.dto.GoogleTokenResponse;
 import com.multi.udong.login.model.dto.GoogleUserInfo;
 import com.multi.udong.member.model.dto.MemberDTO;
@@ -31,7 +31,7 @@ public class GoogleLoginController {
 
     private final GoogleAuthClient googleAuthClient;
     private final GoogleUserInfoClient googleUserInfoClient;
-    private final MemberDAO memberDAO;
+    private final MemberMapper memberMapper;
     private final MemberServiceImpl memberService;
 
     @Value("${google.client.id}")
@@ -79,7 +79,7 @@ public class GoogleLoginController {
             memberDTO.setNickname(googleNickname);
 
             // 가입되어있지 않다면 회원가입 진행
-            if (memberDAO.findMemberById(googleMemberId) == null) {
+            if (memberMapper.findMemberById(googleMemberId) == null) {
                 memberService.signup(memberDTO);
             }
 

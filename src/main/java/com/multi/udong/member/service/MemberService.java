@@ -3,7 +3,7 @@ package com.multi.udong.member.service;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
-import com.multi.udong.member.model.dto.MemPageDTO;
+import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 
 import java.util.List;
@@ -33,7 +33,7 @@ public interface MemberService {
 
     boolean isNicknameDuplicate(String nickname);
 
-    List<List<String>> selectAllAct(String table, MemPageDTO pageDTO);
+    List<List<String>> selectAllAct(String table, PageDTO pageDTO);
 
     Map<String, Object> selectAllDashBoard(int memberNo);
 

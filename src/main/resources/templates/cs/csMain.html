@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        body {
+            font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            height: calc(100vh - 90px);
+        }
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .search {
+            text-align: center;
+        }
+        .search input {
+            padding: 10px;
+            font-size: 17px;
+            border: 1px solid grey;
+            border-radius: 5px;
+            width: 85%;
+        }
+        .category {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            flex: 1;
+            background: #fff;
+            padding: 2rem;
+            margin: 0 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .faq {
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .faq-item {
+            background: #f9f9f9;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+        .faq-question {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .faq-answer {
+            display: none;
+            margin-top: 1rem;
+        }
+        #alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 35px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            font-size: 20px;
+        }
+        h2 {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<main>
+    <div class="content-area">
+
+        <div class="category">
+            <div class="card">
+                <i>A</i>
+                <h3>자주 묻는 질문</h3>
+                <p>자주 묻는 질문 입니다.</p>
+            </div>
+            <div class="card" onClick="location.href ='/cs/insertQueForm'">
+                <i>B</i>
+                <h3>문의하기</h3>
+                <p>문의하기 입니다.</p>
+            </div>
+            <div class="card" onClick="location.href ='/cs/csMyQue'">
+                <i>C</i>
+                <h3>문의내역</h3>
+                <p>내 문의내역 입니다.</p>
+            </div>
+        </div>
+
+        <div class="search">
+            <form action="/cs/csFAQ">
+                <input type="text" placeholder="궁금한 점을 검색해보세요.">
+                <button class="btn btn-udh-yellow">검색</button>
+            </form>
+        </div>
+
+        <div class="faq">
+            <h2>자주 묻는 질문</h2>
+            <div class="faq-item">
+                <div class="faq-question">[계정 / 보안] 판매자로 가입하려면 어떻게 해야 하나요?</div>
+                <div class="faq-answer">답변123</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">[대여 / 나눔] 대여한 물건의 반납 절차는 어떻게 되나요?</div>
+                <div class="faq-answer">답변123</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">[땡처리] 땡처리에서 할인 상품을 구매하고 싶어요.</div>
+                <div class="faq-answer">답변123</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">[우동 모임] 우동 모임에 가입하고 싶어요.</div>
+                <div class="faq-answer">답변123</div>
+            </div>
+        </div>
+
+    </div>
+</main>
+<div id="msg" th:text="${msg}" hidden></div>
+<div id="alert"></div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const questions = document.querySelectorAll('.faq-question')
+
+        questions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+    });
+</script> <!--질문 토글-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            showAlert(msg.textContent);
+        }
+    });
+
+    function showAlert(msg) {
+        const alertBox = document.querySelector('#alert');
+        alertBox.textContent = msg;
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.opacity = '1';
+        }, 10);
+
+        setTimeout(() => {
+            alertBox.style.opacity = '0';
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 300);
+        }, 3000);
+    }
+</script> <!--msg alert-->
+</html>
