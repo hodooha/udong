@@ -137,6 +137,16 @@
         })
 
     </script>
+    <script th:inline="javascript">
+
+        window.onload = function() {
+            var message = [[${message}]];
+            if (message) {
+                alert(message);
+            }
+        }
+
+    </script>
 </head>
 <body>
 

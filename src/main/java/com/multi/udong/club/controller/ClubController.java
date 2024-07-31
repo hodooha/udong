@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -305,14 +306,15 @@ public class ClubController {
     /**
      * 모임 가입 신청
      *
-     * @param c          the c
-     * @param requestDTO the request dto
-     * @param model      the model
+     * @param c                  the c
+     * @param requestDTO         the request dto
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-27
      */
     @PostMapping("/requestJoinClub")
-    public String requestJoinClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+    public String requestJoinClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
 
         // 로그인된 유저의 no를 requestDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -337,6 +339,8 @@ public class ClubController {
 
                 clubService.requestJoinClub(requestDTO);
 
+                redirectAttributes.addFlashAttribute("message", "가입 신청이 완료되었습니다.");
+
             }
 
             return "redirect:/club/clubHome?clubNo=" + clubNo;
@@ -357,14 +361,15 @@ public class ClubController {
     /**
      * 모임 가입 신청 취소
      *
-     * @param c          the c
-     * @param requestDTO the request dto
-     * @param model      the model
+     * @param c                  the c
+     * @param requestDTO         the request dto
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-28
      */
     @PostMapping("/cancelJoinRequest")
-    public String cancelJoinRequest(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+    public String cancelJoinRequest(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
 
         // 로그인된 유저의 no를 requestDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -382,6 +387,8 @@ public class ClubController {
             if(joinStatus.equals("W")) {
 
                 clubService.cancelJoinRequest(requestDTO);
+
+                redirectAttributes.addFlashAttribute("message", "가입 신청이 취소되었습니다.");
 
             }
 
@@ -403,14 +410,15 @@ public class ClubController {
     /**
      * 모임 탈퇴
      *
-     * @param c          the c
-     * @param requestDTO the request dto
-     * @param model      the model
+     * @param c                  the c
+     * @param requestDTO         the request dto
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-28
      */
     @PostMapping("/leaveClub")
-    public String leaveClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+    public String leaveClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
 
         // 로그인된 유저의 no를 requestDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -428,6 +436,8 @@ public class ClubController {
             if(joinStatus.equals("Y")) {
 
                 clubService.leaveClub(requestDTO);
+
+                redirectAttributes.addFlashAttribute("message", "모임 탈퇴가 완료되었습니다.");
 
             }
 
@@ -449,14 +459,15 @@ public class ClubController {
     /**
      * 모임 해체
      *
-     * @param c          the c
-     * @param requestDTO the request dto
-     * @param model      the model
+     * @param c                  the c
+     * @param requestDTO         the request dto
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-28
      */
     @PostMapping("/deleteClub")
-    public String deleteClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+    public String deleteClub(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
 
         // 로그인된 유저의 no를 requestDTO에 set
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -478,6 +489,8 @@ public class ClubController {
 
                 clubService.deleteClub(requestDTO);
 
+                redirectAttributes.addFlashAttribute("message", "모임 해체가 완료되었습니다.");
+
             }
             else {
 
@@ -491,7 +504,7 @@ public class ClubController {
 
             e.printStackTrace();
 
-            model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
+            model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
 
@@ -545,15 +558,16 @@ public class ClubController {
     /**
      * 모임 신고
      *
-     * @param c            the c
-     * @param reportDTO    the report dto
-     * @param customReason the custom reason
-     * @param model        the model
+     * @param c                  the c
+     * @param reportDTO          the report dto
+     * @param customReason       the custom reason
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-31
      */
     @PostMapping("/reportClub")
-    public String reportClub(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, Model model) {
+    public String reportClub(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, Model model, RedirectAttributes redirectAttributes) {
 
         int reportedNo = reportDTO.getReportedNo();
 
@@ -583,6 +597,8 @@ public class ClubController {
 
             // service의 모임 신고 메서드 호출
             clubService.reportClub(reportDTO);
+
+            redirectAttributes.addFlashAttribute("message", "모임 신고가 완료되었습니다.");
 
             return "redirect:/club/clubHome?clubNo=" +  reportedNo;
 
