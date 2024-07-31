@@ -252,4 +252,16 @@ public class ClubDAO {
         return sqlSession.insert("clubMapper.reportClub", reportDTO);
 
     }
+
+    public int updateClub(SqlSessionTemplate sqlSession, ClubDTO clubDTO) {
+
+        return sqlSession.update("clubMapper.updateClub", clubDTO);
+
+    }
+
+    public int updateClubImg(SqlSessionTemplate sqlSession, AttachmentDTO attachmentDTO) {
+
+        return sqlSession.update("clubMapper.updateClubImg", attachmentDTO);
+
+    }
 }

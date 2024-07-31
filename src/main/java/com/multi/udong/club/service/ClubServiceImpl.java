@@ -280,4 +280,51 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+
+    @Override
+    public int updateClub(ClubDTO clubDTO) throws Exception {
+
+        int result = 0;
+
+        // 모임 데이터 update
+        int clubResult = clubDAO.updateClub(sqlSession, clubDTO);
+
+        if(clubResult <= 0) {
+
+            throw new Exception("모임 수정에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+        }
+        else {
+
+            result = 1;
+
+        }
+
+        System.out.println("###### 새 이미지 업로드 여부: " + clubDTO.getAttachment());
+
+        // 이미지를 새로 업로드 했으면 이미지 update
+        if(clubDTO.getAttachment() != null) {
+
+            int clubNo = clubDTO.getClubNo();
+            AttachmentDTO attachmentDTO = clubDTO.getAttachment().get(0);
+            attachmentDTO.setTargetNo(clubNo);
+            int attachmentResult = clubDAO.updateClubImg(sqlSession, attachmentDTO);
+
+            if(attachmentResult <= 0) {
+
+                throw new Exception("모임 이미지 수정에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+            }
+            else {
+
+                result = 2;
+
+            }
+
+        }
+
+        return result;
+
+    }
+
 }

@@ -234,4 +234,21 @@
             )
     </insert>
 
+    <update id="updateClub" parameterType="com.multi.udong.club.model.dto.ClubDTO">
+        UPDATE CL
+        SET
+            category_code = #{ category.categoryCode },
+            club_name = #{ clubName },
+            introduction = #{ introduction }
+        WHERE club_no = #{ clubNo }
+    </update>
+
+    <update id="updateClubImg" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        UPDATE ATTACHMENT
+        SET
+            original_name = #{ originalName },
+            saved_name = #{ savedName }
+        WHERE type_code = 'CL' AND target_no = #{ targetNo }
+    </update>
+
 </mapper>

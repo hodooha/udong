@@ -477,15 +477,12 @@ public class ClubController {
 
         try {
 
-            // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
-            String joinStatus = clubService.checkJoinStatus(requestDTO);
-            System.out.println("###### 모임 해체 요청한 유저의 가입 상태: " + joinStatus);
-
+            // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
             int master = clubService.checkClubMaster(clubNo);
             System.out.println("###### 모임장 no: " + master);
 
-            // 가입된 상태이고, 모임장일 때만 모임 해체 메소드 호출
-            if(joinStatus.equals("Y") && memberNo == master) {
+            // 모임장일 때만 모임 해체 메소드 호출
+            if(memberNo == master) {
 
                 clubService.deleteClub(requestDTO);
 
@@ -546,7 +543,7 @@ public class ClubController {
 
             e.printStackTrace();
 
-            model.addAttribute("msg", "모임 신고 폼 이동 과정에서 문제가 발생했습니다.");
+            model.addAttribute("msg", "모임 신고폼 이동 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
 
@@ -600,7 +597,7 @@ public class ClubController {
 
             redirectAttributes.addFlashAttribute("message", "모임 신고가 완료되었습니다.");
 
-            return "redirect:/club/clubHome?clubNo=" +  reportedNo;
+            return "redirect:/club/clubHome?clubNo=" + reportedNo;
 
         } catch (Exception e) {
 
@@ -609,6 +606,173 @@ public class ClubController {
             model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
+
+        }
+
+    }
+
+
+    @RequestMapping("/clubUpdateForm")
+    public String clubUpdateForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+        System.out.println("###### 수정할 모임 no: " + clubNo);
+
+        try {
+
+            // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+            int master = clubService.checkClubMaster(clubNo);
+            System.out.println("###### 모임장 no: " + master);
+
+            // 모임장일 때만 모임 수정폼으로 이동
+            if(memberNo == master) {
+
+                // service의 모임 홈 select 메소드 호출
+                ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
+
+                System.out.println("###### 가져온 clubHome: " + clubDTO);
+
+                model.addAttribute("clubHome", clubDTO);
+
+                return "club/clubUpdateForm";
+
+            }
+            else {
+
+                return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 수정폼 이동 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    @PostMapping("/updateClub")
+    public String updateClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, Model model, RedirectAttributes redirectAttributes) {
+
+        int clubNo = clubDTO.getClubNo();
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int master = 0;
+
+        try {
+
+            master = clubService.checkClubMaster(clubNo);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+        // 모임장일 때만 모임 수정
+        if(memberNo == master) {
+
+            // updateForm에서 받아온 카테고리 코드를 clubDTO에 set
+            clubDTO.setCategory(categoryDTO);
+
+            // 이미지 저장할 경로 설정
+            String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+            String filePath = root + "/uploadFiles";
+
+            // 이미지 이름 변경 처리
+            String savedName = "";
+
+            if(!img.isEmpty()) {
+
+                // filePath에 폴더가 없으면 폴더 생성
+                File mkdir = new File(filePath);
+                if(!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+
+                // 첨부 파일의 이름을 가져와서
+                String originFileName = img.getOriginalFilename();
+                // 확장자만 잘라서 변수에 저장
+                String ext = originFileName.substring(originFileName.lastIndexOf("."));
+                // 랜덤한 파일이름을 생성한 후 뒤에 확장자 추가
+                savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                // attachmentDTO에 원래 파일명과 변경한 파일명을 set
+                AttachmentDTO attachmentDTO = new AttachmentDTO();
+                attachmentDTO.setOriginalName(originFileName);
+                attachmentDTO.setSavedName(savedName);
+                attachmentDTO.setTypeCode("CL");
+
+                // 리스트에 그 attachmentDTO를 add
+                // 이미지 한 개라 index는 0 밖에 없음
+                List<AttachmentDTO> attachmentList = new ArrayList<>();
+                attachmentList.add(attachmentDTO);
+
+                // attachmentList를 clubDTO에 set
+                clubDTO.setAttachment(attachmentList);
+
+                try {
+
+                    // 이미지 파일을 생성
+                    img.transferTo(new File(filePath + "/" + savedName));
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+
+                    // 오류 발생 시 생성한 파일을 삭제
+                    new File(filePath + "/" + savedName).delete();
+
+                    model.addAttribute("msg", "이미지 업로드 과정에서 문제가 발생했습니다.");
+
+                    return "common/errorPage";
+
+                }
+
+            }
+
+            try {
+
+                int result = clubService.updateClub(clubDTO);
+
+                if(result == 2) {
+
+                    // 기존 이미지 삭제 기능 구현
+
+                }
+
+                redirectAttributes.addFlashAttribute("message", "모임 수정이 완료되었습니다.");
+
+                return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+        else {
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
 
         }
 

@@ -37,4 +37,6 @@ public interface ClubService {
     int deleteClub(RequestDTO requestDTO) throws Exception;
 
     int reportClub(ReportDTO reportDTO) throws Exception;
+
+    int updateClub(ClubDTO clubDTO) throws Exception;
 }
