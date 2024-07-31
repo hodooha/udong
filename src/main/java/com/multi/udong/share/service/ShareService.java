@@ -78,9 +78,23 @@ public interface ShareService {
     /**
      * 기존 대여 및 나눔 신청 내역 조회
      *
+     * @param reqDTO the req dto
      * @return the sha req dto
      * @throws Exception the exception
      * @since 2024 -07-28
      */
     ShaReqDTO findRequest(ShaReqDTO reqDTO) throws Exception;
+
+
+    /**
+     * 물건 수정 (파일 포함)
+     *
+     * @param itemDTO    the item dto
+     * @param newImgList the new img list
+     * @param delImgList the del img list
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception;
 }

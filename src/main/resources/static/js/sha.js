@@ -42,6 +42,7 @@ $(function(){
             }
         });
     }
+
 });
 
 function getCatList() {
@@ -95,25 +96,53 @@ function addImg() {
     if(len < 3){
     imgCounter++;
     let imgId = `img-${imgCounter}`;
-    let addform = `<div class='img-group'><input id='img-input-${imgCounter}' class='form-control' type='file' name='imgs' onchange='setImgPreview(this)' data-img-id='${imgId}'><a href='#this' name='img-delete' data-img-id='${imgId}'>삭제</a><div>`
+    let addform = `
+        <div class='img-group'>
+            <label for='img-input-${imgCounter}'>
+                <div class="btn btn-udh-silver">파일선택</div>
+            </label>
+            <input id='img-input-${imgCounter}' class='form-control' type='file' name='imgs'  data-img-id='${imgId}' style="display:none">
+            <p id="originalName-${imgCounter}" style="display : inline-block" data-img-id='${imgId}'></p>
+            <a href='#this' name='img-delete' data-img-id='${imgId}'>삭제</a>
+        <div>`
     $("#item-imgList").append(addform);
-    $("a[name='img-delete']").on("click", function(e){
+
+    $("a[name='img-delete']").off("click").on("click", function(e){
         e.preventDefault();
         deleteImg($(this));
-    })}
+    })
+
+    $("input[name='imgs']").off("change").on("change", function(e){
+        e.preventDefault();
+        setImgPreview($(this));
+    })
+
+    }
 }
 
 function deleteImg(img){
     let imgId = img.data('img-id');
+    let hiddenInput = $(`input[data-img-id='${imgId}']`);
+    if (hiddenInput.length && hiddenInput.attr('name') === 'exImgs') {
+        let delFilesNo = $("#delFilesNo").val();
+        $("#delFilesNo").val(delFilesNo + hiddenInput.val() + ",");
+        hiddenInput.val('');
+    }
+    if (hiddenInput.length && hiddenInput.attr('name') === 'exImgsName') {
+        let delFilesName = $("#delFilesName").val();
+        $("#delFilesName").val(delFilesName + hiddenInput.val() + ",");
+        hiddenInput.val('');
+    }
+
     $(`#${imgId}`).parent().remove();
     img.parent().remove();
 }
 
 function setImgPreview(input){
-    if(input.files && input.files[0]){
+    if(input[0].files && input[0].files[0]){
         let reader = new FileReader();
         reader.onload = function(e){
-            let imgId = input.getAttribute('data-img-id');
+            let imgId = input.data('img-id');
             let img = document.createElement("img");
             img.setAttribute("src", e.target.result);
             img.setAttribute("style", "height:60px");
@@ -125,7 +154,10 @@ function setImgPreview(input){
 
             $('#imgPreview').append(imgDiv);
         };
-        reader.readAsDataURL(input.files[0]);
+        reader.readAsDataURL(input[0].files[0]);
+        let imgId = input.data('img-id');
+        $(`p[data-img-id="${imgId}"]`).html(input[0].files[0].name);
+        input.prop('disabled', true);
     }
 
 }
@@ -145,6 +177,9 @@ function isValid() {
     }
 }
 
+function enableAllFileInputs() {
+    $("input[name='imgs']").prop('disabled', false);
+}
 
 function getSearchParams(page){
     selectedCat = $('.catSelect').val();
@@ -165,14 +200,14 @@ function getSearchParams(page){
     };
 }
 
-function updateItems(params){
+function updateItemList(params){
     $.ajax({
             url: "/share/search",
             type: "get",
             data: params,
             success: function(data) {
                 console.log(data)
-                renderItems(data.itemList);
+                renderItemList(data.itemList);
                 renderPageNation(data.pageInfo);
 
 
@@ -191,7 +226,7 @@ function updateItems(params){
     });
 }
 
-function renderItems(items){
+function renderItemList(items){
     let itemResult = "";
     if(items.length == 0){
         itemResult = `<div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
@@ -256,7 +291,7 @@ function renderPageNation(pageInfo){
 function search(page){
     let params = getSearchParams(page);
     console.log(params);
-    updateItems(params);
+    updateItemList(params);
 
 }
 

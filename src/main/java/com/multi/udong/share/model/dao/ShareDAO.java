@@ -129,7 +129,7 @@ public class ShareDAO {
      */
     public int insertRequest(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) throws Exception{
 
-        return sqlSession.insert("ShareMapper.shaRequest", reqDTO);
+        return sqlSession.insert("ShareMapper.insertRequest", reqDTO);
     }
 
     /**
@@ -144,5 +144,33 @@ public class ShareDAO {
     public ShaReqDTO findRequest(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) throws Exception{
 
         return sqlSession.selectOne("ShareMapper.findRequest", reqDTO);
+    }
+
+    /**
+     * 물건 정보 수정 (sha_items 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param itemDTO    the item dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    public int updateItem(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+
+        return sqlSession.update("ShareMapper.updateItem", itemDTO);
+    }
+
+    /**
+     * 물건 첨부사진 삭제 (attachment 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param delImgList the del img list
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    public int deleteImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> delImgList) throws Exception{
+
+        return sqlSession.delete("ShareMapper.deleteImg", delImgList);
     }
 }
