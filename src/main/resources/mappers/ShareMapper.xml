@@ -223,7 +223,8 @@
         set
         item_cat_code = #{itemCatCode},
         title = #{title},
-        content = #{content}
+        content = #{content},
+        modified_at = now()
         where item_no = #{itemNo}
     </update>
 
@@ -251,7 +252,15 @@
     <update id="updateItStat">
         update sha_items
         set
-        status_code = #{statusCode}
+        status_code = #{statusCode},
+        modified_at = now()
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="increaseViewCnt">
+        update sha_items
+        set
+        view_cnt = view_cnt + 1
         where item_no = #{itemNo}
     </update>
 

@@ -1,11 +1,9 @@
 package com.multi.udong.share.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.share.model.dao.ShareDAO;
-import com.multi.udong.share.model.dto.ShaCatDTO;
-import com.multi.udong.share.model.dto.ShaCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaItemDTO;
-import com.multi.udong.share.model.dto.ShaReqDTO;
+import com.multi.udong.share.model.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Service;
@@ -46,27 +44,44 @@ public class ShareServiceImpl implements ShareService {
      *
      * @param itemDTO the item dto
      * @param imgList the img list
-     * @return the int
      * @throws Exception the exception
      * @since 2024 -07-22
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public int insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception {
+    public void insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception {
         int itemNo = shareDAO.insertItem(sqlSession, itemDTO);
-        int result = itemNo > 0 ? 1 : 0;
+        if(itemNo < 1){
+            throw new Exception("물건 정보 등록을 실패했습니다.");
+        }
         if (!imgList.isEmpty()) {
             for (AttachmentDTO img : imgList) {
                 img.setTargetNo(itemNo);
             }
-            int imgResult = shareDAO.insertImg(sqlSession, imgList);
-            if (imgResult < 1) {
-                result = 0;
-
-            }
-        }
-        return result;
+            if(shareDAO.insertImg(sqlSession, imgList) < 1){
+                throw new Exception("물건 첨부 사진 등록을 실패했습니다.");                
+            };
+        }        
     }
+
+    /**
+     * Gets item detail with view cnt.
+     *
+     * @param itemDTO the item dto
+     * @return the item detail with view cnt
+     * @throws Exception the exception
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO) throws Exception {
+
+        if(shareDAO.increaseViewCnt(sqlSession, itemDTO) < 1){
+            throw new Exception("조회수 증가를 실패했습니다.");
+        };
+
+        return getItemDetail(itemDTO);
+    }
+
 
     /**
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
@@ -89,20 +104,21 @@ public class ShareServiceImpl implements ShareService {
 
 
     /**
-     * 물건 검색
+     * 물건 검색 및 조회
      *
      * @param criteriaDTO the criteria dto
-     * @return the list
+     * @return the sha item result dto
      * @throws Exception the exception
      * @since 2024 -07-24
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception {
+    public ShaItemResultDTO searchItems(ShaCriteriaDTO criteriaDTO) throws Exception {
+        ShaItemResultDTO result = new ShaItemResultDTO();
+        result.setItemList(shareDAO.searchItems(sqlSession, criteriaDTO));
+        result.setTotalCounts(getItemCounts(criteriaDTO));
 
-        List<ShaItemDTO> itemList = shareDAO.searchItems(sqlSession, criteriaDTO);
-
-
-        return itemList;
+        return result;
     }
 
 
@@ -116,9 +132,7 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public int getItemCounts(ShaCriteriaDTO criteriaDTO) throws Exception {
 
-        int totalCount = shareDAO.getItemCounts(sqlSession, criteriaDTO);
-
-        return totalCount;
+        return shareDAO.getItemCounts(sqlSession, criteriaDTO);
     }
 
     /**
@@ -129,12 +143,17 @@ public class ShareServiceImpl implements ShareService {
      * @throws Exception the exception
      * @since 2024 -07-28
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public int insertRequest(ShaReqDTO reqDTO) throws Exception {
 
-        int result = shareDAO.insertRequest(sqlSession, reqDTO);
+        // 동일 물건에 대한 대여 및 나눔 요청 유무 확인(status:"신청완료"만!)
+        reqDTO.setStatusCode("RQD");
+        if (findRequest(reqDTO) != null) {
+            throw new Exception("이미 신청하셨습니다.");
+        }
 
-        return result;
+        return shareDAO.insertRequest(sqlSession, reqDTO);
     }
 
 
@@ -149,9 +168,7 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public ShaReqDTO findRequest(ShaReqDTO reqDTO) throws Exception {
 
-        ShaReqDTO result = shareDAO.findRequest(sqlSession, reqDTO);
-
-        return result;
+        return shareDAO.findRequest(sqlSession, reqDTO);
     }
 
 
@@ -161,77 +178,113 @@ public class ShareServiceImpl implements ShareService {
      * @param itemDTO    the item dto
      * @param newImgList the new img list
      * @param delImgList the del img list
-     * @return the int
      * @throws Exception the exception
      * @since 2024 -07-30
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception {
+    public void updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception {
 
         // 물건 정보 수정
-        int result = shareDAO.updateItem(sqlSession, itemDTO);
+        if(shareDAO.updateItem(sqlSession, itemDTO) < 1){
+
+            throw new Exception("물건 정보 수정을 실패했습니다.");
+        };
 
         // 기존 물건 사진 중에서 유저가 삭제한 사진 삭제
         if(!delImgList.isEmpty()){
-            int deleteResult = shareDAO.deleteImgList(sqlSession, delImgList);
-            if (deleteResult < 1) {
-                result = 0;
-            }
+            if(shareDAO.deleteImgList(sqlSession, delImgList) < 1){
+
+                throw new Exception("기존 사진 삭제를 실패했습니다.");
+            };
         }
 
         // 유저가 등록한 새로운 사진 저장
         if (!newImgList.isEmpty()) {
-            int imgResult = shareDAO.insertImg(sqlSession, newImgList);
-            if (imgResult < 1) {
-                result = 0;
+
+            if (shareDAO.insertImg(sqlSession, newImgList) < 1) {
+                throw new Exception("새로운 사진 등록을 실패했습니다.");
             }
         }
 
-        return result;
     }
 
+
     /**
-     * 물건 삭제
+     * 물건 삭제 (파일 포함)
      *
-     * @param target the target
-     * @param delImg the del img
-     * @return the int
+     * @param itemDTO the item dto
+     * @param c       the c
+     * @return the list
      * @throws Exception the exception
      * @since 2024 -07-31
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public int deleteItem(ShaItemDTO target, AttachmentDTO delImg) throws Exception {
-        int result = 1;
+    public List<AttachmentDTO> deleteItem(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
+
+        // 삭제할 물건 정보 가져오기
+        itemDTO = getItemDetail(itemDTO);
+
+        // 삭제할 사진 목록 가져오기 (삭제 성공 시 로컬폴더에서도 삭제하기 위해)
+        List<AttachmentDTO> delImgs = itemDTO.getImgList();
+
+        // 삭제할 첨부 사진 dto 설정
+        AttachmentDTO imgDTO = new AttachmentDTO();
+        imgDTO.setTargetNo(itemDTO.getItemNo());
+        imgDTO.setTypeCode(itemDTO.getItemGroup());
+
+        // 삭제하려는 유저와 물건 소유자가 같은지 확인
+        if(itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo()){
+            throw new Exception("삭제 권한이 없습니다.");
+        }
+
+        // 현재 대여중인 물건인지 내역 확인
+        if(itemDTO.getStatusCode().equals("RNT")){
+            throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 삭제가 가능합니다.");
+        }
 
         // 물건 정보 삭제 (sha_items 테이블)
-        if(shareDAO.deleteItem(sqlSession, target) < 0) {
-            result = 0;
+        if(shareDAO.deleteItem(sqlSession, itemDTO) < 1) {
+            throw new Exception("물건 삭제를 실패했습니다.");
         };
 
         // 물건 첨부사진 삭제 (attachment 테이블)
-        if(shareDAO.deleteImgByTarget(sqlSession, delImg) < 0){
-            result = 0;
+        if(shareDAO.deleteImgByTarget(sqlSession, imgDTO) < 0){
+            throw new Exception("물건의 첨부사진 삭제에 실패했습니다.");
         };
 
-        return result;
+        return delImgs;
     }
 
     /**
      * 물건 상태 업데이트
      *
      * @param itemDTO the item dto
-     * @return the int
+     * @param c       the c
      * @throws Exception the exception
      * @since 2024 -07-31
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public int updateItStat(ShaItemDTO itemDTO) throws Exception {
+    public void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
-        int result = shareDAO.updateItStat(sqlSession, itemDTO);
+        // 변경하려는 물건 정보 가져오기
+        ShaItemDTO target = getItemDetail(itemDTO);
 
-        return result;
+        // 변경하려는 유저와 물건 소유자가 같은지 확인
+        if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
+            throw new Exception("변경 권한이 없습니다.");
+        }
+
+        // 물건의 상태가 '대여중'이면 예외 던지기
+        if(target.getStatusCode().equals("RNT")){
+            throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+        }
+
+        if(shareDAO.updateItStat(sqlSession, itemDTO) < 1){
+            throw new Exception("물건 상태 변경을 실패했습니다.");
+        };
     }
 
 

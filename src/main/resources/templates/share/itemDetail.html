@@ -156,7 +156,7 @@
                     <button class="btn btn-udh-yellow"
                             th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
                     <button th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver"
-                            th:onclick="|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, statusCode=${status})}'|"
+                            th:onclick="|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, itemGroup=${item.itemGroup},statusCode=${status})}'|"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
                     <button class="btn btn-udh-red" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
                 </span>
@@ -186,7 +186,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
                     <button type="button" class="btn btn-udh-red"
-                            th:onclick="|location.href='@{/share/delete(itemNo=${item.itemNo})}'|">삭제
+                            th:onclick="|location.href='@{/share/delete(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">삭제
                     </button>
                 </div>
             </div>

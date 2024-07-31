@@ -1,10 +1,8 @@
 package com.multi.udong.share.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.share.model.dto.ShaCatDTO;
-import com.multi.udong.share.model.dto.ShaCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaItemDTO;
-import com.multi.udong.share.model.dto.ShaReqDTO;
+import com.multi.udong.security.CustomUserDetails;
+import com.multi.udong.share.model.dto.*;
 
 import java.util.List;
 
@@ -29,12 +27,13 @@ public interface ShareService {
      *
      * @param itemDTO the item dto
      * @param imgList the img list
-     * @return the int
      * @throws Exception the exception
      * @since 2024 -07-21
      */
-    int insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception;
+    void insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception;
 
+
+    ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO) throws Exception;
 
     /**
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
@@ -47,14 +46,14 @@ public interface ShareService {
     ShaItemDTO getItemDetail(ShaItemDTO itemDTO) throws Exception;
 
     /**
-     * 물건 검색
+     * 물건 목록 조회 (검색)
      *
      * @param criteriaDTO the criteria dto
-     * @return the list
+     * @return the sha item result dto
      * @throws Exception the exception
      * @since 2024 -07-24
      */
-    List<ShaItemDTO> searchItems(ShaCriteriaDTO criteriaDTO) throws Exception;
+    ShaItemResultDTO searchItems(ShaCriteriaDTO criteriaDTO) throws Exception;
 
     /**
      * 물건 총 개수 조회
@@ -92,11 +91,10 @@ public interface ShareService {
      * @param itemDTO    the item dto
      * @param newImgList the new img list
      * @param delImgList the del img list
-     * @return the int
      * @throws Exception the exception
      * @since 2024 -07-30
      */
-    int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception;
+    void updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception;
 
 
     /**
@@ -104,19 +102,21 @@ public interface ShareService {
      *
      * @param target the target
      * @param img    the img
-     * @return the int
+     * @return
      * @throws Exception the exception
      * @since 2024 -07-31
      */
-    int deleteItem(ShaItemDTO target, AttachmentDTO img) throws Exception;
+    List<AttachmentDTO> deleteItem(ShaItemDTO target, CustomUserDetails c) throws Exception;
 
     /**
      * 물건 상태 업데이트
      *
      * @param itemDTO the item dto
-     * @return the int
+     * @param c
      * @throws Exception the exception
      * @since 2024 -07-31
      */
-    int updateItStat(ShaItemDTO itemDTO) throws Exception;
+    void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
+
+
 }

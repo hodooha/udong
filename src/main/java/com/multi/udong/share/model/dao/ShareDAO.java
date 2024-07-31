@@ -216,4 +216,10 @@ public class ShareDAO {
         return sqlSession.update("ShareMapper.updateItStat", itemDTO);
 
     }
+
+    public int increaseViewCnt(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+
+        return sqlSession.update("ShareMapper.increaseViewCnt", itemDTO);
+
+    }
 }

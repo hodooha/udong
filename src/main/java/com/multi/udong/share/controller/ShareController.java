@@ -32,7 +32,7 @@ public class ShareController {
     /**
      * The constant IMAGE_PATH.
      */
-// 이미지 저장 경로
+    // 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
 
     /**
@@ -136,7 +136,7 @@ public class ShareController {
             }
 
             // db에서 물건 상세 정보 조회
-            ShaItemDTO item = shareService.getItemDetail(itemDTO);
+            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO);
             model.addAttribute("item", item);
 
         } catch (Exception e) {
@@ -183,8 +183,6 @@ public class ShareController {
             itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
             itemDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
 
-
-
             // 첨부파일 있을 경우
             if (!fileList.isEmpty()) {
 
@@ -213,17 +211,13 @@ public class ShareController {
             }
 
             // db에 물건 정보 저장
-            int result = shareService.insertItem(itemDTO, imgList);
-
-            // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
-            if (result < 1) {
-                for (AttachmentDTO img : imgList) {
-                    new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
-                }
-                throw new Exception();
-            }
+            shareService.insertItem(itemDTO, imgList);
 
         } catch (Exception e) {
+            // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
+            for (AttachmentDTO img : imgList) {
+                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+            }
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
             return "common/errorPage";
@@ -248,12 +242,8 @@ public class ShareController {
         // 결과값 초기 설정
         Map<String, Object> result = new HashMap<>();
         ShaPageDTO pageInfo = new ShaPageDTO();
-        List<ShaItemDTO> itemList = null;
-
-        System.out.println("여기!!!!!" + criteriaDTO);
 
         try {
-
             // 로그인 확인
             if (c == null) {
                 throw new Exception("로그인을 먼저 해주세요.");
@@ -271,20 +261,15 @@ public class ShareController {
             // 검색 조건에 페이지에 보여지는 물건 번호 범위 설정
             criteriaDTO.setPageRange(criteriaDTO.getPage());
 
-            // 검색 조건에 맞는 물건 목록 가져오기
-            itemList = shareService.searchItems(criteriaDTO);
-
-            // 검색 조건에 맞는 물건의 총 개수 확인
-            int totalCounts = shareService.getItemCounts(criteriaDTO);
+            // 검색 조건에 맞는 물건 목록, totalCounts 가져오기
+            ShaItemResultDTO searchResult = shareService.searchItems(criteriaDTO);
 
             // 클라이언트에 보여지는 페이지네이션 정보 설정
             pageInfo.setCurrentPage(criteriaDTO.getPage());
-            pageInfo.setPageInfo(totalCounts);
-
-            System.out.println(itemList);
+            pageInfo.setPageInfo(searchResult.getTotalCounts());
 
             // 결과값에 물건 목록과 페이지네이션 정보 저장
-            result.put("itemList", itemList);
+            result.put("itemList", searchResult.getItemList());
             result.put("pageInfo", pageInfo);
 
             return ResponseEntity.ok().body(result);
@@ -329,23 +314,13 @@ public class ShareController {
                 throw new Exception("본인의 물건은 대여 및 나눔 신청할 수 없습니다.");
             }
 
-            System.out.println(shareService.findRequest(reqDTO));
-
             // 신청자 no에 로그인한 유저 no 설정
             reqDTO.setRqstNo(c.getMemberDTO().getMemberNo());
 
-            // 동일 물건에 대한 대여 및 나눔 요청 유무 확인(status:"신청완료"만!)
-            reqDTO.setStatusCode("RQD");
-            if (shareService.findRequest(reqDTO) != null) {
-                throw new Exception("이미 신청하셨습니다.");
-            }
-
-            System.out.println(reqDTO);
-
             // db에 대여 및 나눔 신청 저장
             int result = shareService.insertRequest(reqDTO);
-            if (result < 0) {
-                throw new Exception(reqGroup + "신청 실패");
+            if (result < 1) {
+                throw new Exception(reqGroup + "신청을 실패했습니다.");
             }
 
         } catch (Exception e) {
@@ -484,15 +459,7 @@ public class ShareController {
             }
 
             // db에 물건 정보 저장
-            int result = shareService.updateItem(itemDTO, newImgList, delImgList);
-
-            // 물건 정보 수정 실패 시 저장한 첨부파일 삭제
-            if (result < 1) {
-                for (AttachmentDTO img : newImgList) {
-                    new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
-                }
-                throw new Exception();
-            }
+            shareService.updateItem(itemDTO, newImgList, delImgList);
 
             // 물건 정보 수정 성공 시 유저가 삭제한 파일 로컬에서 삭제
             for (String f : delFilesName) {
@@ -500,8 +467,12 @@ public class ShareController {
             }
 
         } catch (Exception e) {
-            model.addAttribute("msg", e.getMessage());
+            for (AttachmentDTO img : newImgList) {
+                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+            }
             e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+
             return "common/errorPage";
         }
 
@@ -521,35 +492,13 @@ public class ShareController {
     @GetMapping("/delete")
     public String deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
         System.out.println("삭제할 대상: "+itemDTO);
-            ShaItemDTO target = null;
+
         try {
-            // 삭제할 물건 정보 가져오기
-            target = shareService.getItemDetail(itemDTO);
-
-            // 삭제할 첨부 사진 dto 설정
-            AttachmentDTO imgDTO = new AttachmentDTO();
-            imgDTO.setTargetNo(target.getItemNo());
-            imgDTO.setTypeCode(target.getItemGroup());
-
-            // 삭제하려는 유저와 물건 소유자가 같은지 확인
-            if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
-                throw new Exception("삭제 권한이 없습니다.");
-            }
-
-            // 현재 대여중인 물건인지 내역 확인
-            if(target.getStatusCode().equals("RNT")){
-                throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 삭제가 가능합니다.");
-            }
-
             // 물건 삭제
-            int result = shareService.deleteItem(target, imgDTO);
-
-            if(result < 0){
-                throw new Exception("물건 삭제를 실패했습니다.");
-            }
+            List<AttachmentDTO> delImgs = shareService.deleteItem(itemDTO, c);
 
             // 물건 삭제 성공 시 삭제한 파일 로컬에서 삭제
-            for (AttachmentDTO img : target.getImgList()) {
+            for (AttachmentDTO img : delImgs) {
                 new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
             }
 
@@ -559,7 +508,7 @@ public class ShareController {
             return "common/errorPage";
         }
 
-        return target.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
+        return itemDTO.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
     }
 
     /**
@@ -579,27 +528,9 @@ public class ShareController {
         String page = "";
 
         try {
-            // 변경하려는 물건 정보 가져오기
-            ShaItemDTO target = shareService.getItemDetail(itemDTO);
-
-            // 변경하려는 유저와 물건 소유자가 같은지 확인
-            if(target.getOwnerNo() != c.getMemberDTO().getMemberNo()){
-                throw new Exception("변경 권한이 없습니다.");
-            }
-
-            // 물건의 상태가 '대여중'이면 예외 던지기
-            if(target.getStatusCode().equals("RNT")){
-                throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
-            }
-
             // 물건 상태 업데이트
-            int result = shareService.updateItStat(itemDTO);
-
-            if(result < 1){
-                throw new Exception("물건 상태 변경을 실패했습니다.");
-            }
-
-            page = "redirect:/share/" + target.getItemGroup() + "/detail?itemNo=" + target.getItemNo();
+            shareService.updateItStat(itemDTO, c);
+            page = "redirect:/share/" + itemDTO.getItemGroup() + "/detail?itemNo=" + itemDTO.getItemNo();
 
         } catch (Exception e) {
             e.printStackTrace();
