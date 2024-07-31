@@ -7,10 +7,16 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
 </head>
 <body>
-
 <div th:replace="~{/common/menubar}"></div>
-<div style="margin: 30px 0 0 50px;">
-    인덱스
-</div>
+<img th:src="@{/img/coding.gif}" alt="우동행" style="margin: 0 auto; margin-top: 100px; display: block;">
+<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = document.getElementById('msg');
+        if (msg && msg.textContent) {
+            alert(msg.textContent);
+        }
+    });
+</script> <!--msg alert-->
 </html>

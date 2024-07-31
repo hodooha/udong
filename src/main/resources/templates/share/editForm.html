@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
+
+    <style>
+        .row{
+             justify-content: center;
+        }
+        .registBtns{
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .registBtn{
+            width: 300px;
+        }
+
+
+    </style>
+</head>
+<body id="registerForm">
+<div th:replace="~{/common/menubar}"></div>
+<div class="container mt-5 w-50">
+
+    <h2 style="text-align:center">물건 수정</h2>
+
+    <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="enableAllFileInputs();">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" th:name="itemNo" th:value="${item.itemNo}"/>
+        <input type="hidden" th:name="ownerNo" th:value="${item.ownerNo}"/>
+        <input type="hidden" th:name="locCode" th:value="${item.locCode}"/>
+        <div class="row mb-1">
+            <div class="col-md-6">
+                <label class="form-label">거래방식</label>
+                <div style="display:flex">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="itemGroup" id="rent-opt" value="rent"
+                               th:checked="${item.itemGroup == 'rent'}" onclick="return(false);">
+                        <label class="form-check-label" for="rent-opt">
+                            대여
+                        </label>
+                    </div>
+                    <div class="form-check mx-3">
+                        <input class="form-check-input" type="radio" name="itemGroup" id="give-opt" value="give"
+                               onclick="return(false);" th:checked="${item.itemGroup == 'give'}">
+                        <label class="form-check-label" for="give-opt">
+                            나눔
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6" th:style="${item.itemGroup eq 'rent'} ? 'visibility:hidden' : ''" id="expiryDate">
+                <label class="form-label">마감일</label>
+
+                <div class="input-group input-daterange">
+                    <input type="date" class="form-control" placeholder="마감일 선택" name="expiryDate" id="datePicker"
+                           th:value="${item.expiryDate}" readonly disabled>
+                </div>
+
+                <span style="font-size:0.7em">*마감일은 등록일 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
+            </div>
+        </div>
+
+        <div class="row mb-1">
+            <div class="col-md-6">
+                <label for="title" class="form-label">제목</label>
+                <input type="text" class="form-control mb-2" id="title" name="title" required th:value="${item.title}">
+
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">카테고리</label>
+                <select class="form-select" name="itemCatCode" required>
+                    <option value="">=== 카테고리 선택 ===</option>
+                    <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"
+                            th:selected="${item.itemCatCode == cat.catCode}"></option>
+
+                </select>
+            </div>
+
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-9">
+                <label for="item-imgList" class="form-label">사진</label>
+                <input type="hidden" name="delFilesNo" value="" id="delFilesNo">
+                <input type="hidden" name="delFilesName" value="" id="delFilesName">
+
+                <div id="item-imgList">
+                    <input name="imgs" type="file" hidden="hidden">
+
+                    <div th:each="img, imgStat : ${item.imgList}" class='img-group'>
+                        <input name="exImgs" type="hidden" th:value="${img.fileNo}" th:data-img-id="'ex-img'+${imgStat.count}">
+                        <input name="exImgsName" type="hidden" th:value="${img.savedName}" th:data-img-id="'ex-img'+${imgStat.count}">
+                        <label th:for="'ex-img-input-'+${imgStat.count}">
+                            <div class="btn btn-udh-silver">파일선택</div>
+                        </label>
+                        <input th:id="'ex-img-input-'+${imgStat.count}" class='' type='file' name='imgs' th:data-img-id="'ex-img'+${imgStat.count}" style="display:none" th:onchange='setImgPreview(${this})' disabled>
+                        <p name="exImgs" th:id="'ex-originalName-'+${imgStat.count}" style="display : inline-block" th:text="${img.originalName}" th:data-img-id="'ex-img'+${imgStat.count}"></p>
+                        <a href='#this' name='img-delete' th:data-img-id="'ex-img'+${imgStat.count}" th:onclick="deleteImg($(this))" class="ms-3">삭제</a>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-udh-blue mb-3" onclick="addImg()">+</button>
+                <span style="font-size:0.7em">*사진은 최대 3개까지 등록 가능합니다.</span>
+
+
+            </div>
+            <div id="imgPreview" class="col-md-3 mt-3">
+                <div th:each="img, imgStat : ${item.imgList}" th:id="'img-input-'+${imgStat.count}">
+                    <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" style="height:60px" th:id="'ex-img'+${imgStat.count}">
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <label for="itemCont" class="form-label">자세한 설명</label>
+                <textarea class="form-control" id="itemCont" name="content" rows="3"
+                          required>[[${item.title}]]</textarea>
+            </div>
+        </div>
+
+        <div class="registBtns">
+            <button type="button" class="btn btn-udh-blue registBtn" th:onclick="|location.href='@{/share/rent}'|">취소
+            </button>
+            <button type="submit" class="btn btn-udh-blue registBtn">수정</button>
+        </div>
+    </form>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
+<script type="text/javascript" th:src="@{/js/sha.js}"></script>
+</body>
+</html>
+

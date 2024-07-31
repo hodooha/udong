@@ -81,7 +81,12 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
         }
+        .sale-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* 호버 시 그림자 효과 */
+            }
         .sale-card img {
             width: 250px;
             height: calc(100% - 30px);
@@ -230,7 +235,7 @@
 </form>
 <div class="sale-cards" id="saleCards">
 
-    <div th:each="sale : ${sales}" class="sale-card">
+    <div th:each="sale : ${sales}" class="sale-card" >
         <div class="sale-card-header">
             <h3 class="sale-card-title" th:text="${sale.title}">땡처리 제목</h3>
             <div class="sale-card-timer" th:attr="data-start-time=${sale.startedAt}, data-end-time=${sale.endedAt}">00:00:00</div>
@@ -373,6 +378,9 @@ function displaySales(page) {
                 </div>
             </div>
         `;
+         saleCard.addEventListener('click', () => {
+            window.location.href = `/sale/detail/${sale.saleNo}`; // 상세 페이지 URL로 이동
+        });
         saleCardsContainer.appendChild(saleCard);
         console.log(`Card ${index}: EndedAt - ${sale.endedAt}, TimeLeft - ${new Date(sale.endedAt) - new Date()}`);
     });

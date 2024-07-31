@@ -4,6 +4,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.ShaCatDTO;
 import com.multi.udong.share.model.dto.ShaCriteriaDTO;
 import com.multi.udong.share.model.dto.ShaItemDTO;
+import com.multi.udong.share.model.dto.ShaReqDTO;
 
 import java.util.List;
 
@@ -63,4 +64,37 @@ public interface ShareService {
      * @throws Exception the exception
      */
     int getItemCounts(ShaCriteriaDTO criteriaDTO) throws Exception;
+
+    /**
+     * 대여 및 나눔 신청
+     *
+     * @param reqDTO the req dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    int insertRequest(ShaReqDTO reqDTO) throws Exception;
+
+    /**
+     * 기존 대여 및 나눔 신청 내역 조회
+     *
+     * @param reqDTO the req dto
+     * @return the sha req dto
+     * @throws Exception the exception
+     * @since 2024 -07-28
+     */
+    ShaReqDTO findRequest(ShaReqDTO reqDTO) throws Exception;
+
+
+    /**
+     * 물건 수정 (파일 포함)
+     *
+     * @param itemDTO    the item dto
+     * @param newImgList the new img list
+     * @param delImgList the del img list
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    int updateItem(ShaItemDTO itemDTO, List<AttachmentDTO> newImgList, List<AttachmentDTO> delImgList) throws Exception;
 }

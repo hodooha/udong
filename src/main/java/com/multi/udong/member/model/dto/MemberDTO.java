@@ -29,6 +29,9 @@ public class MemberDTO {
     private Integer reportedCnt;
     private Character isBlacked;
     private String blackedAt;
+    private Character isDeleted;
+    private String deletedAt;
+
     private String savedName;
 
     private MemAddressDTO memAddressDTO;

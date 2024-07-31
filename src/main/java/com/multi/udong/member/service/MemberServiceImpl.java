@@ -4,6 +4,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dao.MemberDAO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
+import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.security.CustomUserDetailsService;
@@ -14,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 /**
  * The type Member service.
@@ -91,6 +94,98 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean isNicknameDuplicate(String nickname) {
         return memberDAO.findMemberByNickname(nickname) != null;
+    }
+
+    /**
+     * Select all act list.
+     *
+     * @param table   the table
+     * @param pageDTO the page dto
+     * @return the list
+     * @since 2024 -07-30
+     */
+    @Override
+    public List<List<String>> selectAllAct(String table, MemPageDTO pageDTO) {
+
+        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
+
+        map = switch (table) {
+            case "newsBoard" -> memberDAO.selectNewsBoard(pageDTO);
+            case "newsLike" -> memberDAO.selectNewsLike(pageDTO);
+            case "newsReply" -> memberDAO.selectNewsReply(pageDTO);
+            case "club" -> memberDAO.selectClub(pageDTO);
+            case "clubLog" -> memberDAO.selectClubLog(pageDTO);
+            case "clubSchedule" -> memberDAO.selectClubSchedule(pageDTO);
+            case "shareLike" -> memberDAO.selectShareLike(pageDTO);
+            case "saleBoard" -> memberDAO.selectSaleBoard(pageDTO);
+            default -> map;
+        };
+
+        List<List<String>> result = new ArrayList<>();
+        for (LinkedHashMap<String, Object> row : map) {
+            List<String> list = new ArrayList<>();
+            for (Object value : row.values()) {
+                list.add(value != null ? value.toString() : "");
+            }
+            result.add(list);
+        }
+
+        return result;
+    }
+
+    /**
+     * Select all dash board map.
+     *
+     * @param memberNo the member no
+     * @return the map
+     * @since 2024 -07-30
+     */
+    @Override
+    public Map<String, Object> selectAllDashBoard(int memberNo) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("newsData", memberDAO.getNewsData(memberNo));
+        result.put("lendData", memberDAO.getLendData(memberNo));
+        result.put("rentData", memberDAO.getRentData(memberNo));
+        result.put("giveData", memberDAO.getGiveData(memberNo));
+        result.put("clubData", memberDAO.getClubData(memberNo));
+        result.put("scheduleData", memberDAO.getScheduleData(memberNo));
+
+        return result;
+    }
+
+    /**
+     * Delete member.
+     *
+     * @param memberNo the member no
+     * @return boolean
+     * @throws Exception the exception
+     * @since 2024 -07-30
+     */
+    @Override
+    public String deleteMember(int memberNo) {
+
+        Map<String, Object> checkResult = memberDAO.checkMember(memberNo);
+
+        if ((Long) checkResult.get("renting_count") != 0) {
+            return "isRenting";
+        }
+
+        if ((Long) checkResult.get("giving_count") != 0) {
+            return "isGiving";
+        }
+
+        if ((Long) checkResult.get("master_count") != 0) {
+            return "isMaster";
+        }
+
+        if (memberDAO.deleteMember(memberNo) != 1) {
+            return "disable";
+
+        } else {
+            return "able";
+        }
     }
 
     /**
@@ -185,6 +280,7 @@ public class MemberServiceImpl implements MemberService {
 
         if (attachmentDTO != null && !attachmentDTO.getSavedName().isEmpty()) {
             memberDAO.updateProfileImg(attachmentDTO);
+            memberDAO.updateMember(attachmentDTO);
         }
 
         if (memberDTO.getNickname() != null && !memberDTO.getNickname().isEmpty()) {

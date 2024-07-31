@@ -3,12 +3,20 @@ package com.multi.udong.member.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.controller.KakaoLoginController;
 import com.multi.udong.member.model.dto.MemAddressDTO;
+import com.multi.udong.member.model.dto.MemPageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.security.CustomUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The type Member controller.
@@ -35,10 +43,23 @@ public class MemberController {
     /**
      * Dash board.
      *
+     * @param c     the c
+     * @param model the model
      * @since 2024 -07-24
      */
     @GetMapping("/dashBoard")
-    public void dashBoard() {
+    public void dashBoard(@AuthenticationPrincipal CustomUserDetails c, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
+
+        model.addAttribute("dataNews", map.get("dataNews"));
+        model.addAttribute("dataLend", map.get("dataLend"));
+        model.addAttribute("dataRent", map.get("dataRent"));
+        model.addAttribute("dataGive", map.get("dataGive"));
+        model.addAttribute("dataClub", map.get("dataClub"));
+        model.addAttribute("dataSchedule", map.get("dataSchedule"));
     }
 
     /**
@@ -82,8 +103,6 @@ public class MemberController {
                     addressDTO.getEupMyeonDongName() + " " +
                     (addressDTO.getDetailAddress() != null ? addressDTO.getDetailAddress() : "");
 
-        } else { // 등록된 주소가 없다면
-            currentFullAddress = "등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요.";
         }
         
         model.addAttribute("currentFullAddress", currentFullAddress);
@@ -93,10 +112,85 @@ public class MemberController {
     /**
      * Act.
      *
+     * @param c              the c
+     * @param table          the table
+     * @param page           the page
+     * @param searchCategory the search category
+     * @param searchWord     the search word
+     * @param model          the model
      * @since 2024 -07-24
      */
     @GetMapping("/act")
-    public void act() {
+    public void act(@AuthenticationPrincipal CustomUserDetails c,
+                    @RequestParam("table") String table,
+                    @RequestParam(value = "page", defaultValue = "1") int page,
+                    @RequestParam(value = "searchCategory", required = false) String searchCategory,
+                    @RequestParam(value = "searchWord", required = false) String searchWord,
+                    Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        MemPageDTO pageDTO = new MemPageDTO();
+        pageDTO.setPage(page);
+        pageDTO.setMemberNo(memberNo);
+        pageDTO.setStartEnd(pageDTO.getPage());
+
+        pageDTO.setSearchCategory(searchCategory);
+        pageDTO.setSearchWord(searchWord);
+
+        int count;
+        int pages = 1;
+
+        List<List<String>> data = memberService.selectAllAct(table, pageDTO);
+        if (!data.isEmpty()) {
+            count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
+            pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
+
+            for (List<String> list : data) {
+                list.remove(list.size() -1);
+            }
+        }
+
+        List<String> headers = getHeaders(table);
+        List<String> searchCategories = getSearchCategories(table);
+
+        model.addAttribute("tableHeaders", headers);
+        model.addAttribute("tableData", data);
+        model.addAttribute("page", pageDTO.getPage());
+        model.addAttribute("table", table);
+        model.addAttribute("pages", pages);
+
+        model.addAttribute("searchCategories", searchCategories);
+        model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchWord", searchWord);
+    }
+
+    private List<String> getHeaders(String table) {
+        return switch (table) {
+            case "newsBoard" -> Arrays.asList("주제", "동네", "제목", "작성일", "조회수");
+            case "newsLike" -> Arrays.asList("주제", "동네", "제목", "작성일", "작성자", "조회수");
+            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "내용", "작성일");
+            case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장", "생성일");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성일", "조회수");
+            case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자", "일시");
+            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명", "마감일", "상태");
+            case "saleBoard" -> Arrays.asList("동네", "물품명", "정상가", "할인가", "작성일", "시작시간", "종료시간");
+            default -> new ArrayList<>();
+        };
+    }
+
+    private List<String> getSearchCategories(String table) {
+        return switch (table) {
+            case "newsBoard" -> Arrays.asList("주제", "동네", "제목", "내용");
+            case "newsLike" -> Arrays.asList("주제", "동네", "제목", "내용", "작성자");
+            case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글내용");
+            case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "내용");
+            case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자");
+            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명");
+            case "saleBoard" -> Arrays.asList("동네", "물품명");
+            default -> new ArrayList<>();
+        };
     }
 
     /**
@@ -154,8 +248,8 @@ public class MemberController {
                 memberService.insertAddress(memAddressDTO);
                 
             } catch (Exception e) {
-                model.addAttribute("msg", "주소 등록에 실패하였습니다.");
-                throw new RuntimeException(e);
+                model.addAttribute("msg", e.getMessage());
+                return "common/errorPage";
             }
             
             // 등록 후 사용자 세션 최신화
@@ -169,7 +263,8 @@ public class MemberController {
                 memberService.updateAddress(memAddressDTO);
                 
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                model.addAttribute("msg", e.getMessage());
+                return "common/errorPage";
             }
 
             // 수정 후 사용자 세션 최신화
@@ -180,7 +275,7 @@ public class MemberController {
 
         return "member/dashBoard";
     }
-    
+
     /**
      * 입력한 정보로 현재 사용자의 회원정보를 수정함
      *
@@ -193,9 +288,9 @@ public class MemberController {
      */
     @PostMapping("/updateProfile")
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails c,
-                              @RequestParam(value = "file", required = false) MultipartFile file,
-                              MemberDTO memberDTO,
-                              Model model) {
+                                @RequestParam(value = "file", required = false) MultipartFile file,
+                                MemberDTO memberDTO,
+                                Model model) {
 
         // memberDTO에 현재 사용자의 회원번호를 입력
         memberDTO.setMemberNo(c.getMemberDTO().getMemberNo());
@@ -251,6 +346,66 @@ public class MemberController {
 
         } else {
             return ResponseEntity.ok("available");
+        }
+    }
+
+    /**
+     * Delete member string.
+     *
+     * @param c        the c
+     * @param request  the request
+     * @param response the response
+     * @param password the password
+     * @param model    the model
+     * @return the string
+     * @since 2024 -07-30
+     */
+    @PostMapping("/delete")
+    public String deleteMember(@AuthenticationPrincipal CustomUserDetails c,
+                               HttpServletRequest request,
+                               HttpServletResponse response,
+                               @RequestParam("password") String password,
+                               Model model) {
+
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        if (!bCryptPasswordEncoder.matches(password.trim(), c.getMemberDTO().getMemberPw())) {
+            model.addAttribute("msg", "비밀번호가 일치하지 않습니다.");
+            return "member/memDel";
+        }
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        String result = memberService.deleteMember(memberNo);
+
+        switch (result) {
+            case "isRenting":
+                model.addAttribute("msg", "물품을 대여 중인 상태에서는 탈퇴할 수 없습니다. 물품을 반납해주세요.");
+                return "common/errorPage";
+
+            case "isGiving":
+                model.addAttribute("msg", "물품을 나눔 중인 상태에서는 탈퇴할 수 없습니다. 나눔 중인 물품을 삭제해주세요.");
+                return "common/errorPage";
+
+            case "isMaster":
+                model.addAttribute("msg", "모임장인 상태에서는 탈퇴할 수 없습니다. 모임장 권한을 양보해주세요.");
+                return "common/errorPage";
+
+            case "able":
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (auth != null) {
+                    new SecurityContextLogoutHandler().logout(request, response, auth);
+                }
+
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    session.invalidate();
+                }
+
+                return "/index";
+
+            default:
+                model.addAttribute("msg", "회원 탈퇴에 실패하였습니다.");
+                return "common/errorPage";
         }
     }
 

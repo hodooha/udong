@@ -1,23 +1,27 @@
 package com.multi.udong.sale.controller;
 
+import com.multi.udong.admin.model.dto.ReportDTO;
+import com.multi.udong.admin.service.ReportService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
+import com.multi.udong.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
-import java.time.Duration;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +29,11 @@ import java.util.UUID;
 @RequestMapping("/sale") //sale에 대한 경로 요청 처리
 public class SaleController {
 
+    @Autowired
     private final SaleService saleService;
+    @Autowired
+    private ReportService reportService;
+
 
     @Autowired
     public SaleController(SaleService saleService) {
@@ -37,27 +45,7 @@ public class SaleController {
                            @RequestParam(value = "search", required = false) String search,
                            @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired,
                            @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption) {
-        List<SaleDTO> sales;
-        if (search == null || search.isEmpty()) {
-            if (Boolean.TRUE.equals(excludeExpired)) {
-                sales = saleService.getAllActiveWithAttachments();
-            } else {
-                sales = saleService.getAllSalesWithAttachments();
-            }
-        } else {
-            sales = saleService.search(search, excludeExpired != null ? excludeExpired : false);
-        }
-        switch (sortOption) {
-            case "deadline":
-                sales.sort(Comparator.comparing(sale ->
-                        Duration.between(sale.getStartedAt(), sale.getEndedAt())));
-                break;
-            case "lowPrice":
-                sales.sort(Comparator.comparing(SaleDTO::getSalePrice));
-                break;
-            default: // "latest"
-                sales.sort(Comparator.comparing(SaleDTO::getStartedAt).reversed());
-        }
+        List<SaleDTO> sales = saleService.getSales(search, excludeExpired, sortOption);
         model.addAttribute("sales", sales);
         return "sale/saleMain";
     }
@@ -71,10 +59,10 @@ public class SaleController {
     public String insertSale(@ModelAttribute SaleDTO saleDTO, @RequestParam("imageFiles") List<MultipartFile> imageFiles,
                              @RequestParam(value = "startedAtCombined", required = false) String startedAtCombined,
                              @RequestParam(value = "endedAtCombined", required = false) String endedAtCombined,
-                             @AuthenticationPrincipal User user, Model model) throws Exception {
+                             @AuthenticationPrincipal CustomUserDetails member, Model model) {
 
-        saleDTO.setLocationCode(1111010100); // location_code 임의설정
-        saleDTO.setWriter(1); // 사용자 ID 임의설정
+        saleDTO.setLocationCode(member.getMemberDTO().getMemAddressDTO().getLocationCode());
+        saleDTO.setWriter(member.getMemberDTO().getMemberNo());
 
         if (startedAtCombined != null && endedAtCombined != null) {
             try {
@@ -88,7 +76,7 @@ public class SaleController {
                 System.out.println("EndedAt set to: " + endedAt);
             } catch (DateTimeParseException e) {
                 System.err.println("Error parsing dates: " + e.getMessage());
-                return "redirect:/error";
+                return "redirect:/common/errorPage?message=DateParsingError";
             }
         }
 
@@ -114,7 +102,6 @@ public class SaleController {
                     imgList.add(img);
                     f.transferTo(new File(imgPath + "\\" + savedName));
 
-
                     if (saleDTO.getImagePath() == null) {
                         saleDTO.setImagePath("/uploadFiles/" + savedName);
                     }
@@ -123,13 +110,96 @@ public class SaleController {
 
             saleService.insertSale(saleDTO, imgList); // 땡처리 정보와 이미지 저장
 
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error saving file: " + e.getMessage());
-            return "redirect:/error";
+            return "redirect:/common/errorPage?message=FileSaveError";
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Unexpected error: " + e.getMessage());
+            return "redirect:/common/errorPage?message=UnexpectedError";
         }
 
         return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트
     }
 
+    @Value("${kakao.api.key}")
+    private String kakaoApiKey;
+
+    @GetMapping("/detail/{saleNo}")
+    public String saleDetail(@PathVariable("saleNo") int saleNo, Model model) {
+        SaleDTO sale = saleService.getSaleWithAttachments(saleNo);
+        saleService.incrementViews(saleNo);
+        model.addAttribute("sale", sale);
+        model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
+        return "sale/saleDetail";
+    }
+
+    @PostMapping("/deleteSale")
+    public String deleteSale(@RequestParam("saleNo") int saleNo, RedirectAttributes redirectAttributes) {
+        try {
+            saleService.deleteSale(saleNo);
+            redirectAttributes.addFlashAttribute("message", "성공적으로 삭제되었습니다.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "삭제 중 오류가 발생했습니다.");
+        }
+        return "redirect:/sale/saleMain";
+    }
+
+    @GetMapping("/saleReport")
+    public String showSaleReportForm(@RequestParam("saleNo") int saleNo,
+                                     Model model,
+                                     @AuthenticationPrincipal CustomUserDetails member) {
+        SaleDTO sale = saleService.getSaleById(saleNo);
+
+        if (member != null) {
+            MemberDTO memberDTO = member.getMemberDTO();
+            model.addAttribute("currentUser", memberDTO);
+        }
+
+        model.addAttribute("sale", sale);
+        return "sale/saleReport";
+    }
+
+    @PostMapping("/saleReport")
+    public String submitSaleReport(@RequestParam("title") String title,
+                                   @RequestParam("reason") String reason,
+                                   @RequestParam("file") MultipartFile file,
+                                   @RequestParam("saleNo") int saleNo,
+                                   @AuthenticationPrincipal CustomUserDetails member,
+                                   RedirectAttributes redirectAttributes) {
+
+        try {
+            SaleDTO sale = saleService.getSaleById(saleNo);
+            ReportDTO report = new ReportDTO();
+            report.setTypeCode("SAL");
+            report.setReportedNo(saleNo);
+            report.setReportedMember(sale.getWriter());
+            report.setReporterMember(member.getMemberDTO().getMemberNo());
+            report.setReason(reason);
+            report.setUrl("/sale/detail/" + saleNo);
+            report.setStatus("W");
+
+            if (!file.isEmpty()) {
+                String imgPath = new File("src/main/resources/static/uploadFiles").getAbsolutePath();
+                File mkdir = new File(imgPath);
+                if (!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+                String originalFileName = file.getOriginalFilename();
+                String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                file.transferTo(new File(imgPath + "\\" + savedName));
+                report.setUrl(report.getUrl() + "?file=" + savedName);
+            }
+
+            reportService.saveReport(report);
+
+            return "redirect:/sale/saleMain";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/common/errorPage?message=UnexpectedError";
+        }
+    }
 }

@@ -35,15 +35,27 @@
         from sha_cat
         order by
         case
-            when cat_code = 'OTH' then 1
-            else 0
+        when cat_code = 'OTH' then 1
+        else 0
         end,
         cat_code
     </select>
 
     <insert id="insertItem" useGeneratedKeys="true" keyColumn="item_no" keyProperty="itemNo">
         insert into sha_items
-        <if test="itemGroup == 'rent'">
+        <choose>
+            <when test="itemGroup == 'rent'">
+                (item_group, item_cat_code, title, content, owner_no, loc_code)
+                values
+                (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
+            </when>
+            <otherwise>
+                (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
+                values
+                (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
+            </otherwise>
+        </choose>
+        <!--<if test="itemGroup == 'rent'">
             (item_group, item_cat_code, title, content, owner_no, loc_code)
             values
             (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
@@ -52,8 +64,7 @@
             (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
             values
             (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
-        </if>
-
+        </if>-->
     </insert>
 
     <insert id="insertImg" >
@@ -122,27 +133,28 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-            select b.*,
-                    row_number() over (order by b.created_at desc) as rn
-            from sha_items b
-            <where>
-                <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
-                <if test="group != null and group != ''">and b.item_group = #{group}</if>
-                <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
-                <if test="1 == 1">and b.deleted_at is null</if>
-                <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
-                <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
-            </where>
+        select b.*,
+        row_number() over (order by b.created_at desc) as rn
+        from sha_items b
+        left join member d
+        on b.owner_no = d.member_no
+        where b.deleted_at is null
+        and d.is_deleted = 'N'
+        <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
+        <if test="group != null and group != ''">and b.item_group = #{group}</if>
+        <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
+        <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
         ) a
         left join (
-            select target_no, saved_name
-            from (
-                select *,
-                    row_number() over (partition by target_no order by file_no) as rn
-                from attachment
-                where type_code = #{group}
-            ) sub
-            where rn = 1
+        select target_no, saved_name
+        from (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        where type_code = #{group}
+        ) sub
+        where rn = 1
         ) c on a.item_no = c.target_no
         where a.rn between #{start} and #{end}
         order by a.rn
@@ -150,16 +162,59 @@
 
     <select id="getItemCounts" resultType="Integer">
         select count(*)
-        from
-        sha_items
-        <where>
-            <if test="locCode != null and locCode != ''">and loc_code = #{locCode}</if>
-            <if test="group != null and group != ''">and item_group = #{group}</if>
-            <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
-            <if test="1 == 1">and deleted_at is null</if>
-            <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
-            <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
-        </where>
+        from sha_items a
+        left join member b
+        on a.owner_no = b.member_no
+        where a.deleted_at is null
+        and b.is_deleted = 'N'
+        <if test="locCode != null and locCode != ''">and a.loc_code = #{locCode}</if>
+        <if test="group != null and group != ''">and a.item_group = #{group}</if>
+        <if test="catCode != null and catCode != ''">and a.item_cat_code = #{catCode}</if>
+        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (a.title like concat('%', #{keyword}, '%') or a.content like concat('%', #{keyword}, '%')) </if>
     </select>
+
+    <insert id="insertRequest">
+        insert into sha_req
+        <choose>
+            <when test="reqGroup == 'rent'">
+                (req_item, rqst_no, return_date)
+                values
+                (#{reqItem}, #{rqstNo}, #{returnDate})
+            </when>
+            <otherwise>
+                (req_item, rqst_no)
+                values
+                (#{reqItem}, #{rqstNo})
+            </otherwise>
+        </choose>
+    </insert>
+
+    <select id="findRequest" resultType="shaReqDTO">
+        select *
+        from sha_req
+        where req_item = #{reqItem}
+        and rqst_no = #{rqstNo}
+        <if test="statusCode != null and statusCode != ''">
+            and status_code = #{statusCode}
+        </if>
+    </select>
+
+    <update id="updateItem">
+        update sha_items
+        set
+        item_cat_code = #{itemCatCode},
+        title = #{title},
+        content = #{content}
+        where item_no = #{itemNo}
+    </update>
+
+    <delete id="deleteImg">
+        delete
+        from attachment
+        <foreach collection="list" item="img" separator=",">
+            where file_no = #{img.fileNo}
+        </foreach>
+    </delete>
 
 </mapper>

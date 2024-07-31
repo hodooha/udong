@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
@@ -36,7 +39,6 @@
         }
 
 
-
     </style>
 </head>
 <body id="itemDetail">
@@ -51,10 +53,12 @@
                 <div class="carousel-inner">
                     <div th:if="${item.imgList == null || #lists.isEmpty(item.imgList)}">
                         <div class="carousel-item active">
-                            <img th:src="@{/img/noimg.jpg}" class="d-block" alt="기본이미지" style="height:350px; margin: auto;">
+                            <img th:src="@{/img/noimg.jpg}" class="d-block" alt="기본이미지"
+                                 style="height:350px; margin: auto;">
                         </div>
                     </div>
-                    <div th:unless="${item.imgList == null || #lists.isEmpty(item.imgList)}" th:each="img, stat : ${item.imgList}" class="carousel-item"
+                    <div th:unless="${item.imgList == null || #lists.isEmpty(item.imgList)}"
+                         th:each="img, stat : ${item.imgList}" class="carousel-item"
                          th:classappend="${stat.first ? 'active' : ''}">
 
                         <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" class="d-block " alt="물건이미지"
@@ -84,22 +88,39 @@
             <p>
                 <span>[[${item.locName}]]</span> <span>[[${item.modifiedAt}]]</span>
             </p>
+
             <th:block th:if="${item.itemGroup} eq 'give'">
-                <p><h3><span class="badge text-bg-danger">마감일: [[${item.expiryDate}]]</span></h3></p>
-                <button class="btn btn-udh-yellow">응모하기</button>
-                <button class="btn btn-udh-yellow">찜</button>
+                <h3 class="mb-3"><span class="badge text-bg-danger">마감일: [[${item.expiryDate}]]</span></h3>
+
+                <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
+                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">응모하기</button>
+                    <button class="btn btn-udh-red">찜</button>
+                </span>
+
+                <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
+                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+
+                </span>
             </th:block>
+
             <th:block th:if="${item.itemGroup} eq 'rent'">
                 <div class="returnDate">
                     <label class="form-label">📅반납희망일 설정</label>
 
                     <div class="input-group input-daterange">
-                        <input type="date" class="form-control" name="return" id="datePicker" readonly >
+                        <input type="date" class="form-control" name="return" id="datePicker" readonly>
                     </div>
                     <span style="font-size:0.7em">*반납희망일은 오늘 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
                 </div>
-                <button class="btn btn-udh-yellow">대여신청</button>
-                <button class="btn btn-udh-yellow">찜</button>
+
+                <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
+                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
+                    <button class="btn btn-udh-red">찜</button>
+                </span>
+
+                <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
+                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+                </span>
             </th:block>
 
         </div>

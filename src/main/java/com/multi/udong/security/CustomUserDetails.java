@@ -55,6 +55,6 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return memberDTO.getIsBlacked() != 'Y';
+        return memberDTO.getIsDeleted() != 'Y';
     }
 }

@@ -2,10 +2,7 @@ package com.multi.udong.share.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.security.CustomUserDetails;
-import com.multi.udong.share.model.dto.ShaCatDTO;
-import com.multi.udong.share.model.dto.ShaCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaItemDTO;
-import com.multi.udong.share.model.dto.ShaPageDTO;
+import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -80,20 +77,34 @@ public class ShareController {
      * 물건 등록 페이지 이동 및 카테고리 목록 조회
      *
      * @param model the model
+     * @param c     the c
      * @return the string
      * @since 2024 -07-22
      */
     @GetMapping("/register")
-    public String register(Model model) {
+    public String register(Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // db에서 카테고리 목록 조회
             List<ShaCatDTO> list = shareService.getShaCat();
             model.addAttribute("catList", list);
+            return "share/registerForm";
         } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
+            return "common/errorPage";
         }
-
-        return "share/registerForm";
     }
 
     /**
@@ -101,19 +112,33 @@ public class ShareController {
      *
      * @param itemDTO the item dto
      * @param model   the model
+     * @param c       the c
      * @return the string
      * @since 2024 -07-23
      */
     @GetMapping(value = {"/rent/detail", "/give/detail"})
-    public String itemDetail(ShaItemDTO itemDTO, Model model) {
+    public String itemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetail(itemDTO);
             model.addAttribute("item", item);
 
-
         } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
+            return "common/errorPage";
         }
 
 
@@ -133,18 +158,40 @@ public class ShareController {
     @PostMapping("/register")
     public String insertItem(Model model, ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
 
-        fileList = fileList.stream().filter((x) -> x.isEmpty() == false).collect(Collectors.toList());
+        // 첨부파일 목록 정리 (데이터가 있는 것만!)
+        fileList = fileList.stream().filter((x) -> !x.isEmpty()).collect(Collectors.toList());
+        List<AttachmentDTO> imgList = new ArrayList<>();
 
         try {
 
-            List<AttachmentDTO> imgList = new ArrayList<>();
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // 물건 정보 설정
+            itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
+            itemDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+
+            // 이미지 저장 경로
             String imgPath = "C:\\Users\\user\\uploadFiles";
 
+            // 첨부파일 있을 경우
             if (!fileList.isEmpty()) {
+
+                // 이미지 저장 폴더 만들기
                 File mkdir = new File(imgPath);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
+
+                // db에 저장할 첨부파일 정보 설정 및 파일 저장
                 for (MultipartFile f : fileList) {
 
                     String originalFileName = f.getOriginalFilename();
@@ -160,13 +207,12 @@ public class ShareController {
                     f.transferTo(new File(imgPath + "\\" + savedName));
 
                 }
-
             }
 
-            itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
-            itemDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+            // db에 물건 정보 저장
             int result = shareService.insertItem(itemDTO, imgList);
 
+            // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
             if (result < 1) {
                 for (AttachmentDTO img : imgList) {
                     new File(imgPath + "\\" + img.getSavedName()).delete();
@@ -175,6 +221,7 @@ public class ShareController {
             }
 
         } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
             return "common/errorPage";
         }
@@ -184,16 +231,18 @@ public class ShareController {
 
 
     /**
-     * 물건 검색
+     * 물건 검색 & 물건 목록 조회
      *
      * @param criteriaDTO the criteria dto
+     * @param c           the c
      * @return the list
      * @since 2024 -07-24
      */
     @GetMapping("/search")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c) {
+    public ResponseEntity<?> searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c) {
 
+        // 결과값 초기 설정
         Map<String, Object> result = new HashMap<>();
         ShaPageDTO pageInfo = new ShaPageDTO();
         List<ShaItemDTO> itemList = null;
@@ -201,20 +250,37 @@ public class ShareController {
         System.out.println("여기!!!!!" + criteriaDTO);
 
         try {
-            criteriaDTO.setPageRange(criteriaDTO.getPage());
+
+            // 로그인 확인
             if (c == null) {
                 throw new Exception("로그인을 먼저 해주세요.");
             }
+
+            // 지역 등록 여부 확인
             long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
             if (locCode == 0) {
                 throw new Exception("지역을 먼저 등록해주세요.");
             }
+
+            // 검색 조건에 로그인한 유저의 지역 code 설정
             criteriaDTO.setLocCode(locCode);
+
+            // 검색 조건에 페이지에 보여지는 물건 번호 범위 설정
+            criteriaDTO.setPageRange(criteriaDTO.getPage());
+
+            // 검색 조건에 맞는 물건 목록 가져오기
             itemList = shareService.searchItems(criteriaDTO);
+
+            // 검색 조건에 맞는 물건의 총 개수 확인
             int totalCounts = shareService.getItemCounts(criteriaDTO);
+
+            // 클라이언트에 보여지는 페이지네이션 정보 설정
             pageInfo.setCurrentPage(criteriaDTO.getPage());
             pageInfo.setPageInfo(totalCounts);
+
             System.out.println(itemList);
+
+            // 결과값에 물건 목록과 페이지네이션 정보 저장
             result.put("itemList", itemList);
             result.put("pageInfo", pageInfo);
 
@@ -226,4 +292,220 @@ public class ShareController {
             return ResponseEntity.badRequest().body(result);
         }
     }
+
+    /**
+     * 대여 및 나눔 신청
+     *
+     * @param reqDTO the req dto
+     * @param c      the c
+     * @return the string
+     * @since 2024 -07-28
+     */
+    @PostMapping("/request")
+    @ResponseBody
+    public String insertRequest(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c) {
+
+        // 결과 메세지 설정
+        String reqGroup = reqDTO.getReqGroup().equals("rent") ? "대여" : "나눔";
+        String msg = reqGroup + "신청 성공";
+
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // 신청자와 물건의 소유자 동일 여부 확인
+            if (c.getMemberDTO().getMemberNo() == reqDTO.getOwnerNo()) {
+                throw new Exception("본인의 물건은 대여 및 나눔 신청할 수 없습니다.");
+            }
+
+            System.out.println(shareService.findRequest(reqDTO));
+
+            // 신청자 no에 로그인한 유저 no 설정
+            reqDTO.setRqstNo(c.getMemberDTO().getMemberNo());
+
+            // 동일 물건에 대한 대여 및 나눔 요청 유무 확인(status:"신청완료"만!)
+            reqDTO.setStatusCode("RQD");
+            if (shareService.findRequest(reqDTO) != null) {
+                throw new Exception("이미 신청하셨습니다.");
+            }
+
+            System.out.println(reqDTO);
+
+            // db에 대여 및 나눔 신청 저장
+            int result = shareService.insertRequest(reqDTO);
+            if (result < 0) {
+                throw new Exception(reqGroup + "신청 실패");
+            }
+
+        } catch (Exception e) {
+            msg = e.getMessage();
+            e.printStackTrace();
+        }
+
+        return msg;
+    }
+
+
+    /**
+     * 물건 수정 페이지 이동
+     *
+     * @param itemDTO the item dto
+     * @param model   the model
+     * @param c       the c
+     * @return the string
+     * @since 2024 -07-29
+     */
+    @GetMapping("/update")
+    public String editForm(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
+
+        System.out.println(itemDTO);
+
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // 물건 정보 불러오기
+            ShaItemDTO target = shareService.getItemDetail(itemDTO);
+            model.addAttribute("item", target);
+
+            // 물건 소유자가 아닐 경우 예외 던지기
+            if (target.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
+                throw new Exception("수정 권한이 없습니다.");
+            }
+
+            // db에서 카테고리 목록 조회
+            List<ShaCatDTO> list = shareService.getShaCat();
+            model.addAttribute("catList", list);
+
+
+            return "share/editForm";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+            return "common/error";
+        }
+    }
+
+    /**
+     * 물건 정보 수정 (파일 포함)
+     *
+     * @param itemDTO  the item dto
+     * @param model    the model
+     * @param c        the c
+     * @param fileList the file list
+     * @return the string
+     * @since 2024 -07-30
+     */
+    @PostMapping("/update")
+    public String updateItem(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
+
+        System.out.println("수정하려는 정보: " + itemDTO);
+
+        // 리턴 페이지 주소
+        String page = "redirect:/share/" + itemDTO.getItemGroup() + "/detail?itemNo=" + itemDTO.getItemNo();
+
+        // 첨부파일 목록 정리 (데이터가 있는 것만!)
+        fileList = fileList.stream().filter((x) -> !x.isEmpty()).collect(Collectors.toList());
+        List<AttachmentDTO> newImgList = new ArrayList<>();
+        System.out.println(fileList);
+
+        try {
+
+            // 물건 소유자가 아닐 경우 예외 던지기
+            if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
+                throw new Exception("수정 권한이 없습니다.");
+            }
+
+            // 물건 등록 지역과 현재 유저의 지역 동일 여부 확인
+            if (!Objects.equals(itemDTO.getLocCode(), c.getMemberDTO().getMemAddressDTO().getLocationCode())) {
+                throw new Exception("지역이 다릅니다. 지역을 확인해주세요.");
+            }
+
+            // 삭제될 파일 처리
+            List<AttachmentDTO> delImgList= new ArrayList<>();
+            List<String> delFilesNo = itemDTO.getDelFilesNo();
+            List<String> delFilesName = itemDTO.getDelFilesName();
+            delFilesNo = delFilesNo.stream().filter((x) -> !x.isEmpty()).toList();
+            delFilesName = delFilesName.stream().filter((x) -> !x.isEmpty()).toList();
+
+            for(String f : delFilesNo){
+                AttachmentDTO delImg = new AttachmentDTO();
+                delImg.setFileNo(Integer.parseInt(f));
+                delImgList.add(delImg);
+            }
+
+            // 새로운 첨부파일 있을 경우
+            // 이미지 저장 경로
+            String imgPath = "C:\\Users\\user\\uploadFiles";
+
+            if (!fileList.isEmpty()) {
+
+                // 이미지 저장 폴더 만들기
+                File mkdir = new File(imgPath);
+                if (!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+
+                // db에 저장할 첨부파일 정보 설정 및 파일 저장
+                for (MultipartFile f : fileList) {
+
+                    String originalFileName = f.getOriginalFilename();
+                    String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                    String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                    AttachmentDTO img = new AttachmentDTO();
+                    img.setOriginalName(originalFileName);
+                    img.setSavedName(savedName);
+                    img.setTypeCode(itemDTO.getItemGroup());
+                    img.setTargetNo(itemDTO.getItemNo());
+
+                    newImgList.add(img);
+                    f.transferTo(new File(imgPath + "\\" + savedName));
+
+                }
+            }
+
+            // db에 물건 정보 저장
+            int result = shareService.updateItem(itemDTO, newImgList, delImgList);
+
+            // 물건 정보 수정 실패 시 저장한 첨부파일 삭제
+            if (result < 1) {
+                for (AttachmentDTO img : newImgList) {
+                    new File(imgPath + "\\" + img.getSavedName()).delete();
+                }
+                throw new Exception();
+            }
+
+            // 물건 정보 수정 성공 시 유저가 삭제한 파일 로컬에서 삭제
+            for (String f : delFilesName) {
+                new File(imgPath + "\\" + f).delete();
+            }
+
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+            e.printStackTrace();
+            return "common/errorPage";
+        }
+
+
+        return page;
+    }
+
 }

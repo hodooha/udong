@@ -14,27 +14,34 @@
             margin-top: 70px;
             height: 80vh;
             font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
         }
         .signup, .bus-reg {
             display: flex;
             justify-content: center;
-            width: 500px;
+            width: 600px;
             border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 5px;
             padding: 20px;
             flex-direction: column;
             align-items: center;
+            gap: 20px;
         }
         .vertical-line {
             border-left: medium solid #A4A4A4;
             margin: 0 30px;
         }
+        .image {
+            width: 600px;
+            background-image: url('img/neighbor.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 5px;
+        }
         .warning {
             background-color: #F5DA81;
             border-left: 8px solid #FFBF00;
             padding: 10px;
-            margin-bottom: 20px;
-            font-family: 'Freesentation-5Medium';
             font-size: 18px;
         }
         .signup form {
@@ -44,7 +51,6 @@
             align-items: center;
         }
         .member-type {
-            margin-bottom: 20px;
             width: 70%;
             display: flex;
             justify-content: space-around;
@@ -57,16 +63,17 @@
         .member-type input[type="radio"] {
             margin-right: 5px;
         }
-        .input-group {
-            width: 70%;
-            position: relative;
-            margin-bottom: 20px;
-        }
         .input-group input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 10px;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+        .input-group input:focus {
+            border-color: #4a90e2;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
         }
         .input-group label {
             position: absolute;
@@ -81,22 +88,11 @@
             display: flex;
             align-items: center;
             width: 100%;
-        }
-        .id-input-wrapper input {
-            flex-grow: 1;
-            margin-right: 10px;
+            gap: 20px;
         }
         .id-input-wrapper .clear-input {
             position: absolute;
-            right: 120px;
-        }
-        #checkDuplicate {
-            width: auto;
-            padding: 10px;
-            white-space: nowrap;
-        }
-        .input-group {
-            width: 80%;
+            right: 150px;
         }
         .clear-input {
             position: absolute;
@@ -108,13 +104,6 @@
             cursor: pointer;
             font-size: 30px;
             color: #999;
-        }
-        .image {
-            width: 500px;
-            background-image: url('img/neighbor.jpg');
-            background-size: cover;
-            background-position: center;
-            border-radius: 10px;
         }
         .bus-reg input {
             width: 70%;
@@ -138,10 +127,20 @@
             margin-bottom: 10px;
         }
         .btn {
-            width: 70%;
+            min-width: 120px;
+            width: 120px;
+            border: none;
+            border-radius: 5px;
+            padding: 0px;
+            transition: background-color 0.3s ease;
         }
-        .btn.btn-udh-blue {
-            border: 1px solid #000000;
+        .success-message {
+            color: #01DF01;
+            visibility: hidden;
+        }
+        .error-message {
+            color: #FA5858;
+            visibility: hidden;
         }
     </style>
 </head>
@@ -164,34 +163,44 @@
                     <input type="radio" name="memberType" value="seller"> 판매자
                 </label>
             </div>
+
             <div class="input-group">
                 <div class="id-input-wrapper">
                     <label>아이디</label>
-                    <input type="text" name="memberId" placeholder="아이디">
+                    <input type="text" name="memberId" placeholder="아이디" required>
                     <button class="clear-input" type="button">&times;</button>
                     <button class="btn btn-udh-blue" type="button" id="checkDuplicate">중복검사</button>
                 </div>
             </div>
+            <div class="error-message" id="id-empty-message">아이디를 입력해주세요.</div>
+
             <div class="input-group">
                 <label>비밀번호</label>
-                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자">
+                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
             <div class="input-group">
                 <label>비밀번호 확인</label>
-                <input type="password" name="confirmPassword" placeholder="비밀번호 확인">
+                <input type="password" name="confirmPassword" placeholder="비밀번호 확인" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
+            <div class="error-message" id="password-confirm-message">비밀번호가 일치하지 않습니다.</div>
+            <div class="error-message" id="password-invalid-message" hidden>비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.</div>
+
             <div class="input-group">
                 <label>전화번호</label>
-                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)">
+                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
+            <div class="error-message" id="phone-invalid-message">'-' 을 제외한 숫자만 입력해 주세요.</div>
+
             <div class="input-group">
                 <label>이메일</label>
-                <input type="email" name="email" placeholder="이메일">
+                <input type="email" name="email" placeholder="이메일" required>
                 <button class="clear-input" type="button">&times;</button>
             </div>
+            <div class="error-message" id="nickname-current-message">현재 사용 중인 닉네임과 동일합니다.</div>
+
             <button type="submit" class="btn btn-udh-blue">회원가입</button>
         </div>
         <div class="vertical-line"></div>
@@ -267,13 +276,6 @@
                     input.focus();
                     return;
                 }
-            }
-
-            // 아이디 유효성 검사
-            if (!isValidId(memberIdInput.value)) {
-                alert('아이디를 입력해주세요.');
-                memberIdInput.focus();
-                return;
             }
 
             // 아이디 중복 검사 확인

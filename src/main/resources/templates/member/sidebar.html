@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/2.5.1/uicons-regular-rounded/css/uicons-regular-rounded.css'>
     <style>
         body {
             font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
         }
         main {
             flex: 1;
             display: flex;
-            width: 100%;
+            overflow: hidden;
+            height: calc(100vh - 90px);
         }
         .content-area {
             display: flex;
             flex: 1;
-            overflow: hidden;
-            padding: 40px 40px 40px 0;
-            gap: 40px;
+            align-items: start;
+            overflow: auto;
+            padding: 20px 20px 20px 0;
+            gap: 20px;
             flex-wrap: wrap;
         }
         .sidebar {
             width: 200px;
+            min-height: calc(100% - 40px);
             border: 1px solid #000000;
-            border-radius: 10px;
+            border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 10px;
-            margin: 40px;
-            height: 100vh;
+            margin: 20px;
+            overflow: auto;
         }
         .sidebar ul {
             list-style: none;
@@ -42,7 +48,7 @@
             color: #333;
             display: block;
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 5px;
             white-space: nowrap;
             width: 90%;
 
@@ -68,14 +74,40 @@
         .sidebar ul li a:hover::before {
             left: 0;
         }
-        .sidebar ul li:last-child a {
-            color: #e74c3c;
-        }
-        .sidebar ul li:last-child a:hover {
+        .sidebar ul li a.active {
+            background-color: #FFB83D;
             color: white;
         }
-        .sidebar ul li:last-child a::before {
+        .sidebar ul li a.active::before {
+            left: 0;
+        }
+        .sidebar ul li:last-child a.delete-account {
+            color: #e74c3c;
+        }
+        .sidebar ul li:last-child a.delete-account:hover {
+            color: white;
+        }
+        .sidebar ul li:last-child a.delete-account::before {
             background-color: #e74c3c;
+        }
+        .sidebar ul li.has-submenu > a::after {
+            content: '\25BC';
+            position: absolute;
+            right: 10px;
+            transition: transform 0.3s ease;
+        }
+        .sidebar ul li.has-submenu.active > a::after {
+            transform: rotate(180deg);
+        }
+        .sidebar ul li ul.submenu {
+            display: none;
+            padding-left: 20px;
+        }
+        .sidebar ul li.active ul.submenu {
+            display: block;
+        }
+        .sidebar ul li ul.submenu li a {
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -85,11 +117,56 @@
             <li><a href="/member/dashBoard">대시보드</a></li>
             <li><a href="/member/memInfo">회원정보 관리</a></li>
             <li><a href="/member/address">주소 관리</a></li>
-            <li><a href="/member/act">나의 활동 기록</a></li>
+            <li class="has-submenu">
+                <a href="/member/act">나의 활동 기록</a>
+                <ul class="submenu" style="margin-top: 0.5rem;">
+                    <li><a href="/member/act?table=newsBoard&page=1">우동 소식</a></li>
+                    <li><a href="/member/act?table=newsLike&page=1">좋아요</a></li>
+                    <li><a href="/member/act?table=newsReply&page=1">댓글</a></li>
+                    <li><a href="/member/act?table=club&page=1">우동 모임</a></li>
+                    <li><a href="/member/act?table=clubLog&page=1">모임 기록</a></li>
+                    <li><a href="/member/act?table=clubSchedule&page=1">모임 일정</a></li>
+                    <li><a href="/member/act?table=shareLike&page=1">찜한 물건</a></li>
+                    <li><a href="/member/act?table=saleBoard&page=1">땡처리 물건</a></li>
+                </ul>
+            </li>
             <li><a href="/member/message">나의 쪽지</a></li>
             <li><a href="/member/notiSet">알림 설정</a></li>
-            <li><a href="/member/memDel">회원 탈퇴</a></li>
+            <li><a href="/member/memDel" class="delete-account">회원 탈퇴</a></li>
         </ul>
     </div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.querySelector('.sidebar');
+        const fullCurrentPath = window.location.pathname + window.location.search;
+
+        sidebar.addEventListener('click', function(e) {
+            const target = e.target.closest('li');
+
+            if (target.classList.contains('has-submenu') || target.parentNode.classList.contains('has-submenu')) {
+                e.preventDefault();
+                const submenu = target.classList.contains('has-submenu') ? target : target.parentNode;
+                submenu.classList.toggle('active');
+            }
+        });
+
+        const setActiveMenuItems = function(menuItems) {
+            menuItems.forEach(function(item) {
+                const itemHref = item.getAttribute('href').split('page=')[0];
+
+                if (fullCurrentPath.startsWith(itemHref)) {
+                    item.classList.add('active');
+                    let parent = item.closest('.has-submenu');
+                    while (parent) {
+                        parent.classList.add('active');
+                        parent = parent.parentElement.closest('.has-submenu');
+                    }
+                }
+            });
+        };
+
+        setActiveMenuItems(sidebar.querySelectorAll('a'));
+    });
+</script> <!--현재 메뉴 액티브-->
 </html>

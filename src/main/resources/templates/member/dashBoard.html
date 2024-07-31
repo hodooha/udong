@@ -7,14 +7,94 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .btn {
-            width: 100px;
+            min-width: 120px;
+            width: 120px;
+            border: none;
+            border-radius: 5px;
+            padding: 0px;
+            transition: background-color 0.3s ease;
+        }
+        .dashBoard {
+            min-width: 300px;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h2 {
+            text-align: left;
+        }
+        .recent-board {
+            flex: 1;
+            flex-direction: column;
         }
     </style>
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
-<div th:replace="~{/member/sidebar}"></div>
-<div id="msg" th:text="${msg}" style="display: none;"></div>
+<main>
+    <div th:replace="~{/member/sidebar}"></div>
+    <div class="content-area">
+        <div class="dashBoard">
+            <h2>활동 요약</h2>
+            <div class="summary">올린 대여글</div>
+            <div class="summary">대여한 물건</div>
+            <div class="summary">올린 나눔글</div>
+            <div class="summary">가입한 모임</div>
+            <div class="summary">평균 평점</div>
+        </div>
+        <div class="dashBoard">
+            <h2>나의 우동 소식</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataNews}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="dashBoard">
+            <h2>올린 대여글</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataLend}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="dashBoard">
+            <h2>대여한 물건</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataRent}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="dashBoard">
+            <h2>올린 나눔글</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataGive}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="dashBoard">
+            <h2>가입한 모임</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataClub}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+        <div class="dashBoard">
+            <h2>다가오는 일정</h2>
+            <table class="recent-board">
+                <tr th:each="data : ${dataSchedule}">
+                    <td th:each="element : ${data}" th:text="${element}"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</main>
+<div id="msg" th:text="${msg}" hidden></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

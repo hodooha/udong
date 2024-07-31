@@ -8,9 +8,16 @@ import com.multi.udong.member.service.MemberService;
 import com.multi.udong.member.service.NTSAPI;
 import com.multi.udong.member.service.NaverOcr;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +42,7 @@ public class LoginController {
     private final MemberService memberService;
     private final NTSAPI ntsapi;
     private final MemberController memberController;
+    private final AuthenticationManager authenticationManager;
 
     /**
      * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
@@ -150,12 +158,13 @@ public class LoginController {
                         
                     } catch (Exception e) {
                         new File(fileName).delete();
-                        model.addAttribute("msg", "회원가입에 실패했습니다.");
-                        return "member/login";
+                        model.addAttribute("msg", e.getMessage());
+                        return "common/errorPage";
                     }
-                    
-                    model.addAttribute("msg", "회원가입이 완료되었습니다.");
-                    return "member/login";
+
+                    authenticateUserAndSetSession(memberDTO, request);
+                    model.addAttribute("msg", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 통보됩니다.");
+                    return "/index";
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
@@ -172,12 +181,13 @@ public class LoginController {
 
         try {
             memberService.signup(memberDTO);
+            authenticateUserAndSetSession(memberDTO, request);
             model.addAttribute("msg","회원가입이 완료되었습니다.");
-            return "member/login";
+            return "/index";
             
         } catch (Exception e) {
-            model.addAttribute("msg","회원가입에 실패하였습니다.");
-            return "member/signup";
+            model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
         }
     }
 
@@ -197,5 +207,21 @@ public class LoginController {
             return ResponseEntity.ok("available");
         }
     }
-}
 
+    private void authenticateUserAndSetSession(MemberDTO memberDTO, HttpServletRequest request) {
+        String username = memberDTO.getMemberId();
+        String password = memberDTO.getMemberPw();
+
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            HttpSession session = request.getSession(true);
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+        } catch (AuthenticationException e) {
+            e.printStackTrace();
+        }
+    }
+}
