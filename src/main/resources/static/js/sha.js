@@ -56,7 +56,7 @@ function getCatList() {
                 const savedState = history.state;
                 if (savedState) {
                     restoreFormState(savedState);
-                    updateItems(savedState);
+                    updateItemList(savedState);
                     console.log(savedState);
                 } else {
                     search(1);
