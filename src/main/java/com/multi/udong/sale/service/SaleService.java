@@ -37,4 +37,5 @@ public interface SaleService {
     void incrementViews(int saleNo);
     SaleDTO getSaleWithAttachments(int saleNo);
     void deleteSale(int saleNo) throws Exception;
+    void updateSaleStatus(int saleNo, String status);
 }

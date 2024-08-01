@@ -260,155 +260,194 @@
 
 <script th:inline="javascript">
     const sales = /*[[${sales}]]*/ [];
-let currentPage = 1;
-const itemsPerPage = 4;
-let filteredSales = [...sales];
+    let currentPage = 1;
+    const itemsPerPage = 4;
+    let filteredSales = [...sales];
 
-document.addEventListener('DOMContentLoaded', function() {
-    const excludeExpiredCheckbox = document.getElementById('excludeExpired');
-    const sortOptionSelect = document.getElementById('sortOption');
-    excludeExpiredCheckbox.addEventListener('change', () => {
+    document.addEventListener('DOMContentLoaded', function() {
+        const excludeExpiredCheckbox = document.getElementById('excludeExpired');
+        const sortOptionSelect = document.getElementById('sortOption');
+
+        // 로드시 페이지 번호 읽기
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page');
+        if (pageFromUrl) {
+            currentPage = parseInt(pageFromUrl);
+        }
+
+        excludeExpiredCheckbox.addEventListener('change', () => {
+            filterSales();
+            applySorting();
+            displaySales(1);
+        });
+
+        sortOptionSelect.addEventListener('change', () => {
+            applySorting();
+            displaySales(1);
+        });
+
+        document.querySelector('.search-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            const searchTerm = document.querySelector('.search-input').value;
+            const excludeExpired = document.getElementById('excludeExpired').checked;
+            const excludeExpiredParam = excludeExpired ? `&excludeExpired=${excludeExpired}` : '';
+            window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}${excludeExpiredParam}`;
+        });
+
         filterSales();
         applySorting();
-        displaySales(1);
+        displaySales(currentPage);
+        updateTimers();
+        setInterval(updateTimers, 1000);  // 1초마다 타이머 업데이트
     });
 
-    sortOptionSelect.addEventListener('change', () => {
-        applySorting();
-        displaySales(1);
-    });
-
-    document.querySelector('.search-button').addEventListener('click', function(event) {
-        event.preventDefault();
-        const searchTerm = document.querySelector('.search-input').value;
+    function filterSales() {
         const excludeExpired = document.getElementById('excludeExpired').checked;
-        const excludeExpiredParam = excludeExpired ? `&excludeExpired=${excludeExpired}` : '';
-        window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}${excludeExpiredParam}`;
-    });
-
-    filterSales();
-    applySorting();
-    displaySales(currentPage);
-    updateTimers();
-    setInterval(updateTimers, 1000);
-});
-
-function filterSales() {
-    const excludeExpired = document.getElementById('excludeExpired').checked;
-    const now = new Date().getTime();
-
-    filteredSales = sales.filter(sale => {
-        const endTime = new Date(sale.endedAt).getTime();
-        return !(excludeExpired && endTime < now);
-    });
-}
-function applySorting() {
-    const sortOption = document.getElementById('sortOption').value;
-
-    switch(sortOption) {
-        case 'latest':
-            filteredSales.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
-            break;
-        case 'deadline':
-    filteredSales.sort((a, b) => {
         const now = new Date().getTime();
-        const aTimeLeft = new Date(a.endedAt).getTime() - now;
-        const bTimeLeft = new Date(b.endedAt).getTime() - now;
-        return aTimeLeft - bTimeLeft;  // 남은 시간이 적은 순으로 정렬
-    });
-    break;
-        case 'lowPrice':
-            filteredSales.sort((a, b) => a.salePrice - b.salePrice);
-            break;
+
+        filteredSales = sales.filter(sale => {
+            const endTime = new Date(sale.endedAt).getTime();
+            return !(excludeExpired && endTime < now);
+        });
     }
-}
 
-function updateTimers() {
-    const now = new Date().getTime();
-    document.querySelectorAll('.sale-card-timer').forEach(timer => {
-        const startTime = new Date(timer.getAttribute('data-start-time')).getTime();
-        const endTime = new Date(timer.getAttribute('data-end-time')).getTime();
+    function applySorting() {
+        const sortOption = document.getElementById('sortOption').value;
 
-        if (now < startTime) {
-            // 판매 시작 전
-            timer.innerHTML = "판매 예정";
-        } else if (now >= endTime) {
-            // 판매 종료
-            timer.innerHTML = "땡처리 마감";
-        } else {
-            // 판매 중 (카운트다운)
-            const remainingTime = endTime - now;
-            const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-            const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-            timer.innerHTML = `🕓 ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        switch(sortOption) {
+            case 'latest':
+                filteredSales.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+                break;
+            case 'deadline':
+                filteredSales.sort((a, b) => {
+                    const now = new Date().getTime();
+                    const aTimeLeft = new Date(a.endedAt).getTime() - now;
+                    const bTimeLeft = new Date(b.endedAt).getTime() - now;
+                    return aTimeLeft - bTimeLeft;  // 남은 시간이 적은 순으로 정렬
+                });
+                break;
+            case 'lowPrice':
+                filteredSales.sort((a, b) => a.salePrice - b.salePrice);
+                break;
         }
-    });
-}
+    }
 
-function displaySales(page) {
-    currentPage = page;
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const salesToDisplay = filteredSales.slice(startIndex, endIndex);
+    function updateTimers() {
+        const now = new Date().getTime();
+        document.querySelectorAll('.sale-card-timer').forEach(timer => {
+            const startTime = new Date(timer.getAttribute('data-start-time')).getTime();
+            const endTime = new Date(timer.getAttribute('data-end-time')).getTime();
+            const saleId = timer.getAttribute('data-sale-id');
+            const saleStatus = timer.getAttribute('data-status');
 
-    const saleCardsContainer = document.getElementById('saleCards');
-    saleCardsContainer.innerHTML = '';
+            if (saleStatus === 'closed' || now >= endTime) {
+                // 타이머가 끝난 경우
+                timer.innerHTML = "땡처리 마감";
+                timer.closest('.sale-card').classList.add('closed-sale'); // 비활성화 스타일 추가
+                // 서버에 상태 업데이트 요청
+                if (saleStatus !== 'closed') {
+                    updateSaleStatusToClosed(saleId, timer);
+                }
+            } else if (now < startTime) {
+                // 판매 시작 전
+                timer.innerHTML = "판매 예정";
+            } else {
+                // 판매 중 (카운트다운)
+                const remainingTime = endTime - now;
+                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                timer.innerHTML = `🕓 ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        });
+    }
 
-    salesToDisplay.forEach((sale, index) => {
-        const saleCard = document.createElement('div');
-        saleCard.className = 'sale-card';
-        saleCard.innerHTML = `
-            <div class="sale-card-header">
-                <h3 class="sale-card-title">${sale.title}</h3>
-                <div class="sale-card-timer" data-start-time="${sale.startedAt}" data-end-time="${sale.endedAt}">00:00:00</div>
-            </div>
-            <div class="sale-card-body">
-                <div>
-                    ${sale.attachments && sale.attachments.length > 0
-                        ? `<img src="/uploadFiles/${sale.attachments[0].savedName}" alt="상품 이미지">`
-                        : ''}
-                </div>
-                <div class="sale-card-content">
-                    <p class="sale-card-description">${sale.content}</p>
-                    <div class="sale-card-price">
-                        <span class="original-price">${sale.originalPrice.toLocaleString()}원</span>
-                        <span class="sale-price">${sale.salePrice.toLocaleString()}원</span>
+    function updateSaleStatusToClosed(saleId, timerElement) {
+        $.ajax({
+            url: '/sale/updateStatus/' + saleId,
+            type: 'POST',
+            data: JSON.stringify({ status: 'closed' }),
+            contentType: 'application/json',
+            success: function(response) {
+                console.log("Sale status updated to closed.");
+                // 상태 업데이트 성공 시 타이머의 상태를 'closed'로 업데이트
+                timerElement.setAttribute('data-status', 'closed');
+                timerElement.closest('.sale-card').classList.add('closed-sale'); // 비활성화 스타일 추가
+            },
+            error: function(xhr, status, error) {
+                console.error("Error updating sale status:", error);
+            }
+        });
+    }
+
+    function displaySales(page) {
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const salesToDisplay = filteredSales.slice(startIndex, endIndex);
+
+        const saleCardsContainer = document.getElementById('saleCards');
+        saleCardsContainer.innerHTML = '';
+
+        salesToDisplay.forEach((sale, index) => {
+            const saleCard = document.createElement('div');
+            saleCard.className = 'sale-card';
+            saleCard.innerHTML = `
+                <div class="sale-card-header">
+                    <h3 class="sale-card-title">${sale.title}</h3>
+                    <div class="sale-card-timer" data-sale-id="${sale.saleNo}" data-start-time="${sale.startedAt}" data-end-time="${sale.endedAt}" data-status="${sale.status}">
+                        ${sale.status === 'closed' ? '땡처리 마감' : '00:00:00'}
                     </div>
                 </div>
-            </div>
-        `;
-         saleCard.addEventListener('click', () => {
-            window.location.href = `/sale/detail/${sale.saleNo}`; // 상세 페이지 URL로 이동
+                <div class="sale-card-body">
+                    <div>
+                        ${sale.attachments && sale.attachments.length > 0
+                            ? `<img src="/uploadFiles/${sale.attachments[0].savedName}" alt="상품 이미지">`
+                            : ''}
+                    </div>
+                    <div class="sale-card-content">
+                        <p class="sale-card-description">${sale.content}</p>
+                        <div class="sale-card-price">
+                            <span class="original-price">${sale.originalPrice.toLocaleString()}원</span>
+                            <span class="sale-price">${sale.salePrice.toLocaleString()}원</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            saleCard.addEventListener('click', () => {
+                window.location.href = `/sale/detail/${sale.saleNo}`; // 상세 페이지 URL로 이동
+            });
+            saleCardsContainer.appendChild(saleCard);
+
+            // 이미 closed 상태인 경우, 카드 비활성화
+            if (sale.status === 'closed') {
+                saleCard.classList.add('closed-sale'); // 비활성화 스타일 추가
+            }
         });
-        saleCardsContainer.appendChild(saleCard);
-        console.log(`Card ${index}: EndedAt - ${sale.endedAt}, TimeLeft - ${new Date(sale.endedAt) - new Date()}`);
-    });
 
-    updateTimers();
-    updatePagination();
-}
-
-function updatePagination() {
-    const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
-    const paginationContainer = document.getElementById('pagination');
-    paginationContainer.innerHTML = '';
-
-    for (let i = 1; i <= totalPages; i++) {
-        const pageButton = document.createElement('button');
-        pageButton.textContent = i;
-        pageButton.classList.add('page-button');
-        if (i === currentPage) {
-            pageButton.classList.add('active');
-        }
-        pageButton.addEventListener('click', () => {
-            displaySales(i);
-        });
-        paginationContainer.appendChild(pageButton);
+        updateTimers();
+        updatePagination();
+        window.history.pushState(null, null, `?page=${page}`);
     }
-}
 
+    function updatePagination() {
+        const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
 
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-button');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                displaySales(i);
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+    }
 </script>
 
 </body>

@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SaleServiceImpl implements SaleService {
@@ -47,6 +45,7 @@ public class SaleServiceImpl implements SaleService {
         }
         return sales;
     }
+
     @Override
     public List<SaleDTO> getAllActiveWithAttachments() {
         return saleDAO.getAllActiveWithAttachments(sqlSession);
@@ -82,10 +81,12 @@ public class SaleServiceImpl implements SaleService {
         }
         return sales;
     }
+
     @Override
     public SaleDTO getSaleById(int saleNo) {
         return saleDAO.getSaleById(sqlSession, saleNo); // DAO 메서드 호출
     }
+
     @Override
     public void incrementViews(int saleNo) {
         saleDAO.incrementViews(saleNo);
@@ -105,10 +106,23 @@ public class SaleServiceImpl implements SaleService {
         }
         return sale;
     }
+
     @Override
     @Transactional
     public void deleteSale(int saleNo) throws Exception {
         saleDAO.deleteSale(saleNo);
     }
 
+    @Override
+    public void updateSaleStatus(int saleNo, String status) {
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("saleNo", saleNo);
+            params.put("status", status);
+            sqlSession.update("SaleMapper.updateSaleStatus", params);
+        } catch (Exception e) {
+            e.printStackTrace(); // 서버 로그에 오류를 기록
+            throw e; // 예외를 다시 던져서 상위 레벨에서 처리되도록 함
+        }
+    }
 }
