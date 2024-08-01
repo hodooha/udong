@@ -239,6 +239,13 @@ public class ClubDAO {
     }
 
 
+    public int deleteClubImg(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.delete("clubMapper.deleteClubImg", clubNo);
+
+    }
+
+
     /**
      * 모임 신고
      *
@@ -264,4 +271,11 @@ public class ClubDAO {
         return sqlSession.update("clubMapper.updateClubImg", attachmentDTO);
 
     }
+
+    public List<AttachmentDTO> selectClubImg(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.selectList("clubMapper.selectClubImg", clubNo);
+
+    }
+
 }

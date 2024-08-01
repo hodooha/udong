@@ -260,7 +260,21 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public int deleteClub(RequestDTO requestDTO) throws Exception {
 
-        return clubDAO.deleteClub(sqlSession, requestDTO);
+        int result = 0;
+
+        int clubResult = clubDAO.deleteClub(sqlSession, requestDTO);
+
+        // 모임의 이미지도 삭제
+        int clubNo = requestDTO.getClubNo();
+        int attachmentResult = clubDAO.deleteClubImg(sqlSession, clubNo);
+
+        if(clubResult == 1 && attachmentResult >= 1) {
+
+            result = 1;
+
+        }
+
+        return result;
 
     }
 
@@ -296,6 +310,7 @@ public class ClubServiceImpl implements ClubService {
         }
         else {
 
+            // 이미지 수정 없이 모임 데이터만 수정 시 result는 1
             result = 1;
 
         }
@@ -317,6 +332,7 @@ public class ClubServiceImpl implements ClubService {
             }
             else {
 
+                // 이미지 수정 시 result는 2
                 result = 2;
 
             }
@@ -324,6 +340,14 @@ public class ClubServiceImpl implements ClubService {
         }
 
         return result;
+
+    }
+
+
+    @Override
+    public List<AttachmentDTO> selectClubImg(int clubNo) throws Exception {
+
+        return clubDAO.selectClubImg(sqlSession, clubNo);
 
     }
 

@@ -221,6 +221,11 @@
         WHERE club_no = #{ clubNo } AND master = #{ memberNo }
     </delete>
 
+    <delete id="deleteClubImg" parameterType="Integer">
+        DELETE FROM ATTACHMENT
+        WHERE type_code = 'CL' AND target_no = #{ clubNo }
+    </delete>
+
     <insert id="reportClub" parameterType="com.multi.udong.club.model.dto.ReportDTO">
         INSERT INTO ADM_REPORT
             (type_code, reported_member, reporter_member, reason, url)
@@ -250,5 +255,11 @@
             saved_name = #{ savedName }
         WHERE type_code = 'CL' AND target_no = #{ targetNo }
     </update>
+
+    <select id="selectClubImg" parameterType="Integer" resultMap="attachmentResultMap">
+        SELECT *
+        FROM ATTACHMENT
+        WHERE type_code = 'CL' AND target_no = #{ clubNo }
+    </select>
 
 </mapper>

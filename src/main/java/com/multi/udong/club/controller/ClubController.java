@@ -484,18 +484,46 @@ public class ClubController {
             // 모임장일 때만 모임 해체 메소드 호출
             if(memberNo == master) {
 
-                clubService.deleteClub(requestDTO);
+                List<AttachmentDTO> Attachment = new ArrayList<>();
+
+                // 추후 해체에 성공했을 때 이미지 삭제를 위해 이미지 select
+                try {
+
+                    Attachment = clubService.selectClubImg(clubNo);
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+
+                    model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
+
+                    return "common/errorPage";
+
+                }
+
+                int result = clubService.deleteClub(requestDTO);
+
+                // 모임 해체 성공 시 이미지 삭제
+                if(result == 1) {
+
+                    System.out.println("###### 삭제할 이미지: " + Attachment);
+
+                    String savedName = Attachment.get(0).getSavedName();
+
+                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+                    String filePath = root + "/uploadFiles";
+
+                    new File(filePath + "/" + savedName).delete();
+
+                }
 
                 redirectAttributes.addFlashAttribute("message", "모임 해체가 완료되었습니다.");
 
-            }
-            else {
-
-                return "redirect:/club/clubHome?clubNo=" + clubNo;
+                return "redirect:/club/clubMain?page=1";
 
             }
 
-            return "redirect:/club/clubMain?page=1";
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
 
         } catch (Exception e) {
 
@@ -641,11 +669,8 @@ public class ClubController {
                 return "club/clubUpdateForm";
 
             }
-            else {
 
-                return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-            }
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
 
         } catch (Exception e) {
 
@@ -685,6 +710,23 @@ public class ClubController {
 
         // 모임장일 때만 모임 수정
         if(memberNo == master) {
+
+            List<AttachmentDTO> beforeAttachment = new ArrayList<>();
+
+            // 추후 이미지를 새로 업로드 했을 때 기존 이미지 삭제를 위해 기존 이미지 select
+            try {
+
+                beforeAttachment = clubService.selectClubImg(clubNo);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
 
             // updateForm에서 받아온 카테고리 코드를 clubDTO에 set
             clubDTO.setCategory(categoryDTO);
@@ -749,9 +791,14 @@ public class ClubController {
 
                 int result = clubService.updateClub(clubDTO);
 
+                // 새 이미지를 업로드 했을 때 기존 이미지 삭제
                 if(result == 2) {
 
-                    // 기존 이미지 삭제 기능 구현
+                    System.out.println("###### 삭제할 기존 이미지: " + beforeAttachment);
+
+                    String beforeSavedName = beforeAttachment.get(0).getSavedName();
+
+                    new File(filePath + "/" + beforeSavedName).delete();
 
                 }
 
@@ -770,11 +817,8 @@ public class ClubController {
             }
 
         }
-        else {
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-        }
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 

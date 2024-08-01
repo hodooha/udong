@@ -58,7 +58,11 @@
         }
         .club-max-personnel-input{
             width: 70px;
-            margin-left: 10px;
+            margin: 0px 0px 70px 10px;
+        }
+        .caution {
+            font-family: 'Freesentation-3Light';
+            color: #6A6A6A;
         }
         .create-club-btn-container{
             display: flex;
@@ -152,6 +156,10 @@
             <span>최대 인원</span>
             <input type="number" class="input club-max-personnel-input" name="maxPersonnel" min=2 max=500 required>
             <span>명</span>
+            <br>
+            <span class="caution">&#128683; 모임의 동네는 최초 모임 생성 시 회원님의 동네로 설정되며, 추후 변경할 수 없습니다.</span>
+            <br>
+            <span class="caution">&#128683; 모임의 최대 인원은 추후 변경할 수 없습니다.</span>
         </div>
         <div class="create-club-btn-container">
             <button type="submit" class="btn btn-udh-blue btn-create-club">모임 생성</button>

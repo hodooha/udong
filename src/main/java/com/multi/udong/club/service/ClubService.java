@@ -1,6 +1,7 @@
 package com.multi.udong.club.service;
 
 import com.multi.udong.club.model.dto.*;
+import com.multi.udong.common.model.dto.AttachmentDTO;
 
 import java.util.List;
 
@@ -39,4 +40,6 @@ public interface ClubService {
     int reportClub(ReportDTO reportDTO) throws Exception;
 
     int updateClub(ClubDTO clubDTO) throws Exception;
+
+    List<AttachmentDTO> selectClubImg(int clubNo) throws Exception;
 }
