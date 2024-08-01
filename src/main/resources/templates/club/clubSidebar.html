@@ -26,17 +26,18 @@
         .club-side-bar ul li {
             margin: 10px 0;
         }
-        .club-side-bar ul li a {
-            color: white;
-            text-decoration: none;
+        .club-side-bar ul li:hover {
+            color: #FFB83D;
+            cursor: pointer;
         }
-        .club-side-bar ul li a:hover {
-            text-decoration: underline;
+        .club-side-bar ul li.active {
+            color: #FFB83D;
         }
         .club-side-bar-hr {
             color: #FFFFFF;
             margin: 0px !important;
         }
+
 
     </style>
     <script>
@@ -50,6 +51,33 @@
 
         }
 
+        function highlightActiveMenu() {
+            const currentUrl = window.location.href;
+
+            // 메뉴 항목들 가져오기
+            const homeMenu = document.querySelector('li[onclick*="/club/clubHome"]');
+            const logMenu = document.querySelector('li[onclick*="/club/clubLog"]');
+            const scheduleMenu = document.querySelector('li[onclick*="/club/clubSchedule"]');
+            const albumMenu = document.querySelector('li[onclick*="/club/clubAlbum"]');
+            const MemberMenu = document.querySelector('li[onclick*="/club/clubMember"]');
+
+            // 현재 URL에 따른 active 클래스 추가
+            if (currentUrl.includes('/clubHome')) {
+                homeMenu.classList.add('active');
+            } else if (currentUrl.includes('/clubLog')) {
+                logMenu.classList.add('active');
+            } else if (currentUrl.includes('/clubSchedule')) {
+                scheduleMenu.classList.add('active');
+            } else if (currentUrl.includes('/clubAlbum')) {
+                albumMenu.classList.add('active');
+            } else if (currentUrl.includes('/clubMember')) {
+                memberMenu.classList.add('active');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", highlightActiveMenu);
+
+
     </script>
 </head>
 <body>
@@ -58,15 +86,17 @@
     <ul>
         <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubHome');">홈</li>
         <hr class="club-side-bar-hr">
-        <li class="club-side-bar-menu"><a href="#">모임 기록</a></li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubLog/logMain')">모임 기록</li>
         <hr class="club-side-bar-hr">
-        <li class="club-side-bar-menu"><a href="#">모임 일정</a></li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubSchedule')">모임 일정</li>
         <hr class="club-side-bar-hr">
-        <li class="club-side-bar-menu"><a href="#">모임 앨범</a></li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubAlbum')">모임 앨범</li>
         <hr class="club-side-bar-hr">
-        <li class="club-side-bar-menu"><a href="#">모임 멤버</a></li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubMember')">모임 멤버</li>
     </ul>
 </div>
+<script>
 
+</script>
 </body>
 </html>

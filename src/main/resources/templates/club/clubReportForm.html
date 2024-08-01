@@ -107,6 +107,9 @@
             </div>
             <div class="report-club-btn-container">
                 <button type="submit" class="btn btn-udh-blue btn-report-club">모임 신고</button>
+                <a th:href="@{/club/clubHome(clubNo=${clubHome.clubNo})}">
+                    <button type="button" class="btn btn-udh-red btn-report-club" style="margin-left: 10px">취소</button>
+                </a>
             </div>
         </form>
     </div>

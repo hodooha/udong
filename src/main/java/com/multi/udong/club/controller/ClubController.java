@@ -822,4 +822,19 @@ public class ClubController {
 
     }
 
+
+    @RequestMapping("/clubLog/logMain")
+    public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model) {
+
+        return "/club/clubLog/logMain";
+
+    }
+
+
+    @RequestMapping("/clubLog/logInsertForm")
+    public void clubLogInsertForm() {
+
+    }
+
+
 }

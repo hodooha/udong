@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .top{
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .search-form{
+            flex: 1;
+        }
+        .search-bar{
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: #E5E5E5;
+            border-radius: 0.375rem;
+            padding-left: 15px;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .search-input{
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            width: 65%;
+            height: 25px;
+            border: 1px solid #979797;
+        }
+        .btn-search{
+            margin-left: auto;
+            margin-right: 10px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 15px !important;
+            padding: 1px 15px 1px 15px !important;
+        }
+        .btn-create-club-log{
+            margin-left: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+    </style>
+    <script th:inline="javascript">
+
+        window.onload = function() {
+            var message = [[${message}]];
+            if (message) {
+                alert(message);
+            }
+        }
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 600px">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <div class="top">
+            <form class="search-form" th:action="@{/club/clubLog}" method="get">
+                <div class="search-bar">
+                    <input type="hidden" name="page" value="1">
+                    <span>기록 제목 검색</span>
+                    <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력...">
+                    <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
+                </div>
+            </form>
+            <a th:href="@{/club/clubLog/logInsertForm(clubNo=${clubNo})}">
+                <button type="button" class="btn btn-udh-blue btn-create-club-log">기록 작성</button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>
+</body>
+</html>

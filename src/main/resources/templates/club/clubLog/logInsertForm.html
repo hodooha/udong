@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .insert-area {
+            background-color: #E5E5E5;
+            padding: 15px;
+            border-radius: 0.375rem;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+    </style>
+    <script th:inline="javascript">
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 600px">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <form th:action="@{/club/clubLog/insertLog}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <div class="insert-area">
+                <table style="width: 100%">
+                    <tr>
+                        <td>
+                            <span>제목</span>
+                        </td>
+                    </tr>
+                </table>
+
+
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+
+</script>
+</body>
+</html>

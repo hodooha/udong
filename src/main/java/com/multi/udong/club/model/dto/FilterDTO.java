@@ -18,6 +18,7 @@ public class FilterDTO {
     private long locationCode;
     private String categoryCode;
     private String searchWord;
+    private int clubNo;
 
     /**
      * 받아온 page 값으로 조회를 시작할 index 설정
