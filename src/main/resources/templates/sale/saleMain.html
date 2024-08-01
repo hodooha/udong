@@ -260,14 +260,20 @@
 
 <script th:inline="javascript">
     const sales = /*[[${sales}]]*/ [];
-let currentPage = 1;
-const itemsPerPage = 4;
-let filteredSales = [...sales];
+    let currentPage = 1;
+    const itemsPerPage = 4;
+    let filteredSales = [...sales];
 
-document.addEventListener('DOMContentLoaded', function() {
-    const excludeExpiredCheckbox = document.getElementById('excludeExpired');
-    const sortOptionSelect = document.getElementById('sortOption');
-    excludeExpiredCheckbox.addEventListener('change', () => {
+    document.addEventListener('DOMContentLoaded', function() {
+        const excludeExpiredCheckbox = document.getElementById('excludeExpired');
+        const sortOptionSelect = document.getElementById('sortOption');
+        //로드시 페이지번호 읽어야함 (뒤로가기 할때 페이지 유지)
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page');
+        if (pageFromUrl) {
+            currentPage = parseInt(pageFromUrl);
+        }
+        excludeExpiredCheckbox.addEventListener('change', () => {
         filterSales();
         applySorting();
         displaySales(1);
@@ -382,11 +388,11 @@ function displaySales(page) {
             window.location.href = `/sale/detail/${sale.saleNo}`; // 상세 페이지 URL로 이동
         });
         saleCardsContainer.appendChild(saleCard);
-        console.log(`Card ${index}: EndedAt - ${sale.endedAt}, TimeLeft - ${new Date(sale.endedAt) - new Date()}`);
     });
 
     updateTimers();
     updatePagination();
+    window.history.pushState(null, null, `?page=${page}`);
 }
 
 function updatePagination() {
