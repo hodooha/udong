@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
@@ -91,6 +91,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/alert}"></div>
 <div class="container">
     <div class="login">
         <form action="/login" method="post">
@@ -124,7 +125,6 @@
     <input type="hidden" name="memberId" Id="kakaoId"/>
     <input type="hidden" name="memberPw" Id="kakaoPw"/>
 </form>
-<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -248,12 +248,4 @@
         document.getElementById('loginForm').submit();
     }
 </script> <!--카카오 로그인 스크립트-->
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.getElementById('msg');
-        if (msg && msg.textContent) {
-            alert(msg.textContent);
-        }
-    });
-</script> <!--msg alert-->
 </html>

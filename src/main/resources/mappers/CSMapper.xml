@@ -34,14 +34,54 @@
         FROM TYPE
     </select>
 
+    <insert id="insertQueForm" parameterType="csQuestionDTO" useGeneratedKeys="true" keyProperty="csNo">
+        INSERT INTO CS_QUESTION (writer_no, cs_type, title, content) VALUES
+        (#{writerNo}, #{csType}, #{title}, #{content})
+    </insert>
+
+    <select id="selectLastInsertId" resultType="int">
+        <!-- LAST_INSERT_ID(): MySQL에서 마지막으로 AUTO_INCREMENT된 값을 반환하는 함수 -->
+        SELECT LAST_INSERT_ID()
+    </select>
+
     <insert id="insertFile" parameterType="attachmentDTO">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
         (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
     </insert>
 
-    <insert id="insertQueForm" parameterType="csQuestionDTO" useGeneratedKeys="true" keyProperty="csNo">
-        INSERT INTO CS_QUESTION (writer_no, cs_type, title, content) VALUES
-        (#{writerNo}, #{csType}, #{title}, #{content})
+    <select id="getQueDetail" resultType="csQuestionDTO">
+        SELECT
+            cq.cs_no,
+            cq.writer_no,
+            t.type_name AS csName,
+            cq.title,
+            cq.content,
+            cq.created_at
+        FROM CS_QUESTION cq
+        JOIN TYPE t ON cq.cs_type = t.type_code
+        WHERE cq.cs_no = #{csNo}
+    </select>
+
+    <select id="getQueAttachment" resultType="attachmentDTO">
+        SELECT *
+        FROM ATTACHMENT
+        WHERE type_code = "CS"
+        AND target_no = #{csNo}
+    </select>
+
+    <select id="getQueAnswer" resultType="csAnswerDTO">
+        SELECT *
+        FROM CS_ANSWER
+        WHERE cs_no = #{csNo}
+    </select>
+
+    <select id="getAttachment" resultType="attachmentDTO">
+        SELECT * FROM ATTACHMENT WHERE file_no = #{fileNo}
+    </select>
+
+    <insert id="insertAnswerQue" parameterType="csAnswerDTO" useGeneratedKeys="true" keyProperty="answer_no">
+        INSERT INTO CS_ANSWER (cs_no, answerer_no, content) VALUES
+        (#{csNo}, #{answererNo}, #{content})
     </insert>
     
 </mapper>

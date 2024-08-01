@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -39,20 +39,6 @@
             gap: 20px;
             text-align: left;
         }
-        #alert {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 35px;
-            z-index: 1000;
-            opacity: 0;
-            transition: all 0.3s ease-in-out;
-            font-size: 20px;
-        }
         h2 {
             text-align: left;
         }
@@ -60,6 +46,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/alert}"></div>
 <main>
     <div class="content-area">
 
@@ -83,7 +70,7 @@
                     <input type="text" name="content" required>
                 </label>
                 <label>첨부파일
-                    <input type="file" name="file">
+                    <input type="file" name="files" multiple>
                 </label>
                 <label>
                     <input type="checkbox" required>개인정보 수집 및 이용 동의 (필수)
@@ -94,31 +81,5 @@
 
     </div>
 </main>
-<div id="msg" th:text="${msg}" hidden></div>
-<div id="alert"></div>
 </body>
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.getElementById('msg');
-        if (msg && msg.textContent) {
-            showAlert(msg.textContent);
-        }
-    });
-
-    function showAlert(msg) {
-        const alertBox = document.querySelector('#alert');
-        alertBox.textContent = msg;
-        alertBox.style.display = 'block';
-        setTimeout(() => {
-            alertBox.style.opacity = '1';
-        }, 10);
-
-        setTimeout(() => {
-            alertBox.style.opacity = '0';
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 300);
-        }, 3000);
-    }
-</script> <!--msg alert-->
 </html>

@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The type Cs question dto.
+ * The type Cs answer dto.
  *
  * @author 김재식
  * @since 2024 -08-01
@@ -13,13 +13,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CSQuestionDTO {
+public class CSAnswerDTO {
+    private Integer answerNo;
     private Integer csNo;
-    private Integer writerNo;
-    private String csType;
-    private String csName;
-    private String title;
+    private Integer answererNo;
     private String content;
-    private String createdAt;
-    private Character isAnswered;
+    private String created_at;
 }

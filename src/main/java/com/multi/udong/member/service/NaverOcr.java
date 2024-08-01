@@ -10,11 +10,20 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 /**
+ * The type Naver ocr.
+ *
  * @author : 재식
  * @since : 24. 7. 23.
  */
 public class NaverOcr {
 
+    /**
+     * Ocr array list.
+     *
+     * @param fileName the file name
+     * @return the array list
+     * @since 2024 -08-01
+     */
     public ArrayList<String> ocr(String fileName) {
         String apiURL = NaverAPIKey.OCR_URL;
         String secretKey = NaverAPIKey.OCR_SECRET;

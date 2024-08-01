@@ -3,15 +3,14 @@ package com.multi.udong.cs.service;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.TypeDTO;
 import com.multi.udong.cs.model.dao.CSMapper;
+import com.multi.udong.cs.model.dto.CSAnswerDTO;
 import com.multi.udong.cs.model.dto.CSQuestionDTO;
 import com.multi.udong.member.model.dto.PageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * The type Cs service.
@@ -56,27 +55,73 @@ public class CSServiceImpl implements CSService{
      * Insert que form.
      *
      * @param csQuestionDTO the cs question dto
-     * @param attachmentDTO the attachment dto
+     * @param attachments   the attachments
      * @since 2024 -08-01
      */
     @Override
-    public void insertQueForm(CSQuestionDTO csQuestionDTO, AttachmentDTO attachmentDTO) {
-
-        if (attachmentDTO != null && !attachmentDTO.getSavedName().isEmpty()) {
-            csMapper.insertFile(attachmentDTO);
-        }
+    public void insertQueForm(CSQuestionDTO csQuestionDTO, List<AttachmentDTO> attachments) {
 
         csMapper.insertQueForm(csQuestionDTO);
+        int csNo = csMapper.selectLastInsertId();
+
+        if (attachments != null && !attachments.isEmpty()) {
+            for (AttachmentDTO attachment : attachments) {
+                attachment.setTargetNo(csNo);
+                csMapper.insertFile(attachment);
+            }
+        }
     }
 
     /**
      * Get all types list.
      *
-     * @return list
+     * @return list list
      * @since 2024 -08-01
      */
     @Override
     public List<TypeDTO> getAllTypes() {
         return csMapper.getAllTypes();
+    }
+
+    /**
+     * Que detail cs question dto.
+     *
+     * @param csNo the cs no
+     * @return the cs question dto
+     * @since 2024 -08-01
+     */
+    @Override
+    public Map<String, Object> getQueDetail(int csNo) {
+
+        Map <String, Object> map = new HashMap<>();
+
+        CSQuestionDTO csQuestionDTO = csMapper.getQueDetail(csNo);
+        map.put("csQuestionDTO", csQuestionDTO);
+
+        List<AttachmentDTO> attachments = csMapper.getQueAttachment(csNo);
+        map.put("attachments", attachments);
+
+        List<CSAnswerDTO> answers = csMapper.getQueAnswer(csNo);
+        map.put("answers", answers);
+
+        return map;
+    }
+
+    /**
+     * Get attachment attachment dto.
+     *
+     * @param fileNo the file no
+     * @return the attachment dto
+     * @since 2024 -08-01
+     */
+    @Override
+    public AttachmentDTO getAttachment(int fileNo) {
+        System.out.println("hello");
+        return csMapper.getAttachment(fileNo);
+    }
+
+    @Override
+    public void insertAnswerQue(CSAnswerDTO csAnswerDTO) {
+        csMapper.insertAnswerQue(csAnswerDTO);
     }
 }

@@ -159,7 +159,7 @@ public class MemberServiceImpl implements MemberService {
      * Delete member.
      *
      * @param memberNo the member no
-     * @return boolean
+     * @return boolean string
      * @throws Exception the exception
      * @since 2024 -07-30
      */
