@@ -86,5 +86,10 @@
     <delete id="deleteSale" parameterType="int">
         DELETE FROM SAL WHERE sale_no = #{saleNo}
     </delete>
+    <update id="updateSaleStatus" parameterType="map">
+        UPDATE SAL
+        SET status = #{status}
+        WHERE sale_no = #{saleNo}
+    </update>
 
 </mapper>

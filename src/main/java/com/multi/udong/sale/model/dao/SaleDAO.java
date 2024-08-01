@@ -90,4 +90,14 @@ public class SaleDAO {
     public void deleteSale(int saleNo) throws Exception {
         sqlSession.delete("SaleMapper.deleteSale", saleNo);
     }
+    public void updateSaleStatus(int saleNo, String status) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("saleNo", saleNo);
+        params.put("status", status);
+        sqlSession.update("SaleMapper.updateSaleStatus", params);
+    }
+
+    public SaleDTO findById(int saleNo) {
+        return sqlSession.selectOne("SaleMapper.getSaleById", saleNo);
+    }
 }

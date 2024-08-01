@@ -9,6 +9,7 @@ import com.multi.udong.sale.service.SaleService;
 import com.multi.udong.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Controller
 @RequestMapping("/sale") //sale에 대한 경로 요청 처리
@@ -201,5 +200,16 @@ public class SaleController {
             e.printStackTrace();
             return "redirect:/common/errorPage?message=UnexpectedError";
         }
+    }
+
+    @PostMapping("/updateStatus/{saleNo}")
+    public ResponseEntity<Map<String, String>> updateSaleStatus(@PathVariable("saleNo") int saleNo, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
+        saleService.updateSaleStatus(saleNo, status);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("status", status);
+
+        return ResponseEntity.ok(response);
     }
 }
