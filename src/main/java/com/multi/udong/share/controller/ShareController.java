@@ -576,34 +576,36 @@ public class ShareController {
         return itemDTO.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
     }
 
+
     /**
-     * 물건 대여 일시중단/해제
+     * 물건 상태 변경
      *
      * @param itemDTO the item dto
      * @param c       the c
      * @param model   the model
      * @return the string
-     * @since 2024 -07-31
+     * @since 2024 -08-01
      */
     @GetMapping("/updateItStat")
+    @ResponseBody
     public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(itemDTO);
         // 리턴 페이지 주소
-        String page = "";
+        String msg = "상태 변경 완료";
 
         try {
             // 물건 상태 업데이트
             shareService.updateItStat(itemDTO, c);
-            page = "redirect:/share/" + itemDTO.getItemGroup() + "/detail?itemNo=" + itemDTO.getItemNo();
+
 
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
-            page = "/common/errorPage";
+            msg = e.getMessage();
+
         }
 
-        return page;
+        return msg;
     }
 
     /**

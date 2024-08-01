@@ -137,7 +137,7 @@
                 <h3 class="mb-3"><span class="badge text-bg-danger">마감일: [[${item.expiryDate}]]</span></h3>
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">응모하기</button>
+                    <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">응모하기</button>
                     <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
@@ -159,17 +159,17 @@
                 </div>
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
+                    <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">대여신청</button>
                     <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow"
+                    <button class="btn btn-udh-yellow me-2"
                             th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
-                    <button th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver"
-                            th:onclick="|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, itemGroup=${item.itemGroup},statusCode=${status})}'|"
+                    <button id="updateStatBtn" th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver me-2"
+                            th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
+                    <button class="btn btn-udh-red me-2" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
                 </span>
             </th:block>
 

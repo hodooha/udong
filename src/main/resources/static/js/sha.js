@@ -368,16 +368,25 @@ function renderItemDetail(item){
     console.log(img);
     $('.likeImg').attr("src", img);
 
-//    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
-//        $('.carousel-inner').addClass("div-blur");
-//        $('.carousel-inner img').addClass("img-blur");
-//    } else{
-//        $('.carousel-inner').removeClass("div-blur");
-//        $('.carousel-inner img').removeClass("img-blur");
-//    }
+    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
+        $('.carousel-item').addClass("div-blur");
+        $('.carousel-item img').addClass("img-blur");
+    } else{
+        $('.carousel-item').removeClass("div-blur");
+        $('.carousel-item img').removeClass("img-blur");
+    }
 
-    let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+    let btnTxt = item.statusCode == "UNAV" ? "중단해제" : "일시중단";
     $('#updateStatBtn').text(btnTxt);
+
+    if(item.statusCode == 'UNAV'){
+        $('.carousel-inner').append('<div class="blur-info"><h3>대여불가</h3></div>');
+    } else if(item.statusCode == 'RNT'){
+        $('.carousel-inner').append(`<div class="blur-info"><h3>대여중</h3><p>반납예정일: ${item.returnDate}</p></div>`)
+    } else {
+        $('.blur-info').empty();
+
+    }
 
 }
 
@@ -398,8 +407,6 @@ function updateItemDetail(){
         }
 
      })
-
-
 }
 
 function shaRequest(item) {
@@ -419,8 +426,8 @@ function shaRequest(item) {
         reqGroup: item.itemGroup,
         ownerNo: item.ownerNo
     }
-    insertReq(data);
 
+    insertReq(data);
 }
 
 function insertReq(data){
@@ -439,7 +446,7 @@ function insertReq(data){
             updateItemDetail();
         },
         error: function(msg){
-            alert(msg);
+            console.log(msg);
         }
     })
 }
@@ -464,39 +471,28 @@ function updateShaLike(itemNo){
     })
 }
 
+function updateItStat(item){
 
+    console.log(item);
+    if(item.statusCode == "RNT"){
+        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+        return;
+    }
+    let itemNo = item.itemNo;
 
+    $.ajax({
 
-//function updateItStat(item){
-//    console.log(item);
-//    if(item.statusCode == "RNT"){
-//        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
-//        return;
-//    }
-//    let itemNo = item.itemNo;
-//    let status = item.statusCode == "AVL" ? "UNAV" : "AVL";
-//    let url = `/share/updateItStat2?itemNo=${itemNo}&statusCode=${status}`
-//
-//    $.ajax({
-//
-//        url: url,
-//        type: "get",
-//        success: function(data){
-//            console.log(data);
-//            let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
-//            $('#updateStatBtn').text(btnTxt);
-//
-//
-//        },
-//        error: function(data){
-//            alert(data.msg);
-//
-//
-//        }
-//
-//
-//    })
-//
-//}
+        url: `/share/updateItStat?itemNo=${itemNo}`,
+        type: "get",
+        success: function(data){
+            console.log(data);
+            updateItemDetail();
+        },
+        error: function(data){
+            console.log(data);
+        }
+    })
+
+}
 
 
