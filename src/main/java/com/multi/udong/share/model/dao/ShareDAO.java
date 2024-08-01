@@ -1,10 +1,7 @@
 package com.multi.udong.share.model.dao;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.share.model.dto.ShaCatDTO;
-import com.multi.udong.share.model.dto.ShaCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaItemDTO;
-import com.multi.udong.share.model.dto.ShaReqDTO;
+import com.multi.udong.share.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -161,7 +158,7 @@ public class ShareDAO {
     }
 
     /**
-     * 물건 첨부사진 삭제 (attachment 테이블)
+     * 첨부파일 no로 물건 첨부 사진 목록 삭제 (attachment 테이블)
      *
      * @param sqlSession the sql session
      * @param delImgList the del img list
@@ -169,8 +166,78 @@ public class ShareDAO {
      * @throws Exception the exception
      * @since 2024 -07-30
      */
-    public int deleteImg(SqlSessionTemplate sqlSession, List<AttachmentDTO> delImgList) throws Exception{
+    public int deleteImgList(SqlSessionTemplate sqlSession, List<AttachmentDTO> delImgList) throws Exception{
 
-        return sqlSession.delete("ShareMapper.deleteImg", delImgList);
+        return sqlSession.delete("ShareMapper.deleteImgList", delImgList);
+    }
+
+    /**
+     * 물건 삭제 (sha_items 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param target     the target
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int deleteItem(SqlSessionTemplate sqlSession, ShaItemDTO target) throws Exception {
+
+        return sqlSession.delete("ShareMapper.deleteItem", target);
+    }
+
+    /**
+     * target 정보로 물건 첨부 사진 삭제 (attachment 테이블)
+     *
+     * @param sqlSession the sql session
+     * @param target     the target
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int deleteImgByTarget(SqlSessionTemplate sqlSession, AttachmentDTO target) throws Exception {
+
+        return sqlSession.delete("ShareMapper.deleteImgByTarget", target);
+    }
+
+    /**
+     * 물건 상태 업데이트
+     *
+     * @param sqlSession the sql session
+     * @param itemDTO    the item dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -07-31
+     */
+    public int updateItStat(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+        return sqlSession.update("ShareMapper.updateItStat", itemDTO);
+
+    }
+
+    public int plusViewCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception{
+        return sqlSession.update("ShareMapper.plusViewCnt", itemNo);
+    }
+
+    public ShaLikeDTO getShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.selectOne("ShareMapper.getShaLike", likeDTO);
+    }
+
+    public int insertShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.insert("ShareMapper.insertShaLike", likeDTO);
+    }
+
+    public int deleteShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.delete("ShareMapper.deleteShaLike", likeDTO) ;
+    }
+
+    public int plusLikeCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception {
+        return sqlSession.update("ShareMapper.plusLikeCnt", itemNo);
+    }
+
+    public int minusLikeCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception {
+        return sqlSession.update("ShareMapper.minusLikeCnt", itemNo);
+    }
+
+    public int plusReqCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception{
+        return sqlSession.update("ShareMapper.plusReqCnt", itemNo);
     }
 }

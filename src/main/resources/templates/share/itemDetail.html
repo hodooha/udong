@@ -38,6 +38,44 @@
 
         }
 
+        .div-blur{
+            background-color: black;
+
+        }
+
+        .img-blur{
+            opacity: 0.4;
+        }
+
+        .d-block{
+            object-fit: contain;
+            height: 350px;
+            width: 100%;
+            margin: auto;
+            text-align: center;
+        }
+
+        .blur-info{
+            color:white;
+            position:absolute;
+            top: 50%;
+            left: 50%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .btn-udh-yellow{
+            height: 37.6px;
+
+
+        }
+
+        .likeImg{
+            height:100%;
+
+        }
+
+
 
     </style>
 </head>
@@ -49,22 +87,28 @@
 
     <div class="row mt-5 align-items-center">
         <div class="col-md-6">
-            <div id="carouselExample" class="carousel carousel-dark" style="width: 100%">
-                <div class="carousel-inner">
-                    <div th:if="${item.imgList == null || #lists.isEmpty(item.imgList)}">
-                        <div class="carousel-item active">
-                            <img th:src="@{/img/noimg.jpg}" class="d-block" alt="기본이미지"
-                                 style="height:350px; margin: auto;">
-                        </div>
+            <div id="carouselExample" class="carousel slide" th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? '' : ' carousel-dark'}" >
+
+                <div class="carousel-inner" >
+                    <div th:if="${item.imgList == null || #lists.isEmpty(item.imgList)}" class="carousel-item active " th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur' : ' '}">
+                        <img th:src="@{/img/noimg.jpg}" class="d-block " alt="기본이미지"
+                             th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                     </div>
+
                     <div th:unless="${item.imgList == null || #lists.isEmpty(item.imgList)}"
-                         th:each="img, stat : ${item.imgList}" class="carousel-item"
-                         th:classappend="${stat.first ? 'active' : ''}">
-
+                         th:each="img, stat : ${item.imgList}" class="carousel-item "
+                         th:classappend="${stat.first ? 'active' : ''} + ${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur' : ' '}">
                         <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" class="d-block " alt="물건이미지"
-                             style="height:350px; margin: auto;">
-                    </div>
+                             th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
 
+                    </div>
+                    <div th:if="${item.statusCode == 'UNAV'}" class="blur-info">
+                        <h3>대여불가</h3>
+                    </div>
+                    <div th:if="${item.statusCode == 'RNT'}" class="blur-info">
+                        <h3>대여중</h3>
+                        <p>반납예정일: [[${item.returnDate}]]</p>
+                    </div>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
                         data-bs-slide="prev">
@@ -83,8 +127,8 @@
             <h2>[[${item.title}]]</h2>
             <p class="owner">
                 [[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
-            <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️ <span
-                    th:text="${item.reqCnt}"></span></p>
+            <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt" th:text="${item.viewCnt}"></span>🙋‍♀️ <span
+                    id="reqCnt" th:text="${item.reqCnt}"></span></p>
             <p>
                 <span>[[${item.locName}]]</span> <span>[[${item.modifiedAt}]]</span>
             </p>
@@ -94,11 +138,12 @@
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">응모하기</button>
-                    <button class="btn btn-udh-red">찜</button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+                    <button class="btn btn-udh-yellow"
+                            th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
 
                 </span>
             </th:block>
@@ -115,11 +160,16 @@
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-red">찜</button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow" th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+                    <button class="btn btn-udh-yellow"
+                            th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
+                    <button th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver"
+                            th:onclick="|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, itemGroup=${item.itemGroup},statusCode=${status})}'|"
+                            th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
+                    <button class="btn btn-udh-red" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
                 </span>
             </th:block>
 
@@ -131,6 +181,26 @@
                           th:text="${item.content}"></textarea>
             </div>
 
+        </div>
+    </div>
+
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">정말 삭제할까요?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>대여 내역이 있는 게시글을 삭제하면 대여했던 이웃이 당황할 수 있어요.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-udh-red"
+                            th:onclick="|location.href='@{/share/delete(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">삭제
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

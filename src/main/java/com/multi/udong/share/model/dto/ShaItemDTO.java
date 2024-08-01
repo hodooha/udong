@@ -28,6 +28,7 @@ public class ShaItemDTO {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private LocalDate expiryDate;
+    private LocalDate returnDate;
     private String statusCode;
     private int dealCnt;
     private int likeCnt;
@@ -38,5 +39,7 @@ public class ShaItemDTO {
     private List<AttachmentDTO> imgList;
     private List<String> delFilesNo;
     private List<String> delFilesName;
+    private boolean liked;
 
 }
+

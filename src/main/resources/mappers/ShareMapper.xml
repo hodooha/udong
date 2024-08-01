@@ -114,12 +114,20 @@
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.level, c.eup_myeon_dong_name
+        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date
         from sha_items a
         inner join member b
         on a.owner_no = b.member_no
         inner join location c
         on a.loc_code = c.location_code
+        left join
+        (
+        select *
+        from sha_req
+        where status_code = 'RNT'
+        and req_item = #{itemNo}
+        ) d
+        on a.item_no = d.req_item
         where a.item_no = #{itemNo}
     </select>
 
@@ -133,11 +141,18 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-        select b.*,
+        select b.*, e.*,
         row_number() over (order by b.created_at desc) as rn
         from sha_items b
         left join member d
         on b.owner_no = d.member_no
+        left join
+        (
+        select req_item, return_date
+        from sha_req
+        where status_code = 'RNT'
+        ) e
+        on b.item_no = e.req_item
         where b.deleted_at is null
         and d.is_deleted = 'N'
         <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
@@ -155,7 +170,8 @@
         where type_code = #{group}
         ) sub
         where rn = 1
-        ) c on a.item_no = c.target_no
+        ) c
+        on a.item_no = c.target_no
         where a.rn between #{start} and #{end}
         order by a.rn
     </select>
@@ -194,7 +210,9 @@
         select *
         from sha_req
         where req_item = #{reqItem}
-        and rqst_no = #{rqstNo}
+        <if test="rqstNo != null and rqstNo != ''">
+            and rqst_no = #{rqstNo}
+        </if>
         <if test="statusCode != null and statusCode != ''">
             and status_code = #{statusCode}
         </if>
@@ -205,16 +223,89 @@
         set
         item_cat_code = #{itemCatCode},
         title = #{title},
-        content = #{content}
+        content = #{content},
+        modified_at = now()
         where item_no = #{itemNo}
     </update>
 
-    <delete id="deleteImg">
+    <delete id="deleteImgList">
         delete
         from attachment
         <foreach collection="list" item="img" separator=",">
             where file_no = #{img.fileNo}
         </foreach>
     </delete>
+
+    <delete id="deleteItem">
+        delete
+        from sha_items
+        where item_no = #{itemNo}
+    </delete>
+
+    <delete id="deleteImgByTarget">
+        delete
+        from attachment
+        where target_no = #{targetNo}
+        and type_code = #{typeCode}
+    </delete>
+
+    <update id="updateItStat">
+        update sha_items
+        set
+        status_code = #{statusCode},
+        modified_at = now()
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="plusViewCnt">
+        update sha_items
+        set
+        view_cnt = view_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <select id="getShaLike" resultType="shaLikeDTO">
+        select *
+        from sha_like
+        where member_no = #{memberNo}
+        <if test="itemNo != null and itemNo != ''">
+            and item_no = #{itemNo}
+        </if>
+    </select>
+
+    <insert id="insertShaLike">
+        insert
+        into sha_like
+        (member_no, item_no)
+        values (#{memberNo}, #{itemNo})
+    </insert>
+
+    <delete id="deleteShaLike">
+        delete
+        from sha_like
+        where member_no = #{memberNo}
+        and item_no = #{itemNo}
+    </delete>
+
+    <update id="plusLikeCnt">
+        update sha_items
+        set
+        like_cnt = like_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="minusLikeCnt">
+        update sha_items
+        set
+        like_cnt = like_cnt - 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="plusReqCnt">
+        update sha_items
+        set
+        req_cnt = req_cnt + 1
+        where item_no = #{itemNo}
+    </update>
 
 </mapper>

@@ -1,6 +1,8 @@
 $(function(){
+    url = new URL(location.href);
+    urlSearch = url.searchParams;
 
-    if(window.location.pathname.includes("/share/rent")){
+    if(url.pathname.includes("/share/rent")){
             $('#giveBtn').addClass("gray");
             $('#rentBtn').removeClass("gray");
             $('.rentCom').css('visibility', 'visible');
@@ -41,9 +43,14 @@ $(function(){
                 dateRefresh();
             }
         });
+
     }
 
+
+
 });
+
+
 
 function getCatList() {
     $.ajax({
@@ -56,7 +63,7 @@ function getCatList() {
                 const savedState = history.state;
                 if (savedState) {
                     restoreFormState(savedState);
-                    updateItems(savedState);
+                    updateItemList(savedState);
                     console.log(savedState);
                 } else {
                     search(1);
@@ -234,19 +241,58 @@ function renderItemList(items){
                       </div>`
     } else {
         itemResult = items.map((item) => {
-            return `<div class="col">
-                <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
+
+            let head = `
+                <div class="col">
+                   <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
+            `
+
+            let mid = `
+                <div>
                     <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
 
-                    <div class="card-body">
-                        <h4>${item.title}</h4>
-                        <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+            `
+            let tail = `
                     </div>
+                        <div class="card-body">
+                            <h4>${item.title}</h4>
+                            <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                        </div>
                 </div>
-            </div>`;
+            </div>`
+
+            if(item.statusCode != 'AVL'  && item.statusCode != 'GIV'){
+                mid = `
+                    <div class="div-blur">
+                        <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top img-blur" alt="물건이미지" style="height:20em">
+                `
+
+                if(item.statusCode == 'UNAV'){
+                    mid += `
+                        <div class="blur-info"><h3>대여불가</h3></div>
+                    `
+                } else if(item.statusCode == 'RNT'){
+                    mid += `
+                        <div class="blur-info">
+                            <h3>대여중</h3>
+                            <p>반납예정일: ${item.returnDate}</p>
+                        </div>
+                    `
+                } else if(item.statusCode == 'GVD'){
+                    mid += `
+                        <div class="blur-info">
+                            <h3>나눔완료</h3>
+                            <p>당첨자: </p>
+                        </div>
+                    `
+                }
+            }
+            return head + mid + tail
         }).join("");
     }
     $("#itemList").html(itemResult);
+
+
 }
 
 function renderPageNation(pageInfo){
@@ -312,6 +358,50 @@ function restoreFormState(params) {
     $('#keyword').val(params.keyword);
 }
 
+function renderItemDetail(item){
+    console.log(item);
+    $('#likeCnt').text(item.likeCnt);
+    $('#viewCnt').text(item.viewCnt);
+    $('#reqCnt').text(item.reqCnt);
+    console.log(item.liked);
+    let img = item.liked == true ? "/img/like.png" : "/img/notlike.png"
+    console.log(img);
+    $('.likeImg').attr("src", img);
+
+//    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
+//        $('.carousel-inner').addClass("div-blur");
+//        $('.carousel-inner img').addClass("img-blur");
+//    } else{
+//        $('.carousel-inner').removeClass("div-blur");
+//        $('.carousel-inner img').removeClass("img-blur");
+//    }
+
+    let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+    $('#updateStatBtn').text(btnTxt);
+
+}
+
+function updateItemDetail(){
+    let itemGroup = url.pathname.includes("rent") ? "rent" : "give";
+    let itemNo = urlSearch.get("itemNo");
+
+    $.ajax({
+        url: `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`,
+        type: "get",
+        success: function(data){
+            console.log(data);
+            renderItemDetail(data.item);
+
+        },
+        error: function(data){
+            alert(data.msg);
+        }
+
+     })
+
+
+}
+
 function shaRequest(item) {
     console.log(item);
     let returnDate = $('#datePicker').val();
@@ -346,10 +436,67 @@ function insertReq(data){
         data: data,
         success: function(msg){
             alert(msg);
+            updateItemDetail();
         },
         error: function(msg){
             alert(msg);
         }
     })
 }
+
+function shaLike(item) {
+    console.log(item);
+    updateShaLike(item.itemNo)
+}
+
+function updateShaLike(itemNo){
+
+    $.ajax({
+        url: `/share/like?itemNo=${itemNo}`,
+        type: "get",
+        success: function(msg){
+            console.log(msg);
+            updateItemDetail();
+        },
+        error: function(msg){
+            console.log(msg);
+        }
+    })
+}
+
+
+
+
+//function updateItStat(item){
+//    console.log(item);
+//    if(item.statusCode == "RNT"){
+//        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+//        return;
+//    }
+//    let itemNo = item.itemNo;
+//    let status = item.statusCode == "AVL" ? "UNAV" : "AVL";
+//    let url = `/share/updateItStat2?itemNo=${itemNo}&statusCode=${status}`
+//
+//    $.ajax({
+//
+//        url: url,
+//        type: "get",
+//        success: function(data){
+//            console.log(data);
+//            let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+//            $('#updateStatBtn').text(btnTxt);
+//
+//
+//        },
+//        error: function(data){
+//            alert(data.msg);
+//
+//
+//        }
+//
+//
+//    })
+//
+//}
+
 
