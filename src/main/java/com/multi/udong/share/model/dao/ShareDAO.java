@@ -1,10 +1,7 @@
 package com.multi.udong.share.model.dao;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.share.model.dto.ShaCatDTO;
-import com.multi.udong.share.model.dto.ShaCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaItemDTO;
-import com.multi.udong.share.model.dto.ShaReqDTO;
+import com.multi.udong.share.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -212,14 +209,35 @@ public class ShareDAO {
      * @since 2024 -07-31
      */
     public int updateItStat(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
-
         return sqlSession.update("ShareMapper.updateItStat", itemDTO);
 
     }
 
-    public int increaseViewCnt(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) throws Exception{
+    public int plusViewCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception{
+        return sqlSession.update("ShareMapper.plusViewCnt", itemNo);
+    }
 
-        return sqlSession.update("ShareMapper.increaseViewCnt", itemDTO);
+    public ShaLikeDTO getShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.selectOne("ShareMapper.getShaLike", likeDTO);
+    }
 
+    public int insertShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.insert("ShareMapper.insertShaLike", likeDTO);
+    }
+
+    public int deleteShaLike(SqlSessionTemplate sqlSession, ShaLikeDTO likeDTO) throws Exception{
+        return sqlSession.delete("ShareMapper.deleteShaLike", likeDTO) ;
+    }
+
+    public int plusLikeCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception {
+        return sqlSession.update("ShareMapper.plusLikeCnt", itemNo);
+    }
+
+    public int minusLikeCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception {
+        return sqlSession.update("ShareMapper.minusLikeCnt", itemNo);
+    }
+
+    public int plusReqCnt(SqlSessionTemplate sqlSession, int itemNo) throws Exception{
+        return sqlSession.update("ShareMapper.plusReqCnt", itemNo);
     }
 }

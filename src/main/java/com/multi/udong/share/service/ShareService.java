@@ -33,7 +33,7 @@ public interface ShareService {
     void insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception;
 
 
-    ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO) throws Exception;
+    ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
 
     /**
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
@@ -68,11 +68,10 @@ public interface ShareService {
      * 대여 및 나눔 신청
      *
      * @param reqDTO the req dto
-     * @return the int
      * @throws Exception the exception
      * @since 2024 -07-28
      */
-    int insertRequest(ShaReqDTO reqDTO) throws Exception;
+    void insertRequest(ShaReqDTO reqDTO) throws Exception;
 
     /**
      * 기존 대여 및 나눔 신청 내역 조회
@@ -98,11 +97,11 @@ public interface ShareService {
 
 
     /**
-     * 물건 삭제 (파일 포함)
+     * 물건 삭제
      *
      * @param target the target
-     * @param img    the img
-     * @return
+     * @param c      the c
+     * @return the list
      * @throws Exception the exception
      * @since 2024 -07-31
      */
@@ -117,6 +116,16 @@ public interface ShareService {
      * @since 2024 -07-31
      */
     void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
+
+
+    /**
+     * 찜 등록 및 삭제
+     *
+     * @param likeDTO the like dto
+     * @throws Exception the exception
+     * @since 2024 -08-01
+     */
+    void updateShaLike(ShaLikeDTO likeDTO) throws Exception;
 
 
 }

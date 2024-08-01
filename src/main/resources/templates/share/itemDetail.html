@@ -64,6 +64,17 @@
             transform: translate(-50%, -50%);
         }
 
+        .btn-udh-yellow{
+            height: 37.6px;
+
+
+        }
+
+        .likeImg{
+            height:100%;
+
+        }
+
 
 
     </style>
@@ -116,8 +127,8 @@
             <h2>[[${item.title}]]</h2>
             <p class="owner">
                 [[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
-            <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️ <span
-                    th:text="${item.reqCnt}"></span></p>
+            <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt" th:text="${item.viewCnt}"></span>🙋‍♀️ <span
+                    id="reqCnt" th:text="${item.reqCnt}"></span></p>
             <p>
                 <span>[[${item.locName}]]</span> <span>[[${item.modifiedAt}]]</span>
             </p>
@@ -127,7 +138,7 @@
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">응모하기</button>
-                    <button class="btn btn-udh-red">찜</button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -149,7 +160,7 @@
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-red">찜</button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">

@@ -42,7 +42,23 @@ public class ShareController {
      * @since 2024 -07-26
      */
     @GetMapping("/rent")
-    public String rentMain() {
+    public String rentMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+            e.printStackTrace();
+            return "common/errorPage";
+        }
         return "share/rentMain";
     }
 
@@ -54,7 +70,23 @@ public class ShareController {
      * @since 2024 -07-26
      */
     @GetMapping("/give")
-    public String giveMain() {
+    public String giveMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+            e.printStackTrace();
+            return "common/errorPage";
+        }
         return "share/giveMain";
     }
 
@@ -136,7 +168,7 @@ public class ShareController {
             }
 
             // db에서 물건 상세 정보 조회
-            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO);
+            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             model.addAttribute("item", item);
 
         } catch (Exception e) {
@@ -148,6 +180,41 @@ public class ShareController {
 
         return "share/itemDetail";
     }
+
+    @GetMapping(value = {"/rent/updateDetail", "/give/updateDetail"})
+    @ResponseBody
+    public ResponseEntity<?> updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
+
+        // 결과값 초기 설정
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // db에서 물건 상세 정보 조회
+            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
+            result.put("item", item);
+
+        } catch (Exception e) {
+            result.put("msg", e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(result);
+        }
+
+
+        return ResponseEntity.ok().body(result);
+    }
+
+
 
     /**
      * 물건 등록 및 첨부파일 저장 기능
@@ -318,10 +385,8 @@ public class ShareController {
             reqDTO.setRqstNo(c.getMemberDTO().getMemberNo());
 
             // db에 대여 및 나눔 신청 저장
-            int result = shareService.insertRequest(reqDTO);
-            if (result < 1) {
-                throw new Exception(reqGroup + "신청을 실패했습니다.");
-            }
+            shareService.insertRequest(reqDTO);
+
 
         } catch (Exception e) {
             msg = e.getMessage();
@@ -417,13 +482,13 @@ public class ShareController {
             }
 
             // 삭제될 파일 처리
-            List<AttachmentDTO> delImgList= new ArrayList<>();
+            List<AttachmentDTO> delImgList = new ArrayList<>();
             List<String> delFilesNo = itemDTO.getDelFilesNo();
             List<String> delFilesName = itemDTO.getDelFilesName();
             delFilesNo = delFilesNo.stream().filter((x) -> !x.isEmpty()).toList();
             delFilesName = delFilesName.stream().filter((x) -> !x.isEmpty()).toList();
 
-            for(String f : delFilesNo){
+            for (String f : delFilesNo) {
                 AttachmentDTO delImg = new AttachmentDTO();
                 delImg.setFileNo(Integer.parseInt(f));
                 delImgList.add(delImg);
@@ -490,8 +555,8 @@ public class ShareController {
      * @since 2024 -07-31
      */
     @GetMapping("/delete")
-    public String deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
-        System.out.println("삭제할 대상: "+itemDTO);
+    public String deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+        System.out.println("삭제할 대상: " + itemDTO);
 
         try {
             // 물건 삭제
@@ -521,7 +586,7 @@ public class ShareController {
      * @since 2024 -07-31
      */
     @GetMapping("/updateItStat")
-    public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+    public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(itemDTO);
         // 리턴 페이지 주소
@@ -541,6 +606,47 @@ public class ShareController {
         return page;
     }
 
+    /**
+     * 찜 등록 및 삭제
+     *
+     * @param likeDTO the like dto
+     * @param c       the c
+     * @return the string
+     * @since 2024 -08-01
+     */
+    @GetMapping("/like")
+    @ResponseBody
+    public String updateShaLike(ShaLikeDTO likeDTO, @AuthenticationPrincipal CustomUserDetails c){
+        // 결과 메세지 설정
+
+        String msg = "찜 변경 성공!";
+
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+            // 지역 등록 여부 확인
+            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode();
+            if (locCode == 0) {
+                throw new Exception("지역을 먼저 등록해주세요.");
+            }
+
+            // 신청자 no에 로그인한 유저 no 설정
+            likeDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+
+            // db에 찜 내역 변경
+            shareService.updateShaLike(likeDTO);
+
+
+        } catch (Exception e) {
+            msg = e.getMessage();
+            e.printStackTrace();
+        }
+
+        return msg;
+    }
 
 
 }

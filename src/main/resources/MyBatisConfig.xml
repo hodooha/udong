@@ -38,6 +38,7 @@
         <typeAlias type="com.multi.udong.share.model.dto.ShaItemDTO" alias="shaItemDTO"/>
         <typeAlias type="com.multi.udong.share.model.dto.ShaReqDTO" alias="shaReqDTO"/>
         <typeAlias type="com.multi.udong.common.model.dto.AttachmentDTO" alias="attachmentDTO"/>
+        <typeAlias type="com.multi.udong.share.model.dto.ShaLikeDTO" alias="shaLikeDTO"/>
 
         <!-- 재식 -->
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>

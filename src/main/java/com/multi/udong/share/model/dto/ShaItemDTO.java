@@ -39,6 +39,7 @@ public class ShaItemDTO {
     private List<AttachmentDTO> imgList;
     private List<String> delFilesNo;
     private List<String> delFilesName;
+    private boolean liked;
 
 }
 

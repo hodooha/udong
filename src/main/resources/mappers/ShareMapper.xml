@@ -257,10 +257,54 @@
         where item_no = #{itemNo}
     </update>
 
-    <update id="increaseViewCnt">
+    <update id="plusViewCnt">
         update sha_items
         set
         view_cnt = view_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <select id="getShaLike" resultType="shaLikeDTO">
+        select *
+        from sha_like
+        where member_no = #{memberNo}
+        <if test="itemNo != null and itemNo != ''">
+            and item_no = #{itemNo}
+        </if>
+    </select>
+
+    <insert id="insertShaLike">
+        insert
+        into sha_like
+        (member_no, item_no)
+        values (#{memberNo}, #{itemNo})
+    </insert>
+
+    <delete id="deleteShaLike">
+        delete
+        from sha_like
+        where member_no = #{memberNo}
+        and item_no = #{itemNo}
+    </delete>
+
+    <update id="plusLikeCnt">
+        update sha_items
+        set
+        like_cnt = like_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="minusLikeCnt">
+        update sha_items
+        set
+        like_cnt = like_cnt - 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="plusReqCnt">
+        update sha_items
+        set
+        req_cnt = req_cnt + 1
         where item_no = #{itemNo}
     </update>
 

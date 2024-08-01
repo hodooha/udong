@@ -1,6 +1,8 @@
 $(function(){
+    url = new URL(location.href);
+    urlSearch = url.searchParams;
 
-    if(window.location.pathname.includes("/share/rent")){
+    if(url.pathname.includes("/share/rent")){
             $('#giveBtn').addClass("gray");
             $('#rentBtn').removeClass("gray");
             $('.rentCom').css('visibility', 'visible');
@@ -41,13 +43,14 @@ $(function(){
                 dateRefresh();
             }
         });
+
     }
 
 
 
-
-
 });
+
+
 
 function getCatList() {
     $.ajax({
@@ -355,6 +358,50 @@ function restoreFormState(params) {
     $('#keyword').val(params.keyword);
 }
 
+function renderItemDetail(item){
+    console.log(item);
+    $('#likeCnt').text(item.likeCnt);
+    $('#viewCnt').text(item.viewCnt);
+    $('#reqCnt').text(item.reqCnt);
+    console.log(item.liked);
+    let img = item.liked == true ? "/img/like.png" : "/img/notlike.png"
+    console.log(img);
+    $('.likeImg').attr("src", img);
+
+//    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
+//        $('.carousel-inner').addClass("div-blur");
+//        $('.carousel-inner img').addClass("img-blur");
+//    } else{
+//        $('.carousel-inner').removeClass("div-blur");
+//        $('.carousel-inner img').removeClass("img-blur");
+//    }
+
+    let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+    $('#updateStatBtn').text(btnTxt);
+
+}
+
+function updateItemDetail(){
+    let itemGroup = url.pathname.includes("rent") ? "rent" : "give";
+    let itemNo = urlSearch.get("itemNo");
+
+    $.ajax({
+        url: `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`,
+        type: "get",
+        success: function(data){
+            console.log(data);
+            renderItemDetail(data.item);
+
+        },
+        error: function(data){
+            alert(data.msg);
+        }
+
+     })
+
+
+}
+
 function shaRequest(item) {
     console.log(item);
     let returnDate = $('#datePicker').val();
@@ -389,12 +436,35 @@ function insertReq(data){
         data: data,
         success: function(msg){
             alert(msg);
+            updateItemDetail();
         },
         error: function(msg){
             alert(msg);
         }
     })
 }
+
+function shaLike(item) {
+    console.log(item);
+    updateShaLike(item.itemNo)
+}
+
+function updateShaLike(itemNo){
+
+    $.ajax({
+        url: `/share/like?itemNo=${itemNo}`,
+        type: "get",
+        success: function(msg){
+            console.log(msg);
+            updateItemDetail();
+        },
+        error: function(msg){
+            console.log(msg);
+        }
+    })
+}
+
+
 
 
 //function updateItStat(item){
@@ -405,7 +475,7 @@ function insertReq(data){
 //    }
 //    let itemNo = item.itemNo;
 //    let status = item.statusCode == "AVL" ? "UNAV" : "AVL";
-//    let url = `/share/updateItStat?itemNo=${itemNo}&statusCode=${status}`
+//    let url = `/share/updateItStat2?itemNo=${itemNo}&statusCode=${status}`
 //
 //    $.ajax({
 //
@@ -429,8 +499,4 @@ function insertReq(data){
 //
 //}
 
-
-
-
-//|location.href='@{/share/updateItStat(itemNo=${item.itemNo}, statusCode=${status})}'|
 

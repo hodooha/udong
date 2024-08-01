@@ -65,21 +65,35 @@ public class ShareServiceImpl implements ShareService {
     }
 
     /**
-     * Gets item detail with view cnt.
+     * 물건 조회수 변경 -> 물건 상세 정보 조회 메서드 호출
      *
      * @param itemDTO the item dto
+     * @param c
      * @return the item detail with view cnt
      * @throws Exception the exception
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO) throws Exception {
+    public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
-        if(shareDAO.increaseViewCnt(sqlSession, itemDTO) < 1){
-            throw new Exception("조회수 증가를 실패했습니다.");
+        if(shareDAO.plusViewCnt(sqlSession, itemDTO.getItemNo()) < 1){
+            throw new Exception("조회수 변경을 실패했습니다.");
         };
 
-        return getItemDetail(itemDTO);
+        // db에서 물건 상세정보 가져오기
+        ShaItemDTO result = getItemDetail(itemDTO);
+
+        // 로그인한 유저의 해당 물건 찜 여부 확인
+        ShaLikeDTO shaLikeDTO = new ShaLikeDTO();
+        shaLikeDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+        shaLikeDTO.setItemNo(itemDTO.getItemNo());
+        if(shareDAO.getShaLike(sqlSession, shaLikeDTO) != null){
+            result.setLiked(true);
+        } else{
+            result.setLiked(false);
+        };
+
+        return result;
     }
 
 
@@ -145,7 +159,7 @@ public class ShareServiceImpl implements ShareService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public int insertRequest(ShaReqDTO reqDTO) throws Exception {
+    public void insertRequest(ShaReqDTO reqDTO) throws Exception {
 
         // 동일 물건에 대한 대여 및 나눔 요청 유무 확인(status:"신청완료"만!)
         reqDTO.setStatusCode("RQD");
@@ -153,7 +167,15 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("이미 신청하셨습니다.");
         }
 
-        return shareDAO.insertRequest(sqlSession, reqDTO);
+        if(shareDAO.insertRequest(sqlSession, reqDTO) < 1){
+            throw new Exception("신청을 실패했습니다.");
+
+        };
+
+        if(shareDAO.plusReqCnt(sqlSession, reqDTO.getReqItem()) < 1){
+            throw new Exception("신청자수 변경을 실패했습니다.");
+        }
+
     }
 
 
@@ -282,10 +304,39 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         }
 
+        // 물건 상태 변경
         if(shareDAO.updateItStat(sqlSession, itemDTO) < 1){
             throw new Exception("물건 상태 변경을 실패했습니다.");
         };
     }
 
+    /**
+     * 찜 등록 및 삭제 (+물건의 찜횟수 변경)
+     *
+     * @param likeDTO the like dto
+     * @throws Exception the exception
+     * @since 2024 -08-01
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateShaLike(ShaLikeDTO likeDTO) throws Exception {
+
+        // 유저의 기존 찜 내역에 해당 물건이 없다면 추가
+        if(shareDAO.getShaLike(sqlSession, likeDTO) == null){
+            if(shareDAO.insertShaLike(sqlSession, likeDTO) < 1){
+                throw new Exception("찜 등록을 실패했습니다.");
+            };
+            if(shareDAO.plusLikeCnt(sqlSession, likeDTO.getItemNo()) < 1){
+                throw new Exception("찜 횟수 변경을 실패했습니다.");
+            }
+        } else {  // 유저의 기존 찜 내역에 해당 물건이 있다면 삭제
+            if(shareDAO.deleteShaLike(sqlSession, likeDTO) < 1){
+                throw new Exception("찜 삭제를 실패했습니다.");
+            };
+            if(shareDAO.minusLikeCnt(sqlSession, likeDTO.getItemNo()) < 1){
+                throw new Exception("찜 횟수 변경을 실패했습니다.");
+            }
+        }
+    }
 
 }
