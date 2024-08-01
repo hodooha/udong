@@ -6,6 +6,11 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
         .title-container {
             display: flex;
             justify-content: center;
@@ -13,16 +18,14 @@
             margin: 30px 20px 20px;
             position: relative;
         }
+
         .title {
             font-family: 'Freesentation-9Black', sans-serif;
             font-weight: bold;
-            margin:0;
+            margin: 0;
             text-align: center;
         }
-        body {
-            margin: 0;
-            padding: 0;
-        }
+
         .detail-container {
             margin: 20px auto;
             display: flex;
@@ -31,6 +34,7 @@
             max-width: 1000px;
             width: 90%;
         }
+
         .content-wrapper {
             display: flex;
             width: 100%;
@@ -38,6 +42,7 @@
             gap: 20px;
             align-items: flex-start;
         }
+
         .image-container {
             flex: 0 0 40%;
             max-height: 400px;
@@ -49,22 +54,20 @@
             border-radius: 8px;
             margin-right: 20px;
         }
+
         .image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .detail-image {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+
         .content-container {
             flex: 1;
             display: flex;
             flex-direction: column;
             max-width: calc(60% - 20px);
         }
+
         #content-text {
             font-family: 'Freesentation-5Black', sans-serif;
             font-weight: normal;
@@ -72,11 +75,13 @@
             text-align: left;
             white-space: pre-wrap;
         }
+
         #map {
             width: 500px;
             height: 400px;
             margin: 20px auto;
         }
+
         .address {
             text-align: center;
             font-family: 'Freesentation-9Black', sans-serif;
@@ -84,30 +89,13 @@
             font-size: 16px;
             margin-top: 10px;
         }
-        .btn-udh-blue {
-            background-color: #3B5C9A;
-            color: #FFFFFF;
-        }
-        .btn-udh-blue:hover {
-            background-color: #0B1D40;
-            color: #FFFFFF;
-        }
 
-        .btn-udh-red {
-            background-color: #CB3333;
-            color: #FFFFFF;
-        }
-        .btn-udh-red:hover {
-            background-color: #9D1717;
-            color: #FFFFFF;
-        }
         .btn-submit {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 80px;
             height: 40px;
-            background-color: #27447B;
             color: #FFFFFF;
             border: none;
             border-radius: 5px;
@@ -118,20 +106,29 @@
             margin-right: 10px;
             margin-bottom: 50px;
         }
-        .btn-submit:hover {
-            background-color: #142657;
-            color: #FFFFFF;
+
+        .btn-udh-blue {
+            background-color: #3B5C9A;
         }
+
+        .btn-udh-blue:hover {
+            background-color: #0B1D40;
+        }
+
+        .btn-udh-red {
+            background-color: #CB3333;
+        }
+
+        .btn-udh-red:hover {
+            background-color: #9D1717;
+        }
+
         .button-container {
             display: flex;
             justify-content: center;
             margin-top: 20px;
         }
-        .sale-title {
-            text-align: center;
-            margin-bottom: 20px;
-            width: 100%;
-        }
+
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -139,25 +136,33 @@
             width: 100%;
             margin-bottom: 20px;
         }
+
         .toggle-container {
             display: flex;
             align-items: center;
+            position: relative;
         }
+
         .toggle-container span {
             margin-right: 10px;
             white-space: nowrap;
         }
+
         .switch {
             position: relative;
             display: inline-block;
             width: 60px;
-            height: 34px;
+            height: 30px;
+            border-radius: 30px;
+            overflow: hidden;
         }
+
         .switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -167,62 +172,44 @@
             bottom: 0;
             background-color: #ccc;
             transition: .4s;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            border-radius: 34px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
         }
+
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+            height: 21px;
+            width: 21px;
+            left: 3px;
+            top: 4px;
             background-color: white;
             transition: .4s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
+
         input:checked + .slider {
             background-color: #CB3333;
         }
+
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
         .slider.round {
             border-radius: 34px;
         }
+
         .slider.round:before {
             border-radius: 50%;
         }
+
         .closed-sale {
             opacity: 0.5;
             pointer-events: none;
         }
-        .toggle-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
 
-        .toggle-container::after {
-            content: attr(title);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-
-        .toggle-container:hover::after {
-            opacity: 1;
-            visibility: visible;
-        }
 
     </style>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
