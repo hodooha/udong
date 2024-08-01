@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,12 @@ public class ShareController {
      */
     // 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
+
+    public static final int SEC = 60;
+    public static final int MIN = 60;
+    public static final int HOUR = 24;
+    public static final int DAY = 30;
+    public static final int MONTH = 12;
 
     /**
      * 대여 메인페이지 이동
@@ -143,6 +151,46 @@ public class ShareController {
         }
     }
 
+
+    /**
+     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
+     *
+     * @param localDateTime the local date time
+     * @return the string
+     * @since 2024 -08-01
+     */
+    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
+
+        String displayDate = null;
+        if (diffTime < SEC){
+            return diffTime + "초전";
+        }
+        diffTime = diffTime / SEC;
+        if (diffTime < MIN) {
+            return diffTime + "분 전";
+        }
+        diffTime = diffTime / MIN;
+        if (diffTime < HOUR) {
+            return diffTime + "시간 전";
+        }
+        diffTime = diffTime / HOUR;
+        if (diffTime < DAY) {
+            return diffTime + "일 전";
+        }
+        diffTime = diffTime / DAY;
+        if (diffTime < MONTH) {
+            return diffTime + "개월 전";
+        }
+
+        diffTime = diffTime / MONTH;
+        return diffTime + "년 전";
+
+    };
+
     /**
      * 물건 상세 조회 페이지 이동 및 상세 조회
      *
@@ -170,6 +218,10 @@ public class ShareController {
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             model.addAttribute("item", item);
+
+            // 물건 상세 조회 시 보여지는 날짜 설정
+            model.addAttribute("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
+
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
@@ -203,6 +255,9 @@ public class ShareController {
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             result.put("item", item);
+
+            // 물건 상세 조회 시 보여지는 날짜 설정
+            result.put("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
 
         } catch (Exception e) {
             result.put("msg", e.getMessage());

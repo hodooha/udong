@@ -44,8 +44,9 @@ $(function(){
             }
         });
 
-    }
 
+
+    }
 
 
 });
@@ -358,11 +359,12 @@ function restoreFormState(params) {
     $('#keyword').val(params.keyword);
 }
 
-function renderItemDetail(item){
-    console.log(item);
+function renderItemDetail(data){
+    let item = data.item;
     $('#likeCnt').text(item.likeCnt);
     $('#viewCnt').text(item.viewCnt);
     $('#reqCnt').text(item.reqCnt);
+    $('#modifiedAt').text(data.displayDate);
     console.log(item.liked);
     let img = item.liked == true ? "/img/like.png" : "/img/notlike.png"
     console.log(img);
@@ -371,9 +373,11 @@ function renderItemDetail(item){
     if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
         $('.carousel-item').addClass("div-blur");
         $('.carousel-item img').addClass("img-blur");
+        $('#carouselExample').removeClass("carousel-dark");
     } else{
         $('.carousel-item').removeClass("div-blur");
         $('.carousel-item img').removeClass("img-blur");
+        $('#carouselExample').addClass("carousel-dark");
     }
 
     let btnTxt = item.statusCode == "UNAV" ? "중단해제" : "일시중단";
@@ -399,7 +403,7 @@ function updateItemDetail(){
         type: "get",
         success: function(data){
             console.log(data);
-            renderItemDetail(data.item);
+            renderItemDetail(data);
 
         },
         error: function(data){

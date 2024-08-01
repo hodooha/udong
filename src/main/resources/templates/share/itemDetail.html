@@ -130,7 +130,7 @@
             <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt" th:text="${item.viewCnt}"></span>🙋‍♀️ <span
                     id="reqCnt" th:text="${item.reqCnt}"></span></p>
             <p>
-                <span>[[${item.locName}]]</span> <span>[[${item.modifiedAt}]]</span>
+                <span>[[${item.locName}]]</span> <span id="modifiedAt">[[${displayDate}]]</span>
             </p>
 
             <th:block th:if="${item.itemGroup} eq 'give'">
