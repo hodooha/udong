@@ -7,13 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AttachmentDTO {
-    private int fileNo;
+public class TypeDTO {
     private String typeCode;
-    private int targetNo;
-    private String originalName;
-    private String savedName;
-
-    private String fileUrl;
-
+    private String typeName;
 }

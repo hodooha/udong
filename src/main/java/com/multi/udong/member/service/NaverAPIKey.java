@@ -1,6 +1,8 @@
 package com.multi.udong.member.service;
 
 /**
+ * The type Naver api key.
+ *
  * @author : 재식
  * @since : 24. 7. 23.
  */

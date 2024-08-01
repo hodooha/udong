@@ -1,10 +1,10 @@
 package com.multi.udong.member.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.member.model.dao.MemberDAO;
+import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
-import com.multi.udong.member.model.dto.MemPageDTO;
+import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.security.CustomUserDetails;
 import com.multi.udong.security.CustomUserDetailsService;
@@ -30,7 +30,7 @@ import java.util.*;
 public class MemberServiceImpl implements MemberService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final MemberDAO memberDAO;
+    private final MemberMapper memberMapper;
     private final CustomUserDetailsService customUserDetailsService;
 
     /**
@@ -48,16 +48,8 @@ public class MemberServiceImpl implements MemberService {
 
         try {
 
-            int result = memberDAO.signup(memberDTO);
-
-            int memberNo = memberDAO.selectLastInsertId();
-            AttachmentDTO attachmentDTO = new AttachmentDTO();
-            attachmentDTO.setTargetNo(memberNo);
-            attachmentDTO.setTypeCode("MEM");
-            attachmentDTO.setOriginalName("defaultProfile.png");
-            attachmentDTO.setSavedName("defaultProfile.png");
-
-            int result2 = memberDAO.insertProfileImg(attachmentDTO);
+            int result = memberMapper.signup(memberDTO);
+            int result2 = memberMapper.insertProfileImg();
 
             if (result != 1 && result2 != 1) {
 
@@ -81,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public boolean isIdDuplicate(String memberId) {
-        return memberDAO.findMemberById(memberId) != null;
+        return memberMapper.findMemberById(memberId) != null;
     }
 
     /**
@@ -93,7 +85,7 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public boolean isNicknameDuplicate(String nickname) {
-        return memberDAO.findMemberByNickname(nickname) != null;
+        return memberMapper.findMemberByNickname(nickname) != null;
     }
 
     /**
@@ -105,19 +97,19 @@ public class MemberServiceImpl implements MemberService {
      * @since 2024 -07-30
      */
     @Override
-    public List<List<String>> selectAllAct(String table, MemPageDTO pageDTO) {
+    public List<List<String>> selectAllAct(String table, PageDTO pageDTO) {
 
         List<LinkedHashMap<String, Object>> map = new ArrayList<>();
 
         map = switch (table) {
-            case "newsBoard" -> memberDAO.selectNewsBoard(pageDTO);
-            case "newsLike" -> memberDAO.selectNewsLike(pageDTO);
-            case "newsReply" -> memberDAO.selectNewsReply(pageDTO);
-            case "club" -> memberDAO.selectClub(pageDTO);
-            case "clubLog" -> memberDAO.selectClubLog(pageDTO);
-            case "clubSchedule" -> memberDAO.selectClubSchedule(pageDTO);
-            case "shareLike" -> memberDAO.selectShareLike(pageDTO);
-            case "saleBoard" -> memberDAO.selectSaleBoard(pageDTO);
+            case "newsBoard" -> memberMapper.selectNewsBoard(pageDTO);
+            case "newsLike" -> memberMapper.selectNewsLike(pageDTO);
+            case "newsReply" -> memberMapper.selectNewsReply(pageDTO);
+            case "club" -> memberMapper.selectClub(pageDTO);
+            case "clubLog" -> memberMapper.selectClubLog(pageDTO);
+            case "clubSchedule" -> memberMapper.selectClubSchedule(pageDTO);
+            case "shareLike" -> memberMapper.selectShareLike(pageDTO);
+            case "saleBoard" -> memberMapper.selectSaleBoard(pageDTO);
             default -> map;
         };
 
@@ -145,12 +137,12 @@ public class MemberServiceImpl implements MemberService {
 
         Map<String, Object> result = new HashMap<>();
 
-        result.put("newsData", memberDAO.getNewsData(memberNo));
-        result.put("lendData", memberDAO.getLendData(memberNo));
-        result.put("rentData", memberDAO.getRentData(memberNo));
-        result.put("giveData", memberDAO.getGiveData(memberNo));
-        result.put("clubData", memberDAO.getClubData(memberNo));
-        result.put("scheduleData", memberDAO.getScheduleData(memberNo));
+        result.put("newsData", memberMapper.getNewsData(memberNo));
+        result.put("lendData", memberMapper.getLendData(memberNo));
+        result.put("rentData", memberMapper.getRentData(memberNo));
+        result.put("giveData", memberMapper.getGiveData(memberNo));
+        result.put("clubData", memberMapper.getClubData(memberNo));
+        result.put("scheduleData", memberMapper.getScheduleData(memberNo));
 
         return result;
     }
@@ -159,14 +151,14 @@ public class MemberServiceImpl implements MemberService {
      * Delete member.
      *
      * @param memberNo the member no
-     * @return boolean
+     * @return boolean string
      * @throws Exception the exception
      * @since 2024 -07-30
      */
     @Override
     public String deleteMember(int memberNo) {
 
-        Map<String, Object> checkResult = memberDAO.checkMember(memberNo);
+        Map<String, Object> checkResult = memberMapper.checkMember(memberNo);
 
         if ((Long) checkResult.get("renting_count") != 0) {
             return "isRenting";
@@ -180,7 +172,7 @@ public class MemberServiceImpl implements MemberService {
             return "isMaster";
         }
 
-        if (memberDAO.deleteMember(memberNo) != 1) {
+        if (memberMapper.deleteMember(memberNo) != 1) {
             return "disable";
 
         } else {
@@ -202,14 +194,9 @@ public class MemberServiceImpl implements MemberService {
         String encPw = bCryptPasswordEncoder.encode(memberDTO.getMemberPw());
         memberDTO.setMemberPw(encPw);
         try {
-            int result = memberDAO.signup(memberDTO);
-            int memberNo = memberDAO.selectLastInsertId();
-
-            memBusDTO.setMemberNo(memberNo);
-            attachmentDTO.setTargetNo(memberNo);
-
-            int result2 = memberDAO.insertBusReg(memBusDTO);
-            int result3 = memberDAO.insertAttachment(attachmentDTO);
+            int result = memberMapper.signup(memberDTO);
+            int result2 = memberMapper.insertBusReg(memBusDTO);
+            int result3 = memberMapper.insertAttachment(attachmentDTO);
 
             if (result != 1 && result2 != 1 && result3 != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
@@ -229,11 +216,11 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void insertAddress(MemAddressDTO memAddressDTO) throws Exception {
-        Long locationCode = memberDAO.findCodeByAddress(memAddressDTO);
+        Long locationCode = memberMapper.findCodeByAddress(memAddressDTO);
 
         if (locationCode != null) {
             memAddressDTO.setLocationCode(locationCode);
-            int result = memberDAO.insertAddress(memAddressDTO);
+            int result = memberMapper.insertAddress(memAddressDTO);
 
             if (result != 1) {
                 throw new Exception("주소 등록에 실패하였습니다.");
@@ -253,11 +240,11 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public void updateAddress(MemAddressDTO memAddressDTO) throws Exception {
-        Long locationCode = memberDAO.findCodeByAddress(memAddressDTO);
+        Long locationCode = memberMapper.findCodeByAddress(memAddressDTO);
 
         if (locationCode != null) {
             memAddressDTO.setLocationCode(locationCode);
-            int result = memberDAO.updateAddress(memAddressDTO);
+            int result = memberMapper.updateAddress(memAddressDTO);
 
             if (result != 1) {
                 throw new Exception("주소 등록에 실패하였습니다.");
@@ -279,24 +266,24 @@ public class MemberServiceImpl implements MemberService {
     public void updateProfile(MemberDTO memberDTO, AttachmentDTO attachmentDTO) {
 
         if (attachmentDTO != null && !attachmentDTO.getSavedName().isEmpty()) {
-            memberDAO.updateProfileImg(attachmentDTO);
-            memberDAO.updateMember(attachmentDTO);
+            memberMapper.updateProfileImg(attachmentDTO);
+            memberMapper.updateMember(attachmentDTO);
         }
 
         if (memberDTO.getNickname() != null && !memberDTO.getNickname().isEmpty()) {
-            memberDAO.updateNickname(memberDTO);
+            memberMapper.updateNickname(memberDTO);
         }
 
         if (memberDTO.getEmail() != null && !memberDTO.getEmail().isEmpty()) {
-            memberDAO.updateEmail(memberDTO);
+            memberMapper.updateEmail(memberDTO);
         }
 
         if (memberDTO.getPhone() != null && !memberDTO.getPhone().isEmpty()) {
-            memberDAO.updatePhone(memberDTO);
+            memberMapper.updatePhone(memberDTO);
         }
 
         if (memberDTO.getMemberPw() != null && !memberDTO.getMemberPw().isEmpty()) {
-            memberDAO.updateMemberPw(memberDTO);
+            memberMapper.updateMemberPw(memberDTO);
         }
     }
 

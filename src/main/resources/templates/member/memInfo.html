@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
@@ -116,6 +116,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/alert}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
@@ -208,7 +209,6 @@
         </div>
     </div>
 </main>
-<div id="msg" th:text="${msg}" hidden></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -460,12 +460,4 @@
         }
     });
 </script> <!--이미지 미리보기 스크립트-->
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.querySelector('#msg');
-        if (msg && msg.textContent) {
-            alert(msg.textContent);
-        }
-    });
-</script> <!--msg alert-->
 </html>

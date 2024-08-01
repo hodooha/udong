@@ -1,6 +1,6 @@
 package com.multi.udong.security;
 
-import com.multi.udong.member.model.dao.MemberDAO;
+import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.member.model.dto.MemberDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-    private final MemberDAO memberDAO;
+    private final MemberMapper memberMapper;
 
     /**
      * Load user by username user details.
@@ -30,7 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String memberId) throws UsernameNotFoundException {
 
-        MemberDTO memberDTO = memberDAO.findMemberById(memberId);
+        MemberDTO memberDTO = memberMapper.findMemberById(memberId);
 
         if (memberDTO == null || memberDTO.getIsDeleted() == 'Y') {
             throw new UsernameNotFoundException("회원정보가 존재하지 않습니다");

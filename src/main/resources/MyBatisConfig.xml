@@ -12,23 +12,7 @@
     </settings>
 
     <typeAliases>
-        <!--<typeAlias
-                type="com.multi.hodooScheduler.user.model.dto.UserDTO"
-                alias="userDTO"/>
-        <typeAlias
-                type="com.multi.hodooScheduler.task.model.dto.TaskDTO"
-                alias="taskDTO"/>
-        <typeAlias
-                type="com.multi.hodooScheduler.diary.model.dto.DiaryDTO"
-                alias="diaryDTO"/>
-        <typeAlias
-                type="com.multi.hodooScheduler.diary.model.dto.PageDTO"
-                alias="pageDTO"/>
-
-        <typeAlias
-                type="com.multi.hodooScheduler.user.model.dto.AuthDTO"
-                alias="AuthDTO"/>-->
-
+        <typeAlias type="com.multi.udong.common.model.dto.TypeDTO" alias="typeDTO"/>
 
         <!-- 성현 -->
         <typeAlias type="com.multi.udong.club.model.dto.CategoryDTO" alias="categoryDTO"/>
@@ -43,26 +27,23 @@
         <typeAlias type="com.multi.udong.member.model.dto.MemberDTO" alias="memberDTO"/>
         <typeAlias type="com.multi.udong.member.model.dto.MemAddressDTO" alias="memAddressDTO"/>
         <typeAlias type="com.multi.udong.member.model.dto.MemBusDTO" alias="memBusDTO"/>
-        <typeAlias type="com.multi.udong.member.model.dto.MemPageDTO" alias="memPageDTO"/>
+        <typeAlias type="com.multi.udong.member.model.dto.PageDTO" alias="pageDTO"/>
+        <typeAlias type="com.multi.udong.cs.model.dto.CSQuestionDTO" alias="csQuestionDTO"/>
+        <typeAlias type="com.multi.udong.cs.model.dto.CSAnswerDTO" alias="csAnswerDTO"/>
 
         <typeAlias type="com.multi.udong.sale.model.dto.SaleDTO" alias="saleDTO"/>
 
     </typeAliases>
     <mappers>
-        <!-- SQL문 정의하는 파일들의 목록을 지정. 테이블당 한개 사용 -->
-
-        <!--        <mapper resource="mappers/MemberMapper.xml" />-->
-        <!--<mapper resource="mappers/taskMapper.xml" />
-        <mapper resource="mappers/diaryMapper.xml" />-->
-
-
         <!-- 성현 -->
         <mapper resource="mappers/ClubMapper.xml"/>
 
         <mapper resource="mappers/ShareMapper.xml"/>
 
         <!-- 재식 -->
-        <mapper resource="mappers/MemberDAO.xml"/>
+        <mapper resource="mappers/MemberMapper.xml"/>
+        <mapper resource="mappers/CSMapper.xml"/>
+
         <mapper resource="mappers/SaleMapper.xml"/>
         <mapper resource="mappers/ReportMapper.xml"/>
     </mappers>

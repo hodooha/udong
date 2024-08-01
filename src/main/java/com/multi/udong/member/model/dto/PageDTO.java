@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemPageDTO {
+public class PageDTO {
     private Integer memberNo;
     private Integer start;
     private Integer end;

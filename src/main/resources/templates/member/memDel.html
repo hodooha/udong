@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -43,6 +43,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/alert}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
@@ -77,7 +78,6 @@
         </div>
     </div>
 </main>
-<div id="msg" th:text="${msg}" hidden></div>
 </body>
 <script>
     const checkbox = document.getElementById('agreement-checkbox');
@@ -87,12 +87,4 @@
         deleteButton.disabled = !this.checked;
     });
 </script> <!--회원 탈퇴 버튼 활성화-->
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.getElementById('msg');
-        if (msg && msg.textContent) {
-            alert(msg.textContent);
-        }
-    });
-</script> <!--msg alert-->
 </html>

@@ -1,7 +1,7 @@
 package com.multi.udong.sale.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.member.model.dao.MemberDAO;
+import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.sale.model.dao.SaleDAO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -21,7 +21,7 @@ public class SaleServiceImpl implements SaleService {
     private SaleDAO saleDAO; //데이터 접근
 
     @Autowired
-    private MemberDAO memberDAO;
+    private MemberMapper memberMapper;
     @Autowired
     private SqlSessionTemplate sqlSession; //MyBatis와 스프링을 통합하는 템플릿 SQL 세션을 관리하고, 데이터베이스 쿼리를 실행
 

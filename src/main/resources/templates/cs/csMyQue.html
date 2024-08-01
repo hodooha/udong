@@ -1,21 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .btn {
-            min-width: 120px;
-            width: 120px;
-            border: none;
-            border-radius: 5px;
-            padding: 0px;
-            transition: background-color 0.3s ease;
+        body {
+            font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
         }
-        .act {
-            min-width: 1000px;
+        main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            height: calc(100vh - 90px);
+        }
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            overflow: auto;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .search {
+            text-align: center;
+        }
+        .search input {
+            padding: 10px;
+            font-size: 17px;
+            border: 1px solid grey;
+            border-radius: 5px;
+            width: 85%;
+        }
+        .category {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            flex: 1;
+            background: #fff;
+            padding: 2rem;
+            margin: 0 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .question {
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -63,17 +101,44 @@
         .pagination a:hover:not(.active) {
             background-color: #ddd;
         }
+        h2 {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{/common/alert}"></div>
 <main>
-    <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
-        <div class="act">
-            <h2>나의 활동 기록</h2>
-            <h5>우동 소식</h5>
+
+        <div class="category">
+            <div class="card">
+                <i>A</i>
+                <h3>자주 묻는 질문</h3>
+                <p>자주 묻는 질문 입니다.</p>
+            </div>
+            <div class="card" onClick="location.href ='/cs/insertQueForm'">
+                <i>B</i>
+                <h3>문의하기</h3>
+                <p>문의하기 입니다.</p>
+            </div>
+            <div class="card" onClick="location.href ='/cs/csMyQue'">
+                <i>C</i>
+                <h3>문의내역</h3>
+                <p>내 문의내역 입니다.</p>
+            </div>
+        </div>
+
+        <div class="search">
+            <form action="/cs/csFAQ">
+                <input type="text" name="searchWord" placeholder="궁금한 점을 검색해보세요.">
+                <button class="btn btn-udh-yellow">검색</button>
+            </form>
+        </div>
+
+        <div class="question">
+            <h2>내 문의내역</h2>
             <table>
                 <thead>
                     <tr>
@@ -81,29 +146,15 @@
                     </tr>
                 </thead>
                 <tbody id="result-table">
-                    <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}, data-table=${table}" class="clickable-row">
+                    <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
                         <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" th:text="${element}"></td>
                     </tr>
                 </tbody>
             </table>
             <div id="no-result" hidden>결과가 없습니다.</div>
             <div class="pagination"></div>
-            <div class="search">
-                <form action="/member/act" method="get">
-                    <input type="hidden" name="table" th:value="${table}">
-                    <select name="searchCategory" id="search-category">
-                        <option value="">카테고리 선택</option>
-                        <option th:each="category : ${searchCategories}"
-                                th:value="${category}"
-                                th:text="${category}"
-                                th:selected="${category == searchCategory}">
-                        </option>
-                    </select>
-                    <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
-                    <button class="btn btn-udh-yellow">검색</button>
-                </form>
-            </div>
         </div>
+
     </div>
 </main>
 </body>
@@ -131,19 +182,13 @@
         const pagination = document.querySelector('.pagination');
         const pages = /*[[${pages}]]*/ 1;
         const currentPage = /*[[${page}]]*/ 1;
-        const table = /*[[${table}]]*/ '';
-        const searchCategory = /*[[${searchCategory}]]*/ '';
         const searchWord = /*[[${searchWord}]]*/ '';
 
         pagination.innerHTML = '';
 
         for (let page = 1; page <= pages; page++) {
             let url = document.createElement('a');
-            url.href = `/member/act?table=${table}&page=${page}`;
-
-            if (searchCategory) {
-                url.href += `&searchCategory=${encodeURIComponent(searchCategory)}`;
-            }
+            url.href = `/cs/csMyQue?page=${page}`;
 
             if (searchWord) {
                 url.href += `&searchWord=${encodeURIComponent(searchWord)}`;
@@ -166,36 +211,8 @@
 
         rows.forEach(row => {
             row.addEventListener('click', function() {
-                const no = this.getAttribute('data-no');
-                const table = this.getAttribute('data-table');
-                let url;
-
-                switch(table) {
-                    case 'newsBoard':
-                        url = `/news/detail/${no}`;
-                        break;
-                    case 'newsLike':
-                        url = `/news/detail/${no}`;
-                        break;
-                    case 'newsReply':
-                        url = `/news/detail/${no}`;
-                        break;
-                    case 'club':
-                        url = `/club/detail/${no}`;
-                        break;
-                    case 'clubLog':
-                        url = `/club/log/detail/${no}`;
-                        break;
-                    case 'clubSchedule':
-                        url = `/club/schedule/detail/${no}`;
-                        break;
-                    case 'shareLike':
-                        url = `/share/detail/${no}`;
-                        break;
-                    case 'saleBoard':
-                        url = `/sale/detail/${no}`;
-                        break;
-                }
+                const csNo = this.getAttribute('data-no');
+                let url = `/cs/detail/${csNo}`;
 
                 window.location.href = url;
             });

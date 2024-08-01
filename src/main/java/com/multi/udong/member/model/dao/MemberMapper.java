@@ -3,7 +3,7 @@ package com.multi.udong.member.model.dao;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
-import com.multi.udong.member.model.dto.MemPageDTO;
+import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,19 +16,17 @@ import java.util.Map;
  * @since : 24. 7. 23.
  */
 @Mapper
-public interface MemberDAO{
+public interface MemberMapper {
 
     int signup(MemberDTO memberDTO);
 
-    int insertProfileImg(AttachmentDTO attachmentDTO);
+    int insertProfileImg();
 
     MemberDTO findMemberById(String memberId);
 
     MemberDTO findMemberByNickname(String nickname);
 
     int insertBusReg(MemBusDTO memBusDTO);
-
-    int selectLastInsertId();
 
     int insertAddress(MemAddressDTO memAddressDTO);
 
@@ -50,21 +48,21 @@ public interface MemberDAO{
 
     void updateMemberPw(MemberDTO memberDTO);
 
-    List<LinkedHashMap<String, Object>> selectNewsBoard(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsBoard(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectNewsLike(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsLike(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectNewsReply(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectNewsReply(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClub(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectClub(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClubLog(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectClubLog(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectClubSchedule(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectClubSchedule(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectShareLike(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectShareLike(PageDTO memberNo);
 
-    List<LinkedHashMap<String, Object>> selectSaleBoard(MemPageDTO memberNo);
+    List<LinkedHashMap<String, Object>> selectSaleBoard(PageDTO memberNo);
 
     List<Map<String, Object>> getNewsData(int memberNo);
 
