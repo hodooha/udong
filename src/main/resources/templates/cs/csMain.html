@@ -95,7 +95,12 @@
                 <h3>문의하기</h3>
                 <p>문의하기 입니다.</p>
             </div>
-            <div class="card" onClick="location.href ='/cs/csMyQue'">
+            <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csAllQue'">
+                <i>C</i>
+                <h3>전체 문의내역</h3>
+                <p>모든 사용자의 문의내역입니다.</p>
+            </div>
+            <div th:unless="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csMyQue'">
                 <i>C</i>
                 <h3>문의내역</h3>
                 <p>내 문의내역 입니다.</p>

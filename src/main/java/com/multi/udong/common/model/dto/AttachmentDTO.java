@@ -14,4 +14,6 @@ public class AttachmentDTO {
     private String originalName;
     private String savedName;
 
+    private String fileUrl;
+
 }

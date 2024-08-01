@@ -73,6 +73,10 @@
         th {
             background-color: #f2f2f2;
         }
+        .clickable-row:hover {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
         #no-result {
             margin: 20px;
         }
@@ -119,10 +123,10 @@
                 <h3>문의하기</h3>
                 <p>문의하기 입니다.</p>
             </div>
-            <div class="card" onClick="location.href ='/cs/csMyQue'">
+            <div class="card" onClick="location.href ='/cs/csAllQue'">
                 <i>C</i>
-                <h3>문의내역</h3>
-                <p>내 문의내역 입니다.</p>
+                <h3>전체 문의내역</h3>
+                <p>모든 사용자의 문의내역입니다.</p>
             </div>
         </div>
 
@@ -207,8 +211,8 @@
 
         rows.forEach(row => {
             row.addEventListener('click', function() {
-                const no = this.getAttribute('data-no');
-                let `/cs/detail/${no}`;
+                const csNo = this.getAttribute('data-no');
+                let url = `/cs/detail/${csNo}`;
 
                 window.location.href = url;
             });

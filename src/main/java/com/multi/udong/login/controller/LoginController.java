@@ -110,6 +110,10 @@ public class LoginController {
             String savePath = "C:\\workspace\\local\\udong\\src\\main\\resources\\static\\uploadFiles\\";
             String fileName = savePath + attachmentDTO.getSavedName();
 
+//            String fileName = attachmentDTO.getFileUrl();
+
+            System.out.println("fileName : " + fileName);
+
             // NaverOcr로 사업자등록증 추출요청
             NaverOcr ocr = new NaverOcr();
             ArrayList<String> list = ocr.ocr(fileName);

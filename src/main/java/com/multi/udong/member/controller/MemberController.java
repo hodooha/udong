@@ -3,8 +3,8 @@ package com.multi.udong.member.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.controller.KakaoLoginController;
 import com.multi.udong.member.model.dto.MemAddressDTO;
-import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
+import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
@@ -450,4 +450,51 @@ public class MemberController {
 
         return attachmentDTO;
     }
+
+//    public AttachmentDTO settingFile(MultipartFile file) {
+//        // 네이버 클라우드 플랫폼 인증 정보
+//        String accessKey = "ncp_iam_BPASKR17s4RXeNdQ7EQ3";
+//        String secretKey = "ncp_iam_BPKSKRRBMniwe9pYJ8YH3Zi9xakWIiL1aE";
+//        String endPoint = "https://kr.object.ncloudstorage.com";
+//        String regionName = "kr-standard";
+//
+//        // S3 클라이언트 생성
+//        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
+//                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
+//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
+//                .build();
+//
+//        // 버킷 이름 설정
+//        String bucketName = "team-1";
+//
+//        // 파일명 랜덤 저장
+//        String originalName = file.getOriginalFilename();
+//        String ext = originalName.substring(originalName.lastIndexOf("."));
+//        String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+//
+//        // ObjectMetadata 설정
+//        ObjectMetadata metadata = new ObjectMetadata();
+//        metadata.setContentType(file.getContentType());
+//        metadata.setContentLength(file.getSize());
+//
+//        // 파일 업로드
+//        try {
+//            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, savedName, file.getInputStream(), metadata)
+//                    .withCannedAcl(CannedAccessControlList.PublicRead);
+//            s3.putObject(putObjectRequest);
+//        } catch (IOException e) {
+//            throw new RuntimeException("파일 업로드 실패", e);
+//        }
+//
+//        // 반환 정보 저장
+//        AttachmentDTO attachmentDTO = new AttachmentDTO();
+//        attachmentDTO.setSavedName(savedName);
+//        attachmentDTO.setOriginalName(originalName);
+//
+//        // 파일의 공개 URL 설정 (버킷이 공개 접근 가능한 경우)
+//        attachmentDTO.setFileUrl(s3.getUrl(bucketName, savedName).toString());
+////        attachmentDTO.setFileUrl("https://kr.object.ncloudstorage.com/team.1/" + savedName);
+//
+//        return attachmentDTO;
+//    }
 }

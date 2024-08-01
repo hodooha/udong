@@ -115,7 +115,49 @@ public class CSController {
      * @since 2024 -08-01
      */
     @GetMapping("/csAllQue")
-    public void csAllQue () {}
+    public String csAllQue (@AuthenticationPrincipal CustomUserDetails c,
+                            @RequestParam(value = "page", defaultValue = "1") int page,
+                            @RequestParam(value = "searchWord", required = false) String searchWord,
+                            Model model) {
+
+        if (c == null) {
+            model.addAttribute("msg","로그인이 필요한 기능입니다.");
+            return "cs/csMain";
+        }
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        PageDTO pageDTO = new PageDTO();
+        pageDTO.setPage(page);
+        pageDTO.setMemberNo(memberNo);
+        pageDTO.setStartEnd(page);
+
+        pageDTO.setSearchWord(searchWord);
+
+        int count;
+        int pages = 1;
+
+        List<List<String>> data = csService.selectQue(pageDTO);
+
+        if(!data.isEmpty()) {
+
+            count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
+            pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
+
+            for (List<String> list : data) {
+                list.remove(list.size() - 1);
+            }
+        }
+
+        List<String> headers = Arrays.asList("문의유형", "제목", "내용", "작성일자", "답변여부");
+
+        model.addAttribute("tableHeaders", headers);
+        model.addAttribute("tableData", data);
+        model.addAttribute("page", pageDTO.getPage());
+        model.addAttribute("pages", pages);
+        model.addAttribute("searchWord", searchWord);
+
+        return "cs/csMyQue";
+    }
 
     /**
      * Insert que form.
@@ -217,7 +259,7 @@ public class CSController {
 
         int csNo = csAnswerDTO.getCsNo();
 
-        return "cs/queDetail/" + csNo;
+        return "redirect:cs/detail/" + csNo;
     }
 
     /**

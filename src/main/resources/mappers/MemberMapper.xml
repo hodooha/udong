@@ -67,24 +67,19 @@
         (#{memberId}, #{memberPw}, #{nickname}, #{phone}, #{email})
     </insert>
 
-    <insert id="insertProfileImg" parameterType="attachmentDTO">
+    <insert id="insertProfileImg">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
-        (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
+        ('defaultProfile.png', 'defaultProfile.png', 'MEM', LAST_INSERT_ID())
     </insert>
-
-    <select id="selectLastInsertId" resultType="int">
-        <!-- LAST_INSERT_ID(): MySQL에서 마지막으로 AUTO_INCREMENT된 값을 반환하는 함수 -->
-        SELECT LAST_INSERT_ID()
-    </select>
 
     <insert id="insertBusReg" parameterType="memBusDTO">
         INSERT INTO MEM_BUS (member_no, business_number, representative_name, opening_date) VALUES
-        (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
+        (LAST_INSERT_ID(), #{businessNumber}, #{representativeName}, #{openingDate})
     </insert>
 
     <insert id="insertAttachment" parameterType="attachmentDTO">
         INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name) VALUES
-        (#{typeCode}, #{targetNo}, #{originalName}, #{savedName})
+        (#{typeCode}, LAST_INSERT_ID(), #{originalName}, #{savedName})
     </insert>
 
     <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">

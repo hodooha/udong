@@ -73,6 +73,10 @@
         th {
             background-color: #f2f2f2;
         }
+        .clickable-row:hover {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
         #no-result {
             margin: 20px;
         }
@@ -137,14 +141,14 @@
             <h2>내 문의내역</h2>
             <table>
                 <thead>
-                <tr>
-                    <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
-                </tr>
+                    <tr>
+                        <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
+                    </tr>
                 </thead>
                 <tbody id="result-table">
-                <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
-                    <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" th:text="${element}"></td>
-                </tr>
+                    <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
+                        <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" th:text="${element}"></td>
+                    </tr>
                 </tbody>
             </table>
             <div id="no-result" hidden>결과가 없습니다.</div>

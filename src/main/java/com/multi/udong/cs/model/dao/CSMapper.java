@@ -22,8 +22,6 @@ public interface CSMapper {
 
     void insertQueForm(CSQuestionDTO csQuestionDTO);
 
-    int selectLastInsertId();
-
     void insertFile(AttachmentDTO attachmentDTO);
 
     List<TypeDTO> getAllTypes();
@@ -38,4 +36,7 @@ public interface CSMapper {
 
     void insertAnswerQue(CSAnswerDTO csAnswerDTO);
 
+    String getAuthorityByMemberNo(Integer answererNo);
+
+    void updateQueIsAnswered(Integer csNo);
 }

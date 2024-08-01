@@ -28,19 +28,70 @@
         }
         .question {
             display: flex;
+            flex: 1;
+            width: 800px;
             flex-direction: column;
             gap: 20px;
-            text-align: center;
+            text-align: left;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
-        .question span {
+        .que-info {
+            display: flex;
+        }
+        .que-info span {
             border: 1px solid #000000;
             border-radius: 5px;
             padding: 0.5rem;
             min-width: 200px;
+            margin: 0 20px;
+        }
+        .attachment-box ul {
+            display: flex;
+            list-style: none;
+            gap: 10px;
+        }
+        .attachment-box ul li {
+            background-color: #3B5C9A;
+            border-radius: 20px;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .attachment-box ul li:hover {
+            background-color: #0B1D40;
+        }
+        .attachment-box ul li a {
+            text-decoration: none;
+            color: #FFFFFF;
+        }
+        .answers-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .answer-box, .no-answer {
+            background-color: #E2ECFE;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .answer-info span {
+            margin-right: 10px;
+        }
+        .answer-content span {
+            font-size: 20px;
+        }
+        .answer-form form {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .alert-box {
+            display: flex;
+            justify-content: space-between;
         }
         #alert {
             display: none;
@@ -68,17 +119,22 @@
     <div class="content-area">
 
         <div class="question">
-            <h2>문의하기</h2>
-            <label>문의유형
+
+            <h2>문의 상세</h2>
+            <div class="que-info">
+                <p>문의유형</p>
                 <span th:text="${que.csName}"></span>
-            </label>
-            <label>문의제목
+            </div>
+            <div class="que-info">
+                <p>문의제목</p>
                 <span th:text="${que.title}"></span>
-            </label>
-            <label>문의내용
+            </div>
+            <div class="que-info">
+                <p>문의내용</p>
                 <span th:text="${que.content}"></span>
-            </label>
-            <div th:if="${attachments != null and !attachments.isEmpty()}">
+            </div>
+
+            <div th:if="${attachments != null and !attachments.isEmpty()}" class="attachment-box">
                 <h2>첨부 파일:</h2>
                 <ul>
                     <li th:each="attachment : ${attachments}">
@@ -86,13 +142,24 @@
                     </li>
                 </ul>
             </div>
-            <div id="answer">
-                <div th:if="${answer != null}">
-                    <h2>답변 : </h2>
-                    <span th:text="${answer.content}"></span>
+
+            <div th:if="${not #lists.isEmpty(answers)}" class="answers-container">
+                <h2>답변:</h2>
+                <div th:each="answer : ${answers}" class="answer-box">
+                    <div class="answer-info">
+                        <span th:text="${answer.nickname}"></span>
+                        <span th:text="${answer.createdAt}"></span>
+                    </div>
+                    <div class="answer-content">
+                        <span th:text="${answer.content}"></span>
+                    </div>
                 </div>
             </div>
-            <div id="answer-insert">
+            <div th:if="${#lists.isEmpty(answers)}" class="no-answer">
+                <p>아직 답변이 없습니다.</p>
+            </div>
+
+            <div class="answer-form">
                 <form action="/cs/answerQue" method="post" id="answerForm">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="csNo" th:value="${que.csNo}">
@@ -100,8 +167,9 @@
                     <button class="btn btn-udh-blue">답변 등록하기</button>
                 </form>
             </div>
-            <div>
-                * 답변이 완료된 문의는 삭제가 불가능 합니다.
+
+            <div class="alert-box">
+                <p>* 답변이 완료된 문의는 삭제가 불가능 합니다.</p>
                 <form action="/cs/deleteQue" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="csNo" th:value="${que.csNo}">

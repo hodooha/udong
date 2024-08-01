@@ -39,14 +39,9 @@
         (#{writerNo}, #{csType}, #{title}, #{content})
     </insert>
 
-    <select id="selectLastInsertId" resultType="int">
-        <!-- LAST_INSERT_ID(): MySQL에서 마지막으로 AUTO_INCREMENT된 값을 반환하는 함수 -->
-        SELECT LAST_INSERT_ID()
-    </select>
-
     <insert id="insertFile" parameterType="attachmentDTO">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
-        (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
+        (#{originalName}, #{savedName}, #{typeCode}, LAST_INSERT_ID())
     </insert>
 
     <select id="getQueDetail" resultType="csQuestionDTO">
@@ -70,8 +65,9 @@
     </select>
 
     <select id="getQueAnswer" resultType="csAnswerDTO">
-        SELECT *
-        FROM CS_ANSWER
+        SELECT *, m.nickname
+        FROM CS_ANSWER ca
+        JOIN Member m ON ca.answerer_no = m.member_no
         WHERE cs_no = #{csNo}
     </select>
 
@@ -79,9 +75,25 @@
         SELECT * FROM ATTACHMENT WHERE file_no = #{fileNo}
     </select>
 
-    <insert id="insertAnswerQue" parameterType="csAnswerDTO" useGeneratedKeys="true" keyProperty="answer_no">
+    <insert id="insertAnswerQue" parameterType="csAnswerDTO" useGeneratedKeys="true" keyProperty="answerNo">
         INSERT INTO CS_ANSWER (cs_no, answerer_no, content) VALUES
         (#{csNo}, #{answererNo}, #{content})
     </insert>
+
+    <select id="getAuthorityByMemberNo" resultType="string">
+        SELECT authority FROM MEMBER WHERE member_no = #{answerer_no}
+    </select>
+
+    <update id="updateQueIsAnswered">
+        UPDATE CS_QUESTION
+        SET is_answered = 'Y'
+        WHERE cs_no = #{cs_no}
+    </update>
+
+    <update id="updateMember" parameterType="attachmentDTO">
+        UPDATE MEMBER
+        SET modified_at = CURRENT_TIMESTAMP
+        WHERE member_no = #{targetNo}
+    </update>
     
 </mapper>

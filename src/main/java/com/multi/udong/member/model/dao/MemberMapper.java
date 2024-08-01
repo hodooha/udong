@@ -20,15 +20,13 @@ public interface MemberMapper {
 
     int signup(MemberDTO memberDTO);
 
-    int insertProfileImg(AttachmentDTO attachmentDTO);
+    int insertProfileImg();
 
     MemberDTO findMemberById(String memberId);
 
     MemberDTO findMemberByNickname(String nickname);
 
     int insertBusReg(MemBusDTO memBusDTO);
-
-    int selectLastInsertId();
 
     int insertAddress(MemAddressDTO memAddressDTO);
 

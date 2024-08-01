@@ -60,13 +60,10 @@ public class CSServiceImpl implements CSService{
      */
     @Override
     public void insertQueForm(CSQuestionDTO csQuestionDTO, List<AttachmentDTO> attachments) {
-
         csMapper.insertQueForm(csQuestionDTO);
-        int csNo = csMapper.selectLastInsertId();
 
         if (attachments != null && !attachments.isEmpty()) {
             for (AttachmentDTO attachment : attachments) {
-                attachment.setTargetNo(csNo);
                 csMapper.insertFile(attachment);
             }
         }
@@ -116,12 +113,18 @@ public class CSServiceImpl implements CSService{
      */
     @Override
     public AttachmentDTO getAttachment(int fileNo) {
-        System.out.println("hello");
+
         return csMapper.getAttachment(fileNo);
     }
 
     @Override
     public void insertAnswerQue(CSAnswerDTO csAnswerDTO) {
+
         csMapper.insertAnswerQue(csAnswerDTO);
+
+        String authority = csMapper.getAuthorityByMemberNo(csAnswerDTO.getAnswererNo());
+        if (authority.equals("ROLE_ADMIN")) {
+            csMapper.updateQueIsAnswered(csAnswerDTO.getCsNo());
+        }
     }
 }

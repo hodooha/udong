@@ -49,15 +49,7 @@ public class MemberServiceImpl implements MemberService {
         try {
 
             int result = memberMapper.signup(memberDTO);
-
-            int memberNo = memberMapper.selectLastInsertId();
-            AttachmentDTO attachmentDTO = new AttachmentDTO();
-            attachmentDTO.setTargetNo(memberNo);
-            attachmentDTO.setTypeCode("MEM");
-            attachmentDTO.setOriginalName("defaultProfile.png");
-            attachmentDTO.setSavedName("defaultProfile.png");
-
-            int result2 = memberMapper.insertProfileImg(attachmentDTO);
+            int result2 = memberMapper.insertProfileImg();
 
             if (result != 1 && result2 != 1) {
 
@@ -203,11 +195,6 @@ public class MemberServiceImpl implements MemberService {
         memberDTO.setMemberPw(encPw);
         try {
             int result = memberMapper.signup(memberDTO);
-            int memberNo = memberMapper.selectLastInsertId();
-
-            memBusDTO.setMemberNo(memberNo);
-            attachmentDTO.setTargetNo(memberNo);
-
             int result2 = memberMapper.insertBusReg(memBusDTO);
             int result3 = memberMapper.insertAttachment(attachmentDTO);
 

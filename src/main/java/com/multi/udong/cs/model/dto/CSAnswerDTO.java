@@ -18,5 +18,7 @@ public class CSAnswerDTO {
     private Integer csNo;
     private Integer answererNo;
     private String content;
-    private String created_at;
+    private String createdAt;
+
+    private String nickname;
 }
