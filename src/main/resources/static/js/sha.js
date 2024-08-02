@@ -13,10 +13,10 @@ $(function(){
         $('.rentCom').css('visibility', 'hidden');
     };
 
-    if(path.includes("/dream/lender")){
+    if(path.includes("/dream/lend")){
         $('#borrowerBtn').addClass("gray");
         $('#lenderBtn').removeClass("gray");
-    } else if(path.includes("/dream/borrower")){
+    } else if(path.includes("/dream/borrow")){
         $('#lenderBtn').addClass("gray");
         $('#borrowerBtn').removeClass("gray");
     };
@@ -54,9 +54,22 @@ $(function(){
                 dateRefresh();
             }
         });
+    }
 
+    if(bodyId == "dreamLend"){
+        console.log();
+        getLendList(1);
 
+        window.addEventListener("popstate", function(event) {
+            if (event.state) {
+                restoreFormState(event.state);
+                updateLendList(event.state);
+            }
+        });
+    }
 
+    if(bodyId == "dreamBorrow"){
+//        getBorrowList(group);
     }
 
 
@@ -227,11 +240,11 @@ function updateItemList(params){
             success: function(data) {
                 console.log(data)
                 renderItemList(data.itemList);
-                renderPageNation(data.pageInfo);
+                renderPageNation(data.pageInfo, "search");
 
 
                 // url에 검색한 쿼리들 넣어주기.
-                const newUrl = createUrlWithParams(params);
+                let newUrl = createUrlWithParams(params);
                 history.pushState(params, '', newUrl);
             },
             error: function(data) {
@@ -307,7 +320,7 @@ function renderItemList(items){
 
 }
 
-function renderPageNation(pageInfo){
+function renderPageNation(pageInfo, funcName){
     let totalCounts = pageInfo.totalCounts;
     let startPage = pageInfo.startPage;
     let endPage = pageInfo.endPage;
@@ -319,7 +332,7 @@ function renderPageNation(pageInfo){
     if(totalCounts > 0){
         pageResult += `
             <li class="page-item me-1">
-                <button class="page-link btn-udh-blue" onclick="search(${currentPage-1})" style="${currentPage == 1 ? 'visibility:hidden' : ''}" aria-label="Previous">
+                <button class="page-link btn-udh-blue" onclick="${funcName}(${currentPage-1})" style="${currentPage == 1 ? 'visibility:hidden' : ''}" aria-label="Previous">
                     <span>&laquo;</span>
                 </button>
             </li>`
@@ -328,7 +341,7 @@ function renderPageNation(pageInfo){
         for(i = startPage; i <= endPage; i++){
             pageResult += `
                 <li class="page-item active me-1" aria-current="page">
-                    <button class="page-link btn-udh-blue ${currentPage == i ? 'pageActive' : ''}" onclick="search(${i})">${i}</button>
+                    <button class="page-link btn-udh-blue ${currentPage == i ? 'pageActive' : ''}" onclick="${funcName}(${i})">${i}</button>
                 </li>`
         }
 
@@ -336,7 +349,7 @@ function renderPageNation(pageInfo){
 
         pageResult += `
             <li class="page-item me-1">
-               <button class="page-link btn-udh-blue " style="${currentPage == totalPage ? 'visibility:hidden' : ''}" onclick="search(${currentPage+1})" aria-label="Next">
+               <button class="page-link btn-udh-blue " style="${currentPage == totalPage ? 'visibility:hidden' : ''}" onclick="${funcName}(${currentPage+1})" aria-label="Next">
                    <span>&raquo;</span>
                </button>
             </li>`
@@ -350,11 +363,159 @@ function search(page){
     let params = getSearchParams(page);
     console.log(params);
     updateItemList(params);
+}
+
+function getLendList(page){
+    let params = getDreamSearchParams(page);
+    console.log(params);
+    updateLendList(params);
+}
+
+function getDreamSearchParams(page){
+    let catCode = '';
+    let group = $("input[name='group']:checked").val();
+    let statusCode = $('#statusSelect').val();
+    let keyword = $('#keyword').val();
+    if (page == null || page == '') {
+        page = 1;
+    }
+
+    return {
+        catCode: catCode,
+        group: group,
+        statusCode: statusCode,
+        keyword: keyword,
+        page: page
+    };
+
+}
+
+function updateLendList(params){
+    $.ajax({
+
+        url: "/share/dream/lendList",
+        type: "get",
+        data: params,
+        success: function(data){
+            console.log(data);
+            renderLendList(data.lendList);
+            renderPageNation(data.pageInfo, "getLendList");
+            // url에 검색한 쿼리들 넣어주기.
+            let newUrl = createUrlWithParams(params);
+            history.pushState(params, '', newUrl);
+        },
+        error: function(data){
+            console.log(data);
+        }
+
+    })
+
+}
+
+function renderLendList(items){
+    let result = "";
+
+    if(items.length == 0){
+        result = `<div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">등록한 물건이 없습니다.</div>`
+    } else {
+        result = items.map((item) => {
+
+            let head =
+                `<div class="card mb-3 dream" >
+                    <div class="row g-0">
+                        <div class="col-1 ${item.itemGroup}Group">${item.itemGroup == 'rent' ? '대여' : '나눔'}</div>
+                        <div class="col-2 img-area">
+                            <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="img-fluid" alt="물건이미지" style="height:140px;">
+                        </div>
+                        <div class="col-4 item-info-area">
+                            <div class="card-body">
+                                <h4 class="mb-3">${item.title}</h4>
+                                <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                            </div>
+                        </div>
+                        <div class="col-2 status-area">
+                            <h5>${item.statusName}</h5>
+                            <p>반납예정일: ${item.returnDate}</p>
+                        </div>
+                        <div class="col-3 btn-area container">
+                            <div class="btn-group">
+                                <div class="mb-3 btns-1">`
+
+            let tail =
+                    `
+                                <button  class="btn btn-udh-silver">수정</button>
+                                <button  class="btn btn-udh-silver">삭제</button>
+                            </div>
+                            <div class="btns-2">
+                                <button class="btn btn-udh-blue" style="width:100%">대여확정</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`
+
+            if(item.itemGroup == "rent"){
+                if(item.statusCode == "UNAV"){
+                    tail = `
+                                       <button  class="btn btn-udh-silver">수정</button>
+                                       <button  class="btn btn-udh-silver">삭제</button>
+                                   </div>
+                                   <div class="btns-2">
+                                       <button class="btn btn-udh-blue" style="width:100%">중단해제</button>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>`
+
+                } else if(item.statusCode == "RNT"){
+                    tail = `
+                                       <button  class="btn btn-udh-silver">수정</button>
+                                    <button  class="btn btn-udh-red">신고</button>
+                                   </div>
+                                   <div class="btns-2">
+                                       <button class="btn btn-udh-blue" style="width:48%">반납완료</button>
+                                       <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>`
+                }
+            } else{
+                if(item.statusCode == "GIV"){
+                tail = `
+                               <button class="btn btn-udh-blue " style="width:100%">쪽지하기</button>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>`
+
+                } else{
+                tail = `
+                               <button class="btn btn-udh-silver" style="width:100%">추첨하기</button>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>`
+
+                }
+            }
+
+
+            return head + tail
+
+        }).join("")
+
+    }
+
+    $('#dreams').html(result);
 
 }
 
 function createUrlWithParams(params) {
-    const url = new URL(window.location.href);
     url.searchParams.set('catCode', params.catCode);
     url.searchParams.set('group', params.group);
     url.searchParams.set('statusCode', params.statusCode);
@@ -368,6 +529,7 @@ function restoreFormState(params) {
     $("input[name='group']").val(params.group);
     $('#availableCheck').prop('checked', params.statusCode ? true : false);
     $('#keyword').val(params.keyword);
+    $('#statusSelect').val(params.statusCode).prop("selected", true);
 }
 
 function renderItemDetail(data){

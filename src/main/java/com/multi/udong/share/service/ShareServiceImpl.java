@@ -352,4 +352,23 @@ public class ShareServiceImpl implements ShareService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
+
+        ShaDreamResultDTO result = new ShaDreamResultDTO();
+        result.setLendList(shareDAO.getLendList(sqlSession, criteriaDTO));
+        result.setTotalCounts(getLendCounts(criteriaDTO));
+
+
+        return result;
+    }
+
+    @Override
+    public int getLendCounts(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
+
+        return shareDAO.getLendCounts(sqlSession, criteriaDTO);
+    }
+
+
 }

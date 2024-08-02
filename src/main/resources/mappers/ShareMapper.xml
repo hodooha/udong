@@ -22,12 +22,26 @@
         <result property="modifiedAt" column="modified_at" />
         <result property="expiryDate" column="expiry_date" />
         <result property="statusCode" column="status_code" />
+        <result property="statusName" column="status_name" />
         <result property="dealCnt" column="deal_cnt" />
         <result property="likeCnt" column="like_cnt" />
         <result property="viewCnt" column="view_cnt" />
         <result property="reqCnt" column="req_cnt" />
         <result property="deletedAt" column="deleted_at" />
         <result property="img" column="saved_name" />
+    </resultMap>
+
+    <resultMap id="shaReqMap" type="shaReqDTO">
+        <id property="reqNo" column="req_no"/>
+        <result property="reqItem" column="req_item" />
+        <result property="ownerNo" column="owner_no" />
+        <result property="rqstNo" column="rqst_no" />
+        <result property="createdAt" column="created_at" />
+        <result property="modifiedAt" column="modified_at" />
+        <result property="returnDate" column="return_date" />
+        <result property="statusCode" column="status_code" />
+        <result property="statusName" column="status_name" />
+        <association property="itemDTO" javaType="shaItemDTO" resultMap="shaItemMap"/>
     </resultMap>
 
     <select id="getShaCat" resultMap="shaCatMap">
@@ -55,16 +69,6 @@
                 (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
             </otherwise>
         </choose>
-        <!--<if test="itemGroup == 'rent'">
-            (item_group, item_cat_code, title, content, owner_no, loc_code)
-            values
-            (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode})
-        </if>
-        <if test="itemGroup == 'give'">
-            (item_group, item_cat_code, title, content, owner_no, loc_code, expiry_date, status_code)
-            values
-            (#{itemGroup}, #{itemCatCode}, #{title}, #{content}, #{ownerNo}, #{locCode}, #{expiryDate}, 'GIV')
-        </if>-->
     </insert>
 
     <insert id="insertImg" >
@@ -161,17 +165,18 @@
         <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
         <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
         ) a
-        left join (
-        select target_no, saved_name
+        left join
+        (
+        select target_no, saved_name, type_code
         from (
         select *,
         row_number() over (partition by target_no order by file_no) as rn
         from attachment
-        where type_code = #{group}
         ) sub
         where rn = 1
         ) c
         on a.item_no = c.target_no
+        and a.item_group = c.type_code
         where a.rn between #{start} and #{end}
         order by a.rn
     </select>
@@ -210,7 +215,7 @@
         select *
         from sha_req
         where req_item = #{reqItem}
-        <if test="rqstNo != null and rqstNo != ''">
+        <if test="rqstNo != 0 and rqstNo != ''">
             and rqst_no = #{rqstNo}
         </if>
         <if test="statusCode != null and statusCode != ''">
@@ -268,7 +273,7 @@
         select *
         from sha_like
         where member_no = #{memberNo}
-        <if test="itemNo != null and itemNo != ''">
+        <if test="itemNo != 0 and itemNo != ''">
             and item_no = #{itemNo}
         </if>
     </select>
@@ -307,5 +312,87 @@
         req_cnt = req_cnt + 1
         where item_no = #{itemNo}
     </update>
+
+    <select id="getLendList" resultMap="shaItemMap">
+        select a.*, c.saved_name, e.status_name
+        from
+        (
+            select b.*, e.*, d.nickname,
+            row_number() over (order by b.modified_at desc) as rn
+            from sha_items b
+            left join
+            member d
+            on b.owner_no = d.member_no
+            left join
+            (
+                select req_item, return_date
+                from sha_req
+                where status_code = 'RNT'
+            ) e
+            on b.item_no = e.req_item
+            where b.deleted_at is null
+            and b.owner_no = #{ownerNo}
+            <if test="group != null and group != ''">and b.item_group = #{group}</if>
+            <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
+            <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
+        ) a
+        left join
+            (
+            select target_no, saved_name, type_code
+            from
+                (
+                select *,
+                row_number() over (partition by target_no order by file_no) as rn
+                from attachment
+                ) sub
+                where rn = 1
+            ) c
+        on a.item_no = c.target_no
+        and a.item_group = c.type_code
+        left join
+        sha_status e
+        on a.status_code = e.status_code
+        where a.rn between #{start} and #{end}
+        order by a.rn
+    </select>
+
+    <select id="getLendCounts" resultType="Integer">
+        select count(*)
+        from sha_items
+        where deleted_at is null
+        and owner_no = #{ownerNo}
+        <if test="group != null and group != ''">and item_group = #{group}</if>
+        <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
+    </select>
+
+    <select id="getReqList" resultMap="shaReqMap">
+        select a.*, d.*, e.status_name
+        from sha_req a
+        left join
+            (
+                select
+                    b.*, c.saved_name
+                from
+                    sha_items b
+                left join
+                    (
+                        select target_no, type_code, saved_name
+                        from
+                        (
+                            select *,
+                                row_number() over (partition by target_no order by file_no) as rn
+                            from attachment
+                        ) sub
+                    where rn = 1
+                    ) c
+                on b.item_no = c.target_no and b.item_group = c.type_code
+            ) d
+        on a.req_item = d.item_no
+        left join
+            sha_status e
+        on a.status_code = e.status_code
+        where a.rqst_no = #{rqstNo}
+    </select>
 
 </mapper>

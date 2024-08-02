@@ -128,4 +128,7 @@ public interface ShareService {
     void updateShaLike(ShaLikeDTO likeDTO) throws Exception;
 
 
+    ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
+
+    int getLendCounts(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
 }

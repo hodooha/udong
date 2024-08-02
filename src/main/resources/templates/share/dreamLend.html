@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Title</title>
+    <style>
+        button{
+            font-weight: bolder !important;
+
+        }
+
+        .row > div{
+            height: 150px;
+        }
+
+        .dream {
+            border: none !important;
+            width:100%;
+            height: 150px;
+        }
+
+        .rentGroup{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #3B5C9A;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bolder;
+        }
+
+        .giveGroup{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFB83D;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bolder;
+        }
+
+
+        .img-area,
+        .item-info-area{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #F5F5F5;
+        }
+
+        .select-area{
+            display: flex;
+
+        }
+
+        .card-body,
+        .btn-group{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .status-area{
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+
+        }
+
+        .status-select-area{
+            display:flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-size: 16px;
+
+        }
+
+        .stat-select{
+            width:140px !important;
+
+        }
+
+
+        .btn-area{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #F5F5F5;
+
+        }
+
+        .btn-group{
+            width: 100%;
+        }
+
+        .btns-1,
+        .btns-2{
+            display:flex;
+            justify-content: space-between;
+        }
+
+        .btns-1 button {
+            width: 48%;
+        }
+
+        .page-link{
+            background-color: #3B5C9A !important;
+            border-color: #3B5C9A !important;
+            color: #FFFFFF !important;
+        }
+
+        .pageActive{
+            background-color: #0B1D40 !important;
+            border-color: #0B1D40 !important;
+            color: #FFFFFF !important;
+        }
+
+        .page-link:active,
+        .page-link:focus{
+            background-color: #0B1D40 !important;
+            border-color: #0B1D40 !important;
+            color: #FFFFFF !important;
+        }
+
+
+    </style>
+</head>
+<body id="dreamLend">
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{share/dreamMenubar :: #dreamMenubar}"></div>
+
+<div class="container">
+    <h2 class="my-3" style="text-align:center; font-weight:bolder;">나의 빌려(나눠)드림 목록</h2>
+
+    <div class="select-area mb-1 mt-3 ms-1">
+        <div class="col-3">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio1"
+                       value="" checked onchange="getLendList()">
+                <label class="form-check-label" for="inlineRadio1">모두</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio2"
+                       value="rent" onchange="getLendList()">
+                <label class="form-check-label" for="inlineRadio2">대여</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio3"
+                       value="give" onchange="getLendList()">
+                <label class="form-check-label" for="inlineRadio3">나눔</label>
+            </div>
+        </div>
+
+        <div class="status-select-area col-9">
+            <label for="statusSelect" style="width:2em">
+                상태
+            </label>
+            <select class="form-select stat-select me-3" id=statusSelect name="statusSelect" onchange="getLendList()">
+                <option value="">== 전체 ==</option>
+                <option value="RNT">대여중</option>
+                <option value="AVL">대여가능</option>
+                <option value="UNAV">대여불가</option>
+                <option value="GIV">나눔중</option>
+                <option value="GVD">나눔완료</option>
+            </select>
+
+            <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요." id="keyword" style="width:15em">
+            <button class="btn btn-udh-blue searchBtn" type="button" onclick="getLendList()">검색</button>
+
+        </div>
+
+    </div>
+
+    <div id="dreams"></div>
+    <!--    <div class="card mb-3 dream" >-->
+    <!--        <div class="row g-0">-->
+    <!--            <div class="col-1 rentGroup">대여</div>-->
+    <!--            <div class="col-2 img-area">-->
+    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
+    <!--            </div>-->
+    <!--            <div class="col-4 item-info-area">-->
+    <!--                <div class="card-body">-->
+    <!--                    <h4 class="mb-3">${item.title}</h4>-->
+    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--            <div class="col-2 status-area">-->
+    <!--                <h5>대여가능</h5>-->
+    <!--            </div>-->
+    <!--            <div class="col-3 btn-area container">-->
+    <!--                <div class="btn-group">-->
+    <!--                    <div class="mb-3 btns-1">-->
+    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
+    <!--                        <button  class="btn btn-udh-silver">삭제</button>-->
+    <!--                    </div>-->
+    <!--                    <div class="btns-2">-->
+    <!--                        <button class="btn btn-udh-blue" style="width:100%">대여확정</button>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+    <!--    <div class="card mb-3 dream" >-->
+    <!--        <div class="row g-0">-->
+    <!--            <div class="col-1 rentGroup">나눔</div>-->
+    <!--            <div class="col-2 img-area">-->
+    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
+    <!--            </div>-->
+    <!--            <div class="col-4 item-info-area">-->
+    <!--                <div class="card-body">-->
+    <!--                    <h4 class="mb-3">${item.title}</h4>-->
+    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--            <div class="col-2 status-area">-->
+    <!--                <h5>대여가능</h5>-->
+    <!--            </div>-->
+    <!--            <div class="col-3 btn-area container">-->
+    <!--                <div class="btn-group">-->
+    <!--                    <div class="mb-3 btns-1">-->
+    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
+    <!--                        <button  class="btn btn-udh-red">신고</button>-->
+    <!--                    </div>-->
+    <!--                    <div class="btns-2">-->
+    <!--                        <button class="btn btn-udh-blue" style="width:48%">반납완료</button>-->
+    <!--                        <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+    <!--    <div class="card mb-3 dream" >-->
+    <!--        <div class="row g-0">-->
+    <!--            <div class="col-1 giveGroup">나눔</div>-->
+    <!--            <div class="col-2 img-area">-->
+    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
+    <!--            </div>-->
+    <!--            <div class="col-4 item-info-area">-->
+    <!--                <div class="card-body">-->
+    <!--                    <h4 class="mb-3">${item.title}</h4>-->
+    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--            <div class="col-2 status-area">-->
+    <!--                <h5>대여중</h5>-->
+    <!--                <p>반납예정일: 2024-08-15</p>-->
+    <!--            </div>-->
+    <!--            <div class="col-3 btn-area container">-->
+    <!--                <div class="btn-group">-->
+    <!--                    <div class="mb-3 btns-1">-->
+    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
+    <!--                        <button  class="btn btn-udh-red">신고</button>-->
+    <!--                    </div>-->
+    <!--                    <div class="btns-2">-->
+    <!--                        <button class="btn btn-udh-blue" style="width:48%">반납완료</button>-->
+    <!--                        <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>-->
+    <!--                    </div>-->
+    <!--                </div>-->
+    <!--            </div>-->
+    <!--        </div>-->
+    <!--    </div>-->
+    <nav class="row mt-3">
+        <ul class="pagination pagination-sm justify-content-center ">
+        </ul>
+    </nav>
+
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
+<script type="text/javascript" th:src="@{/js/sha.js}"></script>
+</body>
+</html>

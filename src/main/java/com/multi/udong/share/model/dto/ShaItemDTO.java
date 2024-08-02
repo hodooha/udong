@@ -30,6 +30,7 @@ public class ShaItemDTO {
     private LocalDate expiryDate;
     private LocalDate returnDate;
     private String statusCode;
+    private String statusName;
     private int dealCnt;
     private int likeCnt;
     private int viewCnt;

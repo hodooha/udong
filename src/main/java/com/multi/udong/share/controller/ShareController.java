@@ -117,25 +117,6 @@ public class ShareController {
         return "share/giveMain";
     }
 
-    @GetMapping("/dream/lender")
-    public String dreamLenderMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
-
-
-        return "share/dreamLender";
-
-    }
-
-    @GetMapping("/dream/borrower")
-    public String dreamBorrowerMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
-
-
-        return "share/dreamBorrower";
-
-    }
-
-
-
-
 
     /**
      * 카테고리 목록 조회
@@ -317,7 +298,6 @@ public class ShareController {
 
         return ResponseEntity.ok().body(result);
     }
-
 
 
     /**
@@ -753,6 +733,8 @@ public class ShareController {
 
         return msg;
     }
+
+
 
 
 }
