@@ -295,6 +295,14 @@ public class ClubServiceImpl implements ClubService {
     }
 
 
+    /**
+     * 모임 수정
+     *
+     * @param clubDTO the club dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -08-02
+     */
     @Override
     public int updateClub(ClubDTO clubDTO) throws Exception {
 
@@ -344,10 +352,77 @@ public class ClubServiceImpl implements ClubService {
     }
 
 
+    /**
+     * 모임 이미지 조회
+     *
+     * @param clubNo the club no
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -08-02
+     */
     @Override
     public List<AttachmentDTO> selectClubImg(int clubNo) throws Exception {
 
         return clubDAO.selectClubImg(sqlSession, clubNo);
+
+    }
+
+
+    /**
+     * 기록 작성
+     *
+     * @param logDTO the log dto
+     * @return the int
+     * @throws Exception the exception
+     * @since 2024 -08-02
+     */
+    @Override
+    public int insertLog(LogDTO logDTO) throws Exception {
+
+        int result = 0;
+
+        int logResult = clubDAO.insertLog(sqlSession, logDTO);
+
+        if(logResult <= 0) {
+
+            throw new Exception("기록 작성에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+        }
+        else {
+
+            result = 1;
+
+        }
+
+        int attachmentResult = 0;
+
+        List<AttachmentDTO> attachmentList = logDTO.getAttachments();
+
+        if(attachmentList != null) {
+
+            int logNo = logDTO.getLogNo();
+
+            for(AttachmentDTO attachment : attachmentList) {
+
+                attachment.setTargetNo(logNo);
+                attachmentResult += clubDAO.insertLogImg(sqlSession, attachment);
+
+            }
+
+            if(attachmentResult != attachmentList.size()) {
+
+                throw new Exception("기록 이미지 업로드에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+            }
+            else {
+
+                result = 2;
+
+            }
+
+        }
+
+        return result;
 
     }
 

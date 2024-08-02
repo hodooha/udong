@@ -46,7 +46,7 @@ public class ClubDAO {
 
 
     /**
-     * 모임 대표 이미지 insert
+     * 모임 대표 이미지 업로드
      *
      * @param sqlSession    the sql session
      * @param attachmentDTO the attachment dto
@@ -239,6 +239,14 @@ public class ClubDAO {
     }
 
 
+    /**
+     * 모임 이미지 삭제
+     *
+     * @param sqlSession the sql session
+     * @param clubNo     the club no
+     * @return the int
+     * @since 2024 -08-02
+     */
     public int deleteClubImg(SqlSessionTemplate sqlSession, int clubNo) {
 
         return sqlSession.delete("clubMapper.deleteClubImg", clubNo);
@@ -260,21 +268,78 @@ public class ClubDAO {
 
     }
 
+
+    /**
+     * 모임 수정
+     *
+     * @param sqlSession the sql session
+     * @param clubDTO    the club dto
+     * @return the int
+     * @since 2024 -08-02
+     */
     public int updateClub(SqlSessionTemplate sqlSession, ClubDTO clubDTO) {
 
         return sqlSession.update("clubMapper.updateClub", clubDTO);
 
     }
 
+
+    /**
+     * 모임 이미지 수정
+     *
+     * @param sqlSession    the sql session
+     * @param attachmentDTO the attachment dto
+     * @return the int
+     * @since 2024 -08-02
+     */
     public int updateClubImg(SqlSessionTemplate sqlSession, AttachmentDTO attachmentDTO) {
 
         return sqlSession.update("clubMapper.updateClubImg", attachmentDTO);
 
     }
 
+
+    /**
+     * 모임 이미지 조회
+     *
+     * @param sqlSession the sql session
+     * @param clubNo     the club no
+     * @return the list
+     * @since 2024 -08-02
+     */
     public List<AttachmentDTO> selectClubImg(SqlSessionTemplate sqlSession, int clubNo) {
 
         return sqlSession.selectList("clubMapper.selectClubImg", clubNo);
+
+    }
+
+
+    /**
+     * 기록 작성
+     *
+     * @param sqlSession the sql session
+     * @param logDTO     the log dto
+     * @return the int
+     * @since 2024 -08-02
+     */
+    public int insertLog(SqlSessionTemplate sqlSession, LogDTO logDTO) {
+
+        return sqlSession.insert("clubMapper.insertLog", logDTO);
+
+    }
+
+
+    /**
+     * 기록 이미지 업로드
+     *
+     * @param sqlSession the sql session
+     * @param attachment the attachment
+     * @return the int
+     * @since 2024 -08-02
+     */
+    public int insertLogImg(SqlSessionTemplate sqlSession, AttachmentDTO attachment) {
+
+        return sqlSession.insert("clubMapper.insertLogImg", attachment);
 
     }
 

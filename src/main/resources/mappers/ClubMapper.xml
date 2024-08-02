@@ -262,4 +262,28 @@
         WHERE type_code = 'CL' AND target_no = #{ clubNo }
     </select>
 
+    <insert id="insertLog" parameterType="com.multi.udong.club.model.dto.LogDTO" useGeneratedKeys="true" keyProperty="logNo">
+        INSERT INTO CL_LOG
+            (club_no, title, content, writer)
+        VALUES
+            (
+            #{ clubNo },
+            #{ title },
+            #{ content },
+            #{ writer.memberNo }
+            )
+    </insert>
+
+    <insert id="insertLogImg" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        INSERT INTO ATTACHMENT
+            (type_code, target_no, original_name, saved_name)
+        VALUES
+            (
+            #{ typeCode },
+            #{ targetNo },
+            #{ originalName },
+            #{ savedName }
+            )
+    </insert>
+
 </mapper>

@@ -640,6 +640,15 @@ public class ClubController {
     }
 
 
+    /**
+     * 모임 수정폼으로 이동
+     *
+     * @param c          the c
+     * @param requestDTO the request dto
+     * @param model      the model
+     * @return the string
+     * @since 2024 -08-02
+     */
     @RequestMapping("/clubUpdateForm")
     public String clubUpdateForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
 
@@ -685,6 +694,18 @@ public class ClubController {
     }
 
 
+    /**
+     * 모임 수정
+     *
+     * @param c                  the c
+     * @param categoryDTO        the category dto
+     * @param clubDTO            the club dto
+     * @param img                the img
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
+     * @return the string
+     * @since 2024 -08-02
+     */
     @PostMapping("/updateClub")
     public String updateClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, Model model, RedirectAttributes redirectAttributes) {
 
@@ -810,6 +831,9 @@ public class ClubController {
 
                 e.printStackTrace();
 
+                // 오류 발생 시 생성한 파일을 삭제
+                new File(filePath + "/" + savedName).delete();
+
                 model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -824,17 +848,256 @@ public class ClubController {
 
 
     @RequestMapping("/clubLog/logMain")
-    public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model) {
+    public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
 
-        return "/club/clubLog/logMain";
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = filterDTO.getClubNo();
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태일 때만 기록 페이지로 이동
+        if(joinStatus.equals("Y")) {
+
+            model.addAttribute("clubNo", clubNo);
+
+            return "/club/clubLog/logMain";
+
+        }
+
+        // 미가입인 상태일 때는 모임 홈으로 이동
+        redirectAttributes.addFlashAttribute("message", "모임 기록은 모임 멤버만 조회할 수 있습니다.");
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
 
+    /**
+     * 기록 작성폼으로 이동
+     *
+     * @param c      the c
+     * @param clubNo the club no
+     * @param model  the model
+     * @return the string
+     * @since 2024 -08-02
+     */
     @RequestMapping("/clubLog/logInsertForm")
-    public void clubLogInsertForm() {
+    public String logInsertForm(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            model.addAttribute("clubNo", clubNo);
+
+            return "/club/clubLog/logInsertForm";
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
+
+    /**
+     * 기록 작성
+     *
+     * @param c       the c
+     * @param logDTO  the log dto
+     * @param imgList the img list
+     * @param model   the model
+     * @return the string
+     * @since 2024 -08-02
+     */
+    @PostMapping("/clubLog/insertLog")
+    public String insertLog(@AuthenticationPrincipal CustomUserDetails c, LogDTO logDTO, @RequestParam("imgList") MultipartFile[] imgList, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = logDTO.getClubNo();
+
+        // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+        if(joinStatus.equals("Y")) {
+
+            // 로그인된 유저를 작성자로 set
+            ClubMemberDTO writer = new ClubMemberDTO();
+            writer.setMemberNo(memberNo);
+            logDTO.setWriter(writer);
+
+            // 이미지 저장할 경로 설정
+            String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+            String filePath = root + "/uploadFiles";
+
+            System.out.println("###### img 개수 >>>>> " + imgList.length);
+
+            List<String> savedNameList = new ArrayList<>();
+
+            if(imgList.length > 0) {
+
+                // filePath에 폴더가 없으면 폴더 생성
+                File mkdir = new File(filePath);
+                if(!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+
+                List<AttachmentDTO> attachmentList = new ArrayList<>();
+
+                for(MultipartFile img : imgList) {
+
+                    if(!img.isEmpty()) {
+
+                        // 첨부 파일의 이름을 가져와서
+                        String originFileName = img.getOriginalFilename();
+                        // 확장자만 잘라서 변수에 저장
+                        String ext = originFileName.substring(originFileName.lastIndexOf("."));
+                        // 랜덤한 파일이름을 생성한 후 뒤에 확장자 추가
+                        String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                        AttachmentDTO attachment = new AttachmentDTO();
+                        attachment.setOriginalName(originFileName);
+                        attachment.setSavedName(savedName);
+                        attachment.setTypeCode("CL-LOG");
+
+                        attachmentList.add(attachment);
+                        savedNameList.add(savedName);
+
+                        try {
+
+                            img.transferTo(new File(filePath + "/" + savedName));
+
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+
+                            // 오류 발생 시 생성한 파일을 삭제
+                            new File(filePath + "/" + savedName).delete();
+
+                            model.addAttribute("msg", "이미지 업로드 과정에서 문제가 발생했습니다.");
+
+                            return "common/errorPage";
+
+                        }
+
+                    }
+
+                }
+
+                logDTO.setAttachments(attachmentList);
+
+            }
+
+            System.out.println("###### 작성할 기록 >>>>> " + logDTO);
+
+            try {
+
+                int result = clubService.insertLog(logDTO);
+
+                int logNo = logDTO.getLogNo();
+
+                // return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+                return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                // 오류 발생 시 생성한 파일을 삭제
+                for(String savedName : savedNameList) {
+
+                    new File(filePath + "/" + savedName).delete();
+
+                }
+
+                model.addAttribute("msg", "이미지 업로드 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        } // if 가입된 상태일 때
+
+        // 미가입 상태일 때 모임 홈으로 이동
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+
+    // ================= 공통 사용 메소드 =================
+
+    /**
+     * 유저가 모임에 가입돼 있는지 확인
+     *
+     * @param memberNo the member no
+     * @param clubNo   the club no
+     * @return the string
+     * @since 2024 -08-02
+     */
+    public String checkJoinStatus(int memberNo, int clubNo) {
+
+        RequestDTO requestDTO = new RequestDTO();
+        requestDTO.setMemberNo(memberNo);
+        requestDTO.setClubNo(clubNo);
+
+        try {
+
+            String joinStatus = clubService.checkJoinStatus(requestDTO);
+
+            if(joinStatus == null) {
+                joinStatus = "N";
+            }
+
+            return joinStatus;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    /**
+     * 유저가 모임장인지 확인
+     *
+     * @param memberNo the member no
+     * @param clubNo   the club no
+     * @return the string
+     * @since 2024 -08-02
+     */
+    public String checkClubMaster(int memberNo, int clubNo) {
+
+        try {
+
+            String isMaster = "";
+
+            int materNo = clubService.checkClubMaster(clubNo);
+
+            if(materNo == memberNo) {
+
+                isMaster = "Y";
+
+            }
+            else {
+
+                isMaster = "N";
+
+            }
+
+            return isMaster;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "common/errorPage";
+
+        }
+
+    }
 
 }

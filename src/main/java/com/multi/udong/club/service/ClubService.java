@@ -42,4 +42,6 @@ public interface ClubService {
     int updateClub(ClubDTO clubDTO) throws Exception;
 
     List<AttachmentDTO> selectClubImg(int clubNo) throws Exception;
+
+    int insertLog(LogDTO logDTO) throws Exception;
 }
