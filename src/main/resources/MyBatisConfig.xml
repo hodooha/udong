@@ -47,5 +47,7 @@
 
         <mapper resource="mappers/SaleMapper.xml"/>
         <mapper resource="mappers/ReportMapper.xml"/>
+        <mapper resource="mappers/AdminMapper.xml"/>
+
     </mappers>
 </configuration>
