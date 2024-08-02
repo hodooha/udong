@@ -1,16 +1,27 @@
 $(function(){
     url = new URL(location.href);
     urlSearch = url.searchParams;
+    path = url.pathname;
 
-    if(url.pathname.includes("/share/rent")){
-            $('#giveBtn').addClass("gray");
-            $('#rentBtn').removeClass("gray");
-            $('.rentCom').css('visibility', 'visible');
-        } else if(window.location.pathname.includes("/share/give")){
-            $('#rentBtn').addClass("gray");
-            $('#giveBtn').removeClass("gray");
-            $('.rentCom').css('visibility', 'hidden');
-        }
+    if(path.includes("/share/rent")){
+        $('#giveBtn').addClass("gray");
+        $('#rentBtn').removeClass("gray");
+        $('.rentCom').css('visibility', 'visible');
+    } else if(path.includes("/share/give")){
+        $('#rentBtn').addClass("gray");
+        $('#giveBtn').removeClass("gray");
+        $('.rentCom').css('visibility', 'hidden');
+    };
+
+    if(path.includes("/dream/lender")){
+        $('#borrowerBtn').addClass("gray");
+        $('#lenderBtn').removeClass("gray");
+    } else if(path.includes("/dream/borrower")){
+        $('#lenderBtn').addClass("gray");
+        $('#borrowerBtn').removeClass("gray");
+    };
+
+
 
     const bodyId = $("body").attr("id");
     if(bodyId == "giveMain" || bodyId == "rentMain"){

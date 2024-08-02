@@ -10,16 +10,22 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
 
     <style>
+        button{
+            font-weight: bolder !important;
+
+        }
+
         .row{
              justify-content: center;
         }
+
         .registBtns{
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
         }
 
         .registBtn{
-            width: 300px;
+            width: 48%;
         }
 
 
@@ -29,7 +35,7 @@
 <div th:replace="~{/common/menubar}"></div>
 <div class="container mt-5 w-50">
 
-    <h2 style="text-align:center">물건 수정</h2>
+    <h2 style="text-align:center; font-weight:bolder;">물건 수정</h2>
 
     <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="enableAllFileInputs();">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -38,7 +44,7 @@
         <input type="hidden" th:name="locCode" th:value="${item.locCode}"/>
         <div class="row mb-1">
             <div class="col-md-6">
-                <label class="form-label">거래방식</label>
+                <label class="form-label"><h5>거래방식</h5></label>
                 <div style="display:flex">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="itemGroup" id="rent-opt" value="rent"
@@ -58,7 +64,7 @@
             </div>
 
             <div class="col-md-6" th:style="${item.itemGroup eq 'rent'} ? 'visibility:hidden' : ''" id="expiryDate">
-                <label class="form-label">마감일</label>
+                <label class="form-label"><h5>마감일</h5></label>
 
                 <div class="input-group input-daterange">
                     <input type="date" class="form-control" placeholder="마감일 선택" name="expiryDate" id="datePicker"
@@ -71,12 +77,12 @@
 
         <div class="row mb-1">
             <div class="col-md-6">
-                <label for="title" class="form-label">제목</label>
+                <label for="title" class="form-label"><h5>제목</h5></label>
                 <input type="text" class="form-control mb-2" id="title" name="title" required th:value="${item.title}">
 
             </div>
             <div class="col-md-6">
-                <label class="form-label">카테고리</label>
+                <label class="form-label"><h5>카테고리</h5></label>
                 <select class="form-select" name="itemCatCode" required>
                     <option value="">=== 카테고리 선택 ===</option>
                     <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"
@@ -90,7 +96,7 @@
 
         <div class="row">
             <div class="col-md-9">
-                <label for="item-imgList" class="form-label">사진</label>
+                <label for="item-imgList" class="form-label"><h5>사진</h5></label>
                 <input type="hidden" name="delFilesNo" value="" id="delFilesNo">
                 <input type="hidden" name="delFilesName" value="" id="delFilesName">
 
@@ -123,9 +129,9 @@
             </div>
         </div>
 
-        <div class="row mb-3">
+        <div class="row my-3">
             <div class="col-md-12">
-                <label for="itemCont" class="form-label">자세한 설명</label>
+                <label for="itemCont" class="form-label"><h5>자세한 설명</h5></label>
                 <textarea class="form-control" id="itemCont" name="content" rows="3"
                           required>[[${item.title}]]</textarea>
             </div>

@@ -34,18 +34,35 @@ public class ShareController {
     /**
      * The constant IMAGE_PATH.
      */
-    // 이미지 저장 경로
+// 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
 
+    /**
+     * The constant SEC.
+     */
     public static final int SEC = 60;
+    /**
+     * The constant MIN.
+     */
     public static final int MIN = 60;
+    /**
+     * The constant HOUR.
+     */
     public static final int HOUR = 24;
+    /**
+     * The constant DAY.
+     */
     public static final int DAY = 30;
+    /**
+     * The constant MONTH.
+     */
     public static final int MONTH = 12;
 
     /**
      * 대여 메인페이지 이동
      *
+     * @param model the model
+     * @param c     the c
      * @return the string
      * @since 2024 -07-26
      */
@@ -74,6 +91,8 @@ public class ShareController {
     /**
      * 나눔 메인페이지 이동
      *
+     * @param model the model
+     * @param c     the c
      * @return the string
      * @since 2024 -07-26
      */
@@ -97,6 +116,26 @@ public class ShareController {
         }
         return "share/giveMain";
     }
+
+    @GetMapping("/dream/lender")
+    public String dreamLenderMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
+
+
+        return "share/dreamLender";
+
+    }
+
+    @GetMapping("/dream/borrower")
+    public String dreamBorrowerMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
+
+
+        return "share/dreamBorrower";
+
+    }
+
+
+
+
 
     /**
      * 카테고리 목록 조회
@@ -233,6 +272,16 @@ public class ShareController {
         return "share/itemDetail";
     }
 
+
+    /**
+     * 물건 상세페이지 업데이트
+     *
+     * @param itemDTO the item dto
+     * @param model   the model
+     * @param c       the c
+     * @return the response entity
+     * @since 2024 -08-02
+     */
     @GetMapping(value = {"/rent/updateDetail", "/give/updateDetail"})
     @ResponseBody
     public ResponseEntity<?> updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
