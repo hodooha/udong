@@ -1,11 +1,11 @@
 package com.multi.udong.login.controller;
 
-import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.login.model.dto.GoogleTokenResponse;
 import com.multi.udong.login.model.dto.GoogleUserInfo;
-import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.login.service.GoogleAuthClient;
 import com.multi.udong.login.service.GoogleUserInfoClient;
+import com.multi.udong.member.model.dao.MemberMapper;
+import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +33,7 @@ public class GoogleLoginController {
     private final GoogleUserInfoClient googleUserInfoClient;
     private final MemberMapper memberMapper;
     private final MemberServiceImpl memberService;
+    private final LoginController loginController;
 
     @Value("${google.client.id}")
     private String clientId;
@@ -46,15 +47,17 @@ public class GoogleLoginController {
     /**
      * 구글 사용자정보로 로그인함
      *
-     * @param code               the code
-     * @param httpServletRequest the http servlet request
-     * @param model              the model
+     * @param code    the code
+     * @param request the request
+     * @param model   the model
      * @return the string
      * @throws Exception the exception
      * @since 2024 -07-23
      */
     @GetMapping("/google")
-    public String googleLogin(@RequestParam("code") String code, HttpServletRequest httpServletRequest, Model model) throws Exception {
+    public String googleLogin(@RequestParam("code") String code,
+                              HttpServletRequest request,
+                              Model model) throws Exception {
         
         // code로 엑세스토큰을 받아옴
         GoogleTokenResponse googleTokenResponse = getAccessToken(code);
@@ -84,8 +87,9 @@ public class GoogleLoginController {
             }
 
             // 로그인 작업 수행
-            model.addAttribute("member", memberDTO);
+            loginController.authenticateUserAndSetSession(memberDTO, request);
         }
+
         return "member/googleClose";
     }
 

@@ -7,11 +7,12 @@ import com.multi.udong.cs.model.dto.CSQuestionDTO;
 import com.multi.udong.cs.service.CSService;
 import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.PageDTO;
-import com.multi.udong.security.CustomUserDetails;
+import com.multi.udong.login.service.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The type Cs controller.
@@ -98,7 +96,7 @@ public class CSController {
             }
         }
 
-        List<String> headers = Arrays.asList("문의유형", "제목", "내용", "작성일자", "답변여부");
+        List<String> headers = Arrays.asList("문의유형", "제목", "작성일자", "답변여부");
 
         model.addAttribute("tableHeaders", headers);
         model.addAttribute("tableData", data);
@@ -112,23 +110,19 @@ public class CSController {
     /**
      * Cs all que.
      *
+     * @param page       the page
+     * @param searchWord the search word
+     * @param model      the model
+     * @return the string
      * @since 2024 -08-01
      */
     @GetMapping("/csAllQue")
-    public String csAllQue (@AuthenticationPrincipal CustomUserDetails c,
-                            @RequestParam(value = "page", defaultValue = "1") int page,
+    public String csAllQue (@RequestParam(value = "page", defaultValue = "1") int page,
                             @RequestParam(value = "searchWord", required = false) String searchWord,
                             Model model) {
 
-        if (c == null) {
-            model.addAttribute("msg","로그인이 필요한 기능입니다.");
-            return "cs/csMain";
-        }
-
-        int memberNo = c.getMemberDTO().getMemberNo();
         PageDTO pageDTO = new PageDTO();
         pageDTO.setPage(page);
-        pageDTO.setMemberNo(memberNo);
         pageDTO.setStartEnd(page);
 
         pageDTO.setSearchWord(searchWord);
@@ -136,7 +130,7 @@ public class CSController {
         int count;
         int pages = 1;
 
-        List<List<String>> data = csService.selectQue(pageDTO);
+        List<List<String>> data = csService.selectAllQue(pageDTO);
 
         if(!data.isEmpty()) {
 
@@ -148,7 +142,7 @@ public class CSController {
             }
         }
 
-        List<String> headers = Arrays.asList("문의유형", "제목", "내용", "작성일자", "답변여부");
+        List<String> headers = Arrays.asList("문의유형", "제목", "작성자", "작성일자", "답변여부");
 
         model.addAttribute("tableHeaders", headers);
         model.addAttribute("tableData", data);
@@ -156,7 +150,7 @@ public class CSController {
         model.addAttribute("pages", pages);
         model.addAttribute("searchWord", searchWord);
 
-        return "cs/csMyQue";
+        return "cs/csAllQue";
     }
 
     /**
@@ -182,9 +176,9 @@ public class CSController {
      * @return the string
      * @since 2024 -08-01
      */
-    @GetMapping("/detail/{csNo}")
+    @GetMapping("/queDetail")
     public String queDetail (@AuthenticationPrincipal CustomUserDetails c,
-                             @PathVariable("csNo") int csNo,
+                             @RequestParam("no") int csNo,
                              Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -244,22 +238,35 @@ public class CSController {
         return "redirect:csMyQue";
     }
 
+    /**
+     * Insert answer que response entity.
+     *
+     * @param c           the c
+     * @param csAnswerDTO the cs answer dto
+     * @return the response entity
+     * @since 2024 -08-02
+     */
     @PostMapping("/answerQue")
-    public String insertAnswerQue (@AuthenticationPrincipal CustomUserDetails c,
-                                   CSAnswerDTO csAnswerDTO,
-                                   Model model) {
+    @ResponseBody
+    public ResponseEntity<?> insertAnswerQue(@AuthenticationPrincipal CustomUserDetails c,
+                                             @RequestBody CSAnswerDTO csAnswerDTO) {
+        try {
+            String authority = c.getMemberDTO().getAuthority();
+            int memberNo = c.getMemberDTO().getMemberNo();
+            csAnswerDTO.setAnswererNo(memberNo);
 
-        int memberNo = c.getMemberDTO().getMemberNo();
+            String createdAt  = csService.insertAnswerQue(csAnswerDTO, authority);
+            csAnswerDTO.setCreatedAt(createdAt);
 
-        csAnswerDTO.setAnswererNo(memberNo);
+            Map<String, Object> response = new HashMap<>();
+            response.put("answer", csAnswerDTO);
+            response.put("nickname", c.getMemberDTO().getNickname());
 
-        System.out.println("csAnswerDTO : " + csAnswerDTO);
-
-        csService.insertAnswerQue(csAnswerDTO);
-
-        int csNo = csAnswerDTO.getCsNo();
-
-        return "redirect:cs/detail/" + csNo;
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred: " + e.getMessage());
+        }
     }
 
     /**

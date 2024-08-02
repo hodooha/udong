@@ -6,7 +6,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
-import com.multi.udong.security.CustomUserDetails;
+import com.multi.udong.login.service.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

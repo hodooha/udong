@@ -1,21 +1,23 @@
 package com.multi.udong.config;
 
-import com.multi.udong.security.AuthenticationService;
-import com.multi.udong.security.CustomUserDetailsService;
+import com.multi.udong.login.service.AuthenticationService;
+import com.multi.udong.login.service.CustomAuthenticationFailureHandler;
+import com.multi.udong.login.service.CustomAuthenticationSuccessHandler;
+import com.multi.udong.login.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
-import java.net.URLEncoder;
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Map;
 
@@ -30,13 +32,17 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SpringSecurityConfig {
 
+    private final DataSource dataSource;
     private final CustomUserDetailsService customUserDetailsService;
     private final AuthenticationService authenticationService;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+    private final CustomAuthenticationFailureHandler customAuthenticationFailureHandler;
 
     /**
      * B crypt password encoder b crypt password encoder.
      *
      * @return the b crypt password encoder
+     * @since 2024 -08-02
      */
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -47,6 +53,7 @@ public class SpringSecurityConfig {
      * Web security customizer web security customizer.
      *
      * @return the web security customizer
+     * @since 2024 -08-02
      */
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -55,12 +62,20 @@ public class SpringSecurityConfig {
         );
     }
 
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+
+        return tokenRepository;
+    }
+
     /**
      * Security filter chain security filter chain.
      *
      * @param http the http
      * @return the security filter chain
      * @throws Exception the exception
+     * @since 2024 -08-02
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -82,18 +97,8 @@ public class SpringSecurityConfig {
                 .loginPage("/login")
                 .usernameParameter("memberId")
                 .passwordParameter("memberPw")
-                .defaultSuccessUrl("/", true)
-                .failureHandler((request, response, exception) -> {
-                    String errorMessage;
-                    if (exception instanceof UsernameNotFoundException) {
-                        errorMessage = "존재하지 않는 아이디입니다.";
-                    } else if (exception instanceof BadCredentialsException) {
-                        errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
-                    } else {
-                        errorMessage = "로그인에 실패했습니다.";
-                    }
-                    response.sendRedirect("/login?error=true&message=" + URLEncoder.encode(errorMessage, "UTF-8"));
-                })
+                .successHandler(customAuthenticationSuccessHandler)
+                .failureHandler(customAuthenticationFailureHandler)
                 .permitAll()
             )
             .logout((logout) -> logout
@@ -109,10 +114,23 @@ public class SpringSecurityConfig {
                 .maxSessionsPreventsLogin(false)
                 .expiredUrl("/")
             )
+            .rememberMe(remember -> remember
+                .tokenRepository(persistentTokenRepository())
+                .tokenValiditySeconds(86400) // 24시간
+                .userDetailsService(customUserDetailsService)
+            )
             .userDetailsService(customUserDetailsService);
         return http.build();
     }
 
+    /**
+     * Authentication manager authentication manager.
+     *
+     * @param http the http
+     * @return the authentication manager
+     * @throws Exception the exception
+     * @since 2024 -08-02
+     */
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)

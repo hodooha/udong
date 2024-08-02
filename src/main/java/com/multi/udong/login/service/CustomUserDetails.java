@@ -1,4 +1,4 @@
-package com.multi.udong.security;
+package com.multi.udong.login.service;
 
 import com.multi.udong.member.model.dto.MemberDTO;
 import lombok.Getter;

@@ -52,6 +52,31 @@ public class CSServiceImpl implements CSService{
     }
 
     /**
+     * Select all que list.
+     *
+     * @param pageDTO the page dto
+     * @return the list
+     * @since 2024 -08-02
+     */
+    @Override
+    public List<List<String>> selectAllQue(PageDTO pageDTO) {
+        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
+
+        map = csMapper.selectAllQue(pageDTO);
+
+        List<List<String>> result = new ArrayList<>();
+        for (LinkedHashMap<String, Object> row : map) {
+            List<String> list = new ArrayList<>();
+            for (Object value : row.values()) {
+                list.add(value != null ? value.toString() : "");
+            }
+            result.add(list);
+        }
+
+        return result;
+    }
+
+    /**
      * Insert que form.
      *
      * @param csQuestionDTO the cs question dto
@@ -117,14 +142,24 @@ public class CSServiceImpl implements CSService{
         return csMapper.getAttachment(fileNo);
     }
 
+    /**
+     * Insert answer que string.
+     *
+     * @param csAnswerDTO the cs answer dto
+     * @param authority   the authority
+     * @return the string
+     * @since 2024 -08-02
+     */
     @Override
-    public void insertAnswerQue(CSAnswerDTO csAnswerDTO) {
+    public String insertAnswerQue(CSAnswerDTO csAnswerDTO, String authority) {
 
         csMapper.insertAnswerQue(csAnswerDTO);
+        String createdAt = csMapper.getAnswerCreatedAt(csAnswerDTO);
 
-        String authority = csMapper.getAuthorityByMemberNo(csAnswerDTO.getAnswererNo());
         if (authority.equals("ROLE_ADMIN")) {
             csMapper.updateQueIsAnswered(csAnswerDTO.getCsNo());
         }
+
+        return createdAt;
     }
 }

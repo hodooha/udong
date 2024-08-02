@@ -42,11 +42,11 @@
             SELECT TARGET_NO, SAVED_NAME
             FROM ATTACHMENT
             WHERE TYPE_CODE = 'MEM'
-            AND FILE_NO = (
-                SELECT MAX(FILE_NO)
+            AND (TARGET_NO, FILE_NO) IN (
+                SELECT TARGET_NO, MAX(FILE_NO)
                 FROM ATTACHMENT
                 WHERE TYPE_CODE = 'MEM'
-                AND TARGET_NO = ATTACHMENT.TARGET_NO
+                GROUP BY TARGET_NO
             )
         ) a ON m.member_no = a.TARGET_NO
         WHERE m.member_id = #{memberId}
@@ -531,7 +531,7 @@
         SET
             is_deleted = 'Y',
             deleted_at = CURRENT_TIMESTAMP
-        WHERE member_no = #{memberNo};
+        WHERE member_no = #{memberNo}
     </update>
 
     <select id="checkMember" parameterType="int" resultType="map">
@@ -552,4 +552,10 @@
             WHERE master = #{memberNo}) AS master_count
         FROM DUAL
     </select>
+
+    <update id="updateLastLoginAt">
+        UPDATE MEMBER
+        SET last_login_at = CURRENT_TIMESTAMP
+        WHERE member_id = #{memberId}
+    </update>
 </mapper>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .category {
+            display: flex;
+            justify-content: space-between;
+        }
+        .card {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background: #fff;
+            padding: 3rem;
+            margin: 0 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            text-align: center;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="category">
+        <div class="card" onClick="location.href ='/cs/csMain'">
+            <i>A</i>
+            <h3>자주 묻는 질문</h3>
+            <p>자주 묻는 질문 입니다.</p>
+        </div>
+        <div class="card" onClick="location.href ='/cs/insertQueForm'">
+            <i>B</i>
+            <h3>문의하기</h3>
+            <p>문의하기 입니다.</p>
+        </div>
+        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csAllQue'">
+            <i>C</i>
+            <h3>전체 문의내역</h3>
+            <p>모든 사용자의 문의내역입니다.</p>
+        </div>
+        <div th:unless="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csMyQue'">
+            <i>C</i>
+            <h3>문의내역</h3>
+            <p>내 문의내역 입니다.</p>
+        </div>
+    </div>
+</body>
+</html>

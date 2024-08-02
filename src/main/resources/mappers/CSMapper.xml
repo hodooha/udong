@@ -7,7 +7,6 @@
             sub.cs_no,
             t.type_name,
             sub.title,
-            sub.content,
             sub.created_at,
             sub.is_answered,
             sub.total_count
@@ -27,6 +26,34 @@
         ) sub
         JOIN TYPE t ON sub.cs_type = t.type_code
         WHERE sub.rownum BETWEEN #{start} AND #{end}
+    </select>
+
+    <select id="selectAllQue" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
+        SELECT
+            sub.cs_no,
+            t.type_name,
+            sub.title,
+            m.nickname,
+            sub.created_at,
+            sub.is_answered,
+            sub.total_count
+        FROM (
+            SELECT
+                cq.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY cq.created_at DESC) AS rownum
+            FROM CS_QUESTION cq
+            <where>
+                <if test="searchWord != null and searchWord != ''">
+                    (cq.title LIKE CONCAT('%', #{searchWord}, '%')
+                    OR cq.content LIKE CONCAT('%', #{searchWord}, '%'))
+                </if>
+            </where>
+        ) sub
+        JOIN TYPE t ON sub.cs_type = t.type_code
+        JOIN MEMBER m ON sub.writer_no = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+        ORDER BY sub.created_at DESC
     </select>
 
     <select id="getAllTypes" resultType="typeDTO">
@@ -80,8 +107,8 @@
         (#{csNo}, #{answererNo}, #{content})
     </insert>
 
-    <select id="getAuthorityByMemberNo" resultType="string">
-        SELECT authority FROM MEMBER WHERE member_no = #{answerer_no}
+    <select id="getAnswerCreatedAt" resultType="string">
+        SELECT created_at FROM CS_ANSWER WHERE answer_no = LAST_INSERT_ID()
     </select>
 
     <update id="updateQueIsAnswered">

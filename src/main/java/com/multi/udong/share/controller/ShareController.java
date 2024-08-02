@@ -1,7 +1,7 @@
 package com.multi.udong.share.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
-import com.multi.udong.security.CustomUserDetails;
+import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
