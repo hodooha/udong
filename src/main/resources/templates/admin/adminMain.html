@@ -1,0 +1,84 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .admin-container {
+            display: flex;
+            height: calc(100vh - 140px);
+            margin: 40px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .admin-sidebar {
+            width: 250px;
+            background-color: #3B5C9A;
+            color: white;
+            padding-top: 20px;
+            border-radius: 15px 0 0 15px;
+        }
+        .admin-sidebar ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .admin-sidebar li {
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .admin-sidebar li:hover {
+            background-color: #0B1D40;
+        }
+        .admin-sidebar a {
+            color: white;
+            text-decoration: none;
+            font-family: 'Freesentation-5Medium', sans-serif;
+            font-size: 18px;
+        }
+        .admin-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 0 15px 15px 0;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="admin-container">
+    <div class="admin-sidebar">
+        <ul>
+            <li><a href="#" onclick="loadContent('allmember')">회원관리</a></li>
+            <li><a href="#" onclick="loadContent('allreport')">신고관리</a></li>
+            <li><a href="#" onclick="loadContent('seller')">판매자 관리</a></li>
+            <li><a href="#" onclick="loadContent('blacklist')">블랙리스트 관리</a></li>
+            <li><a href="#" onclick="loadContent('notice')">공지사항</a></li>
+        </ul>
+    </div>
+    <div id="adminContent" class="admin-content">
+
+    </div>
+</div>
+
+<script>
+    function loadContent(page) {
+        $.ajax({
+            url: '/admin/' + page,
+            type: 'GET',
+            success: function(response) {
+                $('#adminContent').html(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading content:", error);
+            }
+        });
+    }
+</script>
+</body>
+</html>
