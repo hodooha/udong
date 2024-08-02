@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,12 +34,35 @@ public class ShareController {
     /**
      * The constant IMAGE_PATH.
      */
-    // 이미지 저장 경로
+// 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
+
+    /**
+     * The constant SEC.
+     */
+    public static final int SEC = 60;
+    /**
+     * The constant MIN.
+     */
+    public static final int MIN = 60;
+    /**
+     * The constant HOUR.
+     */
+    public static final int HOUR = 24;
+    /**
+     * The constant DAY.
+     */
+    public static final int DAY = 30;
+    /**
+     * The constant MONTH.
+     */
+    public static final int MONTH = 12;
 
     /**
      * 대여 메인페이지 이동
      *
+     * @param model the model
+     * @param c     the c
      * @return the string
      * @since 2024 -07-26
      */
@@ -66,6 +91,8 @@ public class ShareController {
     /**
      * 나눔 메인페이지 이동
      *
+     * @param model the model
+     * @param c     the c
      * @return the string
      * @since 2024 -07-26
      */
@@ -89,6 +116,26 @@ public class ShareController {
         }
         return "share/giveMain";
     }
+
+    @GetMapping("/dream/lender")
+    public String dreamLenderMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
+
+
+        return "share/dreamLender";
+
+    }
+
+    @GetMapping("/dream/borrower")
+    public String dreamBorrowerMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
+
+
+        return "share/dreamBorrower";
+
+    }
+
+
+
+
 
     /**
      * 카테고리 목록 조회
@@ -143,6 +190,46 @@ public class ShareController {
         }
     }
 
+
+    /**
+     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
+     *
+     * @param localDateTime the local date time
+     * @return the string
+     * @since 2024 -08-01
+     */
+    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
+
+        String displayDate = null;
+        if (diffTime < SEC){
+            return diffTime + "초전";
+        }
+        diffTime = diffTime / SEC;
+        if (diffTime < MIN) {
+            return diffTime + "분 전";
+        }
+        diffTime = diffTime / MIN;
+        if (diffTime < HOUR) {
+            return diffTime + "시간 전";
+        }
+        diffTime = diffTime / HOUR;
+        if (diffTime < DAY) {
+            return diffTime + "일 전";
+        }
+        diffTime = diffTime / DAY;
+        if (diffTime < MONTH) {
+            return diffTime + "개월 전";
+        }
+
+        diffTime = diffTime / MONTH;
+        return diffTime + "년 전";
+
+    };
+
     /**
      * 물건 상세 조회 페이지 이동 및 상세 조회
      *
@@ -171,6 +258,10 @@ public class ShareController {
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             model.addAttribute("item", item);
 
+            // 물건 상세 조회 시 보여지는 날짜 설정
+            model.addAttribute("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
+
+
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -181,6 +272,16 @@ public class ShareController {
         return "share/itemDetail";
     }
 
+
+    /**
+     * 물건 상세페이지 업데이트
+     *
+     * @param itemDTO the item dto
+     * @param model   the model
+     * @param c       the c
+     * @return the response entity
+     * @since 2024 -08-02
+     */
     @GetMapping(value = {"/rent/updateDetail", "/give/updateDetail"})
     @ResponseBody
     public ResponseEntity<?> updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
@@ -203,6 +304,9 @@ public class ShareController {
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             result.put("item", item);
+
+            // 물건 상세 조회 시 보여지는 날짜 설정
+            result.put("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
 
         } catch (Exception e) {
             result.put("msg", e.getMessage());
@@ -576,34 +680,36 @@ public class ShareController {
         return itemDTO.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
     }
 
+
     /**
-     * 물건 대여 일시중단/해제
+     * 물건 상태 변경
      *
      * @param itemDTO the item dto
      * @param c       the c
      * @param model   the model
      * @return the string
-     * @since 2024 -07-31
+     * @since 2024 -08-01
      */
     @GetMapping("/updateItStat")
+    @ResponseBody
     public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(itemDTO);
         // 리턴 페이지 주소
-        String page = "";
+        String msg = "상태 변경 완료";
 
         try {
             // 물건 상태 업데이트
             shareService.updateItStat(itemDTO, c);
-            page = "redirect:/share/" + itemDTO.getItemGroup() + "/detail?itemNo=" + itemDTO.getItemNo();
+
 
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
-            page = "/common/errorPage";
+            msg = e.getMessage();
+
         }
 
-        return page;
+        return msg;
     }
 
     /**
