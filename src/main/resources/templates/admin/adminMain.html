@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <style>
+        /* 기존 스타일 유지 */
         .admin-container {
             display: flex;
             height: calc(100vh - 140px);
@@ -52,23 +54,34 @@
             margin-bottom: 20px;
             text-align: center;
         }
-        .search-bar {
+        .search-container {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 20px;
+            margin-bottom: 60px;
         }
-        .search-bar input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px 0 0 4px;
+        .search-input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            height: 40px;
+            box-sizing: border-box;
         }
-        .search-bar button {
-            padding: 8px 15px;
+        .search-button {
             background-color: #FFB83D;
             color: white;
             border: none;
-            border-radius: 0 4px 4px 0;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
             cursor: pointer;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-button:hover {
+            background-color: #FF9909;
+            color: #FFFFFF;
         }
         .admin-table {
             width: 100%;
@@ -89,7 +102,7 @@
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 60px;
         }
         .page-button {
             margin: 0 5px;
@@ -117,12 +130,13 @@
             <li><a href="#" onclick="loadContent('notice')">공지사항</a></li>
         </ul>
     </div>
+
     <div id="adminContent" class="admin-content">
 
         <h5 style="text-align: center;">전체회원</h5>
-        <div class="search-bar">
-            <input type="text" placeholder="검색어를 입력하세요" id="searchInput">
-            <button type="button" id="searchButton">검색</button>
+        <div class="search-container">
+            <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요." th:value="${param.search}">
+            <button class="search-button" type="submit">검색</button>
         </div>
 
         <table class="admin-table">
@@ -150,27 +164,116 @@
             </tr>
             </tbody>
         </table>
+        <div class="pagination"></div>
 
-        <div class="pagination">
-            <a href="#" class="page-button">1</a>
-            <a href="#" class="page-button">2</a>
-            <a href="#" class="page-button">3</a>
-        </div>
+
     </div>
 </div>
 
-<script>
-    function loadContent(page) {
-        $.ajax({
-            url: '/admin/' + page,
-            type: 'GET',
-            success: function(response) {
-                $('#adminContent').html(response);
-            },
-            error: function(xhr, status, error) {
-                console.error("Error loading content:", error);
-            }
+<script th:inline="javascript">
+    const members = /*[[${members}]]*/ [];
+    console.log(members);
+    let currentPage = 1;
+    const itemsPerPage = 6;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page');
+        if (pageFromUrl) {
+            currentPage = parseInt(pageFromUrl);
+        }
+
+        displayMembers(currentPage);
+        updatePagination();
+    });
+
+    function displayMembers(page) {
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const membersToDisplay = members.slice(startIndex, endIndex);
+
+        const membersTableBody = document.querySelector('.admin-table tbody');
+        membersTableBody.innerHTML = '';
+
+        membersToDisplay.forEach((member) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${member.memberNo}</td>
+                <td>${member.memberId}</td>
+                <td>${member.nickname}</td>
+                <td>${member.authority === 'ROLE_MEMBER' ? '일반회원' :
+                    (member.authority === 'ROLE_SELLER' ? '판매자' :
+                    (member.authority === 'ROLE_ADMIN' ? '관리자' : member.authority))}</td>
+                <td>${member.reportedCnt}</td>
+                <td>
+                    <span>${member.isBlacked === 'Y' ? '블랙리스트' : ''}</span>
+                    <span>${member.isDeleted === 'Y' ? '탈퇴회원' : ''}</span>
+                </td>
+            `;
+            membersTableBody.appendChild(row);
         });
+
+        updatePagination();
+        window.history.pushState(null, null, `?page=${page}`);
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(members.length / itemsPerPage);
+        const paginationContainer = document.querySelector('.pagination');
+
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('a');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-button');
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.href = '#';
+                pageButton.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    displayMembers(i);
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+        } else {
+            console.error('Pagination container not found');
+        }
+    }
+
+    // 검색 버튼 클릭 이벤트
+    document.querySelector('.search-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        const searchTerm = document.querySelector('.search-input').value.trim();
+
+        if (searchTerm === '') {
+            // 검색어가 없으면 기본 화면으로 이동
+            window.location.href = '/admin/adminMain';
+        } else {
+            // 검색어가 있으면 검색 결과 화면으로 이동
+            window.location.href = `/admin/memberSearch?search=${encodeURIComponent(searchTerm)}`;
+        }
+    });
+
+    // loadContent 함수 정의
+    function loadContent(page) {
+        if (page === 'allmember') {
+            window.location.href = '/admin/adminMain';
+        } else {
+            $.ajax({
+                url: '/admin/' + page,
+                type: 'GET',
+                success: function(response) {
+                    $('#adminContent').html(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading content:", error);
+                }
+            });
+        }
     }
 </script>
 </body>
