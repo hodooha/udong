@@ -33,7 +33,7 @@
 </head>
 <body id="registerForm">
 <div th:replace="~{/common/menubar}"></div>
-<div class="container mt-5 w-50">
+<div class="container my-5 w-50 p-5 bg-light ">
 
     <h2 style="text-align:center; font-weight:bolder;">물건 수정</h2>
 
@@ -138,7 +138,7 @@
         </div>
 
         <div class="registBtns">
-            <button type="button" class="btn btn-udh-silver registBtn" th:onclick="|location.href='@{/share/rent}'|">취소
+            <button type="button" class="btn btn-udh-silver registBtn" th:onclick="history.back()">취소
             </button>
             <button type="submit" class="btn btn-udh-blue registBtn">수정</button>
         </div>

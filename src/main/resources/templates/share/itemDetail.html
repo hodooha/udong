@@ -64,18 +64,10 @@
             transform: translate(-50%, -50%);
         }
 
-        .btn-udh-yellow{
-            height: 37.6px;
-
-
-        }
-
         .likeImg{
             height:100%;
 
         }
-
-
 
     </style>
 </head>
@@ -85,7 +77,7 @@
 
 <div class="container">
 
-    <div class="row mt-5 align-items-center">
+    <div th:fragment="detail" id="detail" class="row mt-5 align-items-center">
         <div class="col-md-6">
             <div id="carouselExample" class="carousel slide" th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? '' : ' carousel-dark'}" >
 
@@ -134,11 +126,11 @@
             </p>
 
             <th:block th:if="${item.itemGroup} eq 'give'">
-                <h3 class="mb-3"><span class="badge text-bg-danger">마감일: [[${item.expiryDate}]]</span></h3>
+                <h5 class="mb-3"><span class="badge text-bg-danger rounded-0 py-2 px-4">마감일: [[${item.expiryDate}]]</span></h5>
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">응모하기</button>
-                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" style="height:1em" alt="좋아요" th:onclick="updateShaLike([[${item.itemNo}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -155,29 +147,29 @@
                     <div class="input-group input-daterange">
                         <input type="date" class="form-control" name="return" id="datePicker" readonly>
                     </div>
-                    <span style="font-size:0.7em">*반납희망일은 오늘 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
+                    <span style="font-size:0.7em">*반납희망일은 다음날부터 한달 이내로만 선택 가능합니다.</span>
                 </div>
 
                 <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" alt="좋아요" th:onclick="shaLike([[${item}]])"></button>
+                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
+                    <button class="btn btn-udh-yellow" ><img class="likeImg" th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}" style="height:1em" alt="좋아요" th:onclick="updateShaLike([[${item.itemNo}]])"></button>
                 </span>
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow me-2"
+                    <button class="btn btn-udh-yellow"
                             th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
-                    <button id="updateStatBtn" th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver me-2"
+                    <button id="updateStatBtn" th:with="status=${item.statusCode == 'UNAV' ? 'AVL' : 'UNAV'}" class="btn btn-udh-silver"
                             th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red me-2" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
+                    <button class="btn btn-udh-red" data-bs-toggle="modal" data-bs-target="#exampleModal">삭제</button>
                 </span>
             </th:block>
 
         </div>
 
-        <div class="row mt-5 justify-content-center">
+        <div class="row my-5 justify-content-center">
             <div class="col-md-10">
-                <textarea class="form-control p-5" id="itemContent" rows="6" readonly
+                <textarea class="form-control p-5 bg-light" id="itemContent" rows="6" disabled
                           th:text="${item.content}"></textarea>
             </div>
 

@@ -83,20 +83,8 @@ public class ShareServiceImpl implements ShareService {
         ;
 
         // db에서 물건 상세정보 가져오기
-        ShaItemDTO result = getItemDetail(itemDTO);
 
-        // 로그인한 유저의 해당 물건 찜 여부 확인
-        ShaLikeDTO shaLikeDTO = new ShaLikeDTO();
-        shaLikeDTO.setMemberNo(c.getMemberDTO().getMemberNo());
-        shaLikeDTO.setItemNo(itemDTO.getItemNo());
-        if (shareDAO.getShaLike(sqlSession, shaLikeDTO) != null) {
-            result.setLiked(true);
-        } else {
-            result.setLiked(false);
-        }
-        ;
-
-        return result;
+        return getItemDetail(itemDTO, c);
     }
 
 
@@ -110,11 +98,17 @@ public class ShareServiceImpl implements ShareService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ShaItemDTO getItemDetail(ShaItemDTO itemDTO) throws Exception {
+    public ShaItemDTO getItemDetail(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         ShaItemDTO item = shareDAO.getItemDetail(sqlSession, itemDTO);
         List<AttachmentDTO> imgList = shareDAO.getItemImgs(sqlSession, item);
         item.setImgList(imgList);
+
+        // 로그인한 유저의 해당 물건 찜 여부 확인
+        ShaLikeDTO shaLikeDTO = new ShaLikeDTO();
+        shaLikeDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+        shaLikeDTO.setItemNo(itemDTO.getItemNo());
+        item.setLiked(shareDAO.getShaLike(sqlSession, shaLikeDTO) != null);
 
         return item;
     }
@@ -250,7 +244,7 @@ public class ShareServiceImpl implements ShareService {
     public List<AttachmentDTO> deleteItem(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         // 삭제할 물건 정보 가져오기
-        itemDTO = getItemDetail(itemDTO);
+        itemDTO = getItemDetail(itemDTO, c);
 
         // 삭제할 사진 목록 가져오기 (삭제 성공 시 로컬폴더에서도 삭제하기 위해)
         List<AttachmentDTO> delImgs = itemDTO.getImgList();
@@ -298,7 +292,7 @@ public class ShareServiceImpl implements ShareService {
     public void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         // 변경하려는 물건 정보 가져오기
-        ShaItemDTO target = getItemDetail(itemDTO);
+        ShaItemDTO target = getItemDetail(itemDTO, c);
 
         // 변경하려는 유저와 물건 소유자가 같은지 확인
         if (target.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
