@@ -7,6 +7,7 @@ public class ShaDreamCriteriaDTO {
 
     private int ownerNo;
     private int rqstNo;
+    private String catCode;
     private String group;
     private String statusCode;
     private String keyword;

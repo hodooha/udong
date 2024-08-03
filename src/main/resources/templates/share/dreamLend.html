@@ -58,6 +58,11 @@
 
         }
 
+        .card-body p span{
+            margin-right: 1em;
+            width: 10em !important;
+        }
+
         .card-body,
         .btn-group{
             display: flex;
@@ -82,8 +87,14 @@
 
         }
 
+        .catSelect{
+            width: 11em !important;
+            margin-right: 20px;
+
+        }
+
         .stat-select{
-            width:140px !important;
+            width:8em !important;
 
         }
 
@@ -130,6 +141,8 @@
         }
 
 
+
+
     </style>
 </head>
 <body id="dreamLend">
@@ -159,6 +172,13 @@
         </div>
 
         <div class="status-select-area col-9">
+            <select th:fragment="catSelect" id="catSelect" class="form-select catSelect" name="itemCatCode"
+                    onchange="getLendList()">
+                <option value="">== 카테고리 선택 ==</option>
+                <th:block th:if="${catList} != null">
+                    <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
+                </th:block>
+            </select>
             <label for="statusSelect" style="width:2em">
                 상태
             </label>
@@ -171,109 +191,128 @@
                 <option value="GVD">나눔완료</option>
             </select>
 
-            <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요." id="keyword" style="width:15em">
+            <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요." id="keyword" style="width:13em">
             <button class="btn btn-udh-blue searchBtn" type="button" onclick="getLendList()">검색</button>
 
         </div>
 
     </div>
 
-    <div id="dreams"></div>
-    <!--    <div class="card mb-3 dream" >-->
-    <!--        <div class="row g-0">-->
-    <!--            <div class="col-1 rentGroup">대여</div>-->
-    <!--            <div class="col-2 img-area">-->
-    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
-    <!--            </div>-->
-    <!--            <div class="col-4 item-info-area">-->
-    <!--                <div class="card-body">-->
-    <!--                    <h4 class="mb-3">${item.title}</h4>-->
-    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--            <div class="col-2 status-area">-->
-    <!--                <h5>대여가능</h5>-->
-    <!--            </div>-->
-    <!--            <div class="col-3 btn-area container">-->
-    <!--                <div class="btn-group">-->
-    <!--                    <div class="mb-3 btns-1">-->
-    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
-    <!--                        <button  class="btn btn-udh-silver">삭제</button>-->
-    <!--                    </div>-->
-    <!--                    <div class="btns-2">-->
-    <!--                        <button class="btn btn-udh-blue" style="width:100%">대여확정</button>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
+    <div th:fragment="dreams" id="dreams">
+        <th:block th:if="${#lists.isEmpty(lendList)}">
+            <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
+                등록된 물건이 없습니다.
+            </div>
+        </th:block>
+        <th:block th:unless="${#lists.isEmpty(lendList)}">
+            <div th:each="item : ${lendList}" class=" mb-3 dream">
+                <div class="row g-0">
+                    <div th:classappend="${item.itemGroup == 'rent' ? 'rentGroup' : 'giveGroup'}" class="col-1">
+                        [[${item.itemGroup == 'rent' ? '대여' : '나눔'}]]
+                    </div>
+                    <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|" class="col-2 img-area">
+                        <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
+                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
+                    </div>
+                    <div class="col-4 item-info-area " th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|" style="cursor:pointer;">
+                        <div class="card-body">
+                            <h4 class="mb-3">[[${item.title}]]</h4>
+                            <p><span>💛   [[${item.likeCnt}]]</span> <span>👀   [[${item.viewCnt}]]</span>
+                                <span>🙋‍♀️   [[${item.reqCnt}]]</span></p>
+                        </div>
+                    </div>
+                    <div class="col-2 status-area">
+                        <h5>[[${item.statusName}]]</h5>
+                        <p th:if="${item.statusName == 'RNT'}">반납예정일: [[${item.returnDate}]]</p>
+                    </div>
+                    <div class="col-3 btn-area container">
+                        <div th:if="${item.statusCode == 'AVL'}" class="btn-group">
+                            <div class="mb-3 btns-1">
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
+                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">삭제</button>
+                            </div>
+                            <div class="btns-2">
+                                <button class="btn btn-udh-blue" style="width:100%">대여확정</button>
+                            </div>
+                        </div>
+                        <div th:if="${item.statusCode == 'UNAV'}" class="btn-group">
+                            <div class="mb-3 btns-1">
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
+                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">삭제</button>
+                            </div>
+                            <div class="btns-2">
+                                <button class="btn btn-udh-blue" style="width:100%">중단해제</button>
+                            </div>
+                        </div>
+                        <div th:if="${item.statusCode == 'RNT'}" class="btn-group">
+                            <div class="mb-3 btns-1">
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
+                                <button class="btn btn-udh-red">신고</button>
+                            </div>
+                            <div class="btns-2">
+                                <button class="btn btn-udh-blue" style="width:48%">반납완료</button>
+                                <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>
+                            </div>
+                        </div>
+                        <div th:if="${item.statusCode == 'GVD'}" class="btn-group">
+                            <div class="btns-1">
+                                <button class="btn btn-udh-blue " style="width:100%">쪽지하기</button>
+                            </div>
+                        </div>
+                        <div th:if="${item.statusCode == 'GIV'}" class="btn-group">
+                            <div class="btns-1">
+                                <button class="btn btn-udh-silver " style="width:100%">추첨하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">정말 삭제할까요?</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>대여 내역이 있는 게시글을 삭제하면 대여했던 이웃이 당황할 수 있어요.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                                <button type="button" class="btn btn-udh-red"
+                                        th:onclick="|location.href='@{/share/delete(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <!--    <div class="card mb-3 dream" >-->
-    <!--        <div class="row g-0">-->
-    <!--            <div class="col-1 rentGroup">나눔</div>-->
-    <!--            <div class="col-2 img-area">-->
-    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
-    <!--            </div>-->
-    <!--            <div class="col-4 item-info-area">-->
-    <!--                <div class="card-body">-->
-    <!--                    <h4 class="mb-3">${item.title}</h4>-->
-    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--            <div class="col-2 status-area">-->
-    <!--                <h5>대여가능</h5>-->
-    <!--            </div>-->
-    <!--            <div class="col-3 btn-area container">-->
-    <!--                <div class="btn-group">-->
-    <!--                    <div class="mb-3 btns-1">-->
-    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
-    <!--                        <button  class="btn btn-udh-red">신고</button>-->
-    <!--                    </div>-->
-    <!--                    <div class="btns-2">-->
-    <!--                        <button class="btn btn-udh-blue" style="width:48%">반납완료</button>-->
-    <!--                        <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
+        </th:block>
 
-    <!--    <div class="card mb-3 dream" >-->
-    <!--        <div class="row g-0">-->
-    <!--            <div class="col-1 giveGroup">나눔</div>-->
-    <!--            <div class="col-2 img-area">-->
-    <!--                <img src="..." class="img-fluid rounded-start" alt="...">-->
-    <!--            </div>-->
-    <!--            <div class="col-4 item-info-area">-->
-    <!--                <div class="card-body">-->
-    <!--                    <h4 class="mb-3">${item.title}</h4>-->
-    <!--                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--            <div class="col-2 status-area">-->
-    <!--                <h5>대여중</h5>-->
-    <!--                <p>반납예정일: 2024-08-15</p>-->
-    <!--            </div>-->
-    <!--            <div class="col-3 btn-area container">-->
-    <!--                <div class="btn-group">-->
-    <!--                    <div class="mb-3 btns-1">-->
-    <!--                        <button  class="btn btn-udh-silver">수정</button>-->
-    <!--                        <button  class="btn btn-udh-red">신고</button>-->
-    <!--                    </div>-->
-    <!--                    <div class="btns-2">-->
-    <!--                        <button class="btn btn-udh-blue" style="width:48%">반납완료</button>-->
-    <!--                        <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
-    <nav class="row mt-3">
-        <ul class="pagination pagination-sm justify-content-center ">
-        </ul>
-    </nav>
-
-
+        <nav class="row mt-3" th:if="${pageInfo} != null">
+            <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
+                <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
+                    <button th:onclick="getLendList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
+                            aria-label="Previous">
+                        <span>&laquo;</span>
+                    </button>
+                </li>
+                <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
+                    class="page-item active me-1" aria-current="page">
+                    <button th:text="${page}" class="page-link btn-udh-blue"
+                            th:onclick="getLendList([[${page}]])"
+                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                </li>
+                <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
+                    class="page-item me-1">
+                    <button class="page-link btn-udh-blue " aria-label="Previous"
+                            th:onclick="getLendList([[${pageInfo.currentPage+1}]])">
+                        <span>&raquo;</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+    </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>

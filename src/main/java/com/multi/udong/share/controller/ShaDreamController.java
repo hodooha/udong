@@ -2,10 +2,7 @@ package com.multi.udong.share.controller;
 
 
 import com.multi.udong.login.service.CustomUserDetails;
-import com.multi.udong.share.model.dto.ShaDreamCriteriaDTO;
-import com.multi.udong.share.model.dto.ShaDreamPageDTO;
-import com.multi.udong.share.model.dto.ShaDreamResultDTO;
-import com.multi.udong.share.model.dto.ShaReqDTO;
+import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/share/dream")
@@ -36,6 +32,14 @@ public class ShaDreamController {
      */
     @GetMapping("/lend")
     public String dreamLendMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
+        List<ShaCatDTO> catList = null;
+        try {
+            catList = shareService.getShaCat();
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute(e.getMessage());
+        }
+        model.addAttribute("catList", catList);
         return "share/dreamLend";
     }
 
@@ -53,11 +57,9 @@ public class ShaDreamController {
     }
 
     @GetMapping("/lendList")
-    @ResponseBody
-    public ResponseEntity<?> getLendList(ShaDreamCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c){
+    public String getLendList(ShaDreamCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
 
         // 결과값 초기 설정
-        Map<String, Object> result = new HashMap<>();
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
 
         criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
@@ -72,15 +74,15 @@ public class ShaDreamController {
             pageInfo.setPageInfo(resultDTO.getTotalCounts());
 
             // 결과값에 물건 목록과 페이지네이션 정보 저장
-            result.put("lendList", resultDTO.getLendList());
-            result.put("pageInfo", pageInfo);
+            model.addAttribute("lendList", resultDTO.getLendList());
+            model.addAttribute("pageInfo", pageInfo);
 
-            return ResponseEntity.ok().body(result);
+            return "share/dreamLend :: #dreams";
 
         } catch (Exception e) {
             e.printStackTrace();
-            result.put("msg", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
+            model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
         }
 
     }

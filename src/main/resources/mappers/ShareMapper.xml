@@ -332,6 +332,7 @@
             on b.item_no = e.req_item
             where b.deleted_at is null
             and b.owner_no = #{ownerNo}
+            <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
             <if test="group != null and group != ''">and b.item_group = #{group}</if>
             <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
             <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
@@ -361,6 +362,7 @@
         from sha_items
         where deleted_at is null
         and owner_no = #{ownerNo}
+        <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and item_group = #{group}</if>
         <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
         <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>

@@ -59,15 +59,26 @@ $(function(){
     }
 
     if(bodyId == "dreamLend"){
-        console.log();
+
         getLendList(1);
 
         window.addEventListener("popstate", function(event) {
             if (event.state) {
+                console.log(event.state);
                 restoreFormState(event.state);
                 updateLendList(event.state);
             }
         });
+
+        let savedState = history.state;
+        if (savedState) {
+             restoreFormState(savedState);
+             updateLendList(savedState);
+             console.log(savedState);
+        } else {
+            getLendList(1);
+        }
+
     }
 
     if(bodyId == "dreamBorrow"){
@@ -77,15 +88,19 @@ $(function(){
 
 });
 
-function ajax_get(reqUrl){
+function ajax_get(reqUrl, data){
 
     return $.ajax({
         url: reqUrl,
         type: "get",
-        beforeSend: showSpinner()
+        data: data,
+        beforeSend: showSpinner(),
+        error: function(errorPage){
+            $('body').replaceWith(errorPage);
+        }
     })
     .fail(function(errorPage){
-        $('body').html(errorPage);
+        $('body').replaceWith(errorPage);
     })
     .always(function(){
         hideSpinner();
@@ -103,10 +118,13 @@ function ajax_post(reqUrl, data){
         beforeSend: function(xhr){
             xhr.setRequestHeader(header, token);
             showSpinner();
+        },
+        error: function(errorPage){
+           $('body').replaceWith(errorPage);
         }
     })
     .fail(function(errorPage){
-        $('body').html(errorPage);
+        $('body').replaceWith(errorPage);
     })
     .always(function(){
         hideSpinner();
@@ -260,7 +278,7 @@ function getSearchParams(page){
 
 function updateItemList(params){
     let reqUrl = "/share/search";
-    ajax_post(reqUrl, params).done(function(fragment){
+    ajax_get(reqUrl, params).done(function(fragment){
         $('#itemList').replaceWith(fragment);
 
         // url에 검색한 쿼리들 넣어주기.
@@ -320,7 +338,7 @@ function getLendList(page){
 }
 
 function getDreamSearchParams(page){
-    let catCode = '';
+    let catCode = $('.catSelect').val();
     let group = $("input[name='group']:checked").val();
     let statusCode = $('#statusSelect').val();
     let keyword = $('#keyword').val();
@@ -339,128 +357,13 @@ function getDreamSearchParams(page){
 }
 
 function updateLendList(params){
-    $.ajax({
 
-        url: "/share/dream/lendList",
-        type: "get",
-        data: params,
-        success: function(data){
-            console.log(data);
-            renderLendList(data.lendList);
-            renderPageNation(data.pageInfo, "getLendList");
-            // url에 검색한 쿼리들 넣어주기.
-            let newUrl = createUrlWithParams(params);
-            history.pushState(params, '', newUrl);
-        },
-        error: function(data){
-            console.log(data);
-        }
-
+    let reqUrl = "/share/dream/lendList";
+    ajax_get(reqUrl, params).done(function(data){
+        $('#dreams').replaceWith(data);
+        let newUrl = createUrlWithParams(params);
+        history.pushState(params, '', newUrl);
     })
-
-}
-
-function renderLendList(items){
-    let result = "";
-
-    if(items.length == 0){
-        result = `<div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">등록한 물건이 없습니다.</div>`
-    } else {
-        result = items.map((item) => {
-
-            let head =
-                `<div class="card mb-3 dream" >
-                    <div class="row g-0">
-                        <div class="col-1 ${item.itemGroup}Group">${item.itemGroup == 'rent' ? '대여' : '나눔'}</div>
-                        <div class="col-2 img-area">
-                            <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="img-fluid" alt="물건이미지" style="height:140px;">
-                        </div>
-                        <div class="col-4 item-info-area">
-                            <div class="card-body">
-                                <h4 class="mb-3">${item.title}</h4>
-                                <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-                            </div>
-                        </div>
-                        <div class="col-2 status-area">
-                            <h5>${item.statusName}</h5>
-                            <p>반납예정일: ${item.returnDate}</p>
-                        </div>
-                        <div class="col-3 btn-area container">
-                            <div class="btn-group">
-                                <div class="mb-3 btns-1">`
-
-            let tail =
-                    `
-                                <button  class="btn btn-udh-silver">수정</button>
-                                <button  class="btn btn-udh-silver">삭제</button>
-                            </div>
-                            <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:100%">대여확정</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>`
-
-            if(item.itemGroup == "rent"){
-                if(item.statusCode == "UNAV"){
-                    tail = `
-                                       <button  class="btn btn-udh-silver">수정</button>
-                                       <button  class="btn btn-udh-silver">삭제</button>
-                                   </div>
-                                   <div class="btns-2">
-                                       <button class="btn btn-udh-blue" style="width:100%">중단해제</button>
-                                   </div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>`
-
-                } else if(item.statusCode == "RNT"){
-                    tail = `
-                                       <button  class="btn btn-udh-silver">수정</button>
-                                    <button  class="btn btn-udh-red">신고</button>
-                                   </div>
-                                   <div class="btns-2">
-                                       <button class="btn btn-udh-blue" style="width:48%">반납완료</button>
-                                       <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>
-                                   </div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>`
-                }
-            } else{
-                if(item.statusCode == "GIV"){
-                tail = `
-                               <button class="btn btn-udh-blue " style="width:100%">쪽지하기</button>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-               </div>`
-
-                } else{
-                tail = `
-                               <button class="btn btn-udh-silver" style="width:100%">추첨하기</button>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-               </div>`
-
-                }
-            }
-
-
-            return head + tail
-
-        }).join("")
-
-    }
-
-    $('#dreams').html(result);
-
 }
 
 function createUrlWithParams(params) {

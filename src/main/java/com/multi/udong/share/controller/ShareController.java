@@ -383,7 +383,7 @@ public class ShareController {
      * @return the list
      * @since 2024 -07-24
      */
-    @PostMapping("/search")
+    @GetMapping("/search")
     public String searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         // 결과값 초기 설정
