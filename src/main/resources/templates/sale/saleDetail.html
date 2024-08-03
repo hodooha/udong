@@ -231,14 +231,13 @@
 <div class="detail-container">
     <div class="header-container">
     <h1 class="sale-title"><span th:text="${sale.title}">땡처리 제목</span></h1>
-    <div class="toggle-container" title="주의: 마감 처리 후에는 되돌릴 수 없습니다.">
-        <span style="display: inline-block;">마감</span>
-        <label for="statusToggle" class="switch">
-            <input type="checkbox" id="statusToggle" th:checked="${sale.status == 'closed'}">
-            <span class="slider round"></span>
-        </label>
-
-    </div>
+        <div class="toggle-container" title="주의: 마감 처리 후에는 되돌릴 수 없습니다." th:if="${#authorization.expression('hasRole(''ROLE_SELLER'')')}">
+            <span style="display: inline-block;">마감</span>
+            <label for="statusToggle" class="switch">
+                <input type="checkbox" id="statusToggle" th:checked="${sale.status == 'closed'}">
+                <span class="slider round"></span>
+            </label>
+        </div>
     </div>
     <div class="content-wrapper">
         <div class="image-container">
@@ -266,6 +265,7 @@
     $(document).ready(function() {
         var saleId = /*[[${sale.saleNo}]]*/ [[${sale.saleNo}]];
         var initialStatus = /*[[${sale.status}]]*/ 'active';
+        var isSeller = /*[[${#authorization.expression('hasRole(''ROLE_SELLER'')')}]]*/ false;
 
         updateUIBasedOnStatus(initialStatus);
 
@@ -320,6 +320,7 @@
 
     function updateUIBasedOnStatus(status) {
         var isChecked = status === 'closed';
+        var isSeller = /*[[${#authorization.expression('hasRole(''ROLE_SELLER'')')}]]*/ false;
         $('#statusToggle').prop('checked', isChecked);
         $('#statusToggle').prop('disabled', isChecked);
         if (isChecked) {
@@ -359,11 +360,11 @@
 </script>
     <div class="button-container">
         <button class="btn-submit btn-udh-blue" onclick="history.back()">뒤로가기</button>
-        <form th:action="@{/sale/saleReport}" method="get">
+        <form th:if="${#authorization.expression('hasRole(''ROLE_MEMBER'')')}" th:action="@{/sale/saleReport}" method="get">
             <input type="hidden" name="saleNo" th:value="${sale.saleNo}" />
             <button class="btn-submit btn-udh-yellow" type="submit">신고하기</button>
         </form>
-        <form th:action="@{/sale/deleteSale}" method="post" style="display: inline;" onsubmit="return confirm('정말로 이 땡처리를 삭제하시겠습니까?');">
+        <form th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" th:action="@{/sale/deleteSale}" method="post" style="display: inline;" onsubmit="return confirm('정말로 이 땡처리를 삭제하시겠습니까?');">
             <input type="hidden" name="saleNo" th:value="${sale.saleNo}">
             <button type="submit" class="btn-submit btn-udh-red">삭제하기</button>
         </form>
