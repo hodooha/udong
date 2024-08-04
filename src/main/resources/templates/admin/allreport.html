@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .admin-content {
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 15px;
+        }
+
+        h5 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 60px;
+        }
+
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #3B5C9A;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .page-button:hover {
+            background-color: #0B1D40;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+        .sortable:hover {
+            background-color: #e0e0e0;
+        }
+        .status-btn {
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status-text {
+            margin-right: 10px;
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<div class="admin-content">
+    <h5>신고 관리</h5>
+
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>카테고리</th>
+            <th>피신고자</th>
+            <th>신고자</th>
+            <th>신고사유</th>
+            <th>첨부파일</th>
+            <th class="sortable" data-sort="status">처리여부 ▼</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="report : ${reports}" th:data-report-no="${report.reportNo}">
+            <td th:text="${report.typeName}"></td>
+            <td th:text="${report.reportedMemberId}"></td>
+            <td th:text="${report.reporterMemberId}"></td>
+            <td>
+                <a th:href="@{${report.url}}" th:text="${report.reason}"></a>
+            </td>
+            <td>
+                <a th:if="${report.imageFileName != null}"
+                   th:href="@{'/downloadReportImage/' + ${report.reportNo}}"
+                   th:download="${report.imageFileName}">
+                    [다운로드]
+                </a>
+                <span th:unless="${report.imageFileName != null}">첨부 파일 없음</span>
+            </td>
+            <td>
+                <span th:text="${report.status == 'W' ? '대기' : (report.status == 'A' ? '승인' : '반려')}" class="status-text"></span>
+                <button th:if="${report.status == 'W' || report.status == 'R'}"
+                        onclick="changeStatus([[${report.reportNo}]], 'A')"
+                        class="btn-udh-yellow status-btn">승인</button>
+                <button th:if="${report.status == 'W' || report.status == 'A'}"
+                        onclick="changeStatus([[${report.reportNo}]], 'R')"
+                        class="btn-udh-red status-btn">반려</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="pagination"></div>
+</div>
+
+<script th:inline="javascript">
+    let sortDirection = true;
+
+    function changeStatus(reportNo, status) {
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+
+        $.ajax({
+            type: "POST",
+            url: "/admin/changeReportStatus",
+            contentType: "application/json",
+            data: JSON.stringify({ reportNo: reportNo, status: status }),
+            beforeSend: function(xhr) {
+                if (token && header) {
+                    xhr.setRequestHeader(header, token);
+                }
+            },
+            success: function(response) {
+                if(response.success) {
+                    alert("상태가 성공적으로 업데이트되었습니다.");
+                    updateReportRow(reportNo, status);
+                } else {
+                    alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+                }
+            },
+            error: function(xhr, status, error) {
+                alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+                console.error("Error details:", xhr.responseText);
+            }
+        });
+    }
+
+    function updateReportRow(reportNo, newStatus) {
+        var row = $("tr[data-report-no='" + reportNo + "']");
+        var statusCell = row.find("td:last");
+
+        var statusText = newStatus === 'A' ? '승인' : (newStatus === 'R' ? '반려' : '대기');
+        var buttonHtml = '';
+
+        if (newStatus === 'W') {
+            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'A\')" class="btn-udh-yellow status-btn">승인</button> ';
+            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'R\')" class="btn-udh-red status-btn">반려</button>';
+        } else if (newStatus === 'A') {
+            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'R\')" class="btn-udh-red status-btn">반려</button>';
+        } else if (newStatus === 'R') {
+            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'A\')" class="btn-udh-yellow status-btn">승인</button>';
+        }
+
+        statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);
+
+        // Update the data-status attribute to reflect the new status
+        row.attr("data-status", newStatus);
+    }
+
+    $(document).ready(function() {
+        $('.admin-table tbody tr').each(function() {
+            var reportNo = $(this).data('report-no');
+            var currentStatus = $(this).find('td:last span').text().trim();
+            var statusCode = currentStatus === '대기' ? 'W' : (currentStatus === '승인' ? 'A' : 'R');
+            updateReportRow(reportNo, statusCode);
+        });
+
+        // Sorting functionality for the "처리여부" column
+        $('.sortable').click(function() {
+            var rows = $('tbody tr').get();
+
+            rows.sort(function(a, b) {
+                var A = $(a).data('status');
+                var B = $(b).data('status');
+
+                // You can customize the sort order by status here
+                var order = {
+                    'W': 1, // 대기
+                    'A': 2, // 승인
+                    'R': 3  // 반려
+                };
+
+                if (sortDirection) {
+                    return order[A] - order[B];
+                } else {
+                    return order[B] - order[A];
+                }
+            });
+
+            $.each(rows, function(index, row) {
+                $('tbody').append(row);
+            });
+
+            // Toggle sort direction
+            sortDirection = !sortDirection;
+
+            // Update sort direction indicator
+            var currentText = $(this).text();
+            var newText = currentText.includes('▼') ? currentText.replace('▼', '▲') : currentText.replace('▲', '▼');
+            $(this).text(newText);
+        });
+    });
+    function goBack() {
+    window.history.back();
+}
+</script>
+</body>
+</html>
