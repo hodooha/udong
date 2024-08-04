@@ -17,6 +17,7 @@ public class LogDTO {
     private int views;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private int repliesCount;
     private int likesCount;
     private int viewerLike;
     private List<AttachmentDTO> attachments;

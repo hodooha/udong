@@ -159,7 +159,7 @@
                             </button>
                         </a>
                     </th:block>
-                    <th:block th:if="${clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
+                    <th:block th:if="${clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
                         <form id="deleteClubForm" th:action="@{/club/deleteClub}" method="post" style="display: inline">
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />

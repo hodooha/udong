@@ -232,9 +232,9 @@ public class ClubController {
 
         }
 
-        try {
+        System.out.println("###### insert할 모임 데이터: " + clubDTO);
 
-            System.out.println("###### insert할 모임 데이터: " + clubDTO);
+        try {
 
             // service의 모임 insert 메소드 호출
             clubService.insertClub(clubDTO);
@@ -322,11 +322,11 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
-        try {
+        // 서버단에서 회원이 모임에 가입 신청을 하거나 이미 가입되지 않았는지 한 번 더 검증
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+        System.out.println("###### 가입 신청한 유저의 모임 가입 상태: " + joinStatus);
 
-            // 서버단에서 회원이 모임에 가입 신청을 하거나 이미 가입되지 않았는지 한 번 더 검증
-            String joinStatus = clubService.checkJoinStatus(requestDTO);
-            System.out.println("###### 가입 신청한 유저의 가입 상태: " + joinStatus);
+        try {
 
             // 서버단에서 현재 인원이 최대 인원보다 적은지 한 번 더 검증
             ClubDTO personnel = clubService.checkPersonnel(clubNo);
@@ -335,7 +335,7 @@ public class ClubController {
             System.out.println("###### 현재 모임 인원: " + currentPersonnel + " / " + maxPersonnel);
 
             // 가입 안 돼 있고, 정원 가득 차지 않았을 때만 가입 신청 메소드 호출
-            if(joinStatus == null && currentPersonnel < maxPersonnel) {
+            if(joinStatus.equals("N") && currentPersonnel < maxPersonnel) {
 
                 clubService.requestJoinClub(requestDTO);
 
@@ -377,32 +377,33 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
-        try {
+        // 서버단에서 회원이 모임 가입 대기 중인지 한 번 더 체크
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+        System.out.println("###### 가입 신청 취소한 유저의 모임 가입 상태: " + joinStatus);
 
-            // 서버단에서 회원이 가입 신청 후 대기 중 상태인지 한 번 더 검증
-            String joinStatus = clubService.checkJoinStatus(requestDTO);
-            System.out.println("###### 가입 신청 취소한 유저의 가입 상태: " + joinStatus);
+        // 가입 신청 후 대기 상태일 때만 가입 신청 취소 메소드 호출
+        if(joinStatus.equals("W")) {
 
-            // 가입 신청 후 대기 상태일 때만 가입 신청 취소 메소드 호출
-            if(joinStatus.equals("W")) {
+            try {
 
                 clubService.cancelJoinRequest(requestDTO);
 
                 redirectAttributes.addFlashAttribute("message", "가입 신청이 취소되었습니다.");
 
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
             }
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
-
-            return "common/errorPage";
-
         }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
@@ -426,32 +427,32 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
-        try {
+        // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+        System.out.println("###### 탈퇴 신청한 유저의 가입 상태: " + joinStatus);
 
-            // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
-            String joinStatus = clubService.checkJoinStatus(requestDTO);
-            System.out.println("###### 탈퇴 신청한 유저의 가입 상태: " + joinStatus);
+        // 가입된 상태일 때만 모임 탈퇴 메소드 호출
+        if(joinStatus.equals("Y")) {
 
-            // 가입된 상태일 때만 모임 탈퇴 메소드 호출
-            if(joinStatus.equals("Y")) {
+            try{
 
                 clubService.leaveClub(requestDTO);
 
                 redirectAttributes.addFlashAttribute("message", "모임 탈퇴가 완료되었습니다.");
 
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 탈퇴 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
             }
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            model.addAttribute("msg", "모임 탈퇴 과정에서 문제가 발생했습니다.");
-
-            return "common/errorPage";
-
         }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
@@ -475,65 +476,55 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
-        try {
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+        System.out.println("###### 모임 해체를 해체한 유저의 모임장 여부: " + isMaster);
 
-            // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
-            int master = clubService.checkClubMaster(clubNo);
-            System.out.println("###### 모임장 no: " + master);
+        // 서버단에서 로그인된 유저가 관리자인지 한 번 더 검증
+        String isAdmin = checkAdmin(memberNo);
+        System.out.println("###### 모임 해체를 해체한 유저의 관리자 여부: " + isAdmin);
 
-            // 모임장일 때만 모임 해체 메소드 호출
-            if(memberNo == master) {
+        // 모임장이거나 관리자일 때만 모임 해체 메소드 호출
+        if(isMaster.equals("Y") || isAdmin.equals("Y")) {
 
-                List<AttachmentDTO> Attachment = new ArrayList<>();
+            try {
 
                 // 추후 해체에 성공했을 때 이미지 삭제를 위해 이미지 select
-                try {
-
-                    Attachment = clubService.selectClubImg(clubNo);
-
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-
-                    model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
-
-                    return "common/errorPage";
-
-                }
+                List<AttachmentDTO> attachment = clubService.selectClubImg(clubNo);
 
                 int result = clubService.deleteClub(requestDTO);
 
                 // 모임 해체 성공 시 이미지 삭제
                 if(result == 1) {
 
-                    System.out.println("###### 삭제할 이미지: " + Attachment);
+                    System.out.println("###### 삭제할 이미지: " + attachment);
 
-                    String savedName = Attachment.get(0).getSavedName();
+                    String savedName = attachment.get(0).getSavedName();
 
                     String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
                     String filePath = root + "/uploadFiles";
 
                     new File(filePath + "/" + savedName).delete();
 
+                    redirectAttributes.addFlashAttribute("message", "모임 해체가 완료되었습니다.");
+
+                    return "redirect:/club/clubMain?page=1";
+
                 }
 
-                redirectAttributes.addFlashAttribute("message", "모임 해체가 완료되었습니다.");
+            } catch (Exception e) {
 
-                return "redirect:/club/clubMain?page=1";
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
 
             }
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
-
-            return "common/errorPage";
-
         }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
@@ -657,16 +648,15 @@ public class ClubController {
         requestDTO.setMemberNo(memberNo);
 
         int clubNo = requestDTO.getClubNo();
-        System.out.println("###### 수정할 모임 no: " + clubNo);
 
-        try {
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+        System.out.println("###### 모임 수정을 시도한 유저 모임장 여부: " + isMaster);
 
-            // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
-            int master = clubService.checkClubMaster(clubNo);
-            System.out.println("###### 모임장 no: " + master);
+        // 모임장일 때만 모임 수정폼으로 이동
+        if(isMaster.equals("Y")) {
 
-            // 모임장일 때만 모임 수정폼으로 이동
-            if(memberNo == master) {
+            try {
 
                 // service의 모임 홈 select 메소드 호출
                 ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
@@ -677,19 +667,19 @@ public class ClubController {
 
                 return "club/clubUpdateForm";
 
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
             }
 
-            return "redirect:/club/clubHome?clubNo=" + clubNo;
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            model.addAttribute("msg", "모임 수정폼 이동 과정에서 문제가 발생했습니다.");
-
-            return "common/errorPage";
-
         }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
 
@@ -713,24 +703,10 @@ public class ClubController {
 
         // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
         int memberNo = c.getMemberDTO().getMemberNo();
-        int master = 0;
-
-        try {
-
-            master = clubService.checkClubMaster(clubNo);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
-
-            return "common/errorPage";
-
-        }
+        String isMaster = checkClubMaster(memberNo, clubNo);
 
         // 모임장일 때만 모임 수정
-        if(memberNo == master) {
+        if(isMaster.equals("Y")) {
 
             List<AttachmentDTO> beforeAttachment = new ArrayList<>();
 
@@ -825,8 +801,6 @@ public class ClubController {
 
                 redirectAttributes.addFlashAttribute("message", "모임 수정이 완료되었습니다.");
 
-                return "redirect:/club/clubHome?clubNo=" + clubNo;
-
             } catch (Exception e) {
 
                 e.printStackTrace();
@@ -853,14 +827,60 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = filterDTO.getClubNo();
 
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
         // 가입된 상태일 때만 기록 페이지로 이동
         if(joinStatus.equals("Y")) {
 
-            model.addAttribute("clubNo", clubNo);
+            try {
 
-            return "/club/clubLog/logMain";
+                // 받아온 page로 시작 및 시작 index를 설정
+                filterDTO.setStartAndStartIndex(filterDTO.getPage());
+
+                // 검색 조건 확인
+                System.out.println("###### 검색하는 검색어: " + filterDTO.getSearchWord());
+
+                // 로그 리스트 select 메소드 호출
+                List<LogDTO> logList = clubService.selectLogList(filterDTO);
+                System.out.println("###### 가져온 기록 리스트: " + logList);
+                model.addAttribute("logList", logList);
+
+                // 로그 개수 받아와 페이지 수 계산
+                int logCount = clubService.selectLogCount(filterDTO);
+                System.out.println("###### 기록 총 개수: " + logCount);
+
+                int pages = 0;
+
+                if (logCount != 0) {
+
+                    pages = logCount / 5;
+
+                    if (logCount % 5 != 0) {
+                        pages += 1;
+                    }
+
+                }
+
+                System.out.println("###### 페이지 개수: " + pages);
+
+                model.addAttribute("pages", pages);
+
+                model.addAttribute("clubNo", clubNo);
+
+                model.addAttribute("filter", filterDTO);
+
+                return "/club/clubLog/logMain";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 기록 리스트 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
 
         }
 
@@ -886,8 +906,10 @@ public class ClubController {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
+        // 가입된 상태일 때만 기록 작성폼으로 이동
         if(joinStatus.equals("Y")) {
 
             model.addAttribute("clubNo", clubNo);
@@ -919,6 +941,8 @@ public class ClubController {
 
         // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
         String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태일 때만 기록 작성
         if(joinStatus.equals("Y")) {
 
             // 로그인된 유저를 작성자로 set
@@ -1010,13 +1034,13 @@ public class ClubController {
 
                 }
 
-                model.addAttribute("msg", "이미지 업로드 과정에서 문제가 발생했습니다.");
+                model.addAttribute("msg", "모임 기록 작성 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
 
             }
 
-        } // if 가입된 상태일 때
+        }
 
         // 미가입 상태일 때 모임 홈으로 이동
         return "redirect:/club/clubHome?clubNo=" + clubNo;
@@ -1061,6 +1085,7 @@ public class ClubController {
 
     }
 
+
     /**
      * 유저가 모임장인지 확인
      *
@@ -1071,24 +1096,49 @@ public class ClubController {
      */
     public String checkClubMaster(int memberNo, int clubNo) {
 
-        try {
+        String isMaster = "N";
 
-            String isMaster = "";
+        try {
 
             int materNo = clubService.checkClubMaster(clubNo);
 
             if(materNo == memberNo) {
-
                 isMaster = "Y";
-
-            }
-            else {
-
-                isMaster = "N";
-
             }
 
             return isMaster;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    /**
+     * 유저가 관리자인지 확인
+     *
+     * @param memberNo the member no
+     * @return the string
+     * @since 2024 -08-02
+     */
+    public String checkAdmin(int memberNo) {
+
+        String isAdmin = "N";
+
+        try {
+
+            String authority = clubService.checkAdmin(memberNo);
+
+            if(authority.equals("ROLE_ADMIN")) {
+                isAdmin = "Y";
+            }
+
+            return isAdmin;
 
         } catch (Exception e) {
 

@@ -53,7 +53,60 @@
             margin-left: 25px;
             font-family: 'Freesentation-5Medium' !important;
         }
+        .log-one {
+            cursor: pointer;
+        }
+        .log-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 3px;
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .log-title {
+            font-family: 'Freesentation-7Bold';
+            font-size: 15px;
+        }
+        .log-content {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .log-reaction {
+            font-size: 12px;
+        }
+        .log-etc {
+            font-size: 10px;
+            color: #6F6F6F;
+        }
+        .btn-pagination {
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 12px !important;
+            padding: 4px 8px 4px 8px !important;
+            margin-right: 7px;
+        }
     </style>
+    <script type="text/javascript">
+
+        var filterSearchWord = "[[${filter.searchWord}]]";
+
+        $(document).ready(function() {
+
+            var pages = [[${pages}]];
+            var paginationDiv = $('#pagination');
+            for (var i = 1; i <= pages; i++) {
+
+                var button = $('<button></button>')
+                .text(i)
+                .addClass('btn btn-udh-blue btn-pagination')
+                .attr('onclick', 'selectLogList(' + i + ')');
+
+                paginationDiv.append(button);
+            }
+
+        })
+
+    </script>
     <script th:inline="javascript">
 
         window.onload = function() {
@@ -75,11 +128,11 @@
 
     <div class="right-area">
         <div class="top">
-            <form class="search-form" th:action="@{/club/clubLog}" method="get">
+            <form class="search-form" th:action="@{/club/clubLog/logMain}" method="get">
                 <div class="search-bar">
-                    <input type="hidden" name="page" value="1">
-                    <span>기록 제목 검색</span>
-                    <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력...">
+                    <input type="hidden" th:value="${clubNo}" name="clubNo">
+                    <span>기록 검색</span>
+                    <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력..." th:value="${filter.searchWord}">
                     <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
                 </div>
             </form>
@@ -87,10 +140,53 @@
                 <button type="button" class="btn btn-udh-blue btn-create-club-log">기록 작성</button>
             </a>
         </div>
+
+        <div class="log-list">
+            <hr>
+            <div th:each="one : ${logList}" class="log-one">
+                <table style="width: 100%">
+                    <tr class="log-one-line">
+                        <td>
+                            <p th:text="${one.title}" class="p-tag log-title"></p>
+                            <p th:text="${one.content}" class="p-tag log-content"></p>
+                            <p class="p-tag log-reaction">
+                                <span>&#128155;</span>
+                                <span th:text="${one.likesCount}"></span>
+                                <span style="margin-left: 15px;">&#128064;</span>
+                                <span th:text="${one.views}"></span>
+                                <span style="margin-left: 15px;">&#128172;</span>
+                                <span th:text="${one.repliesCount}"></span>
+                            </p>
+                            <p class="p-tag log-etc">
+                                <span>&#128395;</span>
+                                <span th:text="${one.writer.nickname}"></span>
+                                <span style="margin: 0px 10px 0px 10px">|</span>
+                                <span th:text="${one.createdAt}"></span>
+                            </p>
+                        </td>
+                        <td style="width: 90px" th:if="${one.attachments != null and one.attachments.size() > 0}">
+                            <img th:src="@{'/uploadFiles/' + ${one.attachments[0].savedName}}" class="log-img">
+                        </td>
+                    </tr>
+                </table>
+                <hr>
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination">
+
+        </div>
+
     </div>
 </div>
 
-<script>
+<script type="text/javascript">
+
+    function selectLogList(page) {
+
+        var encodedSearchWord = encodeURIComponent(filterSearchWord);
+		window.location.href = "/club/clubLog/logMain?clubNo="+clubNo+"&page="+page+"&searchWord="+encodedSearchWord;
+	}
 
 </script>
 </body>

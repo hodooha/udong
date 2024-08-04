@@ -50,6 +50,9 @@
 
             window.location.href = moveUrl + "?clubNo=" + clubNo;
 
+            console.log(moveUrl);
+            console.log(clubNo);
+
         }
 
         function highlightActiveMenu() {
@@ -57,7 +60,7 @@
 
             // 메뉴 항목들 가져오기
             const homeMenu = document.querySelector('li[onclick*="/club/clubHome"]');
-            const logMenu = document.querySelector('li[onclick*="/club/clubLog"]');
+            const logMenu = document.querySelector('li[onclick*="/club/clubLog/logMain"]');
             const scheduleMenu = document.querySelector('li[onclick*="/club/clubSchedule"]');
             const albumMenu = document.querySelector('li[onclick*="/club/clubAlbum"]');
             const MemberMenu = document.querySelector('li[onclick*="/club/clubMember"]');

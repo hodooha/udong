@@ -44,4 +44,10 @@ public interface ClubService {
     List<AttachmentDTO> selectClubImg(int clubNo) throws Exception;
 
     int insertLog(LogDTO logDTO) throws Exception;
+
+    String checkAdmin(int memberNo) throws Exception;
+
+    List<LogDTO> selectLogList(FilterDTO filterDTO) throws Exception;
+
+    int selectLogCount(FilterDTO filterDTO) throws Exception;
 }

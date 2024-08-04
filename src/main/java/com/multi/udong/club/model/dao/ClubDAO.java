@@ -343,4 +343,21 @@ public class ClubDAO {
 
     }
 
+    public String checkAdmin(SqlSessionTemplate sqlSession, int memberNo) {
+
+        return sqlSession.selectOne("clubMapper.checkAdmin", memberNo);
+
+    }
+
+    public List<LogDTO> selectLogList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("clubMapper.selectLogList", filterDTO);
+
+    }
+
+    public int selectLogCount(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectLogCount", filterDTO);
+
+    }
 }
