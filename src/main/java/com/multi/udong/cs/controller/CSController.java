@@ -49,7 +49,6 @@ public class CSController {
      */
     @GetMapping("/csMain")
     public void csMain (Model model) {
-        model.addAttribute("msg", "고객센터입니다.");
     }
 
     /**

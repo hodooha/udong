@@ -114,7 +114,7 @@ public class SpringSecurityConfig {
                 .maxSessionsPreventsLogin(false)
                 .expiredUrl("/")
             )
-            .rememberMe(remember -> remember
+            .rememberMe(remember -> remember // https://bluexmas.tistory.com/1201
                 .tokenRepository(persistentTokenRepository())
                 .tokenValiditySeconds(86400) // 24시간
                 .userDetailsService(customUserDetailsService)

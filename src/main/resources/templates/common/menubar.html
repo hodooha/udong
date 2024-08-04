@@ -102,27 +102,6 @@
             margin: 0 5px;
             color: #000;
         }
-        .chatbot {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-            background: #FFFFFF;
-            border: none;
-            border-radius: 30%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            z-index: 1000;
-        }
-        .chatbot:hover{
-            background: #FFD594;
-            transform: translateY(-10px);
-        }
-        .chatbot img {
-            width: 70px;
-            height: auto;
-        }
     </style>
 </head>
 <body>
@@ -184,7 +163,7 @@
     </div>
 </header>
 </div>
-<button type="button" class="chatbot"><img th:src="@{/img/logo.png}" alt="챗봇"></button>
+<div th:replace="~{/cs/chatbot}"></div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const currentPath = window.location.pathname;
