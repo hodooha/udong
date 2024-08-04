@@ -21,6 +21,7 @@ public class ShaReqDTO {
     private int ownerNo;
     private String reqGroup;
     private int rqstNo;
+    private String rqstNickname;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private LocalDate returnDate;

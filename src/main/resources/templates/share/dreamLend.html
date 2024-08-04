@@ -140,9 +140,6 @@
             color: #FFFFFF !important;
         }
 
-
-
-
     </style>
 </head>
 <body id="dreamLend">
@@ -215,15 +212,18 @@
                              class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
                     </div>
                     <div class="col-4 item-info-area " th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|" style="cursor:pointer;">
-                        <div class="card-body">
+                        <div class="card-body p-3">
                             <h4 class="mb-3">[[${item.title}]]</h4>
                             <p><span>💛   [[${item.likeCnt}]]</span> <span>👀   [[${item.viewCnt}]]</span>
                                 <span>🙋‍♀️   [[${item.reqCnt}]]</span></p>
+                            <p style="margin-bottom: 0">
+                                <span>[[${item.locName}]]</span> <span id="modifiedAt">[[${item.displayDate}]]</span>
+                            </p>
                         </div>
                     </div>
                     <div class="col-2 status-area">
                         <h5>[[${item.statusName}]]</h5>
-                        <p th:if="${item.statusName == 'RNT'}">반납예정일: [[${item.returnDate}]]</p>
+                        <p th:if="${item.statusCode == 'RNT'}">반납예정일: [[${item.returnDate}]]</p>
                     </div>
                     <div class="col-3 btn-area container">
                         <div th:if="${item.statusCode == 'AVL'}" class="btn-group">
@@ -232,7 +232,8 @@
                                 <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">삭제</button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:100%">대여확정</button>
+                                <button class="btn btn-udh-blue" style="width:100%" th:onclick="approveReq([[${item.itemNo}]])" >대여확정</button>
+
                             </div>
                         </div>
                         <div th:if="${item.statusCode == 'UNAV'}" class="btn-group">
@@ -289,6 +290,71 @@
 
         </th:block>
 
+        <div  class="modal fade" id="selectRqst" aria-hidden="true" aria-labelledby="selectRqstLabel" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="selectRqstLabel">대여를 확정할 이웃을 선택해주세요.</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <th:block th:if="${#lists.isEmpty(requesters)}">
+                            <div>
+                                대여를 신청한 이웃이 없습니다.
+                            </div>
+                        </th:block>
+                        <th:block th:unless="${#lists.isEmpty(requesters)}">
+                            <table class="table table-warning table-hover table-bordered text-center">
+                                <thead>
+                                <tr class="">
+                                    <th scope="col">체크</th>
+                                    <th scope="col">대여신청자</th>
+                                    <th scope="col">신청일시</th>
+                                    <th scope="col">반납희망일</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="req : ${requesters}">
+                                    <th scope="row"><label>
+                                        <input type="radio" name="requesters" >
+                                    </label></th>
+                                    <td>[[${req.rqstNickname}]]</td>
+                                    <td>[[${#temporals.format(req.createdAt, 'yyyy.MM.dd HH:mm')}]]</td>
+                                    <td>[[${req.returnDate}]]</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </th:block>
+                    </div>
+                    <div class="modal-footer">
+                        <th:block th:if="${#lists.isEmpty(requesters)}">
+                            <button class="btn btn-udh-blue" data-bs-target="#selectRqst" data-bs-toggle="modal">확인</button>
+                        </th:block>
+                        <th:block th:unless="${#lists.isEmpty(requesters)}">
+                        <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-toggle="modal">취소</button>
+                        <button class="btn btn-udh-blue" th:onclick="checkReturnDate()" data-bs-target="#approveReq" data-bs-toggle="modal">다음</button>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="approveReq" aria-hidden="true" aria-labelledby="approveReqLabel" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="approveReqLabel">Modal 2</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Hide this modal and show the first with the button below.
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-toggle="modal">이전</button>
+                        <button class="btn btn-udh-blue" th:onclick="approveReq()">확정</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <nav class="row mt-3" th:if="${pageInfo} != null">
             <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
                 <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">

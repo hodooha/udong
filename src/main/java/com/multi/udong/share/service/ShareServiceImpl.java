@@ -9,21 +9,62 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
-/**
- * 대여 및 나눔 Service
- *
- * @author 하지은
- * @since 2024 -07-21
- */
 @RequiredArgsConstructor
 @Service
 public class ShareServiceImpl implements ShareService {
 
     private final SqlSessionTemplate sqlSession;
     private final ShareDAO shareDAO;
+    public static final int SEC = 60;
+    public static final int MIN = 60;
+    public static final int HOUR = 24;
+    public static final int DAY = 30;
+    public static final int MONTH = 12;
+
+
+    /**
+     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
+     *
+     * @param localDateTime the local date time
+     * @return the string
+     * @since 2024 -08-01
+     */
+    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
+
+        String displayDate = null;
+        if (diffTime < SEC){
+            return diffTime + "초전";
+        }
+        diffTime = diffTime / SEC;
+        if (diffTime < MIN) {
+            return diffTime + "분 전";
+        }
+        diffTime = diffTime / MIN;
+        if (diffTime < HOUR) {
+            return diffTime + "시간 전";
+        }
+        diffTime = diffTime / HOUR;
+        if (diffTime < DAY) {
+            return diffTime + "일 전";
+        }
+        diffTime = diffTime / DAY;
+        if (diffTime < MONTH) {
+            return diffTime + "개월 전";
+        }
+
+        diffTime = diffTime / MONTH;
+        return diffTime + "년 전";
+
+    };
 
     /**
      * 물건 카테고리 조회
@@ -101,6 +142,7 @@ public class ShareServiceImpl implements ShareService {
     public ShaItemDTO getItemDetail(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         ShaItemDTO item = shareDAO.getItemDetail(sqlSession, itemDTO);
+        item.setDisplayDate(convertLocaldatetimeToTime(item.getModifiedAt()));
         List<AttachmentDTO> imgList = shareDAO.getItemImgs(sqlSession, item);
         item.setImgList(imgList);
 
@@ -126,7 +168,11 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public ShaItemResultDTO searchItems(ShaCriteriaDTO criteriaDTO) throws Exception {
         ShaItemResultDTO result = new ShaItemResultDTO();
-        result.setItemList(shareDAO.searchItems(sqlSession, criteriaDTO));
+        List<ShaItemDTO> itemList = shareDAO.searchItems(sqlSession, criteriaDTO);
+        for(ShaItemDTO i : itemList){
+            i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
+        }
+        result.setItemList(itemList);
         result.setTotalCounts(getItemCounts(criteriaDTO));
 
         return result;
@@ -350,18 +396,29 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
 
+        // 결과값 초기 설정
         ShaDreamResultDTO result = new ShaDreamResultDTO();
-        result.setLendList(shareDAO.getLendList(sqlSession, criteriaDTO));
-        result.setTotalCounts(getLendCounts(criteriaDTO));
 
+        // 유저의 물건 리스트, 전체 개수 가져오기
+        List<ShaItemDTO> lendList = shareDAO.getLendList(sqlSession, criteriaDTO);
+        for(ShaItemDTO i : lendList){
+            i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
+        }
+        result.setLendList(lendList);
+        result.setTotalCounts(shareDAO.getLendCounts(sqlSession, criteriaDTO));
 
         return result;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public int getLendCounts(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
+    public List<ShaReqDTO> getRequesters(ShaReqDTO reqDTO) throws Exception {
 
-        return shareDAO.getLendCounts(sqlSession, criteriaDTO);
+        // 해당 물건의 거래 희망자 목록 조회
+        List<ShaReqDTO> requesters = shareDAO.getRequesters(sqlSession, reqDTO);
+
+
+        return requesters;
     }
 
 

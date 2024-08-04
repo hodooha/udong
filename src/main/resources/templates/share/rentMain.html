@@ -74,7 +74,7 @@
         }
 
         .img-blur{
-            opacity: 0.4;
+            opacity: 0.5;
         }
 
         .blur-info{
@@ -138,33 +138,37 @@
             <th:block th:unless="${#lists.isEmpty(itemList)}">
                 <div th:each="item : ${itemList}" class="col">
                     <div class="card" th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
-                        <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur' : ' '}">
+                        <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
                             <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
                                  class="card-img-top" alt="물건이미지" style="height:20em"
                                  th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
+                            <th:block th:switch="${item.statusCode}">
+                                <div class="blur-info" th:case="UNAV">
+                                    <h3>대여불가</h3>
+                                </div>
+
+                                <div class="blur-info" th:case="RNT">
+                                    <h3>대여중</h3>
+                                    <p style="font-size: 0.9em">반납예정일: [[${item.returnDate}]]</p>
+                                </div>
+
+                                <div class="blur-info" th:case="GVD">
+                                    <h3>나눔완료</h3>
+                                    <p>당첨자: </p>
+                                </div>
+
+                            </th:block>
                         </div>
-                        <th:block th:switch="${item.statusCode}">
-                            <div class="blur-info" th:case="UNAV">
-                                <h3>대여불가</h3>
-                            </div>
 
-                            <div class="blur-info" th:case="RNT">
-                                <h3>대여중</h3>
-                                <p>반납예정일: [[${item.returnDate}]]</p>
-                            </div>
-
-                            <div class="blur-info" th:case="GVD">
-                                <h3>나눔완료</h3>
-                                <p>당첨자: </p>
-                            </div>
-
-                        </th:block>
 
                         <div class="card-body">
                             <h5 th:text="${item.title}"></h5>
                             <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️
                                 <span
                                         th:text="${item.reqCnt}"></span></p>
+                            <p>
+                                <span>[[${item.locName}]]</span> <span id="modifiedAt">[[${item.displayDate}]]</span>
+                            </p>
 
                         </div>
                     </div>

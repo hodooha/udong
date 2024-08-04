@@ -34,10 +34,15 @@ public class ShaDreamController {
     public String dreamLendMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
         List<ShaCatDTO> catList = null;
         try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
             catList = shareService.getShaCat();
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute(e.getMessage());
+            model.addAttribute("msg",e.getMessage());
+            return "common/errorPage";
         }
         model.addAttribute("catList", catList);
         return "share/dreamLend";
@@ -109,4 +114,22 @@ public class ShaDreamController {
 
         return null;
     }
+
+    @GetMapping("/requesters")
+    public String getRequesters(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        try {
+            List<ShaReqDTO> requesters = shareService.getRequesters(reqDTO);
+            model.addAttribute("requesters", requesters);
+            System.out.println(requesters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
+        }
+
+
+        return "share/dreamLend :: #selectRqst";
+    }
+
 }

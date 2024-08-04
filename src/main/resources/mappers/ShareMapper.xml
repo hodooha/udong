@@ -36,6 +36,7 @@
         <result property="reqItem" column="req_item" />
         <result property="ownerNo" column="owner_no" />
         <result property="rqstNo" column="rqst_no" />
+        <result property="rqstNickname" column="nickname" />
         <result property="createdAt" column="created_at" />
         <result property="modifiedAt" column="modified_at" />
         <result property="returnDate" column="return_date" />
@@ -145,9 +146,12 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-        select b.*, e.*,
+        select b.*, e.*, f.eup_myeon_dong_name,
         row_number() over (order by b.created_at desc) as rn
         from sha_items b
+        inner join
+        location f
+        on b.loc_code = f.location_code
         left join member d
         on b.owner_no = d.member_no
         left join
@@ -317,12 +321,15 @@
         select a.*, c.saved_name, e.status_name
         from
         (
-            select b.*, e.*, d.nickname,
+            select b.*, e.*, d.nickname, f.eup_myeon_dong_name,
             row_number() over (order by b.modified_at desc) as rn
             from sha_items b
             left join
             member d
             on b.owner_no = d.member_no
+            inner join
+            location f
+            on b.loc_code = f.location_code
             left join
             (
                 select req_item, return_date
@@ -370,7 +377,13 @@
 
     <select id="getReqList" resultMap="shaReqMap">
         select a.*, d.*, e.status_name
-        from sha_req a
+        from
+        (
+            *,
+            row_number() over (order by b.modified_at desc) as rn
+            from
+            sha_req
+        ) a
         left join
             (
                 select
@@ -394,7 +407,26 @@
         left join
             sha_status e
         on a.status_code = e.status_code
-        where a.rqst_no = #{rqstNo}
+        where a.rn between #{start} and #{end}
+        order by a.rn
+        <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
+        <if test="group != null and group != ''">and item_group = #{group}</if>
+        <if test="reqItem != 0 and reqItem != ''">and a.reqItem = #{reqItem}</if>
+        <if test="rqstNo != 0 and rqstNo != ''">and a.rqstNo = #{rqstNo}</if>
+        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
+    </select>
+
+    <select id="getRequesters" resultMap="shaReqMap">
+        select a.*, b.nickname, c.item_group
+        from sha_req a
+        left join
+        member b
+        on a.rqst_no = b.member_no
+        left join sha_items c
+        on a.req_item = c.item_no
+        where a.req_item = #{reqItem}
+        and a.status_code = #{statusCode}
     </select>
 
 </mapper>

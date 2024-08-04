@@ -5,7 +5,6 @@ import com.multi.udong.share.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -14,7 +13,7 @@ public class ShareDAO {
 
     public List<ShaCatDTO> getShaCat(SqlSessionTemplate sqlSession) {
 
-        return (ArrayList) sqlSession.selectList("ShareMapper.getShaCat");
+        return sqlSession.selectList("ShareMapper.getShaCat");
     }
 
     public int insertItem(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
@@ -34,12 +33,12 @@ public class ShareDAO {
 
     public List<AttachmentDTO> getItemImgs(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
 
-        return (ArrayList) sqlSession.selectList("ShareMapper.getItemImgs", itemDTO);
+        return sqlSession.selectList("ShareMapper.getItemImgs", itemDTO);
     }
 
 
     public List<ShaItemDTO> searchItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) {
-        return (ArrayList) sqlSession.selectList("ShareMapper.searchItems", criteriaDTO);
+        return sqlSession.selectList("ShareMapper.searchItems", criteriaDTO);
     }
 
 
@@ -117,5 +116,13 @@ public class ShareDAO {
 
     public int getLendCounts(SqlSessionTemplate sqlSession, ShaDreamCriteriaDTO criteriaDTO) {
         return sqlSession.selectOne("ShareMapper.getLendCounts", criteriaDTO);
+    }
+
+    public List<ShaReqDTO> getReqList(SqlSessionTemplate sqlSession, ShaDreamCriteriaDTO criteriaDTO) {
+        return sqlSession.selectList("ShareMapper.getReqList", criteriaDTO);
+    }
+
+    public List<ShaReqDTO> getRequesters(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
+        return sqlSession.selectList("ShareMapper.getRequesters", reqDTO);
     }
 }

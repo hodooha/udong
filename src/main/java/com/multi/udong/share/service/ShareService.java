@@ -37,5 +37,5 @@ public interface ShareService {
 
     ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
 
-    int getLendCounts(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
+    List<ShaReqDTO> getRequesters(ShaReqDTO itemNo) throws Exception;
 }

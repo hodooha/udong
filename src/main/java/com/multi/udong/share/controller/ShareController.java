@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,27 +36,6 @@ public class ShareController {
      */
 // 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
-
-    /**
-     * The constant SEC.
-     */
-    public static final int SEC = 60;
-    /**
-     * The constant MIN.
-     */
-    public static final int MIN = 60;
-    /**
-     * The constant HOUR.
-     */
-    public static final int HOUR = 24;
-    /**
-     * The constant DAY.
-     */
-    public static final int DAY = 30;
-    /**
-     * The constant MONTH.
-     */
-    public static final int MONTH = 12;
 
     /**
      * 대여 메인페이지 이동
@@ -174,44 +151,7 @@ public class ShareController {
     }
 
 
-    /**
-     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
-     *
-     * @param localDateTime the local date time
-     * @return the string
-     * @since 2024 -08-01
-     */
-    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
 
-        LocalDateTime now = LocalDateTime.now();
-
-        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
-
-        String displayDate = null;
-        if (diffTime < SEC){
-            return diffTime + "초전";
-        }
-        diffTime = diffTime / SEC;
-        if (diffTime < MIN) {
-            return diffTime + "분 전";
-        }
-        diffTime = diffTime / MIN;
-        if (diffTime < HOUR) {
-            return diffTime + "시간 전";
-        }
-        diffTime = diffTime / HOUR;
-        if (diffTime < DAY) {
-            return diffTime + "일 전";
-        }
-        diffTime = diffTime / DAY;
-        if (diffTime < MONTH) {
-            return diffTime + "개월 전";
-        }
-
-        diffTime = diffTime / MONTH;
-        return diffTime + "년 전";
-
-    };
 
     /**
      * 물건 상세 조회 페이지 이동 및 상세 조회
@@ -240,9 +180,6 @@ public class ShareController {
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             model.addAttribute("item", item);
-
-            // 물건 상세 조회 시 보여지는 날짜 설정
-            model.addAttribute("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
 
 
         } catch (Exception e) {
@@ -284,8 +221,6 @@ public class ShareController {
             ShaItemDTO item = shareService.getItemDetail(itemDTO, c);
             model.addAttribute("item", item);
 
-            // 물건 상세 조회 시 보여지는 날짜 설정
-            model.addAttribute("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());

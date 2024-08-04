@@ -95,12 +95,12 @@ function ajax_get(reqUrl, data){
         type: "get",
         data: data,
         beforeSend: showSpinner(),
-        error: function(errorPage){
-            $('body').replaceWith(errorPage);
+        error: function(){
+            location.replace("common/errorPage");
         }
     })
-    .fail(function(errorPage){
-        $('body').replaceWith(errorPage);
+    .fail(function(){
+        location.replace("common/errorPage");
     })
     .always(function(){
         hideSpinner();
@@ -119,12 +119,12 @@ function ajax_post(reqUrl, data){
             xhr.setRequestHeader(header, token);
             showSpinner();
         },
-        error: function(errorPage){
-           $('body').replaceWith(errorPage);
+        error: function(){
+            location.replace("common/errorPage");
         }
     })
-    .fail(function(errorPage){
-        $('body').replaceWith(errorPage);
+    .fail(function(){
+        location.replace("common/errorPage");
     })
     .always(function(){
         hideSpinner();
@@ -421,7 +421,7 @@ function insertReq(data){
 }
 
 function updateShaLike(itemNo){
-    let reqUrl = `/share/like?itemNo=${itemNo}`;
+    let reqUrl = `/share/like?reqItem=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
         updateItemDetail();
     })
@@ -437,6 +437,26 @@ function updateItStat(item){
     ajax_get(reqUrl).done(function(){
         updateItemDetail();
     })
+
+}
+
+function approveReq(itemNo){
+    console.log(itemNo);
+    getRequesters(itemNo);
+}
+
+function getRequesters(itemNo){
+    let reqUrl = `/share/dream/requesters`
+    let data = {
+        reqItem: itemNo,
+        statusCode: "RQD"
+    }
+    ajax_get(reqUrl, data).done(function(result){
+        $('#selectRqst').replaceWith(result);
+        $('#selectRqst').modal('show');
+    })
+
+
 
 }
 

@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ShaDreamCriteriaDTO {
 
+    private int itemNo;
     private int ownerNo;
     private int rqstNo;
     private String catCode;
