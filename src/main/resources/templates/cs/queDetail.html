@@ -3,6 +3,8 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
@@ -164,7 +166,7 @@
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="csNo" th:value="${que.csNo}">
                     <textarea name="content" id="answer-content" rows="4" cols="50" required></textarea>
-                    <button class="btn btn-udh-blue">답변 등록하기</button>
+                    <button type="button" class="btn btn-udh-blue" id="submit-answer">답변 등록하기</button>
                 </form>
             </div>
 
@@ -181,6 +183,82 @@
     </div>
 </main>
 </body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const answerForm = document.querySelector('#answerForm');
+        const answersContainer = document.querySelector('.answers-container');
+        const noAnswer = document.querySelector('.no-answer');
+        const submitAnswer = document.querySelector('#submit-answer');
+
+        const token = document.querySelector('meta[name="_csrf"]').content;
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        if (answerForm) {
+            submitAnswer.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const content = document.querySelector('#answer-content').value;
+                const csNo = document.querySelector('input[name="csNo"]').value;
+
+                if (!content.trim()) {
+                    alert('답변 내용을 입력해주세요.');
+                    return;
+                }
+
+                fetch('/cs/answerQue', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify({
+                        csNo: csNo,
+                        content: content
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('서버 응답이 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const newAnswer = document.createElement('div');
+                    newAnswer.className = 'answer-box';
+                    newAnswer.innerHTML = `
+                        <div class="answer-info">
+                            <span>${data.nickname}</span>
+                            <span>${data.answer.createdAt}</span>
+                        </div>
+                        <div class="answer-content">
+                            <span>${data.answer.content}</span>
+                        </div>
+                    `;
+
+                    if (noAnswer) {
+                        noAnswer.remove();
+                    }
+
+                    if (!answersContainer) {
+                        const newAnswersContainer = document.createElement('div');
+                        newAnswersContainer.className = 'answers-container';
+                        newAnswersContainer.innerHTML = '<h2>답변:</h2>';
+                        answerForm.parentNode.insertBefore(newAnswersContainer, answerForm);
+                        newAnswersContainer.appendChild(newAnswer);
+                    } else {
+                        answersContainer.appendChild(newAnswer);
+                    }
+
+                    document.querySelector('#answer-content').value = '';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('답변 등록 중 오류가 발생했습니다: ' + error.message);
+                });
+            });
+        }
+    });
+</script> <!--댓글 비동기-->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const answerForm = document.querySelector('#answerForm');

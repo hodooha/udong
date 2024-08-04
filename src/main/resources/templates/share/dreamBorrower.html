@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Title</title>
+    <style>
+        button{
+            font-weight: bolder !important;
+
+        }
+
+        .row > div{
+            height: 150px;
+        }
+
+        .dream {
+            border: none !important;
+            width:100%;
+            height: 150px;
+        }
+
+        .rentGroup{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #3B5C9A;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bolder;
+        }
+
+        .giveGroup{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFB83D;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bolder;
+        }
+
+
+        .img-area,
+        .item-info-area,
+        .status-area{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #F5F5F5;
+        }
+
+        .select-area{
+            display: flex;
+
+        }
+
+        .card-body,
+        .btn-group{
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .status-select-area{
+            display:flex;
+            align-items: center;
+            font-size: 16px;
+
+        }
+
+        .stat-select{
+            width:140px !important;
+
+        }
+
+
+        .btn-area{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #F5F5F5;
+
+        }
+
+        .btn-group{
+            width: 100%;
+        }
+
+        .btns-1,
+        .btns-2{
+            display:flex;
+            justify-content: space-between;
+        }
+
+        .btns-1 button {
+            width: 48%;
+        }
+
+
+
+    </style>
+</head>
+<body id="dreamBorrower">
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{share/dreamMenubar :: #dreamMenubar}"></div>
+
+<div class="container">
+    <h2 class="my-3" style="text-align:center">나의 요청드림 목록</h2>
+
+    <div class="select-area mb-1 mt-3 ms-1">
+        <div class="col-7">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
+                       value="option1" checked>
+                <label class="form-check-label" for="inlineRadio1">모두</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
+                       value="option2">
+                <label class="form-check-label" for="inlineRadio2">대여</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3"
+                       value="option3">
+                <label class="form-check-label" for="inlineRadio3">나눔</label>
+            </div>
+        </div>
+
+        <div class="status-select-area col-5">
+            <label for="statusSelect" style="width:30px">
+                상태
+            </label>
+            <select class="form-select stat-select" id=statusSelect name="statusSelect" onchange="search()">
+                <option value="">== 전체 ==</option>
+                <option value="">신청완료</option>
+                <option value="">대여중</option>
+                <option value="">반납완료</option>
+                <option value="">평가완료</option>
+                <option value="">당첨</option>
+                <option value="">낙첨</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="card mb-3 dream" >
+        <div class="row g-0">
+            <div class="col-1 rentGroup">대여</div>
+            <div class="col-2 img-area">
+                <img src="..." class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-4 item-info-area">
+                <div class="card-body">
+                    <h4 class="mb-3">${item.title}</h4>
+                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                </div>
+            </div>
+            <div class="col-2 status-area">
+                <h5>대여가능</h5>
+            </div>
+            <div class="col-3 btn-area container">
+                <div class="btn-group">
+                    <div class="mb-3 btns-1">
+                        <button class="btn btn-udh-silver" style="width:100%">신청취소</button>
+                    </div>
+                    <div class="btns-2">
+                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3 dream" >
+        <div class="row g-0">
+            <div class="col-1 rentGroup">대여</div>
+            <div class="col-2 img-area">
+                <img src="..." class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-4 item-info-area">
+                <div class="card-body">
+                    <h4 class="mb-3">${item.title}</h4>
+                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                </div>
+            </div>
+            <div class="col-2 status-area">
+                <h5>대여가능</h5>
+            </div>
+            <div class="col-3 btn-area container">
+                <div class="btn-group">
+                    <div class="mb-3 btns-1">
+                        <button class="btn btn-udh-red" style="width:100%">물건하자신고</button>
+                    </div>
+                    <div class="btns-2">
+                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3 dream" >
+        <div class="row g-0">
+            <div class="col-1 rentGroup">대여</div>
+            <div class="col-2 img-area">
+                <img src="..." class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-4 item-info-area">
+                <div class="card-body">
+                    <h4 class="mb-3">${item.title}</h4>
+                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                </div>
+            </div>
+            <div class="col-2 status-area">
+                <h5>대여가능</h5>
+            </div>
+            <div class="col-3 btn-area container">
+                <div class="btn-group">
+                    <div class="mb-3 btns-1">
+                        <button class="btn btn-udh-blue" style="width:100%">평가하기</button>
+                    </div>
+                    <div class="btns-2">
+                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3 dream" >
+        <div class="row g-0">
+            <div class="col-1 giveGroup">나눔</div>
+            <div class="col-2 img-area">
+                <img src="..." class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-4 item-info-area">
+                <div class="card-body">
+                    <h4 class="mb-3">${item.title}</h4>
+                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+                </div>
+            </div>
+            <div class="col-2 status-area">
+                <h5>대여가능</h5>
+            </div>
+            <div class="col-3 btn-area container">
+                <div class="btn-group">
+                    <div class="mb-3 btns-1">
+                        <button class="btn btn-udh-red" style="width:100%">물건미수령신고</button>
+                    </div>
+                    <div class="btns-2">
+                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
+<script type="text/javascript" th:src="@{/js/sha.js}"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@ package com.multi.udong.login.controller;
 
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberServiceImpl;
-import com.multi.udong.security.CustomUserDetailsService;
+import com.multi.udong.login.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

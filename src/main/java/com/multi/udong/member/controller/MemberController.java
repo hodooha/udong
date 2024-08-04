@@ -2,11 +2,11 @@ package com.multi.udong.member.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.controller.KakaoLoginController;
+import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.model.dto.MemAddressDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.service.MemberService;
-import com.multi.udong.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -356,7 +356,6 @@ public class MemberController {
      * @param c        the c
      * @param request  the request
      * @param response the response
-     * @param password the password
      * @param model    the model
      * @return the string
      * @since 2024 -07-30
@@ -365,14 +364,7 @@ public class MemberController {
     public String deleteMember(@AuthenticationPrincipal CustomUserDetails c,
                                HttpServletRequest request,
                                HttpServletResponse response,
-                               @RequestParam("password") String password,
                                Model model) {
-
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        if (!bCryptPasswordEncoder.matches(password.trim(), c.getMemberDTO().getMemberPw())) {
-            model.addAttribute("msg", "비밀번호가 일치하지 않습니다.");
-            return "member/memDel";
-        }
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
@@ -402,7 +394,8 @@ public class MemberController {
                     session.invalidate();
                 }
 
-                return "/index";
+                model.addAttribute("msg", "회원 탈퇴가 완료되었습니다.");
+                return "index";
 
             default:
                 model.addAttribute("msg", "회원 탈퇴에 실패하였습니다.");
@@ -425,7 +418,8 @@ public class MemberController {
         String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
 
         // 저장 경로 설정
-        String savePath = "C:\\workspace\\local\\udong\\src\\main\\resources\\static\\uploadFiles\\";
+        String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+        String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
 
         // 저장될 폴더 설정
         File mkdir = new File(savePath);

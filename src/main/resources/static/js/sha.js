@@ -1,16 +1,27 @@
 $(function(){
     url = new URL(location.href);
     urlSearch = url.searchParams;
+    path = url.pathname;
 
-    if(url.pathname.includes("/share/rent")){
-            $('#giveBtn').addClass("gray");
-            $('#rentBtn').removeClass("gray");
-            $('.rentCom').css('visibility', 'visible');
-        } else if(window.location.pathname.includes("/share/give")){
-            $('#rentBtn').addClass("gray");
-            $('#giveBtn').removeClass("gray");
-            $('.rentCom').css('visibility', 'hidden');
-        }
+    if(path.includes("/share/rent")){
+        $('#giveBtn').addClass("gray");
+        $('#rentBtn').removeClass("gray");
+        $('.rentCom').css('visibility', 'visible');
+    } else if(path.includes("/share/give")){
+        $('#rentBtn').addClass("gray");
+        $('#giveBtn').removeClass("gray");
+        $('.rentCom').css('visibility', 'hidden');
+    };
+
+    if(path.includes("/dream/lender")){
+        $('#borrowerBtn').addClass("gray");
+        $('#lenderBtn').removeClass("gray");
+    } else if(path.includes("/dream/borrower")){
+        $('#lenderBtn').addClass("gray");
+        $('#borrowerBtn').removeClass("gray");
+    };
+
+
 
     const bodyId = $("body").attr("id");
     if(bodyId == "giveMain" || bodyId == "rentMain"){
@@ -44,8 +55,9 @@ $(function(){
             }
         });
 
-    }
 
+
+    }
 
 
 });
@@ -358,26 +370,38 @@ function restoreFormState(params) {
     $('#keyword').val(params.keyword);
 }
 
-function renderItemDetail(item){
-    console.log(item);
+function renderItemDetail(data){
+    let item = data.item;
     $('#likeCnt').text(item.likeCnt);
     $('#viewCnt').text(item.viewCnt);
     $('#reqCnt').text(item.reqCnt);
+    $('#modifiedAt').text(data.displayDate);
     console.log(item.liked);
     let img = item.liked == true ? "/img/like.png" : "/img/notlike.png"
     console.log(img);
     $('.likeImg').attr("src", img);
 
-//    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
-//        $('.carousel-inner').addClass("div-blur");
-//        $('.carousel-inner img').addClass("img-blur");
-//    } else{
-//        $('.carousel-inner').removeClass("div-blur");
-//        $('.carousel-inner img').removeClass("img-blur");
-//    }
+    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
+        $('.carousel-item').addClass("div-blur");
+        $('.carousel-item img').addClass("img-blur");
+        $('#carouselExample').removeClass("carousel-dark");
+    } else{
+        $('.carousel-item').removeClass("div-blur");
+        $('.carousel-item img').removeClass("img-blur");
+        $('#carouselExample').addClass("carousel-dark");
+    }
 
-    let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
+    let btnTxt = item.statusCode == "UNAV" ? "중단해제" : "일시중단";
     $('#updateStatBtn').text(btnTxt);
+
+    if(item.statusCode == 'UNAV'){
+        $('.carousel-inner').append('<div class="blur-info"><h3>대여불가</h3></div>');
+    } else if(item.statusCode == 'RNT'){
+        $('.carousel-inner').append(`<div class="blur-info"><h3>대여중</h3><p>반납예정일: ${item.returnDate}</p></div>`)
+    } else {
+        $('.blur-info').empty();
+
+    }
 
 }
 
@@ -390,7 +414,7 @@ function updateItemDetail(){
         type: "get",
         success: function(data){
             console.log(data);
-            renderItemDetail(data.item);
+            renderItemDetail(data);
 
         },
         error: function(data){
@@ -398,8 +422,6 @@ function updateItemDetail(){
         }
 
      })
-
-
 }
 
 function shaRequest(item) {
@@ -419,8 +441,8 @@ function shaRequest(item) {
         reqGroup: item.itemGroup,
         ownerNo: item.ownerNo
     }
-    insertReq(data);
 
+    insertReq(data);
 }
 
 function insertReq(data){
@@ -439,7 +461,7 @@ function insertReq(data){
             updateItemDetail();
         },
         error: function(msg){
-            alert(msg);
+            console.log(msg);
         }
     })
 }
@@ -464,39 +486,28 @@ function updateShaLike(itemNo){
     })
 }
 
+function updateItStat(item){
 
+    console.log(item);
+    if(item.statusCode == "RNT"){
+        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+        return;
+    }
+    let itemNo = item.itemNo;
 
+    $.ajax({
 
-//function updateItStat(item){
-//    console.log(item);
-//    if(item.statusCode == "RNT"){
-//        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
-//        return;
-//    }
-//    let itemNo = item.itemNo;
-//    let status = item.statusCode == "AVL" ? "UNAV" : "AVL";
-//    let url = `/share/updateItStat2?itemNo=${itemNo}&statusCode=${status}`
-//
-//    $.ajax({
-//
-//        url: url,
-//        type: "get",
-//        success: function(data){
-//            console.log(data);
-//            let btnTxt = status == "UNAV" ? "중단해제" : "일시중단";
-//            $('#updateStatBtn').text(btnTxt);
-//
-//
-//        },
-//        error: function(data){
-//            alert(data.msg);
-//
-//
-//        }
-//
-//
-//    })
-//
-//}
+        url: `/share/updateItStat?itemNo=${itemNo}`,
+        type: "get",
+        success: function(data){
+            console.log(data);
+            updateItemDetail();
+        },
+        error: function(data){
+            console.log(data);
+        }
+    })
+
+}
 
 

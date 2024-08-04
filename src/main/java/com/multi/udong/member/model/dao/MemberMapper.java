@@ -79,4 +79,6 @@ public interface MemberMapper {
     int deleteMember(int memberNo);
 
     Map<String, Object> checkMember(int memberNo);
+
+    void updateLastLoginAt(String memberId);
 }

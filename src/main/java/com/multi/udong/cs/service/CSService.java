@@ -18,6 +18,8 @@ import java.util.Map;
 public interface CSService {
     List<List<String>> selectQue(PageDTO pageDTO);
 
+    List<List<String>> selectAllQue(PageDTO pageDTO);
+
     void insertQueForm(CSQuestionDTO csQuestionDTO, List<AttachmentDTO> attachmentDTO);
 
     List<TypeDTO> getAllTypes();
@@ -26,5 +28,5 @@ public interface CSService {
 
     AttachmentDTO getAttachment(int fileNo);
 
-    void insertAnswerQue(CSAnswerDTO csAnswerDTO);
+    String insertAnswerQue(CSAnswerDTO csAnswerDTO, String authority);
 }

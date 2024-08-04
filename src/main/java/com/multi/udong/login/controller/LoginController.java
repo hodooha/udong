@@ -1,6 +1,7 @@
 package com.multi.udong.login.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.login.service.CustomUserDetailsService;
 import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
@@ -12,11 +13,9 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -42,7 +41,7 @@ public class LoginController {
     private final MemberService memberService;
     private final NTSAPI ntsapi;
     private final MemberController memberController;
-    private final AuthenticationManager authenticationManager;
+    private final CustomUserDetailsService customUserDetailsService;
 
     /**
      * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
@@ -212,20 +211,29 @@ public class LoginController {
         }
     }
 
-    private void authenticateUserAndSetSession(MemberDTO memberDTO, HttpServletRequest request) {
+    /**
+     * Authenticate user and set session.
+     *
+     * @param memberDTO the member dto
+     * @param request   the request
+     * @since 2024 -08-02
+     */
+    public void authenticateUserAndSetSession(MemberDTO memberDTO, HttpServletRequest request) {
         String username = memberDTO.getMemberId();
-        String password = memberDTO.getMemberPw();
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
-        try {
-            Authentication authentication = authenticationManager.authenticate(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        // https://devjun.tistory.com/92
 
-            HttpSession session = request.getSession(true);
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
-        } catch (AuthenticationException e) {
-            e.printStackTrace();
-        }
+        // 인증 토큰 생성
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        System.out.println("token : " + token);
+
+        // SecurityContext 에 인증 정보 설정
+        SecurityContextHolder.getContext().setAuthentication(token);
+
+        // 세션에 SecurityContext 저장
+        HttpSession session = request.getSession(true);
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
     }
 }

@@ -4,7 +4,7 @@ import com.multi.udong.club.model.dto.*;
 import com.multi.udong.club.service.ClubService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.LocationDTO;
-import com.multi.udong.security.CustomUserDetails;
+import com.multi.udong.login.service.CustomUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

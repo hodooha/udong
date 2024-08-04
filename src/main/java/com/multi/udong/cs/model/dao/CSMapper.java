@@ -20,6 +20,8 @@ import java.util.List;
 public interface CSMapper {
     List<LinkedHashMap<String, Object>> selectQue(PageDTO pageDTO);
 
+    List<LinkedHashMap<String, Object>> selectAllQue(PageDTO pageDTO);
+
     void insertQueForm(CSQuestionDTO csQuestionDTO);
 
     void insertFile(AttachmentDTO attachmentDTO);
@@ -36,7 +38,7 @@ public interface CSMapper {
 
     void insertAnswerQue(CSAnswerDTO csAnswerDTO);
 
-    String getAuthorityByMemberNo(Integer answererNo);
+    String getAnswerCreatedAt(CSAnswerDTO csAnswerDTO);
 
     void updateQueIsAnswered(Integer csNo);
 }

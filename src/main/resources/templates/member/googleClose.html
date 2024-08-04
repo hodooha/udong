@@ -3,39 +3,14 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
 </head>
 <body>
-    <form id="loginForm" action="/login" method="post">
-        <input type="hidden" name="memberId" th:value="${member.memberId}" />
-        <input type="hidden" name="memberPw" th:value="${member.memberPw}" />
-    </form>
 </body>
 <script th:inline="javascript">
     window.onload = function() {
-        var loginForm = document.getElementById('loginForm');
-        var formData = new FormData(loginForm);
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/login', true);
-        xhr.setRequestHeader('X-CSRF-TOKEN', [[${_csrf.token}]]);
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                window.opener.location.href = '/';
-                window.close();
-            } else {
-                console.error('Login failed');
-            }
-        };
-
-        xhr.onerror = function() {
-            console.error('Request failed');
-        };
-
-        xhr.send(formData);
+        window.opener.location.href = '/';
+        window.close();
     }
-</script>
+</script> <!--구글 로그인 스크립트-->
 </html>
