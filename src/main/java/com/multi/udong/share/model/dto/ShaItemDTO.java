@@ -27,9 +27,11 @@ public class ShaItemDTO {
     private String locName;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String displayDate;
     private LocalDate expiryDate;
     private LocalDate returnDate;
     private String statusCode;
+    private String statusName;
     private int dealCnt;
     private int likeCnt;
     private int viewCnt;

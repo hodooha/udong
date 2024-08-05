@@ -5,7 +5,6 @@ import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
@@ -36,27 +36,6 @@ public class ShareController {
      */
 // 이미지 저장 경로
     static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
-
-    /**
-     * The constant SEC.
-     */
-    public static final int SEC = 60;
-    /**
-     * The constant MIN.
-     */
-    public static final int MIN = 60;
-    /**
-     * The constant HOUR.
-     */
-    public static final int HOUR = 24;
-    /**
-     * The constant DAY.
-     */
-    public static final int DAY = 30;
-    /**
-     * The constant MONTH.
-     */
-    public static final int MONTH = 12;
 
     /**
      * 대여 메인페이지 이동
@@ -117,25 +96,6 @@ public class ShareController {
         return "share/giveMain";
     }
 
-    @GetMapping("/dream/lender")
-    public String dreamLenderMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
-
-
-        return "share/dreamLender";
-
-    }
-
-    @GetMapping("/dream/borrower")
-    public String dreamBorrowerMain(Model model, @AuthenticationPrincipal CustomUserDetails c){
-
-
-        return "share/dreamBorrower";
-
-    }
-
-
-
-
 
     /**
      * 카테고리 목록 조회
@@ -144,16 +104,15 @@ public class ShareController {
      * @since 2024 -07-26
      */
     @GetMapping("/getCatList")
-    @ResponseBody
-    public List<ShaCatDTO> getCatList() {
-        List<ShaCatDTO> catList = null;
+    public String getCatList(Model model) {
         try {
-            catList = shareService.getShaCat();
+            List<ShaCatDTO> catList = shareService.getShaCat();
+            model.addAttribute("catList", catList);
         } catch (Exception e) {
-            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
         }
 
-        return catList;
+        return "share/rentMain :: #catSelect";
     }
 
     /**
@@ -191,44 +150,7 @@ public class ShareController {
     }
 
 
-    /**
-     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
-     *
-     * @param localDateTime the local date time
-     * @return the string
-     * @since 2024 -08-01
-     */
-    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
 
-        LocalDateTime now = LocalDateTime.now();
-
-        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
-
-        String displayDate = null;
-        if (diffTime < SEC){
-            return diffTime + "초전";
-        }
-        diffTime = diffTime / SEC;
-        if (diffTime < MIN) {
-            return diffTime + "분 전";
-        }
-        diffTime = diffTime / MIN;
-        if (diffTime < HOUR) {
-            return diffTime + "시간 전";
-        }
-        diffTime = diffTime / HOUR;
-        if (diffTime < DAY) {
-            return diffTime + "일 전";
-        }
-        diffTime = diffTime / DAY;
-        if (diffTime < MONTH) {
-            return diffTime + "개월 전";
-        }
-
-        diffTime = diffTime / MONTH;
-        return diffTime + "년 전";
-
-    };
 
     /**
      * 물건 상세 조회 페이지 이동 및 상세 조회
@@ -254,20 +176,14 @@ public class ShareController {
                 throw new Exception("지역을 먼저 등록해주세요.");
             }
 
-            // db에서 물건 상세 정보 조회
-            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
-            model.addAttribute("item", item);
-
-            // 물건 상세 조회 시 보여지는 날짜 설정
-            model.addAttribute("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
-
+            // 물건 조회수 증가
+            shareService.plusViewCnt(itemDTO);
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
             return "common/errorPage";
         }
-
 
         return "share/itemDetail";
     }
@@ -283,11 +199,7 @@ public class ShareController {
      * @since 2024 -08-02
      */
     @GetMapping(value = {"/rent/updateDetail", "/give/updateDetail"})
-    @ResponseBody
-    public ResponseEntity<?> updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
-
-        // 결과값 초기 설정
-        Map<String, Object> result = new HashMap<>();
+    public String updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
             // 로그인 확인
@@ -302,22 +214,17 @@ public class ShareController {
             }
 
             // db에서 물건 상세 정보 조회
-            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
-            result.put("item", item);
+            ShaItemDTO item = shareService.getItemDetail(itemDTO, c);
+            model.addAttribute("item", item);
 
-            // 물건 상세 조회 시 보여지는 날짜 설정
-            result.put("displayDate", convertLocaldatetimeToTime(item.getModifiedAt()));
 
         } catch (Exception e) {
-            result.put("msg", e.getMessage());
+            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(result);
         }
 
-
-        return ResponseEntity.ok().body(result);
+        return "share/itemDetail :: #detail";
     }
-
 
 
     /**
@@ -407,11 +314,9 @@ public class ShareController {
      * @since 2024 -07-24
      */
     @GetMapping("/search")
-    @ResponseBody
-    public ResponseEntity<?> searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c) {
+    public String searchItems(ShaCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         // 결과값 초기 설정
-        Map<String, Object> result = new HashMap<>();
         ShaPageDTO pageInfo = new ShaPageDTO();
 
         try {
@@ -440,16 +345,18 @@ public class ShareController {
             pageInfo.setPageInfo(searchResult.getTotalCounts());
 
             // 결과값에 물건 목록과 페이지네이션 정보 저장
-            result.put("itemList", searchResult.getItemList());
-            result.put("pageInfo", pageInfo);
+            model.addAttribute("itemList", searchResult.getItemList());
+            model.addAttribute("pageInfo", pageInfo);
 
-            return ResponseEntity.ok().body(result);
+            System.out.println(pageInfo);
+
 
         } catch (Exception e) {
-            result.put("msg", e.getMessage());
+            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(result);
+
         }
+        return "share/rentMain :: #itemList";
     }
 
     /**
@@ -528,7 +435,7 @@ public class ShareController {
             }
 
             // 물건 정보 불러오기
-            ShaItemDTO target = shareService.getItemDetail(itemDTO);
+            ShaItemDTO target = shareService.getItemDetail(itemDTO, c);
             model.addAttribute("item", target);
 
             // 물건 소유자가 아닐 경우 예외 던지기
@@ -695,7 +602,6 @@ public class ShareController {
     public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(itemDTO);
-        // 리턴 페이지 주소
         String msg = "상태 변경 완료";
 
         try {
@@ -753,6 +659,8 @@ public class ShareController {
 
         return msg;
     }
+
+
 
 
 }

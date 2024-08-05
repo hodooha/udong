@@ -14,16 +14,18 @@
     <div class="container">
         <div class="shaMenu-btn-group1">
             <button type="button" class="btn btn-udh-blue shaMenu-btn1"
-                    th:onclick="|location.href='@{/share/register}'|">물건등록
+                    th:onclick="|location.href='@{/share/register}'|">물건 등록
             </button>
+            <button type="button" class="btn btn-udh-silver "
+                    th:onclick="|location.href='@{/share/rent}'|">돌아가기</button>
 
         </div>
         <div class="shaMenu-btn-group2">
             <button id="lenderBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2"
-                    th:onclick="|location.href='@{/share/dream/lender}'|">빌려(나눠)드림
+                    th:onclick="|location.href='@{/share/dream/lend}'|">빌려(나눠)드림
             </button>
             <button id="borrowerBtn" type="button" class="btn btn-udh-yellow shaMenu-btn2 gray"
-                    th:onclick="|location.href='@{/share/dream/borrower}'|">요청드림
+                    th:onclick="|location.href='@{/share/dream/lend}'|">요청드림
             </button>
         </div>
 

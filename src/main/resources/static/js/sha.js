@@ -3,6 +3,8 @@ $(function(){
     urlSearch = url.searchParams;
     path = url.pathname;
 
+    spinner = $('#spinner');
+
     if(path.includes("/share/rent")){
         $('#giveBtn').addClass("gray");
         $('#rentBtn').removeClass("gray");
@@ -13,10 +15,10 @@ $(function(){
         $('.rentCom').css('visibility', 'hidden');
     };
 
-    if(path.includes("/dream/lender")){
+    if(path.includes("/dream/lend")){
         $('#borrowerBtn').addClass("gray");
         $('#lenderBtn').removeClass("gray");
-    } else if(path.includes("/dream/borrower")){
+    } else if(path.includes("/dream/borrow")){
         $('#lenderBtn').addClass("gray");
         $('#borrowerBtn').removeClass("gray");
     };
@@ -30,7 +32,7 @@ $(function(){
         window.addEventListener("popstate", function(event) {
             if (event.state) {
                 restoreFormState(event.state);
-                updateItems(event.state);
+                updateItemList(event.state);
             }
         });
     }
@@ -54,47 +56,107 @@ $(function(){
                 dateRefresh();
             }
         });
+        updateItemDetail();
+    }
 
+    if(bodyId == "itemDetail"){
+        updateItemDetail();
+    }
 
+    if(bodyId == "dreamLend"){
 
+        getLendList(1);
+
+        window.addEventListener("popstate", function(event) {
+            if (event.state) {
+                console.log(event.state);
+                restoreFormState(event.state);
+                updateLendList(event.state);
+            }
+        });
+
+        let savedState = history.state;
+        if (savedState) {
+             restoreFormState(savedState);
+             updateLendList(savedState);
+             console.log(savedState);
+        } else {
+            getLendList(1);
+        }
+
+    }
+
+    if(bodyId == "dreamBorrow"){
+//        getBorrowList(group);
     }
 
 
 });
 
+function ajax_get(reqUrl, data){
 
-
-function getCatList() {
-    $.ajax({
-            url: "/share/getCatList",
-            type: "get",
-            success: function(catList) {
-                console.log(catList);
-                renderCatList(catList);
-
-                const savedState = history.state;
-                if (savedState) {
-                    restoreFormState(savedState);
-                    updateItemList(savedState);
-                    console.log(savedState);
-                } else {
-                    search(1);
-                }
-            },
-            error: function() {
-                alert("카테고리 불러오기 실패");
-            }
+    return $.ajax({
+        url: reqUrl,
+        type: "get",
+        data: data,
+        beforeSend: showSpinner(),
+        error: function(){
+            location.replace("common/errorPage");
+        }
+    })
+    .fail(function(){
+        location.replace("common/errorPage");
+    })
+    .always(function(){
+        hideSpinner();
     });
 }
 
-function renderCatList(catList) {
-    let catResult = catList.map( (cat) => {
-        return `
-            <option value=${cat.catCode}>${cat.catName}</option>
-        `}).join("");
+function ajax_post(reqUrl, data){
+    const token = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
 
-    $('.catSelect').append(catResult);
+    return $.ajax({
+        url: reqUrl,
+        type: "post",
+        data: data,
+        beforeSend: function(xhr){
+            xhr.setRequestHeader(header, token);
+            showSpinner();
+        },
+        error: function(){
+            location.replace("common/errorPage");
+        }
+    })
+    .fail(function(){
+        location.replace("common/errorPage");
+    })
+    .always(function(){
+        hideSpinner();
+    });
+}
 
+function hideSpinner(){
+    spinner.hide();
+}
+
+function showSpinner(){
+    spinner.show();
+}
+
+function getCatList() {
+    let reqUrl = "/share/getCatList";
+    ajax_get(reqUrl).done(function(fragment){
+        $('#catSelect').replaceWith(fragment);
+        const savedState = history.state;
+        if (savedState) {
+         restoreFormState(savedState);
+         updateItemList(savedState);
+         console.log(savedState);
+        } else {
+         search(1);
+        }
+    });
 }
 
 function dateRefresh() {
@@ -220,141 +282,57 @@ function getSearchParams(page){
 }
 
 function updateItemList(params){
-    $.ajax({
-            url: "/share/search",
-            type: "get",
-            data: params,
-            success: function(data) {
-                console.log(data)
-                renderItemList(data.itemList);
-                renderPageNation(data.pageInfo);
+    let reqUrl = "/share/search";
+    ajax_get(reqUrl, params).done(function(fragment){
+        $('#itemList').replaceWith(fragment);
 
+        // url에 검색한 쿼리들 넣어주기.
+        let newUrl = createUrlWithParams(params);
+        history.pushState(params, '', newUrl);
 
-                // url에 검색한 쿼리들 넣어주기.
-                const newUrl = createUrlWithParams(params);
-                history.pushState(params, '', newUrl);
-            },
-            error: function(data) {
-                console.log(data);
-                if(data.responseJSON.msg != null){
-                    alert(data.responseJSON.msg)
-                } else {
-                    alert("물건 불러오기 실패");
-                    }
-            }
     });
 }
 
-function renderItemList(items){
-    let itemResult = "";
-    if(items.length == 0){
-        itemResult = `<div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
-                        등록된 물건이 없습니다.
-                      </div>`
-    } else {
-        itemResult = items.map((item) => {
-
-            let head = `
-                <div class="col">
-                   <div class="card" onclick="location.href='/share/${item.itemGroup}/detail?itemNo=${item.itemNo}'">
-            `
-
-            let mid = `
-                <div>
-                    <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top" alt="물건이미지" style="height:20em">
-
-            `
-            let tail = `
-                    </div>
-                        <div class="card-body">
-                            <h4>${item.title}</h4>
-                            <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-                        </div>
-                </div>
-            </div>`
-
-            if(item.statusCode != 'AVL'  && item.statusCode != 'GIV'){
-                mid = `
-                    <div class="div-blur">
-                        <img src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}" class="card-img-top img-blur" alt="물건이미지" style="height:20em">
-                `
-
-                if(item.statusCode == 'UNAV'){
-                    mid += `
-                        <div class="blur-info"><h3>대여불가</h3></div>
-                    `
-                } else if(item.statusCode == 'RNT'){
-                    mid += `
-                        <div class="blur-info">
-                            <h3>대여중</h3>
-                            <p>반납예정일: ${item.returnDate}</p>
-                        </div>
-                    `
-                } else if(item.statusCode == 'GVD'){
-                    mid += `
-                        <div class="blur-info">
-                            <h3>나눔완료</h3>
-                            <p>당첨자: </p>
-                        </div>
-                    `
-                }
-            }
-            return head + mid + tail
-        }).join("");
-    }
-    $("#itemList").html(itemResult);
-
-
-}
-
-function renderPageNation(pageInfo){
-    let totalCounts = pageInfo.totalCounts;
-    let startPage = pageInfo.startPage;
-    let endPage = pageInfo.endPage;
-    let totalPage = pageInfo.totalPage;
-    let currentPage = pageInfo.currentPage;
-
-    let pageResult = "";
-
-    if(totalCounts > 0){
-        pageResult += `
-            <li class="page-item me-1">
-                <button class="page-link btn-udh-blue" onclick="search(${currentPage-1})" style="${currentPage == 1 ? 'visibility:hidden' : ''}" aria-label="Previous">
-                    <span>&laquo;</span>
-                </button>
-            </li>`
-
-
-        for(i = startPage; i <= endPage; i++){
-            pageResult += `
-                <li class="page-item active me-1" aria-current="page">
-                    <button class="page-link btn-udh-blue ${currentPage == i ? 'pageActive' : ''}" onclick="search(${i})">${i}</button>
-                </li>`
-        }
-
-
-
-        pageResult += `
-            <li class="page-item me-1">
-               <button class="page-link btn-udh-blue " style="${currentPage == totalPage ? 'visibility:hidden' : ''}" onclick="search(${currentPage+1})" aria-label="Next">
-                   <span>&raquo;</span>
-               </button>
-            </li>`
-    }
-
-    $('.pagination').html(pageResult);
-}
-
-
 function search(page){
     let params = getSearchParams(page);
-    console.log(params);
     updateItemList(params);
+}
 
+function getLendList(page){
+    let params = getDreamSearchParams(page);
+    updateLendList(params);
+}
+
+function getDreamSearchParams(page){
+    let catCode = $('.catSelect').val();
+    let group = $("input[name='group']:checked").val();
+    let statusCode = $('#statusSelect').val();
+    let keyword = $('#keyword').val();
+    if (page == null || page == '') {
+        page = 1;
+    }
+
+    return {
+        catCode: catCode,
+        group: group,
+        statusCode: statusCode,
+        keyword: keyword,
+        page: page
+    };
+
+}
+
+function updateLendList(params){
+
+    let reqUrl = "/share/dream/lendList";
+    ajax_get(reqUrl, params).done(function(data){
+        $('#dreams').replaceWith(data);
+        let newUrl = createUrlWithParams(params);
+        history.pushState(params, '', newUrl);
+    })
 }
 
 function createUrlWithParams(params) {
-    const url = new URL(window.location.href);
     url.searchParams.set('catCode', params.catCode);
     url.searchParams.set('group', params.group);
     url.searchParams.set('statusCode', params.statusCode);
@@ -368,64 +346,19 @@ function restoreFormState(params) {
     $("input[name='group']").val(params.group);
     $('#availableCheck').prop('checked', params.statusCode ? true : false);
     $('#keyword').val(params.keyword);
-}
-
-function renderItemDetail(data){
-    let item = data.item;
-    $('#likeCnt').text(item.likeCnt);
-    $('#viewCnt').text(item.viewCnt);
-    $('#reqCnt').text(item.reqCnt);
-    $('#modifiedAt').text(data.displayDate);
-    console.log(item.liked);
-    let img = item.liked == true ? "/img/like.png" : "/img/notlike.png"
-    console.log(img);
-    $('.likeImg').attr("src", img);
-
-    if(item.statusCode != 'AVL' && item.statusCode != 'GIV'){
-        $('.carousel-item').addClass("div-blur");
-        $('.carousel-item img').addClass("img-blur");
-        $('#carouselExample').removeClass("carousel-dark");
-    } else{
-        $('.carousel-item').removeClass("div-blur");
-        $('.carousel-item img').removeClass("img-blur");
-        $('#carouselExample').addClass("carousel-dark");
-    }
-
-    let btnTxt = item.statusCode == "UNAV" ? "중단해제" : "일시중단";
-    $('#updateStatBtn').text(btnTxt);
-
-    if(item.statusCode == 'UNAV'){
-        $('.carousel-inner').append('<div class="blur-info"><h3>대여불가</h3></div>');
-    } else if(item.statusCode == 'RNT'){
-        $('.carousel-inner').append(`<div class="blur-info"><h3>대여중</h3><p>반납예정일: ${item.returnDate}</p></div>`)
-    } else {
-        $('.blur-info').empty();
-
-    }
-
+    $('#statusSelect').val(params.statusCode).prop("selected", true);
 }
 
 function updateItemDetail(){
     let itemGroup = url.pathname.includes("rent") ? "rent" : "give";
     let itemNo = urlSearch.get("itemNo");
-
-    $.ajax({
-        url: `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`,
-        type: "get",
-        success: function(data){
-            console.log(data);
-            renderItemDetail(data);
-
-        },
-        error: function(data){
-            alert(data.msg);
-        }
-
-     })
+    let reqUrl = `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`;
+    ajax_get(reqUrl).done(function(data){
+        $('#detail').replaceWith(data);
+    });
 }
 
 function shaRequest(item) {
-    console.log(item);
     let returnDate = $('#datePicker').val();
 
     if(item.itemGroup == 'rent'){
@@ -446,67 +379,50 @@ function shaRequest(item) {
 }
 
 function insertReq(data){
-    const token = $("meta[name='_csrf']").attr("content");
-    const header = $("meta[name='_csrf_header']").attr("content");
-
-    $.ajax({
-        url: "/share/request",
-        type: "post",
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader(header, token);
-        },
-        data: data,
-        success: function(msg){
-            alert(msg);
-            updateItemDetail();
-        },
-        error: function(msg){
-            console.log(msg);
-        }
+    let reqUrl = "/share/request";
+    ajax_post(reqUrl, data).done(function(msg){
+        updateItemDetail();
+        alert(msg);
     })
 }
 
-function shaLike(item) {
-    console.log(item);
-    updateShaLike(item.itemNo)
-}
-
 function updateShaLike(itemNo){
-
-    $.ajax({
-        url: `/share/like?itemNo=${itemNo}`,
-        type: "get",
-        success: function(msg){
-            console.log(msg);
-            updateItemDetail();
-        },
-        error: function(msg){
-            console.log(msg);
-        }
+    let reqUrl = `/share/like?reqItem=${itemNo}`;
+    ajax_get(reqUrl).done(function(data){
+        updateItemDetail();
     })
 }
 
 function updateItStat(item){
 
-    console.log(item);
     if(item.statusCode == "RNT"){
         alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         return;
     }
-    let itemNo = item.itemNo;
-
-    $.ajax({
-
-        url: `/share/updateItStat?itemNo=${itemNo}`,
-        type: "get",
-        success: function(data){
-            console.log(data);
-            updateItemDetail();
-        },
-        error: function(data){
-            console.log(data);
-        }
+    let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
+    ajax_get(reqUrl).done(function(){
+        updateItemDetail();
     })
+
+}
+
+function approveReq(itemNo){
+    console.log(itemNo);
+    getRequesters(itemNo);
+}
+
+function getRequesters(itemNo){
+    let reqUrl = "/share/dream/requesters";
+    let data = {
+        reqItem: itemNo,
+        statusCode: "RQD"
+    }
+    ajax_get(reqUrl, data).done(function(result){
+        $('#selectRqst').replaceWith(result);
+        $('#selectRqst').modal('show');
+    })
+
+
 
 }
 
