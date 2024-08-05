@@ -372,4 +372,22 @@ public class ClubDAO {
         return sqlSession.insert("clubMapper.insertReply", replyDTO);
 
     }
+
+    public int checkReplyWriter(SqlSessionTemplate sqlSession, int replyNo) {
+
+        return sqlSession.selectOne("clubMapper.checkReplyWriter", replyNo);
+
+    }
+
+    public int updateReply(SqlSessionTemplate sqlSession, ReplyDTO replyDTO) {
+
+        return sqlSession.update("clubMapper.updateReply", replyDTO);
+
+    }
+
+    public int deleteReply(SqlSessionTemplate sqlSession, ReplyDTO replyDTO) {
+
+        return sqlSession.delete("clubMapper.deleteReply", replyDTO);
+
+    }
 }

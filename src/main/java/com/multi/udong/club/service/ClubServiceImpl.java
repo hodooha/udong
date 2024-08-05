@@ -469,4 +469,25 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+    @Override
+    public int checkReplyWriter(int replyNo) throws Exception {
+
+        return clubDAO.checkReplyWriter(sqlSession, replyNo);
+
+    }
+
+    @Override
+    public int updateReply(ReplyDTO replyDTO) throws Exception {
+
+        return clubDAO.updateReply(sqlSession, replyDTO);
+
+    }
+
+    @Override
+    public int deleteReply(ReplyDTO replyDTO) throws Exception {
+
+        return clubDAO.deleteReply(sqlSession, replyDTO);
+
+    }
+
 }

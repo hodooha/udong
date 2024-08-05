@@ -1110,11 +1110,11 @@ public class ClubController {
 
 
     @PostMapping("/clubLog/insertReply")
-    public String insertReply(@AuthenticationPrincipal CustomUserDetails c,@RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model) {
-
-        int logNo = replyDTO.getLogNo();
+    public String insertReply(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
+
+        int logNo = replyDTO.getLogNo();
 
         // 서버단에서 가입돼 있는지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo,clubNo);
@@ -1145,6 +1145,82 @@ public class ClubController {
 
         // 미가입 상태일 때 모임 홈으로 이동
         return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubLog/updateReply")
+    public String updateReply(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        int logNo = replyDTO.getLogNo();
+
+        int replyNo = replyDTO.getReplyNo();
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        String isReplyWriter = checkReplyWriter(memberNo, replyNo);
+
+        if(joinStatus.equals("Y") && isReplyWriter.equals("Y")) {
+
+            try {
+
+                clubService.updateReply(replyDTO);
+
+                redirectAttributes.addFlashAttribute("message", "댓글 수정이 완료되었습니다.");
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "댓글 수정 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+    }
+
+
+    @PostMapping("/clubLog/deleteReply")
+    public String deleteReply(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        int logNo = replyDTO.getLogNo();
+
+        int replyNo = replyDTO.getReplyNo();
+
+        String isReplyWriter = checkReplyWriter(memberNo, replyNo);
+
+        String isAdmin = checkAdmin(memberNo);
+
+        if(isReplyWriter.equals("Y") || isAdmin.equals("Y")) {
+
+            try {
+
+                clubService.deleteReply(replyDTO);
+
+                redirectAttributes.addFlashAttribute("message", "댓글 삭제가 완료되었습니다.");
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "댓글 삭제 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
 
     }
 
@@ -1201,9 +1277,9 @@ public class ClubController {
 
         try {
 
-            int materNo = clubService.checkClubMaster(clubNo);
+            int masterNo = clubService.checkClubMaster(clubNo);
 
-            if(materNo == memberNo) {
+            if(masterNo == memberNo) {
                 isMaster = "Y";
             }
 
@@ -1250,5 +1326,30 @@ public class ClubController {
         }
 
     }
+
+    public String checkReplyWriter(int memberNo, int replyNo) {
+
+        String isReplyWriter = "N";
+
+        try {
+
+            int replyWriter = clubService.checkReplyWriter(replyNo);
+
+            if(replyWriter == memberNo) {
+                isReplyWriter = "Y";
+            }
+
+            return isReplyWriter;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "common/errorPage";
+
+        }
+
+    }
+
 
 }

@@ -54,4 +54,10 @@ public interface ClubService {
     LogDTO selectLogDetail(RequestDTO requestDTO) throws Exception;
 
     int insertReply(ReplyDTO replyDTO) throws Exception;
+
+    int checkReplyWriter(int replyNo) throws Exception;
+
+    int updateReply(ReplyDTO replyDTO) throws Exception;
+
+    int deleteReply(ReplyDTO replyDTO) throws Exception;
 }

@@ -447,4 +447,22 @@
             )
     </insert>
 
+    <select id="checkReplyWriter" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM CL_LOG_REPLY
+        WHERE reply_no = #{ replyNo }
+    </select>
+
+    <update id="updateReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        UPDATE CL_LOG_REPLY
+        SET
+            content = #{ content }
+        WHERE reply_no = #{ replyNo } AND log_no = #{ logNo }
+    </update>
+
+    <delete id="deleteReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        DELETE FROM CL_LOG_REPLY
+        WHERE reply_no = #{ replyNo } AND log_no = #{ logNo }
+    </delete>
+
 </mapper>

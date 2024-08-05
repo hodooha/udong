@@ -114,8 +114,11 @@
             white-space: nowrap;
             width: 100%;
         }
-        .reply-content-td div:nth-child(3) {
-            margin-left: auto;
+        .reply-update-form {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            width: 100%;
         }
         .reply-etc {
             font-size: 10px;
@@ -228,48 +231,51 @@
             </form>
             <hr>
             <div th:if="${logDetail.repliesCount != 0}" th:each="reply, iterStat : ${logDetail.replies}">
-                <form th:action="@{/club/clubLog/updateReply}" method="post">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <input type="hidden" name="replyNo" th:value="${reply.replyNo}">
-                    <input type="hidden" name="logNo" th:value="${reply.logNo}">
                     <table style="width: 100%">
                         <tr>
                             <td style="width: 10%">
                                 <span th:text="${reply.writer.nickname}" class="reply-writer-nickname"></span>
                             </td>
                             <td class="reply-content-td">
-                                <div th:id="'replyContent' + ${iterStat.index + 1}">
-                                    <span style="margin-right: 10px">|</span>
-                                    <span th:text="${reply.content}"></span>
-                                </div>
-                                <div th:id="'replyContentUpdateInput' + ${iterStat.index + 1}" style="display: none;">
-                                    <span style="margin-right: 10px">|</span>
-                                    <input type="text" name="content" class="input reply-update-input" th:value="${reply.content}" maxlength="100" required>
-                                </div>
-                                <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo}" style="display: flex;">
-                                    <div th:id="'replyUpdateFormBtn' + ${iterStat.index + 1}">
-                                        <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'">수정</button>
+                                <form th:action="@{/club/clubLog/updateReply}" method="post" class="reply-update-form">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                                    <input type="hidden" name="logNo" th:value="${reply.logNo}">
+                                    <input type="hidden" name="replyNo" th:value="${reply.replyNo}">
+                                    <div th:id="'replyContent' + ${iterStat.index + 1}">
+                                        <span style="margin-right: 10px">|</span>
+                                        <span th:text="${reply.content}"></span>
                                     </div>
-                                    <div th:id="'replyUpdateBtn' + ${iterStat.index + 1}" style="display: none;">
-                                        <button type="submit" class="btn btn-udh-blue btn-reply">완료</button>
+                                    <div th:id="'replyContentUpdateInput' + ${iterStat.index + 1}" style="display: none;">
+                                        <span style="margin-right: 10px">|</span>
+                                        <input type="text" name="content" class="input reply-update-input" th:value="${reply.content}" maxlength="100" required>
                                     </div>
-                                    <div th:id="'replyUpdateCancelBtn' + ${iterStat.index + 1}" style="display: none;">
-                                        <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'inactiveReplyUpdateForm(' + ${iterStat.index + 1} + ')'">취소</button>
+                                    <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo}" style="display: flex; margin-left: auto;">
+                                        <div th:id="'replyUpdateFormBtn' + ${iterStat.index + 1}">
+                                            <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'">수정</button>
+                                        </div>
+                                        <div th:id="'replyUpdateBtn' + ${iterStat.index + 1}" style="display: none;">
+                                            <button type="submit" class="btn btn-udh-blue btn-reply">완료</button>
+                                        </div>
+                                        <div th:id="'replyUpdateCancelBtn' + ${iterStat.index + 1}" style="display: none;">
+                                            <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'inactiveReplyUpdateForm(' + ${iterStat.index + 1} + ')'">취소</button>
+                                        </div>
                                     </div>
-                                </div>
-                                <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
-                                    <div th:id="'replyDeleteBtn' + ${iterStat.index + 1}">
-                                    <form th:action="@{/club/clubLog/deleteReply}" method="post">
-                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                                        <input type="hidden" th:value="${reply.replyNo}" />
-                                        <button type="submit" class="btn btn-udh-red btn-reply">삭제</button>
-                                    </form>
+                                </form>
+                                <form th:id="'deleteReplyForm' + ${iterStat.index + 1}" th:action="@{/club/clubLog/deleteReply}" method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                                    <input type="hidden" name="logNo" th:value="${reply.logNo}">
+                                    <input type="hidden" name="replyNo" th:value="${reply.replyNo}" />
+                                    <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+                                        <div th:id="'replyDeleteBtn' + ${iterStat.index + 1}">
+                                            <button type="button" class="btn btn-udh-red btn-reply" th:onclick="'confirmDeleteReply(' + ${iterStat.index + 1} + ')'">삭제</button>
+                                        </div>
                                     </div>
-                                </div>
+                                </form>
                             </td>
                         </tr>
                     </table>
-                </form>
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 10%;">
@@ -308,6 +314,7 @@
         document.getElementById('replyUpdateCancelBtn' + num).style.display = 'block';
 
     }
+
     function inactiveReplyUpdateForm(num) {
 
         document.getElementById('replyContent' + num).style.display = 'block';
@@ -317,6 +324,12 @@
         document.getElementById('replyUpdateBtn' + num).style.display = 'none';
         document.getElementById('replyUpdateCancelBtn' + num).style.display = 'none';
 
+    }
+
+    function confirmDeleteReply(num) {
+        if (confirm("정말로 댓글을 삭제하시겠습니까?")) {
+            document.getElementById('deleteReplyForm' + num).submit();
+        }
     }
 
 </script>
