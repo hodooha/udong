@@ -81,4 +81,8 @@ public interface MemberMapper {
     Map<String, Object> checkMember(int memberNo);
 
     void updateLastLoginAt(String memberId);
+
+    Long checkMemBus(int memberNo);
+
+    void deleteMemBus(int memberNo);
 }

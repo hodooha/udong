@@ -41,4 +41,8 @@ public interface CSMapper {
     String getAnswerCreatedAt(CSAnswerDTO csAnswerDTO);
 
     void updateQueIsAnswered(Integer csNo);
+
+    String isQueAnswered(int csNo);
+
+    void deleteQue(int csNo);
 }

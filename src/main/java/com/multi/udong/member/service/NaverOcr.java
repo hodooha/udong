@@ -2,6 +2,8 @@ package com.multi.udong.member.service;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -15,7 +17,14 @@ import java.util.UUID;
  * @author : 재식
  * @since : 24. 7. 23.
  */
+@Service
 public class NaverOcr {
+
+    @Value("${naver.ocr.url}")
+    private String OCR_URL;
+
+    @Value("${naver.ocr.secret}")
+    private String OCR_SECRET;
 
     /**
      * Ocr array list.
@@ -25,9 +34,10 @@ public class NaverOcr {
      * @since 2024 -08-01
      */
     public ArrayList<String> ocr(String fileName) {
-        String apiURL = NaverAPIKey.OCR_URL;
-        String secretKey = NaverAPIKey.OCR_SECRET;
+        String apiURL = OCR_URL;
+        String secretKey = OCR_SECRET;
         String imageFile = fileName;
+
         ArrayList<String> list = new ArrayList<String>();
         try {
             URL url = new URL(apiURL);

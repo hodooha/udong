@@ -29,4 +29,6 @@ public interface CSService {
     AttachmentDTO getAttachment(int fileNo);
 
     String insertAnswerQue(CSAnswerDTO csAnswerDTO, String authority);
+
+    String deleteQue(int csNo);
 }

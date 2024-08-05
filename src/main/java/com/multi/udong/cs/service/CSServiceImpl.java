@@ -162,4 +162,17 @@ public class CSServiceImpl implements CSService{
 
         return createdAt;
     }
+
+    @Override
+    public String deleteQue(int csNo) {
+
+        String isAnswered = csMapper.isQueAnswered(csNo);
+
+        if (isAnswered.equals("Y")) {
+            return "answered";
+        }
+
+        csMapper.deleteQue(csNo);
+        return "notAnswered";
+    }
 }

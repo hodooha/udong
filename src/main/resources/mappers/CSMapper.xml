@@ -114,7 +114,7 @@
     <update id="updateQueIsAnswered">
         UPDATE CS_QUESTION
         SET is_answered = 'Y'
-        WHERE cs_no = #{cs_no}
+        WHERE cs_no = #{csNo}
     </update>
 
     <update id="updateMember" parameterType="attachmentDTO">
@@ -122,5 +122,14 @@
         SET modified_at = CURRENT_TIMESTAMP
         WHERE member_no = #{targetNo}
     </update>
+
+    <select id="isQueAnswered" resultType="string">
+        SELECT is_answered FROM CS_QUESTION WHERE cs_no = ${csNo}
+    </select>
+
+    <delete id="deleteQue">
+        DELETE FROM CS_QUESTION
+        WHERE cs_no = #{csNo}
+    </delete>
     
 </mapper>

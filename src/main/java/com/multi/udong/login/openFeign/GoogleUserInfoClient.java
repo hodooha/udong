@@ -1,4 +1,4 @@
-package com.multi.udong.login.service;
+package com.multi.udong.login.openFeign;
 
 import com.multi.udong.login.model.dto.GoogleUserInfo;
 import org.springframework.cloud.openfeign.FeignClient;

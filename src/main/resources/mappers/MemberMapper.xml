@@ -537,21 +537,32 @@
     <select id="checkMember" parameterType="int" resultType="map">
         SELECT
             (SELECT COUNT(*)
-            FROM SHA_ITEMS si
-            JOIN SHA_REQ sr ON si.item_no = sr.req_item
-            WHERE si.owner_no = #{memberNo}
-            AND si.item_group = 'RENT'
-            AND sr.status_code = 'RNT') AS renting_count,
+                FROM SHA_ITEMS si
+                JOIN SHA_REQ sr ON si.item_no = sr.req_item
+                WHERE si.owner_no = #{memberNo}
+                AND si.item_group = 'RENT'
+                AND sr.status_code = 'RNT') AS renting_count,
             (SELECT COUNT(*)
-            FROM SHA_ITEMS
-            WHERE owner_no = #{memberNo}
-            AND item_group = 'GIVE'
-            AND status_code = 'GIV') AS giving_count,
+                FROM SHA_ITEMS
+                WHERE owner_no = #{memberNo}
+                AND item_group = 'GIVE'
+                AND status_code = 'GIV') AS giving_count,
             (SELECT COUNT(*)
-            FROM CL
-            WHERE master = #{memberNo}) AS master_count
+                FROM CL
+                WHERE master = #{memberNo}) AS master_count
         FROM DUAL
     </select>
+
+    <select id="checkMemBus" resultType="long">
+        SELECT business_number
+        FROM MEM_BUS
+        WHERE member_no = #{memberNo}
+    </select>
+
+    <delete id="deleteMemBus">
+        DELETE FROM MEM_BUS
+        WHERE member_no = #{memberNo}
+    </delete>
 
     <update id="updateLastLoginAt">
         UPDATE MEMBER

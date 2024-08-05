@@ -28,10 +28,10 @@ public class KakaoLoginController {
 	private final MemberServiceImpl memberService;
 
 	@Value("${kakao.api.key}")
-	private static String KakaoApiKey;
+	private String KakaoApiKey;
 
     @Value("${kakao.client.pw}")
-    private static String KakaoPW;
+    private String KakaoPW;
 
     /**
      * Get kakao api key string.
@@ -43,6 +43,12 @@ public class KakaoLoginController {
 	@ResponseBody
     public String getKakaoApiKey() {
         return KakaoApiKey;
+    }
+
+    @GetMapping("/getKakaoPW")
+    @ResponseBody
+    public String getKakaoPW() {
+        return KakaoPW;
     }
 
     /**
