@@ -37,14 +37,8 @@ $(function(){
         });
     }
 
-    if(bodyId == "itemDetail" || bodyId == "registerForm"){
-        $('#datePicker').datepicker({
-            format: 'yyyy-mm-dd',
-            todayHighlight: true,
-            startDate: '+1d',
-            autoclose : true,
-            endDate: '+1m'
-        })
+    if(bodyId == "registerForm" || bodyId == "itemDetail"){
+        datePickerActive();
 
         $("input[name='itemGroup']").change(function(){
             let checked = $("input[name='itemGroup']:checked").val();
@@ -56,16 +50,13 @@ $(function(){
                 dateRefresh();
             }
         });
-        updateItemDetail();
     }
 
-    if(bodyId == "itemDetail"){
-        updateItemDetail();
-    }
+
 
     if(bodyId == "dreamLend"){
 
-        getLendList(1);
+//        getLendList(1);
 
         window.addEventListener("popstate", function(event) {
             if (event.state) {
@@ -93,6 +84,29 @@ $(function(){
 
 });
 
+function datePickerActive(){
+    $('#datePicker').datepicker({
+        format: 'yyyy-mm-dd',
+        todayHighlight: true,
+        startDate: '+1d',
+        autoclose : true,
+        endDate: '+1m'
+    })
+}
+
+
+function dateRefresh() {
+    $('#datePicker').datepicker("setDate", null);
+    $('#datePicker').datepicker({
+    format: 'yyyy-mm-dd',
+    todayHighlight: true,
+    startDate: '+1d',
+    autoclose : true,
+    endDate: '+1m'
+    });
+}
+
+
 function ajax_get(reqUrl, data){
 
     return $.ajax({
@@ -100,12 +114,12 @@ function ajax_get(reqUrl, data){
         type: "get",
         data: data,
         beforeSend: showSpinner(),
-        error: function(){
-            location.replace("common/errorPage");
+        error: function(data){
+            console.log(data);
         }
     })
-    .fail(function(){
-        location.replace("common/errorPage");
+    .fail(function(data){
+        console.log(data);
     })
     .always(function(){
         hideSpinner();
@@ -124,12 +138,12 @@ function ajax_post(reqUrl, data){
             xhr.setRequestHeader(header, token);
             showSpinner();
         },
-        error: function(){
-            location.replace("common/errorPage");
+        error: function(data){
+            console.log(data);
         }
     })
-    .fail(function(){
-        location.replace("common/errorPage");
+    .fail(function(data){
+        console.log(data);
     })
     .always(function(){
         hideSpinner();
@@ -156,17 +170,6 @@ function getCatList() {
         } else {
          search(1);
         }
-    });
-}
-
-function dateRefresh() {
-    $('#datePicker').datepicker("setDate", null);
-    $('#datePicker').datepicker({
-    format: 'yyyy-mm-dd',
-    todayHighlight: true,
-    startDate: '+1d',
-    autoclose : true,
-    endDate: '+1m'
     });
 }
 
@@ -355,6 +358,11 @@ function updateItemDetail(){
     let reqUrl = `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
         $('#detail').replaceWith(data);
+        if($('#isDeleted').val() != ''){
+            alert("삭제된 물건입니다.");
+            history.back();
+        };
+        datePickerActive();
     });
 }
 
@@ -384,6 +392,8 @@ function insertReq(data){
         updateItemDetail();
         alert(msg);
     })
+
+
 }
 
 function updateShaLike(itemNo){
@@ -406,7 +416,7 @@ function updateItStat(item){
 
 }
 
-function approveReq(itemNo){
+function selectReq(itemNo){
     console.log(itemNo);
     getRequesters(itemNo);
 }
@@ -418,12 +428,77 @@ function getRequesters(itemNo){
         statusCode: "RQD"
     }
     ajax_get(reqUrl, data).done(function(result){
-        $('#selectRqst').replaceWith(result);
-        $('#selectRqst').modal('show');
+        $('#dreamModals').replaceWith(result);
+        $('#selectRqst').modal('toggle');
+    })
+
+}
+
+function checkReturnDate(requesters){
+    let selectedRqst = $('input[name="requesters"]:checked').val();
+    let seletedReq = requesters.filter((r)=>{
+        return r.rqstNo == selectedRqst
+    })[0];
+
+    datePickerActive();
+    $('#datePicker').val(seletedReq.returnDate);
+
+    $('#selectRqst').modal('toggle');
+    $('#approveReq').modal('toggle');
+
+
+    $('#approveBtn').on("click", function(){
+        seletedReq.returnDate = $('#datePicker').val();
+        if(seletedReq.returnDate == ''){
+            alert("반납예정일을 선택해주세요.");
+            return;
+        };
+        approveReq(seletedReq);
+    })
+
+    $('#backToSelectReq').on("click", function(){
+        $('#approveBtn').off("click");
+        $('#selectRqst').modal('toggle');
+        $('#approveReq').modal('toggle');
+    })
+}
+
+function approveReq(final){
+    console.log(final);
+    $('#approveReq').modal('toggle');
+
+    let reqUrl = "/share/dream/approveReq";
+    let data = {
+       reqNo : final.reqNo,
+       rqstNo: final.rqstNo,
+       statusCode: "RNT",
+       reqItem : final.reqItem,
+       returnDate: final.returnDate
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("대여가 확정되었습니다.");
+        location.reload();
+
+    })
+}
+
+
+
+
+function deleteItemAtDream(item) {
+    let reqUrl = "/share/delete";
+    let data = {
+        itemNo: item.itemNo,
+        itemGroup: item.itemGroup
+    }
+
+    ajax_get(reqUrl, data).done(function(){
+        location.reload();
     })
 
 
-
 }
+
 
 

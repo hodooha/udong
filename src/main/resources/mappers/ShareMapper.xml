@@ -245,11 +245,12 @@
         </foreach>
     </delete>
 
-    <delete id="deleteItem">
-        delete
-        from sha_items
+    <update id="deleteItem">
+        update
+        sha_items
+        set deleted_at = now()
         where item_no = #{itemNo}
-    </delete>
+    </update>
 
     <delete id="deleteImgByTarget">
         delete
@@ -314,6 +315,13 @@
         update sha_items
         set
         req_cnt = req_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="minusReqCnt">
+        update sha_items
+        set
+        req_cnt = req_cnt - 1
         where item_no = #{itemNo}
     </update>
 
@@ -428,5 +436,14 @@
         where a.req_item = #{reqItem}
         and a.status_code = #{statusCode}
     </select>
+
+    <update id="updateReqStat">
+        update
+        sha_req
+        set
+        status_code = #{statusCode},
+        return_date = #{returnDate}
+        where req_no = #{reqNo}
+    </update>
 
 </mapper>

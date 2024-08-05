@@ -113,12 +113,22 @@ public class ShareServiceImpl implements ShareService {
      * @throws Exception the exception
      */
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public void plusViewCnt(ShaItemDTO itemDTO) throws Exception {
+    public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         if (shareDAO.plusViewCnt(sqlSession, itemDTO.getItemNo()) < 1) {
             throw new Exception("조회수 변경을 실패했습니다.");
         }
+        ;
+
+        // db에서 물건 상세정보 가져오기
+        ShaItemDTO result = getItemDetail(itemDTO, c);
+        if(result.getDeletedAt() != null){
+            throw new Exception("삭제된 물건입니다.");
+        }
+
+        return result;
     }
 
 
@@ -280,18 +290,18 @@ public class ShareServiceImpl implements ShareService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<AttachmentDTO> deleteItem(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
+    public void deleteItem(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         // 삭제할 물건 정보 가져오기
         itemDTO = getItemDetail(itemDTO, c);
 
-        // 삭제할 사진 목록 가져오기 (삭제 성공 시 로컬폴더에서도 삭제하기 위해)
-        List<AttachmentDTO> delImgs = itemDTO.getImgList();
-
-        // 삭제할 첨부 사진 dto 설정
-        AttachmentDTO imgDTO = new AttachmentDTO();
-        imgDTO.setTargetNo(itemDTO.getItemNo());
-        imgDTO.setTypeCode(itemDTO.getItemGroup());
+//        // 삭제할 사진 목록 가져오기 (삭제 성공 시 로컬폴더에서도 삭제하기 위해)
+//        List<AttachmentDTO> delImgs = itemDTO.getImgList();
+//
+//        // 삭제할 첨부 사진 dto 설정
+//        AttachmentDTO imgDTO = new AttachmentDTO();
+//        imgDTO.setTargetNo(itemDTO.getItemNo());
+//        imgDTO.setTypeCode(itemDTO.getItemGroup());
 
         // 삭제하려는 유저와 물건 소유자가 같은지 확인
         if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
@@ -303,19 +313,18 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 삭제가 가능합니다.");
         }
 
-        // 물건 정보 삭제 (sha_items 테이블)
+        // 물건 정보 수정 (sha_items 테이블)
         if (shareDAO.deleteItem(sqlSession, itemDTO) < 1) {
             throw new Exception("물건 삭제를 실패했습니다.");
         }
         ;
 
-        // 물건 첨부사진 삭제 (attachment 테이블)
-        if (shareDAO.deleteImgByTarget(sqlSession, imgDTO) < 0) {
-            throw new Exception("물건의 첨부사진 삭제에 실패했습니다.");
-        }
+//        // 물건 첨부사진 삭제 (attachment 테이블)
+//        if (shareDAO.deleteImgByTarget(sqlSession, imgDTO) < 0) {
+//            throw new Exception("물건의 첨부사진 삭제에 실패했습니다.");
+//        }
         ;
 
-        return delImgs;
     }
 
     /**
@@ -412,6 +421,29 @@ public class ShareServiceImpl implements ShareService {
 
 
         return requesters;
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void approveReq(ShaReqDTO reqDTO) throws Exception {
+
+        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+            throw new Exception("대여 확정를 실패했습니다.");
+        };
+
+        ShaItemDTO target = new ShaItemDTO();
+        target.setItemNo(reqDTO.getReqItem());
+        target.setStatusCode("RNT");
+        if(shareDAO.updateItStat(sqlSession, target) < 1){
+            throw new Exception("물건 상태 변경을 실패했습니다.");
+        };
+
+        if(shareDAO.minusReqCnt(sqlSession, reqDTO.getReqItem()) < 1){
+            throw new Exception("신청자수 변경을 실패했습니다.");
+        };
+
+
     }
 
 
