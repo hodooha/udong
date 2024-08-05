@@ -28,7 +28,10 @@ public class KakaoLoginController {
 	private final MemberServiceImpl memberService;
 
 	@Value("${kakao.api.key}")
-	private String KakaoApiKey;
+	private static String KakaoApiKey;
+
+    @Value("${kakao.client.pw}")
+    private static String KakaoPW;
 
     /**
      * Get kakao api key string.
@@ -36,7 +39,6 @@ public class KakaoLoginController {
      * @return the string
      * @since 2024 -07-24
      */
-// API키 가져오기
 	@GetMapping("/getKakaoApiKey")
 	@ResponseBody
     public String getKakaoApiKey() {
@@ -74,8 +76,7 @@ public class KakaoLoginController {
     @ResponseBody
     public ResponseEntity<?> kakaoSignUp(MemberDTO memberDTO) {
 
-		String kakaoPw = "kakaoPw1234";
-		memberDTO.setMemberPw(kakaoPw);
+		memberDTO.setMemberPw(KakaoPW);
 
 		try {
 			memberService.signup(memberDTO);

@@ -36,13 +36,16 @@ public class GoogleLoginController {
     private final LoginController loginController;
 
     @Value("${google.client.id}")
-    private String clientId;
+    private static String clientId;
 
     @Value("${google.client.secret}")
-    private String clientSecret;
+    private static String clientSecret;
 
     @Value("${google.redirect.uri}")
-    private String redirectUri;
+    private static String redirectUri;
+
+    @Value("${google.client.pw}")
+    private static String googlePW;
 
     /**
      * 구글 사용자정보로 로그인함
@@ -70,7 +73,7 @@ public class GoogleLoginController {
 
             // 사용자정보 전처리
             String googleMemberId = googleUserInfo.getId() + "g";
-            String googleMemberPw = "googlePw1234";
+            String googleMemberPw = googlePW;
             String googleEmail = googleUserInfo.getEmail();
             String googleNickname = googleUserInfo.getName();
 

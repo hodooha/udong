@@ -8,7 +8,7 @@
         .chatbot {
             position: fixed;
             bottom: 20px;
-            right: 120px;
+            right: 20px;
             width: 60px;
             height: 60px;
             background: #FFFFFF;
@@ -79,7 +79,7 @@
 </body>
 <script>
     function toggleChatbot() {
-        var chatbotWindow = document.getElementById("chatbot-window");
+        const chatbotWindow = document.querySelector("#chatbot-window");
         chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
     }
 
@@ -118,43 +118,4 @@
         });
     }
 </script>
-<script>
-    (function(){
-
-        var w=window;
-
-        if(w.ChannelIO){
-            return w.console.error("ChannelIO script included twice.");
-        }
-
-        var ch=function(){ch.c(arguments);};
-        ch.q=[];
-        ch.c=function(args){ch.q.push(args);};
-        w.ChannelIO=ch;
-
-        function l(){
-            if(w.ChannelIOInitialized){return;}
-            w.ChannelIOInitialized=true;
-
-            var s=document.createElement("script");
-            s.type="text/javascript";
-            s.async=true;
-            s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";
-
-            var x=document.getElementsByTagName("script")[0];
-            if(x.parentNode){x.parentNode.insertBefore(s,x);}
-        }
-
-        if(document.readyState==="complete"){
-            l();
-        }else{
-            w.addEventListener("DOMContentLoaded",l);
-            w.addEventListener("load",l);
-        }
-    })();
-
-    ChannelIO('boot', {
-      "pluginKey": "d7c974e2-4a72-480b-99ca-b3163df9ade0"
-    });
-</script> <!--채널톡(테스트)-->
 </html>

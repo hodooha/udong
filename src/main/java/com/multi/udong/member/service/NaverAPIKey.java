@@ -1,5 +1,7 @@
 package com.multi.udong.member.service;
 
+import org.springframework.beans.factory.annotation.Value;
+
 /**
  * The type Naver api key.
  *
@@ -9,7 +11,11 @@ package com.multi.udong.member.service;
 public class NaverAPIKey {
     //상수 ==> final, 변경불가능
     //스태틱, 정적 ==> static, 객체생성하지 않고 언제든지 접근 가능
-    public final static String OCR_URL = "https://ac7uhi4dno.apigw.ntruss.com/custom/v1/32912/81a1432e0bffa7ebb3900d7b82bdee879cbab1743d1177929bcb06987fa44850/infer";
-    public final static String OCR_SECRET = "WEFZdkZ1aWtlZFF3TnlmV3NTVUtGanZOZ2treXplRU0=";
+
+    @Value("${naver.ocr.url}")
+    public static String OCR_URL;
+
+    @Value("${naver.ocr.secret}")
+    public static String OCR_SECRET;
 }
 //https://guide.ncloud-docs.com/docs/ko/clovaocr-domain 참고
