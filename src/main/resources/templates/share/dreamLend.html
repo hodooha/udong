@@ -118,7 +118,7 @@
         }
 
         .btns-1 button {
-            width: 48%;
+            width: 32%;
         }
 
         .page-link{
@@ -195,6 +195,8 @@
 
     </div>
 
+    <div th:replace="~{/share/rentMain :: #spinner}"></div>
+
     <div th:fragment="dreams" id="dreams">
         <th:block th:if="${#lists.isEmpty(lendList)}">
             <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
@@ -226,9 +228,10 @@
                         <p th:if="${item.statusCode == 'RNT'}">반납예정일: [[${item.returnDate}]]</p>
                     </div>
                     <div class="col-3 btn-area container">
-                        <div th:if="${item.statusCode == 'AVL'}" class="btn-group">
+                        <div th:if="${item.statusCode == 'AVL' || item.statusCode == 'UNAV'}" class="btn-group">
                             <div class="mb-3 btns-1">
                                 <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
+                                <button th:text="${item.statusCode == 'AVL' ? '일시중단' : '중단해제'}" class="btn btn-udh-silver"></button>
                                 <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">삭제</button>
                             </div>
                             <div class="btns-2">
@@ -236,23 +239,15 @@
 
                             </div>
                         </div>
-                        <div th:if="${item.statusCode == 'UNAV'}" class="btn-group">
-                            <div class="mb-3 btns-1">
-                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
-                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">삭제</button>
-                            </div>
-                            <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:100%">중단해제</button>
-                            </div>
-                        </div>
+
                         <div th:if="${item.statusCode == 'RNT'}" class="btn-group">
                             <div class="mb-3 btns-1">
-                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver">수정</button>
-                                <button class="btn btn-udh-red">신고</button>
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" class="btn btn-udh-silver" style="width:49%">수정</button>
+                                <button class="btn btn-udh-red" style="width:49%">신고</button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:48%">반납완료</button>
-                                <button class="btn btn-udh-blue" style="width:48%">쪽지하기</button>
+                                <button class="btn btn-udh-blue" style="width:49%">반납완료</button>
+                                <button class="btn btn-udh-blue" style="width:49%">쪽지하기</button>
                             </div>
                         </div>
                         <div th:if="${item.statusCode == 'GVD'}" class="btn-group">

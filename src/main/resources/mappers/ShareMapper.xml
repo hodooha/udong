@@ -322,7 +322,7 @@
         from
         (
             select b.*, e.*, d.nickname, f.eup_myeon_dong_name,
-            row_number() over (order by b.modified_at desc) as rn
+            row_number() over (order by b.created_at desc) as rn
             from sha_items b
             left join
             member d

@@ -110,22 +110,15 @@ public class ShareServiceImpl implements ShareService {
      * 물건 조회수 변경 -> 물건 상세 정보 조회 메서드 호출
      *
      * @param itemDTO the item dto
-     * @param c
-     * @return the item detail with view cnt
      * @throws Exception the exception
      */
-    @Transactional(rollbackFor = Exception.class)
+
     @Override
-    public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
+    public void plusViewCnt(ShaItemDTO itemDTO) throws Exception {
 
         if (shareDAO.plusViewCnt(sqlSession, itemDTO.getItemNo()) < 1) {
             throw new Exception("조회수 변경을 실패했습니다.");
         }
-        ;
-
-        // db에서 물건 상세정보 가져오기
-
-        return getItemDetail(itemDTO, c);
     }
 
 

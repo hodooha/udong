@@ -110,7 +110,6 @@ public class ShareController {
             model.addAttribute("catList", catList);
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
-            return "common/errorPage";
         }
 
         return "share/rentMain :: #catSelect";
@@ -177,17 +176,14 @@ public class ShareController {
                 throw new Exception("지역을 먼저 등록해주세요.");
             }
 
-            // db에서 물건 상세 정보 조회
-            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
-            model.addAttribute("item", item);
-
+            // 물건 조회수 증가
+            shareService.plusViewCnt(itemDTO);
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
             return "common/errorPage";
         }
-
 
         return "share/itemDetail";
     }
@@ -225,7 +221,6 @@ public class ShareController {
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
-            return "common/errorPage";
         }
 
         return "share/itemDetail :: #detail";
@@ -354,13 +349,14 @@ public class ShareController {
             model.addAttribute("pageInfo", pageInfo);
 
             System.out.println(pageInfo);
-            return "share/rentMain :: #itemList";
+
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
-            return "common/errorPage";
+
         }
+        return "share/rentMain :: #itemList";
     }
 
     /**
@@ -606,7 +602,6 @@ public class ShareController {
     public String updateItStat(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(itemDTO);
-        // 리턴 페이지 주소
         String msg = "상태 변경 완료";
 
         try {

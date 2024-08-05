@@ -56,6 +56,11 @@ $(function(){
                 dateRefresh();
             }
         });
+        updateItemDetail();
+    }
+
+    if(bodyId == "itemDetail"){
+        updateItemDetail();
     }
 
     if(bodyId == "dreamLend"){
@@ -288,45 +293,6 @@ function updateItemList(params){
     });
 }
 
-function renderPageNation(pageInfo, funcName){
-    let totalCounts = pageInfo.totalCounts;
-    let startPage = pageInfo.startPage;
-    let endPage = pageInfo.endPage;
-    let totalPage = pageInfo.totalPage;
-    let currentPage = pageInfo.currentPage;
-
-    let pageResult = "";
-
-    if(totalCounts > 0){
-        pageResult += `
-            <li class="page-item me-1">
-                <button class="page-link btn-udh-blue" onclick="${funcName}(${currentPage-1})" style="${currentPage == 1 ? 'visibility:hidden' : ''}" aria-label="Previous">
-                    <span>&laquo;</span>
-                </button>
-            </li>`
-
-
-        for(i = startPage; i <= endPage; i++){
-            pageResult += `
-                <li class="page-item active me-1" aria-current="page">
-                    <button class="page-link btn-udh-blue ${currentPage == i ? 'pageActive' : ''}" onclick="${funcName}(${i})">${i}</button>
-                </li>`
-        }
-
-
-
-        pageResult += `
-            <li class="page-item me-1">
-               <button class="page-link btn-udh-blue " style="${currentPage == totalPage ? 'visibility:hidden' : ''}" onclick="${funcName}(${currentPage+1})" aria-label="Next">
-                   <span>&raquo;</span>
-               </button>
-            </li>`
-    }
-
-    $('.pagination').html(pageResult);
-}
-
-
 function search(page){
     let params = getSearchParams(page);
     updateItemList(params);
@@ -446,7 +412,7 @@ function approveReq(itemNo){
 }
 
 function getRequesters(itemNo){
-    let reqUrl = `/share/dream/requesters`
+    let reqUrl = "/share/dream/requesters";
     let data = {
         reqItem: itemNo,
         statusCode: "RQD"

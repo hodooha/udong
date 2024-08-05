@@ -11,7 +11,7 @@ public interface ShareService {
 
     void insertItem(ShaItemDTO itemDTO, List<AttachmentDTO> imgList) throws Exception;
 
-    ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
+    void plusViewCnt(ShaItemDTO itemDTO) throws Exception;
 
     ShaItemDTO getItemDetail(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
 

@@ -42,7 +42,6 @@ public class ShaDreamController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg",e.getMessage());
-            return "common/errorPage";
         }
         model.addAttribute("catList", catList);
         return "share/dreamLend";
@@ -82,13 +81,14 @@ public class ShaDreamController {
             model.addAttribute("lendList", resultDTO.getLendList());
             model.addAttribute("pageInfo", pageInfo);
 
-            return "share/dreamLend :: #dreams";
+
 
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
-            return "common/errorPage";
         }
+
+        return "share/dreamLend :: #dreams";
 
     }
 
@@ -125,7 +125,6 @@ public class ShaDreamController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
-            return "common/errorPage";
         }
 
 
