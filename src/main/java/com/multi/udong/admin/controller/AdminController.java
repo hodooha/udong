@@ -3,21 +3,26 @@ package com.multi.udong.admin.controller;
 import com.multi.udong.admin.model.dto.ReportDTO;
 import com.multi.udong.admin.service.AdminService;
 import com.multi.udong.admin.service.ReportService;
-import org.apache.ibatis.javassist.compiler.ast.Member;
+import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.member.model.dto.MemBusDTO;
+import com.multi.udong.member.model.dto.MemberDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +55,7 @@ public class AdminController {
             return "redirect:/admin/adminMain";
         }
 
-        List<Member> members = adminService.searchMembersByIdOrNickname(search);
+        List<MemberDTO> members = adminService.searchMembersByIdOrNickname(search);
         model.addAttribute("members", members);
         return "admin/adminMain";
     }
@@ -107,5 +112,52 @@ public class AdminController {
             System.err.println("MalformedURLException: " + e.getMessage());
             return ResponseEntity.badRequest().build();
         }
+    }
+    @GetMapping("/seller")
+    public String showSellerManagement(Model model) {
+        List<MemBusDTO> sellers = adminService.getAllSellers();
+        model.addAttribute("sellers", sellers);
+        return "admin/seller";
+    }
+    @PostMapping("/updateSellerStatus")
+    @ResponseBody
+    public ResponseEntity<?> updateSellerStatus(@RequestBody Map<String, Object> payload) {
+        Integer memberNo = Integer.parseInt(payload.get("memberNo").toString());
+        String status = payload.get("status").toString();
+
+        boolean success = adminService.updateSellerStatus(memberNo, status);
+        if (success) {
+            MemBusDTO updatedSeller = adminService.getSellerByMemberNo(memberNo);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            if (updatedSeller != null) {
+                response.put("approvedAt", updatedSeller.getApprovedAt());
+            } else {
+                response.put("approvedAt", null);
+            }
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "상태 업데이트 실패"));
+        }
+    }
+    @GetMapping("/downloadAttachment/{memberNo}")
+    public ResponseEntity<Resource> downloadAttachment(@PathVariable Long memberNo) throws IOException {
+        AttachmentDTO attachment = adminService.getAttachmentByMemberNo(memberNo);
+
+        if (attachment == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Path filePath = Paths.get("src", "main", "resources", "static", "uploadFiles", attachment.getSavedName());
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getOriginalName() + "\"")
+                .body(resource);
     }
 }

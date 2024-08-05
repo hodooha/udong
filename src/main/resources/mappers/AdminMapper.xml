@@ -10,4 +10,50 @@
         WHERE member_id LIKE CONCAT('%', #{memberId}, '%')
         OR nickname LIKE CONCAT('%', #{nickname}, '%')
     </select>
+
+    <update id="updateSellerStatus">
+        UPDATE MEM_BUS
+        SET
+        approve_status = #{status},
+        approved_at = CASE
+        WHEN #{status} = 'Y' THEN CURRENT_TIMESTAMP
+        WHEN #{status} = 'N' THEN NULL
+        ELSE approved_at
+        END
+        WHERE member_no = #{memberNo}
+    </update>
+
+    <resultMap id="memBusResultMap" type="com.multi.udong.member.model.dto.MemBusDTO">
+        <id property="memberNo" column="member_no"/>
+        <result property="businessNumber" column="business_number"/>
+        <result property="representativeName" column="representative_name"/>
+        <result property="approveStatus" column="approve_status"/>
+        <result property="approvedAt" column="approved_at"/>
+
+
+        <association property="memberDTO" javaType="com.multi.udong.member.model.dto.MemberDTO">
+            <id property="memberNo" column="member_no"/>
+            <result property="memberId" column="member_id"/>
+            <result property="nickname" column="nickname"/>
+
+        </association>
+    </resultMap>
+
+    <select id="selectSellers" resultMap="memBusResultMap">
+        SELECT
+        b.*,
+        m.*
+        FROM
+        MEM_BUS b
+        JOIN
+        MEMBER m ON b.member_no = m.member_no
+        LEFT JOIN
+        ATTACHMENT a ON b.member_no = a.target_no AND a.type_code = 'MEM_BUS'
+    </select>
+    <select id="getSellerByMemberNo" resultType="com.multi.udong.member.model.dto.MemBusDTO">
+        SELECT mb.*, m.member_id
+        FROM MEM_BUS mb
+        JOIN MEMBER m ON mb.member_no = m.member_no
+        WHERE mb.member_no = #{memberNo}
+    </select>
 </mapper>

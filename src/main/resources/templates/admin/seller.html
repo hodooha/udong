@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .admin-content {
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 0 15px 15px 0;
+        }
+
+        h5 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 80px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 60px;
+        }
+
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #3B5C9A;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .page-button:hover {
+            background-color: #0B1D40;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+        .sortable:hover {
+            background-color: #e0e0e0;
+        }
+        .status-btn {
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status-text {
+            margin-right: 10px;
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<div class="admin-content">
+    <h5 style="text-align: center; margin-bottom: 100px;">판매자 관리</h5>
+
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>NO.</th>
+            <th>ID</th>
+            <th>이름</th>
+            <th>사업자등록증</th>
+            <th class="sortable" data-sort="status">처리여부 ▼</th>
+            <th>승인일자</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="seller : ${sellers}" th:data-seller-no="${seller.memberNo}">
+            <td th:text="${seller.memberNo}"></td>
+            <td th:text="${seller.memberDTO != null ? seller.memberDTO.memberId : 'N/A'}"></td>
+            <td th:text="${seller.representativeName}"></td>
+            <td>
+            <span th:if="${seller.attachmentDTO != null and seller.attachmentDTO.savedName != null}">
+        <a th:href="@{'/admin/downloadAttachment/' + ${seller.memberNo}}">[다운로드]</a>
+            </span>
+                <span th:unless="${seller.attachmentDTO != null and seller.attachmentDTO.savedName != null}">
+        첨부 파일 없음
+            </span>
+            </td>
+            <td>
+                <span th:text="${seller.approveStatus == 'W' ? '대기' : (seller.approveStatus == 'Y' ? '승인' : '취소')}" class="status-text"></span>
+                <button th:if="${seller.approveStatus != 'Y'}" th:onclick="'updateStatus(' + ${seller.memberNo} + ', \'Y\')'" class="btn-udh-yellow status-btn">승인</button>
+                <button th:if="${seller.approveStatus != 'N'}" th:onclick="'updateStatus(' + ${seller.memberNo} + ', \'N\')'" class="btn-udh-red status-btn">취소</button>
+            </td>
+            <td th:text="${seller.approvedAt}"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="pagination"></div>
+</div>
+
+<script th:inline="javascript">
+    let sortDirection = true;
+
+    function updateStatus(memberNo, status) {
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    $.ajax({
+        type: "POST",
+        url: "/admin/updateSellerStatus",
+        contentType: "application/json",
+        data: JSON.stringify({ memberNo: memberNo, status: status }),
+        beforeSend: function(xhr) {
+            if (token && header) {
+                xhr.setRequestHeader(header, token);
+            }
+        },
+        success: function(response) {
+            if(response.success) {
+                alert("상태가 성공적으로 업데이트되었습니다.");
+                updateSellerRow(memberNo, status, response.approvedAt);
+            } else {
+                alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+            }
+        },
+        error: function(xhr, status, error) {
+            alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+            console.error("Error details:", xhr.responseText);
+        }
+    });
+}
+
+function updateSellerRow(memberNo, newStatus, approvedAt) {
+    var row = $("tr[data-seller-no='" + memberNo + "']");
+    var statusCell = row.find("td:nth-child(5)");
+    var approvedAtCell = row.find("td:nth-child(6)");
+
+    var statusText;
+    var buttonHtml = '';
+
+    if (newStatus === 'Y') {
+        statusText = '승인';
+        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+    } else if (newStatus === 'N') {
+        statusText = '대기';
+        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+    }
+
+    statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);
+    approvedAtCell.text(approvedAt ? approvedAt : '');
+}
+
+    $(document).ready(function() {
+        $('.sortable').click(function() {
+            var rows = $('tbody tr').get();
+
+            rows.sort(function(a, b) {
+                var A = $(a).find('.status-text').text();
+                var B = $(b).find('.status-text').text();
+
+                var order = {
+                    '대기': 1,
+                    '승인': 2,
+                    '취소': 3
+                };
+
+                if (sortDirection) {
+                    return order[A] - order[B];
+                } else {
+                    return order[B] - order[A];
+                }
+            });
+
+            $.each(rows, function(index, row) {
+                $('tbody').append(row);
+            });
+
+            sortDirection = !sortDirection;
+
+            var currentText = $(this).text();
+            var newText = currentText.includes('▼') ? currentText.replace('▼', '▲') : currentText.replace('▲', '▼');
+            $(this).text(newText);
+        });
+    });
+</script>
+</body>
+</html>
