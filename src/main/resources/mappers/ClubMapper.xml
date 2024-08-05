@@ -112,6 +112,7 @@
         <result property="createdAt" column="reply_created_at"/>
         <result property="modifiedAt" column="reply_modified_at"/>
         <result property="viewerLike" column="viewer_reply_like"/>
+        <result property="likesCount" column="reply_likes_count"/>
 
         <association property="writer" resultMap="replyWriterResultMap"/>
 
@@ -123,6 +124,7 @@
 
         <id property="memberNo" column="reply_writer"/>
         <result property="nickname" column="reply_writer_nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
 
     </resultMap>
 
@@ -401,5 +403,48 @@
             )
         </if>
     </select>
+
+    <select id="selectLogDetail" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="logResultMap">
+        SELECT
+            A.log_no,
+            A.club_no,
+            A.title,
+            A.content,
+            A.views,
+            A.created_at,
+            A.modified_at,
+            A.writer AS log_writer,
+            B.nickname AS log_writer_nickname,
+            C.reply_no,
+            C.log_no AS replied_log_no,
+            C.content AS reply_content,
+            C.writer AS reply_writer,
+            C.created_at AS reply_created_at,
+            C.modified_at AS reply_modified_at,
+            (SELECT nickname FROM MEMBER B WHERE B.member_no = C.writer) AS reply_writer_nickname,
+            (SELECT COUNT(*) FROM CL_LOG_LIKE C WHERE C.log_no = A.log_no) AS likes_count,
+            (SELECT COUNT(*) FROM CL_LOG_LIKE C WHERE C.log_no = A.log_no AND C.member_no = #{ memberNo }) AS viewer_log_like,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY D WHERE D.log_no = A.log_no) AS replies_count,
+            E.*,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no AND F.member_no = #{ memberNo }) AS viewer_reply_like,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no) AS reply_likes_count,
+            (SELECT COUNT(*) FROM ATTACHMENT E WHERE E.type_code = 'MEM' AND E.target_no = #{ memberNo }) AS profile_saved_name
+        FROM CL_LOG A
+        LEFT JOIN MEMBER B ON A.writer = B.member_no
+        LEFT JOIN CL_LOG_REPLY C ON A.log_no = C.log_no
+        LEFT JOIN ATTACHMENT E ON E.type_code = 'CL-LOG' AND A.log_no = E.target_no
+        WHERE A.log_no = #{ logNo } AND A.club_no = #{ clubNo }
+    </select>
+
+    <insert id="insertReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        INSERT INTO CL_LOG_REPLY
+            (log_no, content, writer)
+        VALUES
+            (
+            #{ logNo },
+            #{ content },
+            #{ writer.memberNo }
+            )
+    </insert>
 
 </mapper>

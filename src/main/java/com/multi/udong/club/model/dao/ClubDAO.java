@@ -360,4 +360,16 @@ public class ClubDAO {
         return sqlSession.selectOne("clubMapper.selectLogCount", filterDTO);
 
     }
+
+    public LogDTO selectLogDetail(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectLogDetail", requestDTO);
+
+    }
+
+    public int insertReply(SqlSessionTemplate sqlSession, ReplyDTO replyDTO) {
+
+        return sqlSession.insert("clubMapper.insertReply", replyDTO);
+
+    }
 }

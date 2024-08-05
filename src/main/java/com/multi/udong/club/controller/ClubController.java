@@ -830,8 +830,12 @@ public class ClubController {
         // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
-        // 가입된 상태일 때만 기록 페이지로 이동
-        if(joinStatus.equals("Y")) {
+        // 서버단에서 로그인된 유저가 관리자인지 한 번 더 검증
+        String isAdmin = checkAdmin(memberNo);
+        System.out.println("###### 모임 기록 리스트 조회를 시도한 유저의 관리자 여부: " + isAdmin);
+
+        // 가입된 상태 또는 관리자일 때만 기록 페이지로 이동
+        if(joinStatus.equals("Y") || isAdmin.equals("Y")) {
 
             try {
 
@@ -1020,8 +1024,7 @@ public class ClubController {
 
                 int logNo = logDTO.getLogNo();
 
-                // return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
-                return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
+                return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
 
             } catch (Exception e) {
 
@@ -1035,6 +1038,104 @@ public class ClubController {
                 }
 
                 model.addAttribute("msg", "모임 기록 작성 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 미가입 상태일 때 모임 홈으로 이동
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @RequestMapping("/clubLog/logDetail")
+    public String logDetail(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 로그인된 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        int logNo = requestDTO.getLogNo();
+
+        // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 서버단에서 관리자인지 한 번 더 확인
+        String isAdmin = checkAdmin(memberNo);
+
+        // 모임 가입자나 관리자일 때만 기록 상세 조회 메소드 호출
+        if(joinStatus.equals("Y") || isAdmin.equals("Y")) {
+
+            try {
+
+                LogDTO logDetail = clubService.selectLogDetail(requestDTO);
+
+                System.out.println("###### 가져온 기록 상세 >>>>> " + logDetail);
+
+                ClubMemberDTO clubMemberDTO = logDetail.getWriter();
+                String profileSavedName = clubMemberDTO.getProfileSavedName();
+
+                // 작성자의 프로필 사진이 없거나 디폴트라면 기본 이미지 이름으로 savedName을 set
+                if(profileSavedName == null || profileSavedName.equals("") || profileSavedName.equals("defaultProfile.png")) {
+
+                    clubMemberDTO.setProfileSavedName("defaultProfile.png");
+                    logDetail.setWriter(clubMemberDTO);
+
+                }
+
+                model.addAttribute("logDetail", logDetail);
+
+                return "club/clubLog/logDetail";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 기록 상세 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+            }
+
+        }
+
+        // 미가입 상태일 때 모임 홈으로 이동
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubLog/insertReply")
+    public String insertReply(@AuthenticationPrincipal CustomUserDetails c,@RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model) {
+
+        int logNo = replyDTO.getLogNo();
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        // 서버단에서 가입돼 있는지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo,clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            ClubMemberDTO writer = new ClubMemberDTO();
+            writer.setMemberNo(memberNo);
+            replyDTO.setWriter(writer);
+
+            try {
+
+                clubService.insertReply(replyDTO);
+
+                return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "댓글 작성 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
 

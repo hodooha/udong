@@ -50,4 +50,8 @@ public interface ClubService {
     List<LogDTO> selectLogList(FilterDTO filterDTO) throws Exception;
 
     int selectLogCount(FilterDTO filterDTO) throws Exception;
+
+    LogDTO selectLogDetail(RequestDTO requestDTO) throws Exception;
+
+    int insertReply(ReplyDTO replyDTO) throws Exception;
 }

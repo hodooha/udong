@@ -15,6 +15,7 @@ public class ReplyDTO {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private int viewerLike;
+    private int likesCount;
     private List<LikeDTO> likes;
 
 }

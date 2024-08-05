@@ -455,4 +455,18 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+    @Override
+    public LogDTO selectLogDetail(RequestDTO requestDTO) throws Exception {
+
+        return clubDAO.selectLogDetail(sqlSession, requestDTO);
+
+    }
+
+    @Override
+    public int insertReply(ReplyDTO replyDTO) throws Exception {
+
+        return clubDAO.insertReply(sqlSession, replyDTO);
+
+    }
+
 }

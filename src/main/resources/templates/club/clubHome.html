@@ -65,6 +65,7 @@
         }
         .btn-club-main {
             font-family: 'Freesentation-5Medium' !important;
+            margin-bottom: 20px;
         }
     </style>
     <script th:inline="javascript">
@@ -82,7 +83,7 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="padding: 40px; height: 600px">
+<div class="content" style="padding: 40px; height: 670px;">
 
     <div th:replace="~{/club/clubSidebar}"></div>
 
@@ -178,7 +179,6 @@
         </table>
     </div>
 </div>
-
 <div class="club-main-btn-container">
     <a th:href="@{/club/clubMain(page=1)}">
         <button class="btn btn-udh-blue btn-club-main">

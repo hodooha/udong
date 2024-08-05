@@ -13,5 +13,6 @@ public class ClubMemberDTO {
 
     private int memberNo;
     private String nickname;
+    private String profileSavedName;
 
 }

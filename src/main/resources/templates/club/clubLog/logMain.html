@@ -83,7 +83,7 @@
             font-family: 'Freesentation-5Medium' !important;
             font-size: 12px !important;
             padding: 4px 8px 4px 8px !important;
-            margin-right: 7px;
+            margin: 0px 7px 20px 0px;
         }
     </style>
     <script type="text/javascript">
@@ -122,7 +122,7 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="padding: 40px; height: 600px">
+<div class="content" style="padding: 40px; height: 670px;">
 
     <div th:replace="~{/club/clubSidebar}"></div>
 
@@ -147,6 +147,7 @@
                 <table style="width: 100%">
                     <tr class="log-one-line">
                         <td>
+                            <input type="hidden" th:value="${one.logNo}">
                             <p th:text="${one.title}" class="p-tag log-title"></p>
                             <p th:text="${one.content}" class="p-tag log-content"></p>
                             <p class="p-tag log-reaction">
@@ -187,6 +188,12 @@
         var encodedSearchWord = encodeURIComponent(filterSearchWord);
 		window.location.href = "/club/clubLog/logMain?clubNo="+clubNo+"&page="+page+"&searchWord="+encodedSearchWord;
 	}
+
+    $(document).on('click', '.log-one', function() {
+        var logNo = $(this).find('input').val();
+        var url = "/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+        window.location.href = url;
+    });
 
 </script>
 </body>
