@@ -14,6 +14,13 @@ public class ReportDTO {
     private String reporterMemberId;
     private String imageFileName;
 
+    public void setUrl(String url) {
+        this.url = url;
+        if (url != null && url.contains("?file=")) {
+            this.imageFileName = url.substring(url.indexOf("?file=") + 6);
+        }
+    }
+
     public int getReportNo() {
         return reportNo;
     }
@@ -64,10 +71,6 @@ public class ReportDTO {
 
     public String getUrl() {
         return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     public String getStatus() {

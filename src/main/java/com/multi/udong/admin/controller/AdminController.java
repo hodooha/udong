@@ -5,6 +5,7 @@ import com.multi.udong.admin.service.AdminService;
 import com.multi.udong.admin.service.ReportService;
 import org.apache.ibatis.javassist.compiler.ast.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -27,7 +27,9 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
-    private URI uploadDir;
+
+    @Value("${file.upload-dir:${user.dir}/src/main/resources/static/uploadFiles}")
+    private String uploadDir;
 
     @Autowired
     public AdminController(AdminService adminService) {
@@ -74,18 +76,26 @@ public class AdminController {
     }
 
     @GetMapping("/downloadReportImage/{reportNo}")
-    public ResponseEntity<Resource> downloadReportImage(@PathVariable Long reportNo) {
+    public ResponseEntity<Resource> downloadReportImage(@PathVariable("reportNo") Long reportNo) {
+        System.out.println("Downloading report image for report number: " + reportNo);
+
         ReportDTO report = reportService.getReportById(reportNo);
 
         if (report == null || report.getImageFileName() == null || report.getImageFileName().isEmpty()) {
+            System.out.println("Report or image file name is null or empty");
             return ResponseEntity.notFound().build();
         }
 
+        System.out.println("Image file name: " + report.getImageFileName());
+
         Path filePath = Paths.get(uploadDir).resolve(report.getImageFileName());
+        System.out.println("Full file path: " + filePath.toString());
+
         Resource resource;
         try {
             resource = new UrlResource(filePath.toUri());
             if (resource.exists() && resource.isReadable()) {
+                System.out.println("File exists and is readable");
                 return ResponseEntity.ok()
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + report.getImageFileName() + "\"")
                         .body(resource);
