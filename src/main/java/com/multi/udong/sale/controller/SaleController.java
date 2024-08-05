@@ -10,6 +10,7 @@ import com.multi.udong.login.service.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,12 +44,25 @@ public class SaleController {
     public String saleMain(Model model,
                            @RequestParam(value = "search", required = false) String search,
                            @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired,
-                           @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption) {
-        List<SaleDTO> sales = saleService.getSales(search, excludeExpired, sortOption);
-        model.addAttribute("sales", sales);
-        return "sale/saleMain";
-    }
+                           @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption,
+                           @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        try {
 
+            if (customUserDetails == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+
+
+            List<SaleDTO> sales = saleService.getSales(search, excludeExpired, sortOption);
+            model.addAttribute("sales", sales);
+            return "sale/saleMain";
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+            e.printStackTrace();
+            return "common/errorPage";
+        }
+    }
+    @PreAuthorize("hasRole('ROLE_SELLER')")
     @GetMapping("/saleInsertForm")
     public String saleInsertForm() { //땡처리 작성 폼 페이지 반환
         return "sale/saleInsertForm";
@@ -133,7 +147,7 @@ public class SaleController {
         model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
         return "sale/saleDetail";
     }
-
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/deleteSale")
     public String deleteSale(@RequestParam("saleNo") int saleNo, RedirectAttributes redirectAttributes) {
         try {
@@ -144,7 +158,7 @@ public class SaleController {
         }
         return "redirect:/sale/saleMain";
     }
-
+    @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/saleReport")
     public String showSaleReportForm(@RequestParam("saleNo") int saleNo,
                                      Model model,
@@ -201,7 +215,7 @@ public class SaleController {
             return "redirect:/common/errorPage?message=UnexpectedError";
         }
     }
-
+    @PreAuthorize("hasRole('ROLE_SELLER')")
     @PostMapping("/updateStatus/{saleNo}")
     public ResponseEntity<Map<String, String>> updateSaleStatus(@PathVariable("saleNo") int saleNo, @RequestBody Map<String, String> body) {
         String status = body.get("status");

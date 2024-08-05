@@ -4,4 +4,10 @@
     <select id="getAllMembers" resultType="memberDTO">
         SELECT * FROM MEMBER WHERE is_deleted = 'N' ORDER BY member_no DESC
     </select>
+
+    <select id="searchMember" parameterType="map" resultType="memberDTO">
+        SELECT * FROM MEMBER
+        WHERE member_id LIKE CONCAT('%', #{memberId}, '%')
+        OR nickname LIKE CONCAT('%', #{nickname}, '%')
+    </select>
 </mapper>

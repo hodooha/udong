@@ -2,6 +2,7 @@ package com.multi.udong.admin.service;
 
 import com.multi.udong.admin.model.dao.AdminMapper;
 import com.multi.udong.member.model.dto.MemberDTO;
+import org.apache.ibatis.javassist.compiler.ast.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,5 +20,9 @@ public class AdminService {
 
     public List<MemberDTO> getAllMembers() {
         return adminMapper.getAllMembers();
+    }
+
+    public List<Member> searchMembersByIdOrNickname(String search) {
+        return adminMapper.searchMember(search, search);
     }
 }

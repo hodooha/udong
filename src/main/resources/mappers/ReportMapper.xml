@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ReportMapper">
+<mapper namespace="com.multi.udong.admin.model.dao.ReportDAO">
 
     <resultMap id="ReportResultMap" type="com.multi.udong.admin.model.dto.ReportDTO">
         <id property="reportNo" column="report_no"/>
-        <result property="reportedNo" column="reported_no"/>
         <result property="typeCode" column="type_code"/>
+        <result property="typeName" column="type_name"/>
         <result property="reportedMember" column="reported_member"/>
+        <result property="reportedMemberId" column="reported_member_id"/>
         <result property="reporterMember" column="reporter_member"/>
+        <result property="reporterMemberId" column="reporter_member_id"/>
         <result property="reason" column="reason"/>
         <result property="url" column="url"/>
         <result property="status" column="status"/>
@@ -17,5 +19,60 @@
         INSERT INTO ADM_REPORT (reported_no, type_code, reported_member, reporter_member, reason, url, status)
         VALUES (#{reportedNo}, #{typeCode}, #{reportedMember}, #{reporterMember}, #{reason}, #{url}, #{status})
     </insert>
+
+    <select id="findAllReports" resultMap="ReportResultMap">
+        SELECT
+        r.report_no,
+        r.type_code,
+        t.type_name,
+        r.reported_member,
+        m1.member_id AS reported_member_id,
+        r.reporter_member,
+        m2.member_id AS reporter_member_id,
+        r.reason,
+        r.url,
+        r.status
+        FROM
+        ADM_REPORT r
+        JOIN
+        TYPE t ON r.type_code = t.type_code
+        JOIN
+        MEMBER m1 ON r.reported_member = m1.member_no
+        JOIN
+        MEMBER m2 ON r.reporter_member = m2.member_no
+        ORDER BY
+        r.report_no DESC
+    </select>
+    <update id="updateReportStatus" parameterType="map">
+        UPDATE ADM_REPORT
+        SET status = #{status}
+        WHERE report_no = #{reportNo}
+    </update>
+    <select id="findReportById" resultMap="ReportResultMap">
+        SELECT
+        r.report_no,
+        r.type_code,
+        t.type_name,
+        r.reported_member,
+        m1.member_id AS reported_member_id,
+        r.reporter_member,
+        m2.member_id AS reporter_member_id,
+        r.reason,
+        r.url,
+        r.status,
+        a.original_name AS image_file_name  <!-- 첨부 파일 정보 추가 -->
+        FROM
+        ADM_REPORT r
+        JOIN
+        TYPE t ON r.type_code = t.type_code
+        JOIN
+        MEMBER m1 ON r.reported_member = m1.member_no
+        JOIN
+        MEMBER m2 ON r.reporter_member = m2.member_no
+        LEFT JOIN
+        ATTACHMENT a ON r.report_no = a.target_no AND a.type_code = r.type_code  <!-- ATTACHMENT 테이블과 조인 -->
+        WHERE
+        r.report_no = #{reportNo}
+    </select>
 
 </mapper>

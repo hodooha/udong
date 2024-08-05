@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <link rel="stylesheet" th:href="@{/css/adminSidebar.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .admin-container {
             display: flex;
@@ -13,31 +15,6 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .admin-sidebar {
-            width: 250px;
-            background-color: #3B5C9A;
-            color: white;
-            padding-top: 20px;
-            border-radius: 15px 0 0 15px;
-        }
-        .admin-sidebar ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .admin-sidebar li {
-            padding: 15px 20px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .admin-sidebar li:hover {
-            background-color: #0B1D40;
-        }
-        .admin-sidebar a {
-            color: white;
-            text-decoration: none;
-            font-family: 'Freesentation-5Medium', sans-serif;
-            font-size: 18px;
         }
         .admin-content {
             flex-grow: 1;
@@ -52,23 +29,34 @@
             margin-bottom: 20px;
             text-align: center;
         }
-        .search-bar {
+        .search-container {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 20px;
+            margin-bottom: 60px;
         }
-        .search-bar input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px 0 0 4px;
+        .search-input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            height: 40px;
+            box-sizing: border-box;
         }
-        .search-bar button {
-            padding: 8px 15px;
+        .search-button {
             background-color: #FFB83D;
             color: white;
             border: none;
-            border-radius: 0 4px 4px 0;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
             cursor: pointer;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-button:hover {
+            background-color: #FF9909;
+            color: #FFFFFF;
         }
         .admin-table {
             width: 100%;
@@ -89,7 +77,7 @@
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 60px;
         }
         .page-button {
             margin: 0 5px;
@@ -101,6 +89,13 @@
         }
         .page-button:hover {
             background-color: #0B1D40;
+        }
+        .sortable {
+            cursor: pointer;
+        }
+
+        .sortable:hover {
+            background-color: #e0e0e0;
         }
     </style>
 </head>
@@ -117,12 +112,12 @@
             <li><a href="#" onclick="loadContent('notice')">공지사항</a></li>
         </ul>
     </div>
-    <div id="adminContent" class="admin-content">
 
+    <div id="adminContent" class="admin-content">
         <h5 style="text-align: center;">전체회원</h5>
-        <div class="search-bar">
-            <input type="text" placeholder="검색어를 입력하세요" id="searchInput">
-            <button type="button" id="searchButton">검색</button>
+        <div class="search-container">
+            <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요." th:value="${param.search}">
+            <button class="search-button" type="submit">검색</button>
         </div>
 
         <table class="admin-table">
@@ -131,9 +126,9 @@
                 <th>NO.</th>
                 <th>ID</th>
                 <th>닉네임</th>
-                <th>회원유형▼</th>
-                <th>신고▼</th>
-                <th>비고▼</th>
+                <th class="sortable" data-sort="authority">회원유형 ▼</th>
+                <th class="sortable" data-sort="reportedCnt">신고 ▼</th>
+                <th class="sortable" data-sort="status">비고 ▼</th>
             </tr>
             </thead>
             <tbody>
@@ -150,27 +145,188 @@
             </tr>
             </tbody>
         </table>
-
-        <div class="pagination">
-            <a href="#" class="page-button">1</a>
-            <a href="#" class="page-button">2</a>
-            <a href="#" class="page-button">3</a>
-        </div>
+        <div class="pagination"></div>
     </div>
 </div>
 
-<script>
-    function loadContent(page) {
-        $.ajax({
-            url: '/admin/' + page,
-            type: 'GET',
-            success: function(response) {
-                $('#adminContent').html(response);
-            },
-            error: function(xhr, status, error) {
-                console.error("Error loading content:", error);
+<script th:inline="javascript">
+    const members = /*[[${members}]]*/ [];
+    console.log(members);
+    let currentPage = 1;
+    const itemsPerPage = 6;
+
+    let currentSortColumn = '';
+    let isAscending = true;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageFromUrl = urlParams.get('page');
+        if (pageFromUrl) {
+            currentPage = parseInt(pageFromUrl);
+        }
+
+        displayMembers(currentPage);
+        updatePagination();
+
+        // 정렬 가능한 열에 클릭 이벤트 리스너 추가
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.sort;
+                sortMembers(column);
+            });
+        });
+
+        // 검색 버튼 클릭 이벤트
+        document.querySelector('.search-button').addEventListener('click', function(event) {
+            event.preventDefault();
+            const searchTerm = document.querySelector('.search-input').value.trim();
+
+            if (searchTerm === '') {
+                window.location.href = '/admin/adminMain';
+            } else {
+                window.location.href = `/admin/memberSearch?search=${encodeURIComponent(searchTerm)}`;
             }
         });
+    });
+
+    function displayMembers(page) {
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const membersToDisplay = members.slice(startIndex, endIndex);
+
+        const membersTableBody = document.querySelector('.admin-table tbody');
+        membersTableBody.innerHTML = '';
+
+        membersToDisplay.forEach((member) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${member.memberNo}</td>
+                <td>${member.memberId}</td>
+                <td>${member.nickname}</td>
+                <td>${getAuthorityDisplay(member.authority)}</td>
+                <td>${member.reportedCnt}</td>
+                <td>${getStatusDisplay(member)}</td>
+            `;
+            membersTableBody.appendChild(row);
+        });
+
+        updatePagination();
+        window.history.pushState(null, null, `?page=${page}`);
+    }
+
+    function updatePagination() {
+        const totalPages = Math.ceil(members.length / itemsPerPage);
+        const paginationContainer = document.querySelector('.pagination');
+
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('a');
+                pageButton.textContent = i;
+                pageButton.classList.add('page-button');
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.href = '#';
+                pageButton.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    displayMembers(i);
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+        } else {
+            console.error('Pagination container not found');
+        }
+    }
+
+    function loadContent(page) {
+        if (page === 'allmember') {
+            window.location.href = '/admin/adminMain';
+        } else {
+            $.ajax({
+                url: '/admin/' + page,
+                type: 'GET',
+                success: function(response) {
+                    $('#adminContent').html(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading content:", error);
+                }
+            });
+        }
+    }
+
+    function sortMembers(column) {
+        if (currentSortColumn === column) {
+            isAscending = !isAscending;
+        } else {
+            currentSortColumn = column;
+            isAscending = true;
+        }
+
+        members.sort((a, b) => {
+            let valueA = a[column];
+            let valueB = b[column];
+
+            if (column === 'authority') {
+                valueA = getAuthorityOrder(valueA);
+                valueB = getAuthorityOrder(valueB);
+            } else if (column === 'status') {
+                valueA = getStatusOrder(a);
+                valueB = getStatusOrder(b);
+            }
+
+            if (valueA < valueB) return isAscending ? -1 : 1;
+            if (valueA > valueB) return isAscending ? 1 : -1;
+            return 0;
+        });
+
+        currentPage = 1; // 정렬 후 첫 페이지로 이동
+        displayMembers(currentPage);
+        updateSortIndicators();
+    }
+
+    function getAuthorityOrder(authority) {
+        switch(authority) {
+            case 'ROLE_ADMIN': return 1;
+            case 'ROLE_SELLER': return 2;
+            case 'ROLE_MEMBER': return 3;
+            default: return 4;
+        }
+    }
+
+    function getStatusOrder(member) {
+        if (member.isBlacked === 'Y') return 1;
+        if (member.isDeleted === 'Y') return 2;
+        return 3;
+    }
+
+    function updateSortIndicators() {
+        document.querySelectorAll('.sortable').forEach(header => {
+            const column = header.dataset.sort;
+            if (column === currentSortColumn) {
+                header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + (isAscending ? ' ▲' : ' ▼');
+            } else {
+                header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + ' ▼';
+            }
+        });
+    }
+
+    function getAuthorityDisplay(authority) {
+        switch(authority) {
+            case 'ROLE_MEMBER': return '일반회원';
+            case 'ROLE_SELLER': return '판매자';
+            case 'ROLE_ADMIN': return '관리자';
+            default: return authority;
+        }
+    }
+
+    function getStatusDisplay(member) {
+        if (member.isBlacked === 'Y') return '블랙리스트';
+        if (member.isDeleted === 'Y') return '탈퇴회원';
+        return '';
     }
 </script>
 </body>

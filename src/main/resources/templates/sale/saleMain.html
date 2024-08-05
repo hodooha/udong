@@ -210,9 +210,9 @@
 <div th:replace="~{/common/menubar}"></div>
 <div class="title-container">
     <h6 class="title">⏰우리동네 땡처리</h6>
-    <!--<a th:if="${#authorization.expression('hasRole(''SELLER'')')}"href="saleInsertForm"> 판매자권한만 글작성가능-->
-    <a href="saleInsertForm">
-    <button class="btn-udh-blue">글 작성</button></a>
+    <a th:if="${#authorization.expression('hasRole(''ROLE_SELLER'')')}" href="saleInsertForm">
+        <button class="btn-udh-blue">글 작성</button>
+    </a>
 </div>
 
 <form method="GET" th:action="@{/sale/saleMain}">

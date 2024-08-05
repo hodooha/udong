@@ -9,6 +9,10 @@ public class ReportDTO {
     private String reason;
     private String url;
     private String status;
+    private String typeName;
+    private String reportedMemberId;
+    private String reporterMemberId;
+    private String imageFileName;
 
     public int getReportNo() {
         return reportNo;
@@ -74,6 +78,38 @@ public class ReportDTO {
         this.status = status;
     }
 
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
+
+    public String getReportedMemberId() {
+        return reportedMemberId;
+    }
+
+    public void setReportedMemberId(String reportedMemberId) {
+        this.reportedMemberId = reportedMemberId;
+    }
+
+    public String getReporterMemberId() {
+        return reporterMemberId;
+    }
+
+    public void setReporterMemberId(String reporterMemberId) {
+        this.reporterMemberId = reporterMemberId;
+    }
+
+    public String getImageFileName() {
+        return imageFileName;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+
     @Override
     public String toString() {
         return "ReportDTO{" +
@@ -85,6 +121,11 @@ public class ReportDTO {
                 ", reason='" + reason + '\'' +
                 ", url='" + url + '\'' +
                 ", status='" + status + '\'' +
+                ", typeName='" + typeName + '\'' +
+                ", reportedMemberId='" + reportedMemberId + '\'' +
+                ", reporterMemberId='" + reporterMemberId + '\'' +
                 '}';
     }
+
+
 }
