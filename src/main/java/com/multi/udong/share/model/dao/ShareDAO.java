@@ -133,4 +133,8 @@ public class ShareDAO {
     public int minusReqCnt(SqlSessionTemplate sqlSession, int itemNo) {
         return sqlSession.update("ShareMapper.minusReqCnt", itemNo);
     }
+
+    public int insertEval(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
+        return sqlSession.insert("ShareMapper.insertEval", evalDTO);
+    }
 }

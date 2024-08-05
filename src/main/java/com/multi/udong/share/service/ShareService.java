@@ -36,4 +36,6 @@ public interface ShareService {
     List<ShaReqDTO> getRequesters(ShaReqDTO itemNo) throws Exception;
 
     void approveReq(ShaReqDTO reqDTO) throws Exception;
+
+    void evalWithReturnReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception;
 }

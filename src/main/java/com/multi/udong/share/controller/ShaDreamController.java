@@ -147,4 +147,32 @@ public class ShaDreamController {
         return "share/dreamLend";
     }
 
+    @GetMapping("/getRentedReq")
+    public String getRentedReq(ShaReqDTO reqDTO, Model model){
+
+        try {
+            ShaReqDTO result = shareService.findRequest(reqDTO);
+            System.out.println(result);
+            model.addAttribute("req", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamLend :: #evalModal";
+    }
+
+    @PostMapping("/evalWithReturnReq")
+    public String evalBorrower(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+        System.out.println(evalDTO);
+        try {
+            shareService.evalWithReturnReq(evalDTO, c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamLend";
+    }
+
 }

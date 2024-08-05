@@ -110,9 +110,10 @@ public class ShareServiceImpl implements ShareService {
      * 물건 조회수 변경 -> 물건 상세 정보 조회 메서드 호출
      *
      * @param itemDTO the item dto
+     * @param c       the c
+     * @return the item detail with view cnt
      * @throws Exception the exception
      */
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
@@ -441,6 +442,39 @@ public class ShareServiceImpl implements ShareService {
 
         if(shareDAO.minusReqCnt(sqlSession, reqDTO.getReqItem()) < 1){
             throw new Exception("신청자수 변경을 실패했습니다.");
+        };
+
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void evalWithReturnReq (ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception{
+
+        // 로그인한 유저가 물건의 주인과 동일인인지 확인
+        if(c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()){
+            throw new Exception("권한이 없습니다.");
+        }
+
+        // 물건 제공자가 차용인 평가
+        if(shareDAO.insertEval(sqlSession, evalDTO) < 1){
+            throw new Exception("평가 등록을 실패했습니다.");
+        };
+
+        // 반납완료 처리
+        ShaReqDTO reqDTO = new ShaReqDTO();
+        reqDTO.setReqNo(evalDTO.getReqNo());
+        reqDTO.setStatusCode("RTR");
+        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+            throw new Exception("반납완료 처리를 실패했습니다.");
+        };
+
+        // 물건 상태 변경
+        ShaItemDTO itemDTO = new ShaItemDTO();
+        itemDTO.setItemNo(evalDTO.getReqItem());
+        itemDTO.setStatusCode("AVL");
+        if(shareDAO.updateItStat(sqlSession, itemDTO) < 1){
+            throw new Exception("물건 상태 변경을 실패했습니다.");
         };
 
 

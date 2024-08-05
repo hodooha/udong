@@ -122,10 +122,6 @@
             justify-content: space-between;
         }
 
-        .btns-1 button {
-            width: 32%;
-        }
-
         .page-link{
             background-color: #3B5C9A !important;
             border-color: #3B5C9A !important;
@@ -143,6 +139,60 @@
             background-color: #0B1D40 !important;
             border-color: #0B1D40 !important;
             color: #FFFFFF !important;
+        }
+
+        .star_rating {
+          width: 100%;
+          box-sizing: border-box;
+          display: inline-flex;
+          float: left;
+          flex-direction: row;
+          justify-content: center;
+        }
+        .star_rating .star {
+          width: 30px;
+          height: 30px;
+          margin-right: 10px;
+          display: inline-block;
+          background: url('/img/emptystar.png') no-repeat;
+          background-size: 100%;
+          box-sizing: border-box;
+        }
+        .star_rating .star.on {
+          width: 30px;
+          height: 30px;
+          margin-right: 10px;
+          display: inline-block;
+          background: url('/img/star.png') no-repeat;
+          background-size: 100%;
+          box-sizing: border-box;
+        }
+
+        .star_box {
+          width: 400px;
+          box-sizing: border-box;
+          display: inline-block;
+          margin: 15px 0;
+          background: #F3F4F8;
+          border: 0;
+          border-radius: 10px;
+          height: 100px;
+          resize: none;
+          padding: 15px;
+          font-size: 13px;
+          font-family: sans-serif;
+        }
+        .btn02 {
+          display:block;
+          width: 400px;
+          font-weight: bold;
+          border: 0;
+          border-radius: 10px;
+          max-height: 50px;
+          padding: 15px 0;
+          font-size: 1.1em;
+          text-align: center;
+          background:bisque;
         }
 
     </style>
@@ -239,16 +289,15 @@
                         <div th:if="${item.statusCode == 'AVL' || item.statusCode == 'UNAV'}" class="btn-group">
                             <div class="mb-3 btns-1">
                                 <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|"
-                                        class="btn btn-udh-silver">수정
+                                        class="btn btn-udh-silver" style="width:49%">수정
                                 </button>
-                                <button th:text="${item.statusCode == 'AVL' ? '일시중단' : '중단해제'}"
-                                        class="btn btn-udh-silver"></button>
-                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver">
+                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver" style="width:49%">
                                     삭제
                                 </button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:100%"
+                                <button th:text="${item.statusCode == 'AVL' ? '일시중단' : '중단해제'}" class="btn btn-udh-silver" style="width:49%"></button>
+                                <button class="btn btn-udh-blue" style="width:49%"
                                         th:onclick="selectReq([[${item.itemNo}]])">대여확정
                                 </button>
 
@@ -263,13 +312,13 @@
                                 <button class="btn btn-udh-red" style="width:49%">신고</button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-blue" style="width:49%">반납완료</button>
-                                <button class="btn btn-udh-blue" style="width:49%">쪽지하기</button>
+                                <button class="btn btn-udh-yellow" style="width:49%">쪽지하기</button>
+                                <button class="btn btn-udh-blue" style="width:49%" th:onclick="getRentedReq([[${item}]])">반납완료</button>
                             </div>
                         </div>
                         <div th:if="${item.statusCode == 'GVD'}" class="btn-group">
                             <div class="btns-1">
-                                <button class="btn btn-udh-blue " style="width:100%">쪽지하기</button>
+                                <button class="btn btn-udh-yellow " style="width:100%">쪽지하기</button>
                             </div>
                         </div>
                         <div th:if="${item.statusCode == 'GIV'}" class="btn-group">
@@ -319,7 +368,7 @@
                                 </div>
                             </th:block>
                             <th:block th:unless="${#lists.isEmpty(requesters)}">
-                                <table class="table table-warning table-hover table-bordered text-center">
+                                <table class="table table-warning table-hover table-bordered text-center ">
                                     <thead>
                                     <tr class="">
                                         <th scope="col">체크</th>
@@ -381,6 +430,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
         <nav class="row mt-3" th:if="${pageInfo} != null">
             <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
@@ -405,6 +455,36 @@
                 </li>
             </ul>
         </nav>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="evalModalLabel">이웃 평가 후 '반납완료' 처리가 가능합니다. </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div th:if="${req != null && req != ''}" class="modal-body text-center">
+                    [[${req.rqstNickname}]]님의 매너를 평가해 주세요.
+
+
+                    <div class ="star_rating mt-3">
+                        <input type="hidden" id="score">
+                        <span class="star on" data-value="1"> </span>
+                        <span class="star" data-value="2"> </span>
+                        <span class="star" data-value="3"> </span>
+                        <span class="star" data-value="4"> </span>
+                        <span class="star" data-value="5"> </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" th:onclick="postScore([[${req}]])">확인</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>

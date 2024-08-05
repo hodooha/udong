@@ -55,31 +55,32 @@ $(function(){
 
 
     if(bodyId == "dreamLend"){
-
-//        getLendList(1);
-
+        getLendList(1);
         window.addEventListener("popstate", function(event) {
             if (event.state) {
                 console.log(event.state);
-                restoreFormState(event.state);
+                restoreDreamFormState(event.state);
                 updateLendList(event.state);
             }
         });
 
         let savedState = history.state;
         if (savedState) {
-             restoreFormState(savedState);
+             restoreDreamFormState(savedState);
              updateLendList(savedState);
              console.log(savedState);
         } else {
             getLendList(1);
         }
 
+
+
     }
 
     if(bodyId == "dreamBorrow"){
 //        getBorrowList(group);
     }
+
 
 
 });
@@ -284,6 +285,8 @@ function getSearchParams(page){
     };
 }
 
+
+
 function updateItemList(params){
     let reqUrl = "/share/search";
     ajax_get(reqUrl, params).done(function(fragment){
@@ -347,7 +350,15 @@ function createUrlWithParams(params) {
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
     $("input[name='group']").val(params.group);
+    $("input:radio[name='group'][value='" + params.group + "']").prop("checked", true);
     $('#availableCheck').prop('checked', params.statusCode ? true : false);
+    $('#keyword').val(params.keyword);
+    $('#statusSelect').val(params.statusCode).prop("selected", true);
+}
+
+function restoreDreamFormState(params) {
+    $('.catSelect').val(params.catCode).prop("selected", true);
+    $("input:radio[name='group'][value='" + params.group + "']").prop("checked", true);
     $('#keyword').val(params.keyword);
     $('#statusSelect').val(params.statusCode).prop("selected", true);
 }
@@ -483,7 +494,46 @@ function approveReq(final){
     })
 }
 
+function getRentedReq(item){
+    console.log(item);
+    let reqUrl = "/share/dream/getRentedReq";
+    let data = {
+        reqItem: item.itemNo,
+        statusCode: "RNT"
+    }
 
+    ajax_get(reqUrl, data).done(function(result){
+        $('#evalModal').replaceWith(result);
+        $('#evalModal').modal('toggle');
+        $('.star_rating > .star').click(function() {
+            $(this).parent().children('span').removeClass('on');
+            $(this).addClass('on').prevAll('span').addClass('on');
+            score = $(this).data('value');
+        })
+    })
+}
+
+function postScore(req){
+    console.log(score);
+    console.log(req);
+    let reqUrl = "/share/dream/evalWithReturnReq"
+    let data = {
+        reqNo: req.reqNo,
+        evrNo: req.ownerNo,
+        eveNo: req.rqstNo,
+        rating: score,
+        reqItem: req.reqItem
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("평가완료");
+        $('#evalModal').modal('toggle');
+        location.reload();
+
+    })
+
+
+}
 
 
 function deleteItemAtDream(item) {
