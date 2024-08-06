@@ -180,7 +180,7 @@ public class ShaDreamController {
     }
 
     @PostMapping("/evalWithReturnReq")
-    public String evalBorrower(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    public String evalWithReturnReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
         System.out.println(evalDTO);
         try {
             shareService.evalWithReturnReq(evalDTO, c);
@@ -190,6 +190,36 @@ public class ShaDreamController {
         }
 
         return "share/dreamLend";
+    }
+
+    @GetMapping("/deleteReq")
+    public String deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        System.out.println("삭제 대상 req"+shaReqDTO);
+        try {
+            shareService.deleteReq(shaReqDTO, c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamBorrow";
+    }
+
+    @PostMapping("/evalWithEndReq")
+    public String evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        System.out.println(evalDTO);
+        try {
+            shareService.evalWithEndReq(evalDTO, c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamBorrow";
+
+
     }
 
 }

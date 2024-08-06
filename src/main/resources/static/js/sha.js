@@ -575,6 +575,59 @@ function deleteItemAtDream(item) {
         location.reload();
     })
 
+}
+
+function toggleCancelModal(req){
+    $('#cancelModal').modal("toggle", true);
+
+    $('#cancelReqBtn').on("click", function(){
+        cancelReq(req);
+    })
+
+}
+
+function cancelReq(req){
+    let reqUrl = "/share/dream/deleteReq";
+    let data = {
+        reqNo: req.reqNo
+    }
+
+    ajax_get(reqUrl, data).done(function(){
+        location.reload();
+
+    })
+
+}
+
+function toggleEvalModal(req){
+    console.log(req);
+    $('#evalModal').modal("toggle", true);
+    $('#lenderName').text(req.ownerNickname);
+
+    $('.star_rating > .star').click(function() {
+        $(this).parent().children('span').removeClass('on');
+        $(this).addClass('on').prevAll('span').addClass('on');
+        score = $(this).data('value');
+    })
+
+    $('#evalBtn').on("click", function(){
+        let reqUrl = "/share/dream/evalWithEndReq"
+        let data = {
+            reqNo: req.reqNo,
+            evrNo: req.rqstNo,
+            eveNo: req.ownerNo,
+            rating: score,
+            reqItem: req.reqItem
+        }
+
+        ajax_post(reqUrl, data).done(function(){
+            alert("평가완료");
+            $('#evalModal').modal('toggle');
+            location.reload();
+
+        })
+
+    })
 
 }
 

@@ -214,11 +214,13 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("이미 신청하셨습니다.");
         }
 
+        // 요청 db에 저장
         if (shareDAO.insertRequest(sqlSession, reqDTO) < 1) {
             throw new Exception("신청을 실패했습니다.");
         }
         ;
 
+        // 물건 신청자수 증가
         if (shareDAO.plusReqCnt(sqlSession, reqDTO.getReqItem()) < 1) {
             throw new Exception("신청자수 변경을 실패했습니다.");
         }
@@ -381,6 +383,7 @@ public class ShareServiceImpl implements ShareService {
                 throw new Exception("찜 등록을 실패했습니다.");
             }
             ;
+            //물건 찜 횟수 변경 (+1)
             if (shareDAO.plusLikeCnt(sqlSession, likeDTO.getItemNo()) < 1) {
                 throw new Exception("찜 횟수 변경을 실패했습니다.");
             }
@@ -389,6 +392,7 @@ public class ShareServiceImpl implements ShareService {
                 throw new Exception("찜 삭제를 실패했습니다.");
             }
             ;
+            //물건 찜 횟수 변경 (1-)
             if (shareDAO.minusLikeCnt(sqlSession, likeDTO.getItemNo()) < 1) {
                 throw new Exception("찜 횟수 변경을 실패했습니다.");
             }
@@ -440,6 +444,7 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("물건 상태 변경을 실패했습니다.");
         };
 
+        // 물건 신청자수 변경 (-1)
         if(shareDAO.minusReqCnt(sqlSession, reqDTO.getReqItem()) < 1){
             throw new Exception("신청자수 변경을 실패했습니다.");
         };
@@ -481,6 +486,10 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("물건 상태 변경을 실패했습니다.");
         };
 
+        // 물건 거래횟수 변경 (+1)
+        if(shareDAO.plusDealCnt(sqlSession, reqDTO.getReqItem()) < 1){
+            throw new Exception("거래횟수 변경을 실패했습니다.");
+        };
 
     }
 
@@ -505,9 +514,64 @@ public class ShareServiceImpl implements ShareService {
         return result;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteReq(ShaReqDTO shaReqDTO, CustomUserDetails c) throws Exception {
+
+        // 요청 정보 db에서 가져오기
+        ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, shaReqDTO.getReqNo());
+
+        // 요청자와 로그인한 유저가 같은지 확인
+        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+            throw new Exception("권한이 없습니다.");
+        }
+
+        // 요청 상태가 '신청완료'인지 확인, 아니면 취소 불가
+        if(!target.getStatusCode().equals("RQD")){
+            throw new Exception("'신청완료' 상태 외에는 신청취소가 불가합니다.");
+        }
+
+
+        // 요청 내역에서 삭제
+        if(shareDAO.deleteReq(sqlSession, target) < 1){
+            throw new Exception("대여 및 나눔 신청 삭제를 실패했습니다.");
+        }
+
+        // 물건 신청자수 변경 (-1)
+        if(shareDAO.minusReqCnt(sqlSession, target.getReqItem()) < 1){
+            throw new Exception("신청자수 변경을 실패했습니다.");
+        };
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
+
+        // 로그인한 유저가 차용인과 동일인인지 확인
+        if(c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()){
+            throw new Exception("권한이 없습니다.");
+        }
+
+        // 차용인의 대여인 평가 등록
+        if(shareDAO.insertEval(sqlSession, evalDTO) < 1){
+            throw new Exception("평가 등록을 실패했습니다.");
+        };
+
+        // 등록된 평가 토대로 대여인 점수 & 레벨 변경 - 구현 예정!
 
 
 
+        // 평가완료 처리
+        ShaReqDTO reqDTO = new ShaReqDTO();
+        reqDTO.setReqNo(evalDTO.getReqNo());
+        reqDTO.setStatusCode("REV");
+        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+            throw new Exception("평가완료 처리를 실패했습니다.");
+        };
+
+
+    }
 
 
 }

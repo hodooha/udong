@@ -142,5 +142,15 @@ public class ShareDAO {
         return sqlSession.insert("ShareMapper.insertEval", evalDTO);
     }
 
+    public int deleteReq(SqlSessionTemplate sqlSession, ShaReqDTO shaReqDTO) {
+        return sqlSession.delete("ShareMapper.deleteReq", shaReqDTO);
+    }
 
+    public ShaReqDTO getReqByReqNo(SqlSessionTemplate sqlSession, int reqNo) {
+        return sqlSession.selectOne("ShareMapper.getReqByReqNo", reqNo);
+    }
+
+    public int plusDealCnt(SqlSessionTemplate sqlSession, int itemNo) {
+        return sqlSession.update("ShareMapper.plusDealCnt", itemNo);
+    }
 }

@@ -40,4 +40,8 @@ public interface ShareService {
     void evalWithReturnReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception;
 
     ShaDreamResultDTO getBorrowList(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
+
+    void deleteReq(ShaReqDTO shaReqDTO, CustomUserDetails c) throws Exception;
+
+    void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception;
 }

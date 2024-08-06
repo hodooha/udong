@@ -36,6 +36,7 @@
         <id property="reqNo" column="req_no"/>
         <result property="reqItem" column="req_item" />
         <result property="ownerNo" column="owner_no" />
+        <result property="ownerNickname" column="owner_nickname" />
         <result property="rqstNo" column="rqst_no" />
         <result property="rqstNickname" column="nickname" />
         <result property="createdAt" column="req_created_at" />
@@ -335,6 +336,14 @@
         where item_no = #{itemNo}
     </update>
 
+    <update id="plusDealCnt">
+        update
+        sha_items
+        set
+        deal_cnt = deal_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
     <select id="getLendList" resultMap="shaItemMap">
         select a.*, c.saved_name, e.status_name
         from
@@ -423,7 +432,7 @@
             left join
             (
                 select
-                b.*, c.saved_name, f.cat_name
+                b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname
                 from
                 sha_items b
                 left join
@@ -441,6 +450,9 @@
                 left join
                     sha_cat f
                 on b.item_cat_code = f.cat_code
+                left join
+                    member h
+                on b.owner_no = h.member_no
             ) d
             on g.req_item = d.item_no
             where rqst_no = #{rqstNo}
@@ -485,5 +497,19 @@
         values
         (#{reqNo}, #{evrNo}, #{eveNo}, #{rating})
     </insert>
+
+    <select id="getReqByReqNo" resultType="shaReqDTO">
+        select *
+        from sha_req
+        where req_no = #{reqNo}
+    </select>
+
+    <delete id="deleteReq">
+        delete
+        from sha_req
+        where req_no = #{reqNo}
+    </delete>
+
+
 
 </mapper>
