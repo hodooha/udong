@@ -215,15 +215,21 @@
         </choose>
     </insert>
 
-    <select id="findRequest" resultType="shaReqDTO">
-        select *
-        from sha_req
+    <select id="findRequest" resultMap="shaReqMap">
+        select a.*, b.nickname, c.owner_no
+        from sha_req a
+        left join
+        member b
+        on a.rqst_no = b.member_no
+        left join
+        sha_items c
+        on a.req_item = c.item_no
         where req_item = #{reqItem}
         <if test="rqstNo != 0 and rqstNo != ''">
-            and rqst_no = #{rqstNo}
+            and a.rqst_no = #{rqstNo}
         </if>
         <if test="statusCode != null and statusCode != ''">
-            and status_code = #{statusCode}
+            and a.status_code = #{statusCode}
         </if>
     </select>
 
@@ -245,11 +251,12 @@
         </foreach>
     </delete>
 
-    <delete id="deleteItem">
-        delete
-        from sha_items
+    <update id="deleteItem">
+        update
+        sha_items
+        set deleted_at = now()
         where item_no = #{itemNo}
-    </delete>
+    </update>
 
     <delete id="deleteImgByTarget">
         delete
@@ -314,6 +321,13 @@
         update sha_items
         set
         req_cnt = req_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
+    <update id="minusReqCnt">
+        update sha_items
+        set
+        req_cnt = req_cnt - 1
         where item_no = #{itemNo}
     </update>
 
@@ -428,5 +442,22 @@
         where a.req_item = #{reqItem}
         and a.status_code = #{statusCode}
     </select>
+
+    <update id="updateReqStat">
+        update
+        sha_req
+        set
+        status_code = #{statusCode},
+        return_date = #{returnDate}
+        where req_no = #{reqNo}
+    </update>
+
+    <insert id="insertEval">
+        insert into
+        sha_eval
+        (req_no, evr_no, eve_no, rating)
+        values
+        (#{reqNo}, #{evrNo}, #{eveNo}, #{rating})
+    </insert>
 
 </mapper>

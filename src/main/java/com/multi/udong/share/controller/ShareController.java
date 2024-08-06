@@ -141,12 +141,14 @@ public class ShareController {
             // db에서 카테고리 목록 조회
             List<ShaCatDTO> list = shareService.getShaCat();
             model.addAttribute("catList", list);
-            return "share/registerForm";
+
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
             return "common/errorPage";
         }
+
+        return "share/registerForm";
     }
 
 
@@ -176,8 +178,9 @@ public class ShareController {
                 throw new Exception("지역을 먼저 등록해주세요.");
             }
 
-            // 물건 조회수 증가
-            shareService.plusViewCnt(itemDTO);
+            // db에서 물건 상세 정보 조회
+            ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
+            model.addAttribute("item", item);
 
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
@@ -199,7 +202,7 @@ public class ShareController {
      * @since 2024 -08-02
      */
     @GetMapping(value = {"/rent/updateDetail", "/give/updateDetail"})
-    public String updateDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String getItemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
             // 로그인 확인
@@ -571,12 +574,12 @@ public class ShareController {
 
         try {
             // 물건 삭제
-            List<AttachmentDTO> delImgs = shareService.deleteItem(itemDTO, c);
+            shareService.deleteItem(itemDTO, c);
 
-            // 물건 삭제 성공 시 삭제한 파일 로컬에서 삭제
-            for (AttachmentDTO img : delImgs) {
-                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
-            }
+//            // 물건 삭제 성공 시 삭제한 파일 로컬에서 삭제
+//            for (AttachmentDTO img : delImgs) {
+//                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+//            }
 
         } catch (Exception e) {
             e.printStackTrace();

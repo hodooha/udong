@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -128,7 +129,50 @@ public class ShaDreamController {
         }
 
 
-        return "share/dreamLend :: #selectRqst";
+        return "share/dreamLend :: #dreamModals";
+    }
+
+    @PostMapping("/approveReq")
+    public String approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        System.out.println("넘어온 확정 req"+reqDTO);
+        try {
+            shareService.approveReq(reqDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+
+        return "share/dreamLend";
+    }
+
+    @GetMapping("/getRentedReq")
+    public String getRentedReq(ShaReqDTO reqDTO, Model model){
+
+        try {
+            ShaReqDTO result = shareService.findRequest(reqDTO);
+            System.out.println(result);
+            model.addAttribute("req", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamLend :: #evalModal";
+    }
+
+    @PostMapping("/evalWithReturnReq")
+    public String evalBorrower(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+        System.out.println(evalDTO);
+        try {
+            shareService.evalWithReturnReq(evalDTO, c);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamLend";
     }
 
 }

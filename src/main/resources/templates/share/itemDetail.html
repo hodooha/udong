@@ -76,9 +76,9 @@
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
 
 <div class="container">
-    <div th:replace="~{/share/rentMain :: #spinner}"></div>
     <div th:fragment="detail" id="detail" class="row mt-5 align-items-center">
         <th:block th:if="${item != null}">
+            <input type="hidden" th:value="${item.deletedAt}" id="isDeleted">
             <div class="col-md-6">
                 <div id="carouselExample" class="carousel slide"
                      th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? '' : ' carousel-dark'}">
