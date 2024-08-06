@@ -11,11 +11,10 @@
             padding: 20px;
             overflow-y: auto;
             background-color: #ffffff;
-            border-radius: 15px;
+            border-radius: 0 15px 15px 0;
         }
 
         h5 {
-            font-size: 24px;
             color: #333;
             margin-bottom: 20px;
             text-align: center;
@@ -24,6 +23,7 @@
         .admin-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 80px;
         }
 
         .admin-table th, .admin-table td {
@@ -85,7 +85,7 @@
 <body>
 
 <div class="admin-content">
-    <h5>신고 관리</h5>
+    <h5 style="text-align: center; margin-bottom: 100px;">신고관리</h5>
 
     <table class="admin-table">
         <thead>
@@ -107,12 +107,10 @@
                 <a th:href="@{${report.url}}" th:text="${report.reason}"></a>
             </td>
             <td>
-                <a th:if="${report.imageFileName != null}"
-                   th:href="@{'/downloadReportImage/' + ${report.reportNo}}"
-                   th:download="${report.imageFileName}">
-                    [다운로드]
-                </a>
-                <span th:unless="${report.imageFileName != null}">첨부 파일 없음</span>
+    <span th:if="${report.imageFileName != null and !report.imageFileName.isEmpty()}">
+       <a th:href="@{'/admin/downloadReportImage/' + ${report.reportNo}}">[다운로드]</a>
+    </span>
+                <span th:unless="${report.imageFileName != null and !report.imageFileName.isEmpty()}">첨부 파일 없음</span>
             </td>
             <td>
                 <span th:text="${report.status == 'W' ? '대기' : (report.status == 'A' ? '승인' : '반려')}" class="status-text"></span>

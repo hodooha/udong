@@ -23,8 +23,7 @@
             background-color: #ffffff;
             border-radius: 0 15px 15px 0;
         }
-        h2 {
-            font-size: 24px;
+        h5 {
             color: #333;
             margin-bottom: 20px;
             text-align: center;
@@ -61,6 +60,7 @@
         .admin-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 0;
         }
         .admin-table th, .admin-table td {
             padding: 12px;
@@ -114,7 +114,7 @@
     </div>
 
     <div id="adminContent" class="admin-content">
-        <h5 style="text-align: center;">전체회원</h5>
+        <h5 style="text-align: center; margin-top: 20px;">전체회원</h5>
         <div class="search-container">
             <input type="text" name="search" class="search-input" placeholder="검색어를 입력하세요." th:value="${param.search}">
             <button class="search-button" type="submit">검색</button>
