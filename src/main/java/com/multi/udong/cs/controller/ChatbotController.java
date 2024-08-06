@@ -34,7 +34,7 @@ public class ChatbotController {
 
         String userId;
 
-        if (c.getMemberDTO().getMemberNo() != null) {
+        if (c != null && c.getMemberDTO().getMemberNo() != null) {
             userId = String.valueOf(c.getMemberDTO().getMemberNo());
         } else {
             userId = "0";
@@ -63,7 +63,7 @@ public class ChatbotController {
 
         String userId;
 
-        if (c.getMemberDTO().getMemberNo() != null) {
+        if (c != null && c.getMemberDTO().getMemberNo() != null) {
             userId = String.valueOf(c.getMemberDTO().getMemberNo());
         } else {
             userId = "0";
@@ -77,6 +77,5 @@ public class ChatbotController {
         response.setMessage(chatbotResponse);
 
         return ResponseEntity.ok(response);
-
     }
 }
