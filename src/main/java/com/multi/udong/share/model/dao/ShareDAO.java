@@ -69,7 +69,7 @@ public class ShareDAO {
 
     public int deleteItem(SqlSessionTemplate sqlSession, ShaItemDTO target) {
 
-        return sqlSession.delete("ShareMapper.deleteItem", target);
+        return sqlSession.update("ShareMapper.deleteItem", target);
     }
 
     public int deleteImgByTarget(SqlSessionTemplate sqlSession, AttachmentDTO target) {
@@ -124,5 +124,17 @@ public class ShareDAO {
 
     public List<ShaReqDTO> getRequesters(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
         return sqlSession.selectList("ShareMapper.getRequesters", reqDTO);
+    }
+
+    public int updateReqStat(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
+        return sqlSession.update("ShareMapper.updateReqStat", reqDTO);
+    }
+
+    public int minusReqCnt(SqlSessionTemplate sqlSession, int itemNo) {
+        return sqlSession.update("ShareMapper.minusReqCnt", itemNo);
+    }
+
+    public int insertEval(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
+        return sqlSession.insert("ShareMapper.insertEval", evalDTO);
     }
 }

@@ -12,12 +12,12 @@
 
         .club-side-bar{
             width: 150px;
-            height: 100%;
             background-color: #3B5C9A;
             color: white;
             padding: 10px 20px 10px 20px;
             box-sizing: border-box;
             font-family: Freesentation-5Medium;
+            white-space: nowrap;
         }
         .club-side-bar ul {
             list-style-type: none;
@@ -49,6 +49,9 @@
 
             window.location.href = moveUrl + "?clubNo=" + clubNo;
 
+            console.log(moveUrl);
+            console.log(clubNo);
+
         }
 
         function highlightActiveMenu() {
@@ -56,7 +59,7 @@
 
             // 메뉴 항목들 가져오기
             const homeMenu = document.querySelector('li[onclick*="/club/clubHome"]');
-            const logMenu = document.querySelector('li[onclick*="/club/clubLog"]');
+            const logMenu = document.querySelector('li[onclick*="/club/clubLog/logMain"]');
             const scheduleMenu = document.querySelector('li[onclick*="/club/clubSchedule"]');
             const albumMenu = document.querySelector('li[onclick*="/club/clubAlbum"]');
             const MemberMenu = document.querySelector('li[onclick*="/club/clubMember"]');

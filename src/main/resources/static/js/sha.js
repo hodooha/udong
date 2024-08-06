@@ -37,14 +37,8 @@ $(function(){
         });
     }
 
-    if(bodyId == "itemDetail" || bodyId == "registerForm"){
-        $('#datePicker').datepicker({
-            format: 'yyyy-mm-dd',
-            todayHighlight: true,
-            startDate: '+1d',
-            autoclose : true,
-            endDate: '+1m'
-        })
+    if(bodyId == "registerForm" || bodyId == "itemDetail"){
+        datePickerActive();
 
         $("input[name='itemGroup']").change(function(){
             let checked = $("input[name='itemGroup']:checked").val();
@@ -56,33 +50,30 @@ $(function(){
                 dateRefresh();
             }
         });
-        updateItemDetail();
     }
 
-    if(bodyId == "itemDetail"){
-        updateItemDetail();
-    }
+
 
     if(bodyId == "dreamLend"){
-
         getLendList(1);
-
         window.addEventListener("popstate", function(event) {
             if (event.state) {
                 console.log(event.state);
-                restoreFormState(event.state);
+                restoreDreamFormState(event.state);
                 updateLendList(event.state);
             }
         });
 
         let savedState = history.state;
         if (savedState) {
-             restoreFormState(savedState);
+             restoreDreamFormState(savedState);
              updateLendList(savedState);
              console.log(savedState);
         } else {
             getLendList(1);
         }
+
+
 
     }
 
@@ -91,7 +82,31 @@ $(function(){
     }
 
 
+
 });
+
+function datePickerActive(){
+    $('#datePicker').datepicker({
+        format: 'yyyy-mm-dd',
+        todayHighlight: true,
+        startDate: '+1d',
+        autoclose : true,
+        endDate: '+1m'
+    })
+}
+
+
+function dateRefresh() {
+    $('#datePicker').datepicker("setDate", null);
+    $('#datePicker').datepicker({
+    format: 'yyyy-mm-dd',
+    todayHighlight: true,
+    startDate: '+1d',
+    autoclose : true,
+    endDate: '+1m'
+    });
+}
+
 
 function ajax_get(reqUrl, data){
 
@@ -100,12 +115,12 @@ function ajax_get(reqUrl, data){
         type: "get",
         data: data,
         beforeSend: showSpinner(),
-        error: function(){
-            location.replace("common/errorPage");
+        error: function(data){
+            console.log(data);
         }
     })
-    .fail(function(){
-        location.replace("common/errorPage");
+    .fail(function(data){
+        console.log(data);
     })
     .always(function(){
         hideSpinner();
@@ -124,12 +139,12 @@ function ajax_post(reqUrl, data){
             xhr.setRequestHeader(header, token);
             showSpinner();
         },
-        error: function(){
-            location.replace("common/errorPage");
+        error: function(data){
+            console.log(data);
         }
     })
-    .fail(function(){
-        location.replace("common/errorPage");
+    .fail(function(data){
+        console.log(data);
     })
     .always(function(){
         hideSpinner();
@@ -156,17 +171,6 @@ function getCatList() {
         } else {
          search(1);
         }
-    });
-}
-
-function dateRefresh() {
-    $('#datePicker').datepicker("setDate", null);
-    $('#datePicker').datepicker({
-    format: 'yyyy-mm-dd',
-    todayHighlight: true,
-    startDate: '+1d',
-    autoclose : true,
-    endDate: '+1m'
     });
 }
 
@@ -281,6 +285,8 @@ function getSearchParams(page){
     };
 }
 
+
+
 function updateItemList(params){
     let reqUrl = "/share/search";
     ajax_get(reqUrl, params).done(function(fragment){
@@ -344,7 +350,15 @@ function createUrlWithParams(params) {
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
     $("input[name='group']").val(params.group);
+    $("input:radio[name='group'][value='" + params.group + "']").prop("checked", true);
     $('#availableCheck').prop('checked', params.statusCode ? true : false);
+    $('#keyword').val(params.keyword);
+    $('#statusSelect').val(params.statusCode).prop("selected", true);
+}
+
+function restoreDreamFormState(params) {
+    $('.catSelect').val(params.catCode).prop("selected", true);
+    $("input:radio[name='group'][value='" + params.group + "']").prop("checked", true);
     $('#keyword').val(params.keyword);
     $('#statusSelect').val(params.statusCode).prop("selected", true);
 }
@@ -355,6 +369,11 @@ function updateItemDetail(){
     let reqUrl = `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
         $('#detail').replaceWith(data);
+        if($('#isDeleted').val() != ''){
+            alert("삭제된 물건입니다.");
+            history.back();
+        };
+        datePickerActive();
     });
 }
 
@@ -384,6 +403,8 @@ function insertReq(data){
         updateItemDetail();
         alert(msg);
     })
+
+
 }
 
 function updateShaLike(itemNo){
@@ -406,7 +427,7 @@ function updateItStat(item){
 
 }
 
-function approveReq(itemNo){
+function selectReq(itemNo){
     console.log(itemNo);
     getRequesters(itemNo);
 }
@@ -418,12 +439,116 @@ function getRequesters(itemNo){
         statusCode: "RQD"
     }
     ajax_get(reqUrl, data).done(function(result){
-        $('#selectRqst').replaceWith(result);
-        $('#selectRqst').modal('show');
+        $('#dreamModals').replaceWith(result);
+        $('#selectRqst').modal('toggle');
+    })
+
+}
+
+function checkReturnDate(requesters){
+    let selectedRqst = $('input[name="requesters"]:checked').val();
+    let seletedReq = requesters.filter((r)=>{
+        return r.rqstNo == selectedRqst
+    })[0];
+
+    datePickerActive();
+    $('#datePicker').val(seletedReq.returnDate);
+
+    $('#selectRqst').modal('toggle');
+    $('#approveReq').modal('toggle');
+
+
+    $('#approveBtn').on("click", function(){
+        seletedReq.returnDate = $('#datePicker').val();
+        if(seletedReq.returnDate == ''){
+            alert("반납예정일을 선택해주세요.");
+            return;
+        };
+        approveReq(seletedReq);
+    })
+
+    $('#backToSelectReq').on("click", function(){
+        $('#approveBtn').off("click");
+        $('#selectRqst').modal('toggle');
+        $('#approveReq').modal('toggle');
+    })
+}
+
+function approveReq(final){
+    console.log(final);
+    $('#approveReq').modal('toggle');
+
+    let reqUrl = "/share/dream/approveReq";
+    let data = {
+       reqNo : final.reqNo,
+       rqstNo: final.rqstNo,
+       statusCode: "RNT",
+       reqItem : final.reqItem,
+       returnDate: final.returnDate
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("대여가 확정되었습니다.");
+        location.reload();
+
+    })
+}
+
+function getRentedReq(item){
+    console.log(item);
+    let reqUrl = "/share/dream/getRentedReq";
+    let data = {
+        reqItem: item.itemNo,
+        statusCode: "RNT"
+    }
+
+    ajax_get(reqUrl, data).done(function(result){
+        $('#evalModal').replaceWith(result);
+        $('#evalModal').modal('toggle');
+        $('.star_rating > .star').click(function() {
+            $(this).parent().children('span').removeClass('on');
+            $(this).addClass('on').prevAll('span').addClass('on');
+            score = $(this).data('value');
+        })
+    })
+}
+
+function postScore(req){
+    console.log(score);
+    console.log(req);
+    let reqUrl = "/share/dream/evalWithReturnReq"
+    let data = {
+        reqNo: req.reqNo,
+        evrNo: req.ownerNo,
+        eveNo: req.rqstNo,
+        rating: score,
+        reqItem: req.reqItem
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("평가완료");
+        $('#evalModal').modal('toggle');
+        location.reload();
+
     })
 
 
+}
+
+
+function deleteItemAtDream(item) {
+    let reqUrl = "/share/delete";
+    let data = {
+        itemNo: item.itemNo,
+        itemGroup: item.itemGroup
+    }
+
+    ajax_get(reqUrl, data).done(function(){
+        location.reload();
+    })
+
 
 }
+
 
 
