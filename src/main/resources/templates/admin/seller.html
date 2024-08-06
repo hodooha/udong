@@ -112,9 +112,14 @@
             </span>
             </td>
             <td>
-                <span th:text="${seller.approveStatus == 'W' ? '대기' : (seller.approveStatus == 'Y' ? '승인' : '취소')}" class="status-text"></span>
+    <span th:switch="${seller.approveStatus}">
+        <span th:case="'W'" th:text="대기" class="status-text"></span>
+        <span th:case="'Y'" th:text="승인" class="status-text"></span>
+        <span th:case="'N'" th:text="취소" class="status-text"></span>
+        <span th:case="*" th:text="${seller.approveStatus}" class="status-text"></span>
+    </span>
                 <button th:if="${seller.approveStatus != 'Y'}" th:onclick="'updateStatus(' + ${seller.memberNo} + ', \'Y\')'" class="btn-udh-yellow status-btn">승인</button>
-                <button th:if="${seller.approveStatus != 'N'}" th:onclick="'updateStatus(' + ${seller.memberNo} + ', \'N\')'" class="btn-udh-red status-btn">취소</button>
+                <button th:if="${seller.approveStatus == 'Y'}" th:onclick="'updateStatus(' + ${seller.memberNo} + ', \'N\')" class="btn-udh-red status-btn">취소</button>
             </td>
             <td th:text="${seller.approvedAt}"></td>
         </tr>
@@ -132,7 +137,7 @@
 
     $.ajax({
         type: "POST",
-        url: "/admin/updateSellerStatus",
+        url: "/admin/updateSellerStatus", // 서버의 매핑 경로와 일치
         contentType: "application/json",
         data: JSON.stringify({ memberNo: memberNo, status: status }),
         beforeSend: function(xhr) {
@@ -141,7 +146,7 @@
             }
         },
         success: function(response) {
-            if(response.success) {
+            if (response.success) {
                 alert("상태가 성공적으로 업데이트되었습니다.");
                 updateSellerRow(memberNo, status, response.approvedAt);
             } else {
@@ -154,7 +159,6 @@
         }
     });
 }
-
 function updateSellerRow(memberNo, newStatus, approvedAt) {
     var row = $("tr[data-seller-no='" + memberNo + "']");
     var statusCell = row.find("td:nth-child(5)");
@@ -163,13 +167,22 @@ function updateSellerRow(memberNo, newStatus, approvedAt) {
     var statusText;
     var buttonHtml = '';
 
-    if (newStatus === 'Y') {
-        statusText = '승인';
-        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
-    } else if (newStatus === 'N') {
-        statusText = '대기';
-        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
-        buttonHtml += '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+    switch(newStatus) {
+        case 'Y':
+            statusText = '승인';
+            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+            break;
+        case 'N':
+            statusText = '취소';
+            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+            break;
+        case 'W':
+            statusText = '대기';
+            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+            break;
+        default:
+            statusText = '알 수 없음';
+            break;
     }
 
     statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);

@@ -54,7 +54,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public MemBusDTO getSellerByMemberNo(Integer memberNo) {
-        return adminMapper.getSellerByMemberNo(memberNo);
+        MemBusDTO seller = adminMapper.getSellerByMemberNo(memberNo);
+
+        // 로그 출력
+        if (seller != null) {
+            System.out.println("approveStatus: " + seller.getApproveStatus());
+        } else {
+            System.out.println("Seller not found for memberNo: " + memberNo);
+        }
+
+        return seller;
     }
 
     @Override
