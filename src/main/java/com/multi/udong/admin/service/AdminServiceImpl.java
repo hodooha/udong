@@ -6,6 +6,7 @@ import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public boolean updateSellerStatus(Integer memberNo, String status) {
         try {
             adminMapper.updateSellerStatus(memberNo, status);
@@ -46,7 +48,7 @@ public class AdminServiceImpl implements AdminService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            throw new RuntimeException("판매자 상태 업데이트 중 오류 발생", e); // 트랜잭션 롤백 유도
         }
     }
 
@@ -57,7 +59,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AttachmentDTO getAttachmentByMemberNo(Long memberNo) {
-        // AdminMapper를 통해 memberNo에 해당하는 첨부 파일 정보를 가져옴
         return adminMapper.getAttachmentByMemberNo(memberNo);
+    }
+
+    @Override
+    public void removeMemberFromBlacklist(Integer memberNo) {
+        adminMapper.unblacklistMember(memberNo);
+        adminMapper.resetReportedCount(memberNo); // 신고 카운트 초기화
+    }
+
+    @Override
+    public void addMemberToBlacklist(Integer memberNo) {
+        adminMapper.blacklistMember(memberNo);
+    }
+    @Override
+    public List<MemberDTO> getBlacklistedMembers() {
+        return adminMapper.findBlacklistedMembers();
     }
 }

@@ -40,6 +40,7 @@ public class AdminController {
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
     }
+
     @Autowired
     private ReportService reportService;
 
@@ -48,6 +49,7 @@ public class AdminController {
         model.addAttribute("members", adminService.getAllMembers());
         return "admin/adminMain";
     }
+
     @GetMapping("/memberSearch")
     public String searchMembers(@RequestParam(value = "search", required = false) String search, Model model) {
         if (search == null || search.trim().isEmpty()) {
@@ -59,12 +61,14 @@ public class AdminController {
         model.addAttribute("members", members);
         return "admin/adminMain";
     }
+
     @GetMapping("/allreport")
     public String getAllReports(Model model) {
         List<ReportDTO> reports = reportService.getAllReports();  // 신고 리스트 가져오기
         model.addAttribute("reports", reports);
         return "admin/allreport";
     }
+
     @PostMapping("/changeReportStatus")
     @ResponseBody
     public ResponseEntity<?> changeReportStatus(@RequestBody Map<String, Object> payload) {
@@ -113,12 +117,14 @@ public class AdminController {
             return ResponseEntity.badRequest().build();
         }
     }
+
     @GetMapping("/seller")
     public String showSellerManagement(Model model) {
         List<MemBusDTO> sellers = adminService.getAllSellers();
         model.addAttribute("sellers", sellers);
         return "admin/seller";
     }
+
     @PostMapping("/updateSellerStatus")
     @ResponseBody
     public ResponseEntity<?> updateSellerStatus(@RequestBody Map<String, Object> payload) {
@@ -140,6 +146,7 @@ public class AdminController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "상태 업데이트 실패"));
         }
     }
+
     @GetMapping("/downloadAttachment/{memberNo}")
     public ResponseEntity<Resource> downloadAttachment(@PathVariable Long memberNo) throws IOException {
         AttachmentDTO attachment = adminService.getAttachmentByMemberNo(memberNo);
@@ -159,5 +166,26 @@ public class AdminController {
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getOriginalName() + "\"")
                 .body(resource);
+    }
+
+    @GetMapping("/blacklist")
+    public String showBlacklist(Model model) {
+        List<MemberDTO> blacklistedMembers = adminService.getBlacklistedMembers();
+        model.addAttribute("blacklistedMembers", blacklistedMembers);
+        return "admin/blacklist";
+    }
+
+    @PostMapping("/blacklist/remove")
+    @ResponseBody
+    public String removeFromBlacklist(@RequestParam("memberNo") Integer memberNo) {
+        adminService.removeMemberFromBlacklist(memberNo);
+        return "success";
+    }
+
+    @PostMapping("/blacklist/add")
+    @ResponseBody
+    public String addToBlacklist(@RequestParam("memberNo") Integer memberNo) {
+        adminService.addMemberToBlacklist(memberNo);
+        return "success";
     }
 }

@@ -56,4 +56,5 @@
         JOIN MEMBER m ON mb.member_no = m.member_no
         WHERE mb.member_no = #{memberNo}
     </select>
+
 </mapper>
