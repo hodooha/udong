@@ -273,6 +273,7 @@
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|"
                          style="cursor:pointer;">
                         <div class="card-body p-3">
+                            <span class="badge text-bg-secondary mb-1" style="width:max-content">[[${item.itemCatName}]]</span>
                             <h4 class="mb-3">[[${item.title}]]</h4>
                             <p><span>💛   [[${item.likeCnt}]]</span> <span>👀   [[${item.viewCnt}]]</span>
                                 <span>🙋‍♀️   [[${item.reqCnt}]]</span></p>
@@ -282,8 +283,8 @@
                         </div>
                     </div>
                     <div class="col-2 status-area">
-                        <h5>[[${item.statusName}]]</h5>
-                        <p th:if="${item.statusCode == 'RNT'}">반납예정일: [[${item.returnDate}]]</p>
+                        <h5 class="align-middle">[[${item.statusName}]]</h5>
+                        <div th:if="${item.statusCode == 'RNT'}" class="align-middle" >반납예정일: [[${item.returnDate}]]</div>
                     </div>
                     <div class="col-3 btn-area container">
                         <div th:if="${item.statusCode == 'AVL' || item.statusCode == 'UNAV'}" class="btn-group">

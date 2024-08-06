@@ -6,6 +6,11 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
     <style>
         button{
             font-weight: bolder !important;
@@ -46,8 +51,7 @@
 
 
         .img-area,
-        .item-info-area,
-        .status-area{
+        .item-info-area{
             display: flex;
             align-items: center;
             justify-content: center;
@@ -59,6 +63,11 @@
 
         }
 
+        .card-body p span{
+            margin-right: 1em;
+            width: 10em !important;
+        }
+
         .card-body,
         .btn-group{
             display: flex;
@@ -66,15 +75,31 @@
             justify-content: center;
         }
 
+        .status-area{
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+
+        }
+
         .status-select-area{
             display:flex;
             align-items: center;
+            justify-content: flex-end;
             font-size: 16px;
 
         }
 
+        .catSelect{
+            width: 11em !important;
+            margin-right: 20px;
+
+        }
+
         .stat-select{
-            width:140px !important;
+            width:8em !important;
 
         }
 
@@ -97,10 +122,6 @@
             justify-content: space-between;
         }
 
-        .btns-1 button {
-            width: 48%;
-        }
-
         .page-link{
             background-color: #3B5C9A !important;
             border-color: #3B5C9A !important;
@@ -120,7 +141,59 @@
             color: #FFFFFF !important;
         }
 
+        .star_rating {
+          width: 100%;
+          box-sizing: border-box;
+          display: inline-flex;
+          float: left;
+          flex-direction: row;
+          justify-content: center;
+        }
+        .star_rating .star {
+          width: 30px;
+          height: 30px;
+          margin-right: 10px;
+          display: inline-block;
+          background: url('/img/emptystar.png') no-repeat;
+          background-size: 100%;
+          box-sizing: border-box;
+        }
+        .star_rating .star.on {
+          width: 30px;
+          height: 30px;
+          margin-right: 10px;
+          display: inline-block;
+          background: url('/img/star.png') no-repeat;
+          background-size: 100%;
+          box-sizing: border-box;
+        }
 
+        .star_box {
+          width: 400px;
+          box-sizing: border-box;
+          display: inline-block;
+          margin: 15px 0;
+          background: #F3F4F8;
+          border: 0;
+          border-radius: 10px;
+          height: 100px;
+          resize: none;
+          padding: 15px;
+          font-size: 13px;
+          font-family: sans-serif;
+        }
+        .btn02 {
+          display:block;
+          width: 400px;
+          font-weight: bold;
+          border: 0;
+          border-radius: 10px;
+          max-height: 50px;
+          padding: 15px 0;
+          font-size: 1.1em;
+          text-align: center;
+          background:bisque;
+        }
 
     </style>
 </head>
@@ -129,162 +202,292 @@
 <div th:replace="~{share/dreamMenubar :: #dreamMenubar}"></div>
 
 <div class="container">
-    <h2 class="my-3" style="text-align:center; font-weight:bolder;">나의 요청드림 목록</h2>
+    <h2 class="my-3" style="text-align:center; font-weight:bolder;">나의 빌려(나눠)드림 목록</h2>
 
     <div class="select-area mb-1 mt-3 ms-1">
-        <div class="col-7">
+        <div class="col-3">
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
-                       value="option1" checked>
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio1"
+                       value="" checked onchange="getBorrowList()">
                 <label class="form-check-label" for="inlineRadio1">모두</label>
             </div>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
-                       value="option2">
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio2"
+                       value="rent" onchange="getBorrowList()">
                 <label class="form-check-label" for="inlineRadio2">대여</label>
             </div>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio3"
-                       value="option3">
+                <input class="form-check-input" type="radio" name="group" id="inlineRadio3"
+                       value="give" onchange="getBorrowList()">
                 <label class="form-check-label" for="inlineRadio3">나눔</label>
             </div>
         </div>
 
-        <div class="status-select-area col-5">
-            <label for="statusSelect" style="width:30px">
+        <div class="status-select-area col-9">
+            <select th:fragment="catSelect" id="catSelect" class="form-select catSelect" name="itemCatCode"
+                    onchange="getBorrowList()">
+                <option value="">== 카테고리 선택 ==</option>
+                <th:block th:if="${catList} != null">
+                    <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
+                </th:block>
+            </select>
+            <label for="statusSelect" style="width:2em">
                 상태
             </label>
-            <select class="form-select stat-select" id=statusSelect name="statusSelect" onchange="search()">
+            <select class="form-select stat-select me-3" id=statusSelect name="statusSelect" onchange="getBorrowList()">
                 <option value="">== 전체 ==</option>
-                <option value="">신청완료</option>
-                <option value="">대여중</option>
-                <option value="">반납완료</option>
-                <option value="">평가완료</option>
-                <option value="">당첨</option>
-                <option value="">낙첨</option>
+                <option value="RNT">대여중</option>
+                <option value="AVL">대여가능</option>
+                <option value="UNAV">대여불가</option>
+                <option value="GIV">나눔중</option>
+                <option value="GVD">나눔완료</option>
             </select>
+
+            <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요." id="keyword" style="width:13em">
+            <button class="btn btn-udh-blue searchBtn" type="button" onclick="getBorrowList()">검색</button>
+
         </div>
+
     </div>
 
-    <div class="card mb-3 dream" >
-        <div class="row g-0">
-            <div class="col-1 rentGroup">대여</div>
-            <div class="col-2 img-area">
-                <img src="..." class="img-fluid rounded-start" alt="...">
+    <div th:replace="~{/share/rentMain :: #spinner}"></div>
+
+    <div th:fragment="reqDreams" id="reqDreams">
+        <th:block th:if="${#lists.isEmpty(borrowList)}">
+            <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
+                등록된 물건이 없습니다.
             </div>
-            <div class="col-4 item-info-area">
-                <div class="card-body">
-                    <h4 class="mb-3">${item.title}</h4>
-                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
+        </th:block>
+        <th:block th:unless="${#lists.isEmpty(borrowList)}">
+            <div th:each="req : ${borrowList}" class=" mb-3 dream" >
+                <div class="row g-0">
+                    <div th:classappend="${req.itemDTO.itemGroup == 'rent' ? 'rentGroup' : 'giveGroup'}" class="col-1">
+                        [[${req.itemDTO.itemGroup == 'rent' ? '대여' : '나눔'}]]
+                    </div>
+                    <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
+                         class="col-2 img-area">
+                        <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + req.itemDTO.img}"
+                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
+                    </div>
+                    <div class="col-4 item-info-area "
+                         th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
+                         style="cursor:pointer;">
+                        <div class="card-body p-3">
+                            <span class="badge text-bg-secondary mb-1" style="width:max-content">[[${req.itemDTO.itemCatName}]]</span>
+                            <h4 class="mb-3">[[${req.itemDTO.title}]]</h4>
+                            <p><span>💛   [[${req.itemDTO.likeCnt}]]</span> <span>👀   [[${req.itemDTO.viewCnt}]]</span>
+                                <span>🙋‍♀️   [[${req.itemDTO.reqCnt}]]</span></p>
+                            <p style="margin-bottom: 0">
+                                <span>[[${req.itemDTO.locName}]]</span> <span id="modifiedAt">[[${req.itemDTO.displayDate}]]</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-2 status-area">
+                        <h5 class="align-middle" style="margin:0">[[${req.statusName}]]</h5>
+                        <div class="align-middle" style="margin:0">[[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd HH:mm')}]]</div>
+                        <div th:if="${req.statusCode == 'RNT'}">반납예정일: [[${req.returnDate}]]</div>
+                    </div>
+                    <div class="col-3 btn-area container">
+                        <div th:if="${req.statusCode == 'AVL' || req.itemDTO.statusCode == 'UNAV'}" class="btn-group">
+                            <div class="mb-3 btns-1">
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${req.itemDTO.itemNo})}'|"
+                                        class="btn btn-udh-silver" style="width:49%">수정
+                                </button>
+                                <button data-bs-toggle="modal" data-bs-target="#deleteModal" class="btn btn-udh-silver" style="width:49%">
+                                    삭제
+                                </button>
+                            </div>
+                            <div class="btns-2">
+                                <button th:text="${req.itemDTO.statusCode == 'AVL' ? '일시중단' : '중단해제'}" class="btn btn-udh-silver" style="width:49%"></button>
+                                <button class="btn btn-udh-blue" style="width:49%"
+                                        th:onclick="selectReq([[${req.itemDTO.itemNo}]])">대여확정
+                                </button>
+
+                            </div>
+                        </div>
+
+                        <div th:if="${req.itemDTO.statusCode == 'RNT'}" class="btn-group">
+                            <div class="mb-3 btns-1">
+                                <button th:onclick="|location.href='@{/share/update(itemNo=${req.itemDTO.itemNo})}'|"
+                                        class="btn btn-udh-silver" style="width:49%">수정
+                                </button>
+                                <button class="btn btn-udh-red" style="width:49%">신고</button>
+                            </div>
+                            <div class="btns-2">
+                                <button class="btn btn-udh-yellow" style="width:49%">쪽지하기</button>
+                                <button class="btn btn-udh-blue" style="width:49%" th:onclick="getRentedReq([[${req.itemDTO}]])">반납완료</button>
+                            </div>
+                        </div>
+                        <div th:if="${req.itemDTO.statusCode == 'GVD'}" class="btn-group">
+                            <div class="btns-1">
+                                <button class="btn btn-udh-yellow " style="width:100%">쪽지하기</button>
+                            </div>
+                        </div>
+                        <div th:if="${req.itemDTO.statusCode == 'GIV'}" class="btn-group">
+                            <div class="btns-1">
+                                <button class="btn btn-udh-silver " style="width:100%">추첨하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">정말 삭제할까요?</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>대여 내역이 있는 게시글을 삭제하면 대여했던 이웃이 당황할 수 있어요.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                                <button type="button" class="btn btn-udh-red"
+                                        th:onclick="deleteItemAtDream([[${req.itemDTO}]])">삭제
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-2 status-area">
-                <h5>대여가능</h5>
+
+        </th:block>
+
+        <div id="dreamModals">
+            <div class="modal fade" id="selectRqst" aria-hidden="true" aria-labelledby="selectRqstLabel" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="selectRqstLabel">대여를 확정할 이웃을 선택해주세요.</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <th:block th:if="${#lists.isEmpty(requesters)}">
+                                <div>
+                                    대여를 신청한 이웃이 없습니다.
+                                </div>
+                            </th:block>
+                            <th:block th:unless="${#lists.isEmpty(requesters)}">
+                                <table class="table table-warning table-hover table-bordered text-center ">
+                                    <thead>
+                                    <tr class="">
+                                        <th scope="col">체크</th>
+                                        <th scope="col">대여신청자</th>
+                                        <th scope="col">신청일시</th>
+                                        <th scope="col">반납희망일</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="req, stat : ${requesters}">
+                                        <th scope="row"><label>
+                                            <input type="radio" name="requesters" th:value="${req.rqstNo}"
+                                                   th:checked="${stat.first ? 'true' : 'false'}">
+                                        </label></th>
+                                        <td>[[${req.rqstNickname}]]</td>
+                                        <td>[[${#temporals.format(req.createdAt, 'yyyy.MM.dd HH:mm')}]]</td>
+                                        <td>[[${req.returnDate}]]</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </th:block>
+                        </div>
+                        <div class="modal-footer">
+                            <th:block th:if="${#lists.isEmpty(requesters)}">
+                                <button class="btn btn-udh-blue" data-bs-target="#selectRqst" data-bs-toggle="modal">
+                                    확인
+                                </button>
+                            </th:block>
+                            <th:block th:unless="${#lists.isEmpty(requesters)}">
+                                <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-toggle="modal">
+                                    취소
+                                </button>
+                                <button class="btn btn-udh-blue" th:onclick="checkReturnDate([[${requesters}]])" id="checkDateBtn">다음</button>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-3 btn-area container">
-                <div class="btn-group">
-                    <div class="mb-3 btns-1">
-                        <button class="btn btn-udh-silver" style="width:100%">신청취소</button>
+            <div class="modal fade" id="approveReq" aria-hidden="true" aria-labelledby="approveReqLabel" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="approveReqLabel">반납예정일을 확인해주세요.</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="form-label">📅반납희망일 확인</label>
+
+                            <div class="input-group input-daterange">
+                                <input type="date" class="form-control" name="return" id="datePicker" readonly>
+                            </div>
+                            <span style="font-size:0.7em">*반납예정일을 확정해주세요..</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-udh-silver" id="backToSelectReq">이전
+                            </button>
+                            <button class="btn btn-udh-blue"  id="approveBtn">확정</button>
+                        </div>
                     </div>
-                    <div class="btns-2">
-                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
+                </div>
+            </div>
+
+        </div>
+        <nav class="row mt-3" th:if="${pageInfo} != null">
+            <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
+                <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
+                    <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
+                            aria-label="Previous">
+                        <span>&laquo;</span>
+                    </button>
+                </li>
+                <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
+                    class="page-item active me-1" aria-current="page">
+                    <button th:text="${page}" class="page-link btn-udh-blue"
+                            th:onclick="getBorrowList([[${page}]])"
+                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                </li>
+                <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
+                    class="page-item me-1">
+                    <button class="page-link btn-udh-blue " aria-label="Previous"
+                            th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])">
+                        <span>&raquo;</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="evalModalLabel">이웃 평가 후 '반납완료' 처리가 가능합니다. </h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div th:if="${req != null && req != ''}" class="modal-body text-center">
+                    [[${req.rqstNickname}]]님의 매너를 평가해 주세요.
+
+
+                    <div class ="star_rating mt-3">
+                        <input type="hidden" id="score">
+                        <span class="star on" data-value="1"> </span>
+                        <span class="star" data-value="2"> </span>
+                        <span class="star" data-value="3"> </span>
+                        <span class="star" data-value="4"> </span>
+                        <span class="star" data-value="5"> </span>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" th:onclick="postScore([[${req}]])">확인</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="card mb-3 dream" >
-        <div class="row g-0">
-            <div class="col-1 rentGroup">대여</div>
-            <div class="col-2 img-area">
-                <img src="..." class="img-fluid rounded-start" alt="...">
-            </div>
-            <div class="col-4 item-info-area">
-                <div class="card-body">
-                    <h4 class="mb-3">${item.title}</h4>
-                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-                </div>
-            </div>
-            <div class="col-2 status-area">
-                <h5>대여가능</h5>
-            </div>
-            <div class="col-3 btn-area container">
-                <div class="btn-group">
-                    <div class="mb-3 btns-1">
-                        <button class="btn btn-udh-red" style="width:100%">물건하자신고</button>
-                    </div>
-                    <div class="btns-2">
-                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-3 dream" >
-        <div class="row g-0">
-            <div class="col-1 rentGroup">대여</div>
-            <div class="col-2 img-area">
-                <img src="..." class="img-fluid rounded-start" alt="...">
-            </div>
-            <div class="col-4 item-info-area">
-                <div class="card-body">
-                    <h4 class="mb-3">${item.title}</h4>
-                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-                </div>
-            </div>
-            <div class="col-2 status-area">
-                <h5>대여가능</h5>
-            </div>
-            <div class="col-3 btn-area container">
-                <div class="btn-group">
-                    <div class="mb-3 btns-1">
-                        <button class="btn btn-udh-blue" style="width:100%">평가하기</button>
-                    </div>
-                    <div class="btns-2">
-                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card mb-3 dream" >
-        <div class="row g-0">
-            <div class="col-1 giveGroup">나눔</div>
-            <div class="col-2 img-area">
-                <img src="..." class="img-fluid rounded-start" alt="...">
-            </div>
-            <div class="col-4 item-info-area">
-                <div class="card-body">
-                    <h4 class="mb-3">${item.title}</h4>
-                    <p>💛 <span>${item.likeCnt}</span>👀 <span>${item.viewCnt}</span>🙋‍♀️ <span>${item.reqCnt}</span></p>
-                </div>
-            </div>
-            <div class="col-2 status-area">
-                <h5>대여가능</h5>
-            </div>
-            <div class="col-3 btn-area container">
-                <div class="btn-group">
-                    <div class="mb-3 btns-1">
-                        <button class="btn btn-udh-red" style="width:100%">물건미수령신고</button>
-                    </div>
-                    <div class="btns-2">
-                        <button class="btn btn-udh-blue" style="width:100%">쪽지하기</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <nav class="row mt-3">
-        <ul class="pagination pagination-sm justify-content-center ">
-        </ul>
-    </nav>
-
-
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>

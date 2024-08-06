@@ -456,10 +456,14 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("권한이 없습니다.");
         }
 
-        // 물건 제공자가 차용인 평가
+        // 물건 제공자의 차용인 평가 등록
         if(shareDAO.insertEval(sqlSession, evalDTO) < 1){
             throw new Exception("평가 등록을 실패했습니다.");
         };
+
+        // 등록된 평가 토대로 차용인 점수 & 레벨 변경 - 구현 예정!
+
+
 
         // 반납완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
@@ -479,6 +483,31 @@ public class ShareServiceImpl implements ShareService {
 
 
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public ShaDreamResultDTO getBorrowList(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
+
+        // 결과값 초기 설정
+        ShaDreamResultDTO result = new ShaDreamResultDTO();
+
+        // 유저가 신청한 전체 요청 가져오기
+        List<ShaReqDTO> borrowList = shareDAO.getReqList(sqlSession, criteriaDTO);
+
+        System.out.println("리스트" + borrowList);
+        for(ShaReqDTO r : borrowList){
+            r.getItemDTO().setDisplayDate(convertLocaldatetimeToTime(r.getItemDTO().getModifiedAt()));
+        }
+
+        result.setBorrowList(borrowList);
+        result.setTotalCounts(shareDAO.getReqCounts(sqlSession, criteriaDTO));
+
+        return result;
+    }
+
+
+
+
 
 
 }

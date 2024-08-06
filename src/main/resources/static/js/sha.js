@@ -55,7 +55,7 @@ $(function(){
 
 
     if(bodyId == "dreamLend"){
-        getLendList(1);
+
         window.addEventListener("popstate", function(event) {
             if (event.state) {
                 console.log(event.state);
@@ -78,7 +78,7 @@ $(function(){
     }
 
     if(bodyId == "dreamBorrow"){
-//        getBorrowList(group);
+        getBorrowList(1);
     }
 
 
@@ -309,6 +309,12 @@ function getLendList(page){
     updateLendList(params);
 }
 
+function getBorrowList(page){
+    let params = getDreamSearchParams(page);
+    updateBorrowList(params);
+
+}
+
 function getDreamSearchParams(page){
     let catCode = $('.catSelect').val();
     let group = $("input[name='group']:checked").val();
@@ -333,6 +339,16 @@ function updateLendList(params){
     let reqUrl = "/share/dream/lendList";
     ajax_get(reqUrl, params).done(function(data){
         $('#dreams').replaceWith(data);
+        let newUrl = createUrlWithParams(params);
+        history.pushState(params, '', newUrl);
+    })
+}
+
+function updateBorrowList(params){
+
+    let reqUrl = "/share/dream/borrowList";
+    ajax_get(reqUrl, params).done(function(data){
+        $('#reqDreams').replaceWith(data);
         let newUrl = createUrlWithParams(params);
         history.pushState(params, '', newUrl);
     })
