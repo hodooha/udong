@@ -52,7 +52,8 @@ public interface AdminMapper {
 
     MemBusDTO getSellerByMemberNo(Integer memberNo);
 
-    AttachmentDTO getAttachmentByMemberNo(Long memberNo);
+    @Select("SELECT * FROM ATTACHMENT WHERE target_no = #{memberNo} AND type_code = 'BRG'")
+    AttachmentDTO getAttachmentByMemberNo(@Param("memberNo") Long memberNo);
 
     // 블랙리스트된 회원 조회
     @Select("SELECT * FROM MEMBER WHERE is_blacked = 'Y' OR reported_cnt > 0")

@@ -32,7 +32,20 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<MemBusDTO> getAllSellers() {
-        return adminMapper.selectSellers();
+        List<MemBusDTO> sellers = adminMapper.selectSellers();
+        for (MemBusDTO seller : sellers) {
+            System.out.println("Seller ID: " + seller.getMemberNo());
+            if (seller.getAttachmentDTO() != null) {
+                System.out.println("  Attachment: " + seller.getAttachmentDTO().getSavedName());
+            } else {
+                System.out.println("  No attachment");
+            }
+        }
+        return sellers;
+    }
+    @Override
+    public AttachmentDTO getSellerAttachment(int memberNo) {
+        return adminMapper.getAttachmentByMemberNo((long) memberNo);
     }
 
     @Override

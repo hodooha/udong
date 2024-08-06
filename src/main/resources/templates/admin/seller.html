@@ -105,7 +105,7 @@
             <td th:text="${seller.representativeName}"></td>
             <td>
             <span th:if="${seller.attachmentDTO != null and seller.attachmentDTO.savedName != null}">
-        <a th:href="@{'/admin/downloadAttachment/' + ${seller.memberNo}}">[다운로드]</a>
+            <a th:href="@{'/admin/downloadBusinessLicense/' + ${seller.memberNo}}">[다운로드]</a>
             </span>
                 <span th:unless="${seller.attachmentDTO != null and seller.attachmentDTO.savedName != null}">
         첨부 파일 없음
