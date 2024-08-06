@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .message-btn {
+            border: none;
+            background-color: transparent;
+            padding: 0;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .message-btn i {
+            font-size: 30px;
+            width: 30px;
+            height: 30px;
+        }
+        .message-window {
+            position:fixed;
+            top: 100px;
+            right: 50px;
+            width: 300px;
+            height: 500px;
+            border: 1px solid #ccc;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            background-color: white;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+        .message-window.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .message-body {
+            padding: 10px;
+        }
+        .message-footer {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-window">
+        <div class="message-body">
+            <table></table>
+        </div>
+        <div class="message-footer">
+            <a th:href="@{/message/receiveMessage(page=1)}">쪽지 전체 보기</a>
+        </div>
+    </div>
+</body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const messageBtn = document.querySelector('.message-btn');
+        const messageWindow = document.querySelector('.message-window');
+
+        messageBtn.addEventListener('click', toggleWindow);
+
+        function toggleWindow() {
+            messageWindow.classList.toggle('show');
+        }
+
+    });
+</script>
+</html>

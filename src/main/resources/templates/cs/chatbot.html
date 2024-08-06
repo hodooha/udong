@@ -210,9 +210,7 @@
             .then(data => {
 
                 const welcomeMessage = JSON.parse(data.message);
-                Object.entries(welcomeMessage).forEach(([key, value]) => {
-                    console.log(`${key}:`, value);
-                }); // 순서를 정해서 로깅
+                console.log(JSON.parse(data.message));
                 console.log('======================');
 
                 chatbotBody.innerHTML='';
@@ -254,10 +252,7 @@
             .then(response => response.json())
             .then(data => {
 
-                const sendMessage = JSON.parse(data.message);
-                Object.entries(sendMessage).forEach(([key, value]) => {
-                    console.log(`${key}:`, value);
-                }); // 순서를 정해서 로깅
+                console.log(JSON.parse(data.message));
                 console.log('======================');
 
                 const description = sendMessage.bubbles[0].data.description;

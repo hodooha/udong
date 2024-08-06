@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        .btn {
+            min-width: 120px;
+            width: 120px;
+            border: none;
+            border-radius: 5px;
+            padding: 0px;
+            transition: background-color 0.3s ease;
+        }
+        .message {
+            min-width: 48%;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .message-detail {
+            min-width: 48%;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .clickable-row:hover {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        #no-result {
+            margin: 20px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: start;
+            margin-top: 20px;
+        }
+        .pagination a {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: 1px solid #ddd;
+            color: white;
+            background-color: #3B5C9A;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .pagination a.active {
+            background-color: #0B1D40;
+        }
+        .pagination a:hover:not(.active) {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/common/alert}"></div>
+<main>
+    <div th:replace="~{/member/sidebar}"></div>
+    <div class="content-area">
+        <div class="message">
+            <h2>받은 메일함</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th th:each="header : ${tableHeader}" th:text="${header}"></th>
+                    </tr>
+                </thead>
+                <tbody id="result-table">
+                    <tr th:each="data : ${tableBody}" th:attr="data-no=${data.message_no}, data-table='message'" class="clickable-row">
+                        <td th:text="${data.sender_nickname}"></td>
+                        <td th:text="${data.content}"></td>
+                        <td th:text="${#temporals.format(data.created_at, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                        <td th:text="${data.is_read == 'Y' ? '읽음' : '안읽음'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div id="no-result" hidden>결과가 없습니다.</div>
+            <div class="pagination"></div>
+            <div class="search">
+                <form action="/message/receiveMessage" method="get">
+                    <select name="searchCategory" id="search-category">
+                        <option value="">카테고리 선택</option>
+                        <option th:each="category : ${searchCategories}"
+                                th:value="${category}"
+                                th:text="${category}"
+                                th:selected="${category == searchCategory}">
+                        </option>
+                    </select>
+                    <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
+                    <button class="btn btn-udh-yellow">검색</button>
+                </form>
+            </div>
+            <div>
+                <button class="btn btn-udh-red">삭제하기</button>
+                <button class="btn btn-udh-red">차단하기</button>
+                <button class="btn btn-udh-blue">작성하기</button>
+            </div>
+        </div>
+        <div class="message-detail"></div>
+    </div>
+</main>
+</body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const pagination = document.querySelector('.pagination');
+        const noResult = document.getElementById('no-result');
+        const resultTable = document.getElementById('result-table');
+        const data = /*[[${tableData}]]*/ [];
+
+        console.log('data: ', data);
+
+        if (data.length === 0) {
+            noResult.hidden = false;
+            resultTable.hidden = true;
+        } else {
+            noResult.hidden = true;
+            resultTable.hidden = false;
+        }
+    });
+</script> <!--테이블이 없을 때-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const pagination = document.querySelector('.pagination');
+        const pages = /*[[${pages}]]*/ 1;
+        const currentPage = /*[[${page}]]*/ 1;
+        const table = /*[[${table}]]*/ '';
+        const searchCategory = /*[[${searchCategory}]]*/ '';
+        const searchWord = /*[[${searchWord}]]*/ '';
+
+        pagination.innerHTML = '';
+
+        for (let page = 1; page <= pages; page++) {
+            let url = document.createElement('a');
+            url.href = `/message/receiveMessage?page=${page}`;
+
+            if (searchCategory) {
+                url.href += `&searchCategory=${encodeURIComponent(searchCategory)}`;
+            }
+
+            if (searchWord) {
+                url.href += `&searchWord=${encodeURIComponent(searchWord)}`;
+            }
+
+            url.textContent = page;
+
+            if (page == currentPage) {
+                url.classList.add('active');
+            }
+
+            pagination.appendChild(url);
+        }
+    });
+</script> <!--페이지네이션-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const rows = document.querySelectorAll('.clickable-row');
+
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                const no = this.getAttribute('data-no');
+                let url = `/message/messageDetail?no=${no}`;
+                window.location.href = url;
+            });
+        });
+    });
+</script> <!--테이블 row 링크-->
+</html>

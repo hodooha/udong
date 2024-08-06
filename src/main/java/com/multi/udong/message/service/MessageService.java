@@ -1,0 +1,16 @@
+package com.multi.udong.message.service;
+
+import com.multi.udong.member.model.dto.PageDTO;
+import com.multi.udong.message.model.dto.MessageDTO;
+
+import java.util.List;
+
+/**
+ * The interface Message service.
+ *
+ * @author 김재식
+ * @since 2024 -08-06
+ */
+public interface MessageService {
+    List<MessageDTO> selectReceivedMessages(PageDTO pageDTO);
+}

@@ -117,7 +117,7 @@
             <li><a href="/member/memInfo">회원정보 관리</a></li>
             <li><a href="/member/address">주소 관리</a></li>
             <li class="has-submenu">
-                <a href="/member/act">나의 활동 기록</a>
+                <a href="#">나의 활동 기록</a>
                 <ul class="submenu" style="margin-top: 0.5rem;">
                     <li><a href="/member/act?table=newsBoard&page=1">우동 소식</a></li>
                     <li><a href="/member/act?table=newsLike&page=1">좋아요</a></li>
@@ -129,7 +129,14 @@
                     <li><a href="/member/act?table=saleBoard&page=1">땡처리 물건</a></li>
                 </ul>
             </li>
-            <li><a href="/member/message">나의 쪽지</a></li>
+            <li class="has-submenu">
+                <a href="#">나의 쪽지</a>
+                <ul class="submenu" style="margin-top: 0.5rem;">
+                    <li><a href="/message/receiveMessage?page=1">받은 쪽지함</a></li>
+                    <li><a href="#">보낸 쪽지함</a></li>
+                    <li><a href="#">차단 설정</a></li>
+                </ul>
+            </li>
             <li><a href="/member/notiSet">알림 설정</a></li>
             <li><a href="/member/memDel" class="delete-account">회원 탈퇴</a></li>
         </ul>
