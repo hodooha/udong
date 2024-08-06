@@ -1,4 +1,4 @@
-package com.multi.udong.member.service;
+package com.multi.udong.login.openFeign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

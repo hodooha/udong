@@ -2,8 +2,8 @@ package com.multi.udong.login.controller;
 
 import com.multi.udong.login.model.dto.GoogleTokenResponse;
 import com.multi.udong.login.model.dto.GoogleUserInfo;
-import com.multi.udong.login.service.GoogleAuthClient;
-import com.multi.udong.login.service.GoogleUserInfoClient;
+import com.multi.udong.login.openFeign.GoogleAuthClient;
+import com.multi.udong.login.openFeign.GoogleUserInfoClient;
 import com.multi.udong.member.model.dao.MemberMapper;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberServiceImpl;
@@ -44,6 +44,9 @@ public class GoogleLoginController {
     @Value("${google.redirect.uri}")
     private String redirectUri;
 
+    @Value("${google.client.pw}")
+    private String googlePW;
+
     /**
      * 구글 사용자정보로 로그인함
      *
@@ -70,9 +73,11 @@ public class GoogleLoginController {
 
             // 사용자정보 전처리
             String googleMemberId = googleUserInfo.getId() + "g";
-            String googleMemberPw = "googlePw1234";
+            String googleMemberPw = googlePW;
             String googleEmail = googleUserInfo.getEmail();
             String googleNickname = googleUserInfo.getName();
+
+            System.out.println("googleMemberPw : " + googleMemberPw);
 
             // 전처리 정보를 memberDTO에 저장
             MemberDTO memberDTO = new MemberDTO();
@@ -108,6 +113,8 @@ public class GoogleLoginController {
         body.add("client_secret", clientSecret);
         body.add("redirect_uri", redirectUri);
         body.add("grant_type", "authorization_code");
+
+        System.out.println("body : " + body);
 
         return googleAuthClient.getAccessToken(body);
     }

@@ -3,12 +3,14 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
         .chatbot {
             position: fixed;
             bottom: 20px;
-            right: 120px;
+            right: 20px;
             width: 60px;
             height: 60px;
             background: #FFFFFF;
@@ -77,84 +79,87 @@
         </div>
     </div>
 </body>
-<script>
+<script th:inline="javascript">
     function toggleChatbot() {
-        var chatbotWindow = document.getElementById("chatbot-window");
-        chatbotWindow.style.display = chatbotWindow.style.display === "none" ? "block" : "none";
-    }
-
-    function sendMessage() {
-        var userInput = document.getElementById("user-input");
-        var message = userInput.value;
-        if (message.trim() !== "") {
-            appendMessage("사용자: " + message);
-            userInput.value = "";
-            // 서버로 메시지 전송 및 응답 처리
-            fetchBotResponse(message);
+        var chatbotWindow = document.querySelector('#chatbot-window');
+        if (chatbotWindow.style.display === 'none') {
+            chatbotWindow.style.display = 'flex';
+            getWelcomeMessage();
+        } else {
+            chatbotWindow.style.display = 'none';
         }
     }
 
-    function appendMessage(message) {
-        var chatbotMessages = document.getElementById("chatbot-messages");
-        var messageElement = document.createElement("p");
-        messageElement.textContent = message;
-        chatbotMessages.appendChild(messageElement);
-    }
-
-    function fetchBotResponse(message) {
-        fetch('/api/chatbot', {
-            method: 'POST',
+    // 웰컴 메시지 요청
+    function getWelcomeMessage() {
+        fetch('/chatbot/welcome', {
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: message }),
+                'Content-Type': 'application/json'
+            }
         })
         .then(response => response.json())
         .then(data => {
-            appendMessage("챗봇: " + data.response);
+
+            console.log('data:', data);
+
+            const welcomeMessage = JSON.parse(data.message);
+
+            console.log('welcomeMessage:', welcomeMessage);
+
+            const description = welcomeMessage.bubbles[0].data.description;
+            displayMessage(description, 'bot');
         })
-        .catch((error) => {
+        .catch(error => {
             console.error('Error:', error);
         });
     }
+
+    function sendMessage() {
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const userInput = document.querySelector('#user-input');
+
+        let message = userInput.value;
+        if (message.trim() !== '') {
+            displayMessage(message, 'user');
+
+        fetch('/chatbot/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [header]: token
+            },
+            body: JSON.stringify({ 'message': message })
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            console.log('data:', data);
+
+            const sendMessage = JSON.parse(data.message);
+
+            console.log('sendMessage:', sendMessage);
+
+            const description = sendMessage.bubbles[0].data.description;
+            displayMessage(description, 'bot');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        userInput.value = '';
+        }
+    }
+
+    function displayMessage(message, sender) {
+        var chatbotMessages = document.getElementById('chatbot-messages');
+        var messageElement = document.createElement('div');
+        messageElement.textContent = message;
+        messageElement.className = sender + '-message';
+        chatbotMessages.appendChild(messageElement);
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
 </script>
-<script>
-    (function(){
-
-        var w=window;
-
-        if(w.ChannelIO){
-            return w.console.error("ChannelIO script included twice.");
-        }
-
-        var ch=function(){ch.c(arguments);};
-        ch.q=[];
-        ch.c=function(args){ch.q.push(args);};
-        w.ChannelIO=ch;
-
-        function l(){
-            if(w.ChannelIOInitialized){return;}
-            w.ChannelIOInitialized=true;
-
-            var s=document.createElement("script");
-            s.type="text/javascript";
-            s.async=true;
-            s.src="https://cdn.channel.io/plugin/ch-plugin-web.js";
-
-            var x=document.getElementsByTagName("script")[0];
-            if(x.parentNode){x.parentNode.insertBefore(s,x);}
-        }
-
-        if(document.readyState==="complete"){
-            l();
-        }else{
-            w.addEventListener("DOMContentLoaded",l);
-            w.addEventListener("load",l);
-        }
-    })();
-
-    ChannelIO('boot', {
-      "pluginKey": "d7c974e2-4a72-480b-99ca-b3163df9ade0"
-    });
-</script> <!--채널톡(테스트)-->
 </html>

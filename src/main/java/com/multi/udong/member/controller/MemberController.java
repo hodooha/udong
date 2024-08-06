@@ -486,8 +486,8 @@ public class MemberController {
 //        attachmentDTO.setOriginalName(originalName);
 //
 //        // 파일의 공개 URL 설정 (버킷이 공개 접근 가능한 경우)
-//        attachmentDTO.setFileUrl(s3.getUrl(bucketName, savedName).toString());
-////        attachmentDTO.setFileUrl("https://kr.object.ncloudstorage.com/team.1/" + savedName);
+////        attachmentDTO.setFileUrl(s3.getUrl(bucketName, savedName).toString());
+//        attachmentDTO.setFileUrl("https://kr.object.ncloudstorage.com/team-1/" + savedName);
 //
 //        return attachmentDTO;
 //    }

@@ -247,12 +247,21 @@
     }
 
     function createHiddenLoginForm(kakaoid) {
-        const kakaoPw = 'kakaoPw1234';
+        $.ajax({
+            url: '/kakao/getKakaoPW',
+            type: 'GET',
+            success: function(response) {
+                const kakaoPw = response;
 
-        document.getElementById("kakaoId").value = kakaoid;
-        document.getElementById("kakaoPw").value = kakaoPw;
+                document.getElementById("kakaoId").value = kakaoid;
+                document.getElementById("kakaoPw").value = kakaoPw;
 
-        document.getElementById('loginForm').submit();
+                document.getElementById('loginForm').submit();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching kakaoPw:', error);
+            }
+        });
     }
 </script> <!--카카오 로그인 스크립트-->
 </html>

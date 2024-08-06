@@ -268,6 +268,20 @@ public class CSController {
         }
     }
 
+    @PostMapping("/deleteQue")
+    public String deleteQue(@RequestParam("csNo") int csNo, Model model) {
+
+        String result = csService.deleteQue(csNo);
+
+        if (result.equals("answered")) {
+            model.addAttribute("msg", "답변이 완료된 문의는 삭제할 수 없습니다.");
+            return "cs/queDetail";
+        } else {
+            model.addAttribute("msg", "문의글이 삭제되었습니다.");
+            return "cs/csMyQue";
+        }
+    }
+
     /**
      * Download file response entity.
      *

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .writer-profile-img {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            margin: 0px 10px 8px 0px;
+        }
+        .writer-nickname {
+            font-family: 'Freesentation-5Medium';
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .log-etc {
+            font-size: 11px;
+            color: #6F6F6F;
+        }
+        .btn-right-area {
+            vertical-align: top;
+            text-align: right;
+            width: 100%;
+        }
+        .btn-right {
+            margin-left: 10px;
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 18px;
+        }
+        .log-title {
+            font-family: 'Freesentation-7Bold';
+            font-size: 20px;
+            margin-top: 20px;
+        }
+        .log-content {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .log-img {
+            width: 180px;
+            height: 180px;
+            border-radius: 3px;
+            margin: 0px 10px 15px 0px;
+        }
+        .log-reaction {
+            font-size: 16px;
+        }
+        .reply-area {
+            margin-top: 40px;
+        }
+        .reply {
+            font-family: 'Freesentation-5Medium';
+            font-size: 16px;
+        }
+        .reply-insert-bar {
+            display: flex;
+            align-items: center;
+            height: 50px;
+            background-color: #E5E5E5;
+            border-radius: 0.375rem;
+            padding-left: 15px;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+            margin: 15px 0px 20px 0px;
+        }
+        .input {
+            font-family: 'Freesentation-3Light';
+            height: 25px;
+            border: 1px solid #979797;
+        }
+        .reply-input {
+            margin-left: 30px;
+            width: 75%;
+        }
+        .reply-update-input {
+            width: 800px;
+        }
+        .btn-insert-reply {
+            margin-left: auto;
+            margin-right: 10px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 15px !important;
+            padding: 3px 7px 3px 7px !important;
+        }
+        .reply-writer-nickname {
+            font-family: 'Freesentation-5Medium';
+        }
+        .btn-reply {
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 15px !important;
+            padding: 1px 7px 1px 7px !important;
+            margin-left: 10px;
+        }
+        .reply-content-td {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .reply-update-form {
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            width: 100%;
+        }
+        .reply-etc {
+            font-size: 10px;
+            color: #6F6F6F;
+        }
+        .reply-like {
+            font-size: 12px;
+            color: #6F6F6F;
+        }
+        .log-main-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-log-main {
+            font-family: 'Freesentation-5Medium' !important;
+            margin: 20px 0px 20px 0px;
+        }
+
+    </style>
+    <script type="text/javascript">
+
+
+    </script>
+    <script th:inline="javascript">
+
+        window.onload = function() {
+            var message = [[${message}]];
+            if (message) {
+                alert(message);
+            }
+        }
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 670px">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+
+        <table style="width: 100%">
+            <tr style="white-space: nowrap;">
+                <td>
+                    <th:block th:if="${logDetail.writer.profileSavedName == 'defaultProfile.png'}">
+                        <img th:src="@{'/img/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img">
+                    </th:block>
+                    <th:block th:if="${logDetail.writer.profileSavedName != 'defaultProfile.png'}">
+                        <img th:src="@{'/uploadFiles/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img">
+                    </th:block>
+                    <span th:text="${logDetail.writer.nickname}" class="writer-nickname"></span>
+                    <p th:text="${logDetail.createdAt}" class="p-tag log-etc"></p>
+                </td>
+                <td class="btn-right-area">
+                    <a th:href="@{/club/clubLog/clubLogReportForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
+                        <button class="btn btn-udh-blue btn-right">
+                            기록 신고
+                        </button>
+                    </a>
+                    <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo}">
+                        <button class="btn btn-udh-blue btn-right">
+                            기록 수정
+                        </button>
+                    </th:block>
+                    <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+                        <button class="btn btn-udh-red btn-right">
+                            기록 삭제
+                        </button>
+                    </th:block>
+                </td>
+            </tr>
+        </table>
+
+        <p th:text="${logDetail.title}" class="p-tag log-title"></p>
+        <p th:text="${logDetail.content}" class="p-tag log-content" style="margin-bottom: 20px"></p>
+
+        <table>
+            <tr>
+                <td th:each="img : ${logDetail.attachments}">
+                    <img th:src="@{'/uploadFiles/' + ${img.savedName}}" class="log-img">
+                </td>
+            </tr>
+        </table>
+
+        <p class="p-tag log-reaction">
+            <span>&#128155;</span>
+            <span th:text="${logDetail.likesCount}"></span>
+            <span style="margin-left: 15px;">&#128064;</span>
+            <span th:text="${logDetail.views}"></span>
+            <span style="margin-left: 15px;">&#128172;</span>
+            <span th:text="${logDetail.repliesCount}"></span>
+        </p>
+
+        <hr>
+
+        <div class="reply-area">
+            <p class="p-tag reply">댓글</p>
+            <form th:action="@{/club/clubLog/insertReply}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                <input type="hidden" name="logNo" th:value="${logDetail.logNo}">
+                <div class="reply-insert-bar">
+                    <span th:text="${#authentication.principal.memberDTO.nickname}"></span>
+                    <input type="text" class="input reply-input" name="content" maxlength="100" placeholder=" 댓글 입력..." required>
+                    <button type="submit" class="btn btn-udh-silver btn-insert-reply">댓글 작성</button>
+                </div>
+            </form>
+            <hr>
+            <div th:if="${logDetail.repliesCount != 0}" th:each="reply, iterStat : ${logDetail.replies}">
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 10%">
+                                <span th:text="${reply.writer.nickname}" class="reply-writer-nickname"></span>
+                            </td>
+                            <td class="reply-content-td">
+                                <form th:action="@{/club/clubLog/updateReply}" method="post" class="reply-update-form">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                                    <input type="hidden" name="logNo" th:value="${reply.logNo}">
+                                    <input type="hidden" name="replyNo" th:value="${reply.replyNo}">
+                                    <div th:id="'replyContent' + ${iterStat.index + 1}">
+                                        <span style="margin-right: 10px">|</span>
+                                        <span th:text="${reply.content}"></span>
+                                    </div>
+                                    <div th:id="'replyContentUpdateInput' + ${iterStat.index + 1}" style="display: none;">
+                                        <span style="margin-right: 10px">|</span>
+                                        <input type="text" name="content" class="input reply-update-input" th:value="${reply.content}" maxlength="100" required>
+                                    </div>
+                                    <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo}" style="display: flex; margin-left: auto;">
+                                        <div th:id="'replyUpdateFormBtn' + ${iterStat.index + 1}">
+                                            <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'">수정</button>
+                                        </div>
+                                        <div th:id="'replyUpdateBtn' + ${iterStat.index + 1}" style="display: none;">
+                                            <button type="submit" class="btn btn-udh-blue btn-reply">완료</button>
+                                        </div>
+                                        <div th:id="'replyUpdateCancelBtn' + ${iterStat.index + 1}" style="display: none;">
+                                            <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'inactiveReplyUpdateForm(' + ${iterStat.index + 1} + ')'">취소</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form th:id="'deleteReplyForm' + ${iterStat.index + 1}" th:action="@{/club/clubLog/deleteReply}" method="post">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                    <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                                    <input type="hidden" name="logNo" th:value="${reply.logNo}">
+                                    <input type="hidden" name="replyNo" th:value="${reply.replyNo}" />
+                                    <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+                                        <div th:id="'replyDeleteBtn' + ${iterStat.index + 1}">
+                                            <button type="button" class="btn btn-udh-red btn-reply" th:onclick="'confirmDeleteReply(' + ${iterStat.index + 1} + ')'">삭제</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    </table>
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 10%;">
+                            <span th:text="${reply.createdAt}" class="reply-etc"></span>
+                        </td>
+                        <td>
+                            <p class="p-tag reply-like">
+                                <span style="margin-left: 16px">&#128155;</span>
+                                <span th:text="${reply.likesCount}"></span>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <hr>
+            </div>
+        </div>
+        <div class="log-main-btn-container">
+            <a th:href="@{/club/clubLog/logMain(clubNo=${logDetail.clubNo})}">
+                <button class="btn btn-udh-blue btn-log-main">
+                    기록 목록으로
+                </button>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function activeReplyUpdateForm(num) {
+
+        document.getElementById('replyContent' + num).style.display = 'none';
+        document.getElementById('replyUpdateFormBtn' + num).style.display = 'none';
+        document.getElementById('replyDeleteBtn' + num).style.display = 'none';
+        document.getElementById('replyContentUpdateInput' + num).style.display = 'block';
+        document.getElementById('replyUpdateBtn' + num).style.display = 'block';
+        document.getElementById('replyUpdateCancelBtn' + num).style.display = 'block';
+
+    }
+
+    function inactiveReplyUpdateForm(num) {
+
+        document.getElementById('replyContent' + num).style.display = 'block';
+        document.getElementById('replyUpdateFormBtn' + num).style.display = 'block';
+        document.getElementById('replyDeleteBtn' + num).style.display = 'block';
+        document.getElementById('replyContentUpdateInput' + num).style.display = 'none';
+        document.getElementById('replyUpdateBtn' + num).style.display = 'none';
+        document.getElementById('replyUpdateCancelBtn' + num).style.display = 'none';
+
+    }
+
+    function confirmDeleteReply(num) {
+        if (confirm("정말로 댓글을 삭제하시겠습니까?")) {
+            document.getElementById('deleteReplyForm' + num).submit();
+        }
+    }
+
+</script>
+</body>
+</html>

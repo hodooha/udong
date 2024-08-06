@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .admin-content {
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 0 15px 15px 0;
+        }
+
+        h5 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 80px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 60px;
+        }
+
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #3B5C9A;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .page-button:hover {
+            background-color: #0B1D40;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+        .sortable:hover {
+            background-color: #e0e0e0;
+        }
+        .status-btn {
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status-text {
+            margin-right: 10px;
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<div class="admin-content">
+    <h5 style="text-align: center; margin-bottom: 100px;">블랙리스트 관리</h5>
+
+    <div id="blacklistContainer">
+        <table id="blacklistTable" class="admin-table">
+            <thead>
+            <tr>
+                <th>NO.</th>
+                <th>ID</th>
+                <th>이름</th>
+                <th>블랙리스트 등록일 ▼</th>
+                <th>블랙리스트 해제일 ▼</th>
+                <th>상태 변경</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${blacklistedMembers}">
+                <td th:text="${member.memberNo}"></td>
+                <td th:text="${member.memberId}"></td>
+                <td th:text="${member.nickname}"></td>
+                <td>
+                    <span th:text="${member.blackedAt != null ? member.blackedAt : '등록된 날짜 없음'}"></span>
+                </td>
+                <td>
+                    <span th:text="${member.isBlacked != 'Y' ? '해제된 날짜 없음' : #dates.format(member.blackedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                </td>
+                <td>
+                    <button th:if="${member.isBlacked.toString() == 'Y'}"
+                            th:onclick="'removeFromBlacklist(' + ${member.memberNo} + ')'"
+                            class="btn-udh-red status-btn">해제</button>
+                    <button th:if="${member.isBlacked.toString() != 'Y'}"
+                            th:onclick="'addToBlacklist(' + ${member.memberNo} + ')'"
+                            class="btn-udh-yellow status-btn">등록</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination"></div>
+</div>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+
+        $(document).ajaxSend(function(e, xhr, options) {
+            xhr.setRequestHeader(header, token);
+        });
+    });
+
+    function removeFromBlacklist(memberNo) {
+        if (confirm("정말로 블랙리스트에서 해제하시겠습니까?")) {
+            $.ajax({
+                type: "POST",
+                url: "/admin/blacklist/remove",
+                data: { memberNo: memberNo },
+                success: function(response) {
+                    if (response === "success") {
+                        alert("블랙리스트 해제 완료");
+                        updateBlacklistTable();
+                    } else {
+                        alert("오류가 발생했습니다.");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error status: " + textStatus);
+                    console.error("Error thrown: " + errorThrown);
+                    console.error("Response text: " + jqXHR.responseText);
+                    alert("서버와의 통신 중 문제가 발생했습니다.");
+                }
+            });
+        }
+    }
+
+    function addToBlacklist(memberNo) {
+        if (confirm("정말로 블랙리스트에 등록하시겠습니까?")) {
+            $.ajax({
+                type: "POST",
+                url: "/admin/blacklist/add",
+                data: { memberNo: memberNo },
+                success: function(response) {
+                    if (response === "success") {
+                        alert("블랙리스트 등록 완료");
+                        updateBlacklistTable();
+                    } else {
+                        alert("오류가 발생했습니다.");
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error status: " + textStatus);
+                    console.error("Error thrown: " + errorThrown);
+                    console.error("Response text: " + jqXHR.responseText);
+                    alert("서버와의 통신 중 문제가 발생했습니다.");
+                }
+            });
+        }
+    }
+
+    function updateBlacklistTable() {
+        $.ajax({
+            url: "/admin/blacklist", // 블랙리스트 조회 경로
+            type: "GET",
+            success: function(data) {
+                // 새 데이터를 테이블에 갱신
+                $("#blacklistContainer").html($(data).find("#blacklistContainer").html());
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error("Error status: " + textStatus);
+                console.error("Error thrown: " + errorThrown);
+                console.error("Response text: " + jqXHR.responseText);
+                alert("블랙리스트 테이블 갱신 중 오류가 발생했습니다.");
+            }
+        });
+    }
+</script>
+</body>
+</html>

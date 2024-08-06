@@ -6,7 +6,7 @@ import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
-import com.multi.udong.member.service.NTSAPI;
+import com.multi.udong.login.openFeign.NTSAPI;
 import com.multi.udong.member.service.NaverOcr;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -42,6 +43,7 @@ public class LoginController {
     private final NTSAPI ntsapi;
     private final MemberController memberController;
     private final CustomUserDetailsService customUserDetailsService;
+    private final NaverOcr naverOcr;
 
     /**
      * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
@@ -106,17 +108,12 @@ public class LoginController {
             AttachmentDTO attachmentDTO = memberController.settingFile(file);
             attachmentDTO.setTypeCode("BRG");
 
-            String savePath = "C:\\workspace\\local\\udong\\src\\main\\resources\\static\\uploadFiles\\";
+            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
             String fileName = savePath + attachmentDTO.getSavedName();
 
-//            String fileName = attachmentDTO.getFileUrl();
-
-            System.out.println("fileName : " + fileName);
-
             // NaverOcr로 사업자등록증 추출요청
-            NaverOcr ocr = new NaverOcr();
-            ArrayList<String> list = ocr.ocr(fileName);
-            System.out.println("list:" + list);
+            ArrayList<String> list = naverOcr.ocr(fileName);
 
             // 추출된 결과가 있다면
             if (!list.isEmpty()) {

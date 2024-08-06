@@ -1,5 +1,6 @@
 package com.multi.udong.member.model.dto;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,6 @@ public class MemBusDTO {
     private String createdAt;
     private Character approveStatus;
     private String approvedAt;
+    private MemberDTO memberDTO;
+    private AttachmentDTO attachmentDTO;
 }

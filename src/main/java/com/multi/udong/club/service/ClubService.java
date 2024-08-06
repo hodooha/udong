@@ -42,4 +42,22 @@ public interface ClubService {
     int updateClub(ClubDTO clubDTO) throws Exception;
 
     List<AttachmentDTO> selectClubImg(int clubNo) throws Exception;
+
+    int insertLog(LogDTO logDTO) throws Exception;
+
+    String checkAdmin(int memberNo) throws Exception;
+
+    List<LogDTO> selectLogList(FilterDTO filterDTO) throws Exception;
+
+    int selectLogCount(FilterDTO filterDTO) throws Exception;
+
+    LogDTO selectLogDetail(RequestDTO requestDTO) throws Exception;
+
+    int insertReply(ReplyDTO replyDTO) throws Exception;
+
+    int checkReplyWriter(int replyNo) throws Exception;
+
+    int updateReply(ReplyDTO replyDTO) throws Exception;
+
+    int deleteReply(ReplyDTO replyDTO) throws Exception;
 }

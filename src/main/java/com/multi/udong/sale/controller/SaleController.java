@@ -204,6 +204,7 @@ public class SaleController {
                 String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
 
                 file.transferTo(new File(imgPath + "\\" + savedName));
+                report.setImageFileName(savedName);
                 report.setUrl(report.getUrl() + "?file=" + savedName);
             }
 

@@ -172,11 +172,13 @@ public class MemberServiceImpl implements MemberService {
             return "isMaster";
         }
 
-        if (memberMapper.deleteMember(memberNo) != 1) {
-            return "disable";
-
-        } else {
+        if (memberMapper.deleteMember(memberNo) == 1) {
+            if (memberMapper.checkMemBus(memberNo) != null) {
+                memberMapper.deleteMemBus(memberNo);
+            }
             return "able";
+        } else {
+            return "disable";
         }
     }
 
