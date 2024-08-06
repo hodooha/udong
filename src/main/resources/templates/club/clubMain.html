@@ -156,12 +156,11 @@
     <div class="top">
         <form class="search-form" th:action="@{/club/clubMain}" method="get">
             <div class="search-bar">
-                <input type="hidden" name="page" value="1">
                 <span>주제</span>
                 <select class="category-select" name="categoryCode">
                     <option value="ALL">전체</option>
                 </select>
-                <span style="margin-left: 50px">모임명 검색</span>
+                <span style="margin-left: 50px">모임 검색</span>
                 <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력..." th:value="${filter.searchWord}">
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>

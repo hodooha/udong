@@ -66,6 +66,76 @@
 
     </resultMap>
 
+    <resultMap id="logResultMap" type="com.multi.udong.club.model.dto.LogDTO">
+
+        <id property="logNo" column="log_no"/>
+
+        <result property="clubNo" column="club_no"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="views" column="views"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="modifiedAt" column="modified_at"/>
+        <result property="repliesCount" column="replies_count"/>
+        <result property="likesCount" column="likes_count"/>
+        <result property="viewerLike" column="viewer_log_like"/>
+
+        <association property="writer" resultMap="logWriterResultMap"/>
+
+        <collection property="attachments" resultMap="attachmentResultMap"/>
+        <collection property="likes" resultMap="logLikeResultMap"/>
+        <collection property="replies" resultMap="logReplyResultMap"/>
+
+    </resultMap>
+
+    <resultMap id="logWriterResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+
+        <id property="memberNo" column="log_writer"/>
+        <result property="nickname" column="log_writer_nickname"/>
+
+    </resultMap>
+
+    <resultMap id="logLikeResultMap" type="com.multi.udong.club.model.dto.LikeDTO">
+
+        <id property="logNo" column="liked_log_no"/>
+        <id property="memberNo" column="log_like_member_no"/>
+        <result property="likedAt" column="log_liked_at"/>
+
+    </resultMap>
+
+    <resultMap id="logReplyResultMap" type="com.multi.udong.club.model.dto.ReplyDTO">
+
+        <id property="replyNo" column="reply_no"/>
+
+        <result property="logNo" column="replied_log_no"/>
+        <result property="content" column="reply_content"/>
+        <result property="createdAt" column="reply_created_at"/>
+        <result property="modifiedAt" column="reply_modified_at"/>
+        <result property="viewerLike" column="viewer_reply_like"/>
+        <result property="likesCount" column="reply_likes_count"/>
+
+        <association property="writer" resultMap="replyWriterResultMap"/>
+
+        <collection property="likes" resultMap="replyLikeResultMap"/>
+
+    </resultMap>
+
+    <resultMap id="replyWriterResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+
+        <id property="memberNo" column="reply_writer"/>
+        <result property="nickname" column="reply_writer_nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
+
+    </resultMap>
+
+    <resultMap id="replyLikeResultMap" type="com.multi.udong.club.model.dto.LikeDTO">
+
+        <id property="logNo" column="liked_reply_no"/>
+        <id property="memberNo" column="reply_like_member_no"/>
+        <result property="likedAt" column="reply_liked_at"/>
+
+    </resultMap>
+
 
 
     <select id="selectCategoryList" resultMap="categoryResultMap">
@@ -143,7 +213,10 @@
             AND A.category_code = #{ categoryCode }
         </if>
         <if test="searchWord != null and searchWord != ''">
-            AND A.club_name LIKE CONCAT('%', #{ searchWord }, '%')
+            AND (
+                A.club_name LIKE CONCAT('%', #{ searchWord }, '%')
+                OR A.introduction LIKE CONCAT('%', #{ searchWord }, '%')
+            )
         </if>
         ORDER BY current_personnel DESC
         LIMIT #{ startIndex }, #{ pageCount }
@@ -156,7 +229,10 @@
             AND category_code = #{ categoryCode }
         </if>
         <if test="searchWord != null and searchWord != ''">
-            AND club_name LIKE CONCAT('%', #{ searchWord }, '%')
+            AND (
+                club_name LIKE CONCAT('%', #{ searchWord }, '%')
+                OR introduction LIKE CONCAT('%', #{ searchWord }, '%')
+            )
         </if>
     </select>
 
@@ -218,7 +294,7 @@
 
     <delete id="deleteClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
         DELETE FROM CL
-        WHERE club_no = #{ clubNo } AND master = #{ memberNo }
+        WHERE club_no = #{ clubNo }
     </delete>
 
     <delete id="deleteClubImg" parameterType="Integer">
@@ -261,5 +337,132 @@
         FROM ATTACHMENT
         WHERE type_code = 'CL' AND target_no = #{ clubNo }
     </select>
+
+    <insert id="insertLog" parameterType="com.multi.udong.club.model.dto.LogDTO" useGeneratedKeys="true" keyProperty="logNo">
+        INSERT INTO CL_LOG
+            (club_no, title, content, writer)
+        VALUES
+            (
+            #{ clubNo },
+            #{ title },
+            #{ content },
+            #{ writer.memberNo }
+            )
+    </insert>
+
+    <insert id="insertLogImg" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        INSERT INTO ATTACHMENT
+            (type_code, target_no, original_name, saved_name)
+        VALUES
+            (
+            #{ typeCode },
+            #{ targetNo },
+            #{ originalName },
+            #{ savedName }
+            )
+    </insert>
+
+    <select id="checkAdmin" parameterType="Integer" resultType="String">
+        SELECT authority
+        FROM MEMBER
+        WHERE member_no = #{ memberNo }
+    </select>
+
+    <select id="selectLogList" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultMap="logResultMap">
+        SELECT
+        A.log_no,
+        A.club_no,
+        A.title,
+        A.content,
+        A.views,
+        A.created_at,
+        B.nickname AS log_writer_nickname,
+        (SELECT COUNT(*) FROM CL_LOG_LIKE C WHERE C.log_no = A.log_no) AS likes_count,
+        (SELECT COUNT(*) FROM CL_LOG_REPLY D WHERE D.log_no = A.log_no) AS replies_count,
+        (SELECT E.saved_name FROM ATTACHMENT E WHERE E.type_code = 'CL-LOG' AND E.target_no = A.log_no ORDER BY E.file_no LIMIT 1) AS saved_name
+        FROM CL_LOG A
+        LEFT JOIN MEMBER B ON A.writer = B.member_no
+        WHERE A.club_no = #{ clubNo }
+        <if test="searchWord != null and searchWord != ''">
+            AND (
+                A.title LIKE CONCAT('%', #{ searchWord }, '%')
+                OR A.content LIKE CONCAT('%', #{ searchWord }, '%')
+            )
+        </if>
+        ORDER BY A.log_no DESC
+        LIMIT #{ startIndex }, #{ pageCount }
+    </select>
+
+    <select id="selectLogCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
+        SELECT COUNT(*) log_count FROM CL_LOG
+        WHERE club_no = #{ clubNo }
+        <if test="searchWord != null and searchWord != ''">
+            AND (
+                title LIKE CONCAT('%', #{ searchWord }, '%')
+                OR content LIKE CONCAT('%', #{ searchWord }, '%')
+            )
+        </if>
+    </select>
+
+    <select id="selectLogDetail" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="logResultMap">
+        SELECT
+            A.log_no,
+            A.club_no,
+            A.title,
+            A.content,
+            A.views,
+            A.created_at,
+            A.modified_at,
+            A.writer AS log_writer,
+            B.nickname AS log_writer_nickname,
+            C.reply_no,
+            C.log_no AS replied_log_no,
+            C.content AS reply_content,
+            C.writer AS reply_writer,
+            C.created_at AS reply_created_at,
+            C.modified_at AS reply_modified_at,
+            (SELECT nickname FROM MEMBER B WHERE B.member_no = C.writer) AS reply_writer_nickname,
+            (SELECT COUNT(*) FROM CL_LOG_LIKE C WHERE C.log_no = A.log_no) AS likes_count,
+            (SELECT COUNT(*) FROM CL_LOG_LIKE C WHERE C.log_no = A.log_no AND C.member_no = #{ memberNo }) AS viewer_log_like,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY D WHERE D.log_no = A.log_no) AS replies_count,
+            E.*,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no AND F.member_no = #{ memberNo }) AS viewer_reply_like,
+            (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no) AS reply_likes_count,
+            (SELECT COUNT(*) FROM ATTACHMENT E WHERE E.type_code = 'MEM' AND E.target_no = #{ memberNo }) AS profile_saved_name
+        FROM CL_LOG A
+        LEFT JOIN MEMBER B ON A.writer = B.member_no
+        LEFT JOIN CL_LOG_REPLY C ON A.log_no = C.log_no
+        LEFT JOIN ATTACHMENT E ON E.type_code = 'CL-LOG' AND A.log_no = E.target_no
+        WHERE A.log_no = #{ logNo } AND A.club_no = #{ clubNo }
+    </select>
+
+    <insert id="insertReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        INSERT INTO CL_LOG_REPLY
+            (log_no, content, writer)
+        VALUES
+            (
+            #{ logNo },
+            #{ content },
+            #{ writer.memberNo }
+            )
+    </insert>
+
+    <select id="checkReplyWriter" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM CL_LOG_REPLY
+        WHERE reply_no = #{ replyNo }
+    </select>
+
+    <update id="updateReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        UPDATE CL_LOG_REPLY
+        SET
+            content = #{ content }
+        WHERE reply_no = #{ replyNo } AND log_no = #{ logNo }
+    </update>
+
+    <delete id="deleteReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
+        DELETE FROM CL_LOG_REPLY
+        WHERE reply_no = #{ replyNo } AND log_no = #{ logNo }
+    </delete>
 
 </mapper>
