@@ -58,7 +58,6 @@ $(function(){
 
         window.addEventListener("popstate", function(event) {
             if (event.state) {
-                console.log(event.state);
                 restoreDreamFormState(event.state);
                 updateLendList(event.state);
             }
@@ -68,7 +67,6 @@ $(function(){
         if (savedState) {
              restoreDreamFormState(savedState);
              updateLendList(savedState);
-             console.log(savedState);
         } else {
             getLendList(1);
         }
@@ -78,7 +76,21 @@ $(function(){
     }
 
     if(bodyId == "dreamBorrow"){
-        getBorrowList(1);
+
+        window.addEventListener("popstate", function(event) {
+            if (event.state) {
+                restoreDreamFormState(event.state);
+                updateBorrowList(event.state);
+            }
+        });
+
+        let savedState = history.state;
+        if (savedState) {
+             restoreDreamFormState(savedState);
+             updateBorrowList(savedState);
+        } else {
+            getBorrowList(1);
+        }
     }
 
 

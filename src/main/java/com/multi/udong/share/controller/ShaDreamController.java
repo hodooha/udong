@@ -56,6 +56,18 @@ public class ShaDreamController {
      */
     @GetMapping("/borrow")
     public String dreamBorrowMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+        List<ShaCatDTO> catList = null;
+        try {
+            // 로그인 확인
+            if (c == null) {
+                throw new Exception("로그인을 먼저 해주세요.");
+            }
+            catList = shareService.getShaCat();
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("msg", e.getMessage());
+        }
+        model.addAttribute("catList", catList);
         return "share/dreamBorrow";
     }
 

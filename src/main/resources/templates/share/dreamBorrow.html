@@ -236,11 +236,12 @@
             </label>
             <select class="form-select stat-select me-3" id=statusSelect name="statusSelect" onchange="getBorrowList()">
                 <option value="">== 전체 ==</option>
+                <option value="RQD">신청완료</option>
                 <option value="RNT">대여중</option>
-                <option value="AVL">대여가능</option>
-                <option value="UNAV">대여불가</option>
-                <option value="GIV">나눔중</option>
-                <option value="GVD">나눔완료</option>
+                <option value="RTR">반납완료</option>
+                <option value="REV">평가완료</option>
+                <option value="WIN">당첨</option>
+                <option value="LST">낙첨</option>
             </select>
 
             <input class="form-control me-2" type="search" placeholder="검색어를 입력하세요." id="keyword" style="width:13em">
@@ -306,28 +307,27 @@
                             </div>
                         </div>
 
-                        <div th:if="${req.itemDTO.statusCode == 'RNT'}" class="btn-group">
+                        <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
                             <div class="mb-3 btns-1">
                                 <button th:onclick="|location.href='@{/share/update(itemNo=${req.itemDTO.itemNo})}'|"
-                                        class="btn btn-udh-silver" style="width:49%">수정
+                                        class="btn btn-udh-silver" style="width:49%">신청취소
                                 </button>
-                                <button class="btn btn-udh-red" style="width:49%">신고</button>
+
                             </div>
                             <div class="btns-2">
                                 <button class="btn btn-udh-yellow" style="width:49%">쪽지하기</button>
-                                <button class="btn btn-udh-blue" style="width:49%" th:onclick="getRentedReq([[${req.itemDTO}]])">반납완료</button>
                             </div>
                         </div>
-                        <div th:if="${req.itemDTO.statusCode == 'GVD'}" class="btn-group">
-                            <div class="btns-1">
-                                <button class="btn btn-udh-yellow " style="width:100%">쪽지하기</button>
-                            </div>
-                        </div>
-                        <div th:if="${req.itemDTO.statusCode == 'GIV'}" class="btn-group">
-                            <div class="btns-1">
-                                <button class="btn btn-udh-silver " style="width:100%">추첨하기</button>
-                            </div>
-                        </div>
+<!--                        <div th:if="${req.itemDTO.statusCode == 'GVD'}" class="btn-group">-->
+<!--                            <div class="btns-1">-->
+<!--                                <button class="btn btn-udh-yellow " style="width:100%">쪽지하기</button>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div th:if="${req.itemDTO.statusCode == 'GIV'}" class="btn-group">-->
+<!--                            <div class="btns-1">-->
+<!--                                <button class="btn btn-udh-silver " style="width:100%">추첨하기</button>-->
+<!--                            </div>-->
+<!--                        </div>-->
                     </div>
                 </div>
                 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"

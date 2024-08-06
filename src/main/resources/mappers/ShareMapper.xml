@@ -343,10 +343,10 @@
             row_number() over (order by b.created_at desc) as rn
             from sha_items b
             left join
-            member d
+                member d
             on b.owner_no = d.member_no
             inner join
-            location f
+                location f
             on b.loc_code = f.location_code
             left join
             (
@@ -356,7 +356,7 @@
             ) e
             on b.item_no = e.req_item
             left join
-            sha_cat g
+                sha_cat g
             on b.item_cat_code = g.cat_code
             where b.deleted_at is null
             and b.owner_no = #{ownerNo}
@@ -379,7 +379,7 @@
         on a.item_no = c.target_no
         and a.item_group = c.type_code
         left join
-        sha_status e
+            sha_status e
         on a.status_code = e.status_code
         where a.rn between #{start} and #{end}
         order by a.rn
@@ -400,7 +400,7 @@
         select count(*)
         from sha_req a
         left join
-        sha_items b
+            sha_items b
         on
         a.req_item = b.item_no
         where
@@ -444,17 +444,17 @@
             ) d
             on g.req_item = d.item_no
             where rqst_no = #{rqstNo}
+            <if test="catCode != null and catCode != ''">and d.item_cat_code = #{catCode}</if>
+            <if test="group != null and group != ''">and d.item_group = #{group}</if>
+            <if test="itemNo != 0 and itemNo != ''">and g.reqItem = #{itemNo}</if>
+            <if test="statusCode != null and statusCode != ''">and g.status_code = #{statusCode}</if>
+            <if test="keyword != null and keyword != ''">and (d.title like concat('%', #{keyword}, '%') or d.content like concat('%', #{keyword}, '%')) </if>
         ) a
         left join
         sha_status e
         on a.req_status_code = e.status_code
         where a.rn between #{start} and #{end}
         order by a.rn
-        <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
-        <if test="group != null and group != ''">and item_group = #{group}</if>
-        <if test="itemNo != 0 and itemNo != ''">and reqItem = #{itemNo}</if>
-        <if test="statusCode != null and statusCode != ''">and sha_req.status_code = #{statusCode}</if>
-        <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
     </select>
 
     <select id="getRequesters" resultMap="shaReqMap">
