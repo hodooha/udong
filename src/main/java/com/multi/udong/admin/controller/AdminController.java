@@ -214,4 +214,10 @@ public class AdminController {
         adminService.addMemberToBlacklist(memberNo);
         return "success";
     }
+
+    @GetMapping("/notice")
+    public String getAllReports() {
+
+        return "admin/notice";
+    }
 }
