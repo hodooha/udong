@@ -74,4 +74,12 @@ public interface ClubService {
     int deleteAttachment(AttachmentDTO deletedImg) throws Exception;
 
     int insertAttachment(AttachmentDTO newImg) throws Exception;
+
+    List<AttachmentDTO> selectLogImg(int logNo) throws Exception;
+
+    int deleteLog(LogDTO logDTO) throws Exception;
+
+    int insertLogLike(LikeDTO likeDTO) throws Exception;
+
+    int deleteLogLike(LikeDTO likeDTO) throws Exception;
 }
