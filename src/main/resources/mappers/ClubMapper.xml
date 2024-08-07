@@ -302,12 +302,13 @@
         WHERE type_code = 'CL' AND target_no = #{ clubNo }
     </delete>
 
-    <insert id="reportClub" parameterType="com.multi.udong.club.model.dto.ReportDTO">
+    <insert id="report" parameterType="com.multi.udong.club.model.dto.ReportDTO">
         INSERT INTO ADM_REPORT
-            (type_code, reported_member, reporter_member, reason, url)
+            (type_code, reported_no, reported_member, reporter_member, reason, url)
         VALUES
             (
             #{ typeCode },
+            #{ reportedNo },
             #{ reportedMember },
             #{ reporterMember },
             #{ reason },
@@ -464,5 +465,51 @@
         DELETE FROM CL_LOG_REPLY
         WHERE reply_no = #{ replyNo } AND log_no = #{ logNo }
     </delete>
+
+    <select id="checkLogWriter" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM CL_LOG
+        WHERE log_no = #{ logNo }
+    </select>
+
+    <select id="selectAttachment" parameterType="Integer" resultMap="attachmentResultMap">
+        SELECT *
+        FROM ATTACHMENT
+        WHERE file_no = #{ fileNo }
+    </select>
+
+    <update id="updateLog" parameterType="com.multi.udong.club.model.dto.LogDTO">
+        UPDATE CL_LOG
+        SET
+            title = #{ title },
+            content = #{ content },
+            modified_at = NOW()
+        WHERE club_no = #{ clubNo } AND log_no = #{ logNo }
+    </update>
+
+    <update id="updateAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        UPDATE ATTACHMENT
+        SET
+            original_name = #{ originalName },
+            saved_name = #{ savedName }
+        WHERE file_no = #{ fileNo } AND type_code = #{ typeCode } AND target_no = #{ targetNo }
+    </update>
+
+    <delete id="deleteAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        DELETE FROM ATTACHMENT
+        WHERE file_no = #{ fileNo } AND type_code = #{ typeCode } AND target_no = #{ targetNo }
+    </delete>
+
+    <insert id="insertAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        INSERT INTO ATTACHMENT
+            (type_code, target_no, original_name, saved_name)
+        VALUES
+            (
+            #{ typeCode },
+            #{ targetNo },
+            #{ originalName },
+            #{ savedName }
+            )
+    </insert>
 
 </mapper>
