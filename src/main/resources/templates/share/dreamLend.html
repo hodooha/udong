@@ -284,7 +284,7 @@
                         </div>
                     </div>
                     <div class="col-2 status-area">
-                        <h5 class="align-middle">[[${item.statusName}]]</h5>
+                        <h5 class="align-middle" style="margin:0;">[[${item.statusName}]]</h5>
                         <div th:if="${item.statusCode == 'RNT'}" class="align-middle">반납예정일: [[${item.returnDate}]]
                         </div>
                     </div>
@@ -315,7 +315,7 @@
                                         class="btn btn-udh-silver" style="width:49%">수정
                                 </button>
                                 <button class="btn btn-udh-red" style="width:49%"
-                                        th:onclick="toggleReportModal([[${item}]])">미반납신고
+                                        th:onclick="toggleReportModal([[${item}]])">신고하기
                                 </button>
                             </div>
                             <div class="btns-2">
@@ -369,7 +369,7 @@
 
     </div>
 
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+    <div th:fragment="deleteModal" class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -470,119 +470,112 @@
         </div>
     </div>
 
-    <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="evalModalLabel">이웃 평가 후 '반납완료' 처리가 가능합니다. </h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div th:if="${req != null && req != ''}" class="modal-body text-center">
-                    [[${req.rqstNickname}]]님의 매너를 평가해 주세요.
-
-
-                    <div class="star_rating mt-3">
-                        <input type="hidden" id="score">
-                        <span class="star on" data-value="1"> </span>
-                        <span class="star" data-value="2"> </span>
-                        <span class="star" data-value="3"> </span>
-                        <span class="star" data-value="4"> </span>
-                        <span class="star" data-value="5"> </span>
+    <div id="evalAndReportModal">
+        <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="evalModalLabel">이웃 평가 후 '반납완료' 처리가 가능합니다. </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <button type="button" class="btn btn-primary" th:onclick="postScore([[${req}]])">확인</button>
+                    <div th:if="${req != null && req != ''}" class="modal-body text-center">
+                        [[${req.rqstNickname}]]님의 매너를 평가해 주세요.
+
+
+                        <div class="star_rating mt-3">
+                            <input type="hidden" id="score">
+                            <span class="star on" data-value="1"> </span>
+                            <span class="star" data-value="2"> </span>
+                            <span class="star" data-value="3"> </span>
+                            <span class="star" data-value="4"> </span>
+                            <span class="star" data-value="5"> </span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" th:onclick="postScore([[${req}]])">확인</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!--    <div th:if="${req != null}" class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">-->
-    <!--        <div class="modal-dialog">-->
-    <!--            <div class="modal-content">-->
-    <!--                <div class="modal-header">-->
-    <!--                    <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>-->
-    <!--                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>-->
-    <!--                </div>-->
-    <!--                <div class="modal-body">-->
-    <!--                    <div class="mb-3 row">-->
-    <!--                        <label for="itemTitle" class="col-sm-2 col-form-label">물건</label>-->
-    <!--                        <div class="col-sm-10">-->
-    <!--                            <input type="hidden" name="reportedNo" th:value="${req.reqItem}">-->
-    <!--                            <input type="text" readonly class="form-control-plaintext" id="itemTitle" th:value="${req.itemDTO.itemTitle}">-->
-    <!--                        </div>-->
-    <!--                    </div>-->
-    <!--                    <div class="mb-3 row">-->
-    <!--                        <label for="reporterMember" class="col-sm-2 col-form-label">신고인</label>-->
-    <!--                        <div class="col-sm-10">-->
-    <!--                            <input name="reporterMember" type="text" class="form-control" id="reporterMember" th:value="${req.rqstNickname}">-->
-    <!--                        </div>-->
-    <!--                    </div>-->
-    <!--                    <div class="mb-3 row">-->
-    <!--                        <label for="reportedMember" class="col-sm-2 col-form-label">신고대상</label>-->
-    <!--                        <div class="col-sm-10">-->
-    <!--                            <input name="reportedMember" type="text" class="form-control" id="reportedMember" th:value="${req.rqstNickname}" >-->
-    <!--                        </div>-->
-    <!--                    </div>-->
-    <!--                    <div class="mb-3">-->
-    <!--                        <label for="reason" class="form-label">신고 내용</label>-->
-    <!--                        <textarea name="reason" class="form-control" id="reason" rows="3"></textarea>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--                <div class="modal-footer">-->
-    <!--                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>-->
-    <!--                    <button type="button" class="btn btn-primary">Save changes</button>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </div>-->
+        <div th:fragment="reportModal" class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <th:block th:if="${req != null}">
+                            <form id="reportForm">
+                                <div class="mb-3 row">
+                                    <label for="itemTitle" class="col-sm-2 col-form-label">물건:</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" readonly class="form-control-plaintext" id="itemTitle"
+                                               th:value="${req.itemDTO.title}">
+                                        <input type="hidden" name="reportedNo" th:value="${req.reqNo}">
+                                        <input type="hidden" name="typeCode" th:value="${req.itemDTO.itemGroup}">
+                                        <input type="hidden" name="itemNo" th:value="${req.reqItem}">
+                                    </div>
 
-    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3 row">
-                            <label for="itemTitle" class="col-sm-2 col-form-label">물건:</label>
-                            <div class="col-sm-10">
-                                <input type="text" readonly class="form-control-plaintext" id="itemTitle"
-                                       value="풀리오 풀리오">
-                            </div>
-                            <input type="hidden" name="reportedNo">
 
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="reporterMember" class="col-sm-2 col-form-label">신고인:</label>
-                            <div class="col-sm-10">
-                                <input name="reporterMember" type="text" readonly class="form-control-plaintext"
-                                       id="reporterMember" value="호두다호두다">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="reportedMember" class="col-sm-2 col-form-label">신고대상:</label>
-                            <div class="col-sm-10">
-                                <input name="reportedMember" type="text" class="form-control-plaintext"
-                                       id="reportedMember"
-                                       readonly value="테스트테스트">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="reason" class="col-sm-2 col-form-label">신고내용:</label>
-                            <div class="col-sm-10">
-                                <textarea name="reason" class="form-control" id="reason" rows="3"></textarea>
-                            </div>
-                        </div>
-                    </form>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="reporterMember" class="col-sm-2 col-form-label">신고인:</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" readonly class="form-control-plaintext"
+                                               id="reporterMember" th:value="${req.ownerNickname}">
+                                        <input type="hidden" name="reporterMember" th:value="${req.itemDTO.ownerNo}">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="reportedMember" class="col-sm-2 col-form-label">신고대상:</label>
+                                    <div  class="col-sm-10">
+                                        <input type="text" class="form-control-plaintext"
+                                               id="reportedMember"
+                                               readonly th:value="${req.rqstNickname}">
+                                        <input type="hidden" name="reportedMember" th:value="${req.rqstNo}">
+                                    </div>
+                                </div>
+                                <div class="mb-3 row">
+                                    <label for="reasonDetail" class="col-sm-2 col-form-label">신고내용:</label>
+                                    <div class="col-sm-10 p-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reasonType"
+                                                   id="exampleRadios1" value="미반납" checked>
+                                            <label class="form-check-label" for="exampleRadios1">
+                                                물건을 돌려받지 못했어요.
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reasonType"
+                                                   id="exampleRadios2" value="반납물건이상">
+                                            <label class="form-check-label" for="exampleRadios2">
+                                                돌려받은 물건의 상태가 이상해요.
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="reasonType"
+                                                   id="exampleRadios3" value="기타">
+                                            <label class="form-check-label" for="exampleRadios3">
+                                                기타
+                                            </label>
+                                        </div>
+                                        <textarea name="reasonDetail" class="form-control" id="reasonDetail" rows="3"
+                                                  placeholder="이웃과 나눈 쪽지 내용이나 물건의 상태 등을 적어주세요."></textarea>
+                                    </div>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </form>
+                        </th:block>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-udh-red" id="reportBtn" >신고</button>
+                    </div>
                 </div>
             </div>
         </div>

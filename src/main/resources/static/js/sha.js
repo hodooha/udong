@@ -405,6 +405,18 @@ function updateItemDetail(){
     });
 }
 
+function deleteItem(item){
+    if(item.statusCode == 'RNT'){
+        alert("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
+        $('#deleteModal').modal("hide", true);
+        return;
+    }
+
+    let reqUrl = `/share/delete?itemNo=${item.itemNo}&itemGroup=${item.itemGroup}`;
+
+    location.href = reqUrl;
+}
+
 function shaRequest(item) {
     let returnDate = $('#datePicker').val();
 
@@ -532,7 +544,7 @@ function getRentedReq(item){
     }
 
     ajax_get(reqUrl, data).done(function(result){
-        $('#evalModal').replaceWith(result);
+        $('#evalAndReportModal').replaceWith(result);
         $('#evalModal').modal('toggle');
         $('.star_rating > .star').click(function() {
             $(this).parent().children('span').removeClass('on');
@@ -648,16 +660,52 @@ function evalWithEndReq(req){
 }
 
 function toggleReportModal(item){
-    $('#reportModal').modal("toggle", true);
+    let reqUrl = "/share/dream/getRentedReq";
+    let data = {
+        reqItem: item.itemNo,
+        statusCode: "RNT"
+    }
+
+    ajax_get(reqUrl, data).done(function(result){
+        $('#evalAndReportModal').replaceWith(result);
+        $('#reportModal').modal("toggle", true);
+        $('#reportBtn').on("click", function(){
+            postReport();
+        })
+    })
 
 
 }
 
-function reportByLender(item){
+function postReport(){
+    let reqUrl = "/share/dream/insertReport";
+    let data = $('#reportForm').serialize();
 
+    ajax_post(reqUrl, data).done(function(msg){
+        console.log("신고 완료");
+        alert(msg);
+        $('#reportModal').modal("toggle", true);
+    })
 
+}
 
+function toggleReportModalBorrow(req){
 
+    console.log(req);
+    $('#reportModal').modal("toggle", true);
+
+    $('input[id="itemTitle"]').val(req.itemDTO.title);
+    $('input[name="reportedNo"]').val(req.reqNo);
+    $('input[name="typeCode"]').val(req.itemDTO.itemGroup);
+    $('input[name="itemNo"]').val(req.reqItem);
+    $('input[id="reporterMember"]').val(req.rqstNickname);
+    $('input[name="reporterMember"]').val(req.rqstNo);
+    $('input[id="reportedMember"]').val(req.ownerNickname);
+    $('input[name="reportedMember"]').val(req.itemDTO.ownerNo);
+
+    $('#reportBtn').on("click", function(){
+        postReport();
+    })
 }
 
 

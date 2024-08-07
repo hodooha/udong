@@ -17,7 +17,7 @@
 
         }
 
-        .row > div{
+        .dream .row > div{
             height: 150px;
         }
 
@@ -285,7 +285,7 @@
                     </div>
                     <div class="col-2 status-area">
                         <h5 class="align-middle" style="margin:0">[[${req.statusName}]]</h5>
-                        <div class="align-middle" style="margin:0">[[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd
+                        <div class="align-middle" style="margin:0; font-size:0.8em;">[[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd
                             HH:mm')}]]
                         </div>
                         <div th:if="${req.statusCode == 'RQD' && req.returnDate != null}">반납희망일: [[${req.returnDate}]]
@@ -308,7 +308,9 @@
 
                         <div th:if="${req.statusCode == 'RNT'}" class="btn-group">
                             <div class="mb-3 btns-1">
-                                <button class="btn btn-udh-red" style="width:100%">물건신고</button>
+                                <button th:onclick="toggleReportModalBorrow([[${req}]])" class="btn btn-udh-red"
+                                        style="width:100%">물건신고
+                                </button>
                             </div>
                             <div class="btns-2">
                                 <button class="btn btn-udh-yellow" style="width:100%">쪽지하기</button>
@@ -326,10 +328,7 @@
                         </div>
                     </div>
                 </div>
-
             </div>
-
-
         </th:block>
 
         <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel"
@@ -379,87 +378,6 @@
             </div>
         </div>
 
-        <div id="dreamModals">
-            <div class="modal fade" id="selectRqst" aria-hidden="true" aria-labelledby="selectRqstLabel" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="selectRqstLabel">대여를 확정할 이웃을 선택해주세요.</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <th:block th:if="${#lists.isEmpty(requesters)}">
-                                <div>
-                                    대여를 신청한 이웃이 없습니다.
-                                </div>
-                            </th:block>
-                            <th:block th:unless="${#lists.isEmpty(requesters)}">
-                                <table class="table table-warning table-hover table-bordered text-center ">
-                                    <thead>
-                                    <tr class="">
-                                        <th scope="col">체크</th>
-                                        <th scope="col">대여신청자</th>
-                                        <th scope="col">신청일시</th>
-                                        <th scope="col">반납희망일</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="req, stat : ${requesters}">
-                                        <th scope="row"><label>
-                                            <input type="radio" name="requesters" th:value="${req.rqstNo}"
-                                                   th:checked="${stat.first ? 'true' : 'false'}">
-                                        </label></th>
-                                        <td>[[${req.rqstNickname}]]</td>
-                                        <td>[[${#temporals.format(req.createdAt, 'yyyy.MM.dd HH:mm')}]]</td>
-                                        <td>[[${req.returnDate}]]</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </th:block>
-                        </div>
-                        <div class="modal-footer">
-                            <th:block th:if="${#lists.isEmpty(requesters)}">
-                                <button class="btn btn-udh-blue" data-bs-target="#selectRqst" data-bs-toggle="modal">
-                                    확인
-                                </button>
-                            </th:block>
-                            <th:block th:unless="${#lists.isEmpty(requesters)}">
-                                <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-toggle="modal">
-                                    취소
-                                </button>
-                                <button class="btn btn-udh-blue" th:onclick="checkReturnDate([[${requesters}]])"
-                                        id="checkDateBtn">다음
-                                </button>
-                            </th:block>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal fade" id="approveReq" aria-hidden="true" aria-labelledby="approveReqLabel" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="approveReqLabel">반납예정일을 확인해주세요.</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <label class="form-label">📅반납희망일 확인</label>
-
-                            <div class="input-group input-daterange">
-                                <input type="date" class="form-control" name="return" id="datePicker" readonly>
-                            </div>
-                            <span style="font-size:0.7em">*반납예정일을 확정해주세요..</span>
-                        </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-udh-silver" id="backToSelectReq">이전
-                            </button>
-                            <button class="btn btn-udh-blue" id="approveBtn">확정</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
         <nav class="row mt-3" th:if="${pageInfo} != null">
             <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
                 <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
@@ -483,6 +401,84 @@
                 </li>
             </ul>
         </nav>
+
+        <div class="modal fade" id="reportModal" tabindex="-1"
+             aria-labelledby="reportModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="reportForm">
+                            <div class="mb-3 row">
+                                <label for="itemTitle" class="col-sm-2 col-form-label">물건:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext" id="itemTitle">
+                                    <input type="hidden" name="reportedNo">
+                                    <input type="hidden" name="typeCode">
+                                    <input type="hidden" name="itemNo">
+                                </div>
+
+
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="reporterMember" class="col-sm-2 col-form-label">신고인:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" readonly class="form-control-plaintext"
+                                           id="reporterMember">
+                                    <input type="hidden" name="reporterMember">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="reportedMember" class="col-sm-2 col-form-label">신고대상:</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control-plaintext"
+                                           id="reportedMember"
+                                           readonly >
+                                    <input type="hidden" name="reportedMember">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="reasonDetail" class="col-sm-2 col-form-label">신고내용:</label>
+                                <div class="col-sm-10 p-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reasonType"
+                                               id="exampleRadios1" value="미전달" checked>
+                                        <label class="form-check-label" for="exampleRadios1">
+                                            물건을 전달받지 못했어요.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reasonType"
+                                               id="exampleRadios2" value="받은물건이상">
+                                        <label class="form-check-label" for="exampleRadios2">
+                                            대여 및 나눔받은 물건의 상태가 이상해요.
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="reasonType"
+                                               id="exampleRadios3" value="기타">
+                                        <label class="form-check-label" for="exampleRadios3">
+                                            기타
+                                        </label>
+                                    </div>
+                                    <textarea name="reasonDetail" class="form-control" id="reasonDetail" rows="3"
+                                              placeholder="이웃과 나눈 쪽지 내용이나 물건의 상태 등을 적어주세요."></textarea>
+                                </div>
+
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-udh-red" id="reportBtn">신고</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 

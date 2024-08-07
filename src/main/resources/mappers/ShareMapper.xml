@@ -220,8 +220,9 @@
         </choose>
     </insert>
 
-    <select id="findRequest" resultType="shaReqDTO">
-        select a.*, b.nickname, c.owner_no
+    <select id="findRequest" resultMap="shaReqMap">
+        select
+        a.req_no, a.req_item, a.rqst_no, a.created_at as req_created_at, a.modified_at as req_modified_at, a.return_date, a.status_code as req_status_code, b.nickname, c.owner_no, c.*, d.nickname as owner_nickname
         from sha_req a
         left join
         member b
@@ -229,6 +230,9 @@
         left join
         sha_items c
         on a.req_item = c.item_no
+        left join
+        member d
+        on c.owner_no = d.member_no
         where req_item = #{reqItem}
         <if test="rqstNo != 0 and rqstNo != ''">
             and a.rqst_no = #{rqstNo}
@@ -425,10 +429,13 @@
         from
         (
             select
-            g.req_no, g.req_item, g.rqst_no, g.created_at as req_created_at, g.modified_at as req_modified_at, g.return_date, g.status_code as req_status_code, d.*,
+            g.req_no, g.req_item, g.rqst_no, g.created_at as req_created_at, g.modified_at as req_modified_at, g.return_date, g.status_code as req_status_code, d.*, i.nickname as nickname,
             row_number() over (order by g.created_at desc) as rn
             from
             sha_req g
+            left join
+            member i
+            on g.rqst_no = i.member_no
             left join
             (
                 select
@@ -510,6 +517,13 @@
         where req_no = #{reqNo}
     </delete>
 
+    <insert id="insertReport">
+        insert
+        into adm_report
+        (type_code, reported_no, reported_member, reporter_member, reason, url)
+        values
+        (#{typeCode}, #{reportedNo}, #{reportedMember}, #{reporterMember}, #{reason}, #{url})
+    </insert>
 
 
 </mapper>

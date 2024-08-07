@@ -44,4 +44,6 @@ public interface ShareService {
     void deleteReq(ShaReqDTO shaReqDTO, CustomUserDetails c) throws Exception;
 
     void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception;
+
+    void insertReport(ShaReportDTO reportDTO, CustomUserDetails c) throws Exception;
 }

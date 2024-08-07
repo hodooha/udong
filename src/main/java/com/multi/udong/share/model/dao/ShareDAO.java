@@ -153,4 +153,8 @@ public class ShareDAO {
     public int plusDealCnt(SqlSessionTemplate sqlSession, int itemNo) {
         return sqlSession.update("ShareMapper.plusDealCnt", itemNo);
     }
+
+    public int insertReport(SqlSessionTemplate sqlSession, ShaReportDTO reportDTO) {
+        return sqlSession.insert("ShareMapper.insertReport", reportDTO);
+    }
 }

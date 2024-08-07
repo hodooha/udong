@@ -573,5 +573,18 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    @Override
+    public void insertReport(ShaReportDTO reportDTO, CustomUserDetails c) throws Exception {
+
+        // 신고자와 로그인한 유저가 다를 경우 예외 던지기
+        if (reportDTO.getReporterMember() != c.getMemberDTO().getMemberNo()) {
+            throw new Exception("권한이 없습니다.");
+        }
+
+        if(shareDAO.insertReport(sqlSession, reportDTO) < 1){
+            throw new Exception("신고 접수를 실패했습니다.");
+        };
+    }
+
 
 }

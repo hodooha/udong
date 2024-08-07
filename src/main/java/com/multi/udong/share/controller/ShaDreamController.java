@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -176,7 +174,7 @@ public class ShaDreamController {
             model.addAttribute("msg", e.getMessage());
         }
 
-        return "share/dreamLend :: #evalModal";
+        return "share/dreamLend :: #evalAndReportModal";
     }
 
     @PostMapping("/evalWithReturnReq")
@@ -193,9 +191,9 @@ public class ShaDreamController {
     }
 
     @GetMapping("/deleteReq")
-    public String deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+    public String deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
-        System.out.println("삭제 대상 req"+shaReqDTO);
+        System.out.println("삭제 대상 req" + shaReqDTO);
         try {
             shareService.deleteReq(shaReqDTO, c);
         } catch (Exception e) {
@@ -207,7 +205,7 @@ public class ShaDreamController {
     }
 
     @PostMapping("/evalWithEndReq")
-    public String evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+    public String evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(evalDTO);
         try {
@@ -220,6 +218,30 @@ public class ShaDreamController {
         return "share/dreamBorrow";
 
 
+    }
+
+    @PostMapping("/insertReport")
+    @ResponseBody
+    public String insertReport(@RequestParam("itemNo") int itemNo, ShaReportDTO reportDTO, @AuthenticationPrincipal CustomUserDetails c) {
+
+        reportDTO.reasonConcat();
+        String itemGroup = reportDTO.getTypeCode();
+        reportDTO.setUrl("/share/" + itemGroup + "/detail?itemNo=" + itemNo);
+        reportDTO.setTypeCode(itemGroup.toUpperCase());
+
+        System.out.println(reportDTO);
+
+        String msg = "신고가 접수되었습니다.";
+
+//        try {
+//            shareService.insertReport(reportDTO, c);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            msg = e.getMessage();
+//        }
+
+        return msg;
     }
 
 }
