@@ -127,69 +127,95 @@
     </table>
     <div class="pagination"></div>
 </div>
-
-<script th:inline="javascript">
+<script type="text/javascript" th:inline="javascript">
     let sortDirection = true;
 
-    function updateStatus(memberNo, status) {
-    var token = $("meta[name='_csrf']").attr("content");
-    var header = $("meta[name='_csrf_header']").attr("content");
+    // 함수들을 window 객체에 할당하여 전역에서 접근 가능하게 설정
+    window.updateStatus = function(memberNo, status) {
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
 
-    $.ajax({
-        type: "POST",
-        url: "/admin/updateSellerStatus", // 서버의 매핑 경로와 일치
-        contentType: "application/json",
-        data: JSON.stringify({ memberNo: memberNo, status: status }),
-        beforeSend: function(xhr) {
-            if (token && header) {
-                xhr.setRequestHeader(header, token);
-            }
-        },
-        success: function(response) {
-            if (response.success) {
-                alert("상태가 성공적으로 업데이트되었습니다.");
-                updateSellerRow(memberNo, status, response.approvedAt);
-            } else {
+        $.ajax({
+            type: "POST",
+            url: "/admin/updateSellerStatus",
+            contentType: "application/json",
+            data: JSON.stringify({ memberNo: memberNo, status: status }),
+            beforeSend: function(xhr) {
+                if (token && header) {
+                    xhr.setRequestHeader(header, token);
+                }
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert("상태가 성공적으로 업데이트되었습니다.");
+                    updateSellerRow(memberNo, status, response.approvedAt);
+                } else {
+                    alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+                }
+            },
+            error: function(xhr, status, error) {
                 alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
+                console.error("Error details:", xhr.responseText);
             }
-        },
-        error: function(xhr, status, error) {
-            alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
-            console.error("Error details:", xhr.responseText);
-        }
-    });
-}
-function updateSellerRow(memberNo, newStatus, approvedAt) {
-    var row = $("tr[data-seller-no='" + memberNo + "']");
-    var statusCell = row.find("td:nth-child(5)");
-    var approvedAtCell = row.find("td:nth-child(6)");
-
-    var statusText;
-    var buttonHtml = '';
-
-    switch(newStatus) {
-        case 'Y':
-            statusText = '승인';
-            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
-            break;
-        case 'N':
-            statusText = '취소';
-            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
-            break;
-        case 'W':
-            statusText = '대기';
-            buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
-            break;
-        default:
-            statusText = '알 수 없음';
-            break;
+        });
     }
 
-    statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);
-    approvedAtCell.text(approvedAt ? approvedAt : '');
-}
+    window.updateSellerRow = function(memberNo, newStatus, approvedAt) {
+        var row = $("tr[data-seller-no='" + memberNo + "']");
+        var statusCell = row.find("td:nth-child(5)");
+        var approvedAtCell = row.find("td:nth-child(6)");
+
+        var statusText;
+        var buttonHtml = '';
+
+        switch(newStatus) {
+            case 'Y':
+                statusText = '승인';
+                buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+                break;
+            case 'N':
+                statusText = '취소';
+                buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+                break;
+            case 'W':
+                statusText = '대기';
+                buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+                break;
+            default:
+                statusText = '알 수 없음';
+                break;
+        }
+
+        statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);
+        approvedAtCell.text(approvedAt ? approvedAt : '');
+    }
 
     $(document).ready(function() {
+        // 초기 로드 시 모든 셀러의 승인 상태를 검사하고, 버튼을 설정
+        $('tr[data-seller-no]').each(function() {
+            var row = $(this);
+            var memberNo = row.data('seller-no');
+            var currentStatus = row.find('.status-text').text().trim();
+
+            var buttonHtml = '';
+            switch(currentStatus) {
+                case '승인':
+                    buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'N\')" class="btn-udh-red status-btn">취소</button>';
+                    break;
+                case '취소':
+                case '대기':
+                    buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+                    break;
+                default:
+                    buttonHtml = '<button onclick="updateStatus(' + memberNo + ', \'Y\')" class="btn-udh-yellow status-btn">승인</button>';
+                    break;
+            }
+
+            // 기존 버튼을 제거하고 새로운 버튼을 추가
+            row.find('td:nth-child(5) button').remove();
+            row.find('td:nth-child(5)').append(buttonHtml);
+        });
+
         $('.sortable').click(function() {
             var rows = $('tbody tr').get();
 
@@ -222,5 +248,6 @@ function updateSellerRow(memberNo, newStatus, approvedAt) {
         });
     });
 </script>
+
 </body>
 </html>
