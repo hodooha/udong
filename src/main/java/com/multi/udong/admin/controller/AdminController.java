@@ -196,8 +196,8 @@ public class AdminController {
 
     @GetMapping("/blacklist")
     public String showBlacklist(Model model) {
-        List<MemberDTO> blacklistedMembers = adminService.getBlacklistedMembers();
-        model.addAttribute("blacklistedMembers", blacklistedMembers);
+        List<MemberDTO> blacklistRelatedMembers = adminService.getAllBlacklistRelatedMembers();
+        model.addAttribute("blacklistedMembers", blacklistRelatedMembers);
         return "admin/blacklist";
     }
 

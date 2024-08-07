@@ -137,14 +137,17 @@
         var token = $("meta[name='_csrf']").attr("content");
         var header = $("meta[name='_csrf_header']").attr("content");
 
-        $(document).ajaxSend(function(e, xhr, options) {
-            xhr.setRequestHeader(header, token);
+        // 모든 AJAX 요청에 CSRF 토큰을 포함시키는 전역 설정
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(header, token);
+            }
         });
 
         // 페이지 로드 시 초기 상태 설정
         $(".status-btn").each(function() {
             var memberNo = $(this).data("member-no");
-            var isBlacked = $(this).data("is-blacked") === "Y";
+            var isBlacked = $(this).data("is-blacked");
             updateButtonStatus(memberNo, isBlacked);
         });
     });
@@ -169,7 +172,9 @@
                 success: function(response) {
                     if (response === "success") {
                         alert("블랙리스트 해제 완료");
-                        updateButtonStatus(memberNo, false);
+
+                        // 상태를 'R'로 업데이트
+                        updateButtonStatus(memberNo, 'R');
                         var now = new Date().toLocaleString();
                         $("#unblackedAt-" + memberNo).text(now);
                     } else {
@@ -192,8 +197,10 @@
                 data: { memberNo: memberNo },
                 success: function(response) {
                     if (response === "success" || response === "already_blacklisted") {
-                        updateButtonStatus(memberNo, true);
                         alert(response === "success" ? "블랙리스트 등록 완료" : "이미 블랙리스트에 등록된 회원입니다.");
+
+                        // 상태를 'Y'로 업데이트
+                        updateButtonStatus(memberNo, 'Y');
                         var now = new Date().toLocaleString();
                         $("tr:has(button[data-member-no='" + memberNo + "']) td:nth-child(4)").text(now);
                         $("#unblackedAt-" + memberNo).text("해제된 날짜 없음");
@@ -209,45 +216,24 @@
         }
     }
 
-    function updateButtonStatus(memberNo, isBlacklisted) {
+    function updateButtonStatus(memberNo, status) {
         var button = $("button[data-member-no='" + memberNo + "']");
-        if (isBlacklisted) {
+        if (status === 'Y') {
             button.removeClass("btn-udh-yellow").addClass("btn-udh-red")
                    .text("해제")
                    .data("is-blacked", "Y");
+        } else if (status === 'R') {
+            button.removeClass("btn-udh-red").addClass("btn-udh-yellow")
+                   .text("등록")
+                   .data("is-blacked", "R");
+            $("#unblackedAt-" + memberNo).text(new Date().toLocaleString());
         } else {
             button.removeClass("btn-udh-red").addClass("btn-udh-yellow")
                    .text("등록")
                    .data("is-blacked", "N");
         }
     }
-
-    function updateBlacklistTable() {
-        $.ajax({
-            url: "/admin/blacklist",
-            type: "GET",
-            success: function(data) {
-                var newContent = $(data).find("#blacklistContainer").html();
-                if(newContent) {
-                    $("#blacklistContainer").html(newContent);
-                    // 테이블 업데이트 후 버튼 상태 재설정
-                    $(".status-btn").each(function() {
-                        var memberNo = $(this).data("member-no");
-                        var isBlacked = $(this).data("is-blacked") === "Y";
-                        updateButtonStatus(memberNo, isBlacked);
-                    });
-                } else {
-                    console.error("새로운 블랙리스트 데이터를 찾을 수 없습니다.");
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Error status: " + textStatus);
-                console.error("Error thrown: " + errorThrown);
-                console.error("Response text: " + jqXHR.responseText);
-                alert("블랙리스트 테이블 갱신 중 오류가 발생했습니다.");
-            }
-        });
-    }
 </script>
+
 </body>
 </html>

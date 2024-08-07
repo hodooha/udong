@@ -98,4 +98,14 @@ public class AdminServiceImpl implements AdminService {
     public List<MemberDTO> getBlacklistedMembers() {
         return adminMapper.findBlacklistedMembers();
     }
+
+    @Override
+    public List<MemberDTO> getAllBlacklistRelatedMembers() {
+        List<MemberDTO> blacklisted = adminMapper.findBlacklistedMembers();
+        List<MemberDTO> unblacklisted = adminMapper.findUnblacklistedMembers();
+
+        // 두 리스트를 결합하여 반환
+        blacklisted.addAll(unblacklisted);
+        return blacklisted;
+    }
 }

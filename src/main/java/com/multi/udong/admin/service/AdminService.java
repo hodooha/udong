@@ -17,5 +17,6 @@ public interface AdminService {
     List<MemberDTO> getBlacklistedMembers();
     void removeMemberFromBlacklist(Integer memberNo);
     void addMemberToBlacklist(Integer memberNo);
+    List<MemberDTO> getAllBlacklistRelatedMembers();
 
 }
