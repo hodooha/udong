@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         #alert {
             display: none;
@@ -27,26 +28,42 @@
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.getElementById('msg');
+        const msg = document.getElementById('msg');
+
         if (msg && msg.textContent) {
             showAlert(msg.textContent);
         }
+
+        // async/await: 해당 작업이 끝날때까지 다음 코드를 진행하지 않음
+        async function showAlert(msg) {
+            await Swal.fire({
+                title: msg,
+                showConfirmButton: false,
+                timer: 1500,
+                backdrop: `
+                    rgba(0,0,0,0)
+                `
+            });
+        }
+
+        // https://sweetalert2.github.io/
+<!--        sweetAlert 속성-->
+<!--            position: "top-end",        // alert 위치-->
+<!--            icon: "success",            // 아이콘-->
+<!--            title: "title",             // 제목-->
+<!--            text: "text",               // 내용-->
+<!--            showConfirmButton: false,   // 확인 버튼 유무 (디폴트 true)-->
+<!--            timer: 1500,                // 유지 시간 (1000 = 1초)-->
+<!--            backdrop: `                 // 모달창 외부 배경-->
+<!--                rgba(0,0,0,0)               // 배경 색상 (rgb, opacity)-->
+<!--            `-->
+
+        // 외부 api에서 사용하는 postMessage를 무시할 수 있게 if문 추가
+        window.addEventListener('message', function(event) {
+            if (typeof event.data === 'string' && event.data.includes('쪽지')) {
+                showAlert(event.data);
+            }
+        }, false);
     });
-
-    function showAlert(msg) {
-        const alertBox = document.querySelector('#alert');
-        alertBox.textContent = msg;
-        alertBox.style.display = 'block';
-        setTimeout(() => {
-            alertBox.style.opacity = '1';
-        }, 10);
-
-        setTimeout(() => {
-            alertBox.style.opacity = '0';
-            setTimeout(() => {
-                alertBox.style.display = 'none';
-            }, 300);
-        }, 3000);
-    }
 </script> <!--msg alert-->
 </html>

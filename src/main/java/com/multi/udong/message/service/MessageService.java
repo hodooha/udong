@@ -12,5 +12,13 @@ import java.util.List;
  * @since 2024 -08-06
  */
 public interface MessageService {
-    List<MessageDTO> selectReceivedMessages(PageDTO pageDTO);
+    List<MessageDTO> getReceivedMessages(PageDTO pageDTO);
+
+    List<MessageDTO> getSentMessages(PageDTO pageDTO);
+
+    String getNicknameByMemberNo(int receiverNo);
+
+    void sendMessage(MessageDTO messageDTO);
+
+    boolean deleteMessages(List<Integer> messageNos);
 }

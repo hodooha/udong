@@ -550,7 +550,6 @@
             (SELECT COUNT(*)
                 FROM CL
                 WHERE master = #{memberNo}) AS master_count
-        FROM DUAL
     </select>
 
     <select id="checkMemBus" resultType="long">

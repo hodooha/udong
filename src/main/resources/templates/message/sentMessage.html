@@ -3,6 +3,8 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
@@ -15,7 +17,7 @@
             transition: background-color 0.3s ease;
         }
         .message {
-            min-width: 48%;
+            min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -23,7 +25,7 @@
             padding: 20px;
         }
         .message-detail {
-            min-width: 48%;
+            min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -71,6 +73,12 @@
         .pagination a:hover:not(.active) {
             background-color: #ddd;
         }
+        .button-group {
+            display: flex;
+            justify-content: end;
+            margin: 10px 0;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -80,26 +88,32 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="message">
-            <h2>받은 메일함</h2>
+            <h2>보낸 메일함</h2>
             <table>
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="all-checkbox"></th>
                         <th th:each="header : ${tableHeader}" th:text="${header}"></th>
                     </tr>
                 </thead>
                 <tbody id="result-table">
-                    <tr th:each="data : ${tableBody}" th:attr="data-no=${data.message_no}, data-table='message'" class="clickable-row">
-                        <td th:text="${data.sender_nickname}"></td>
+                    <tr th:each="data : ${tableData}" th:attr="data-no=${data.messageNo}, data-table='message'" class="clickable-row">
+                        <td><input type="checkbox" id="row-checkbox"></td>
+                        <td th:text="${data.receiverNickname}"></td>
                         <td th:text="${data.content}"></td>
-                        <td th:text="${#temporals.format(data.created_at, 'yyyy-MM-dd HH:mm:ss')}"></td>
-                        <td th:text="${data.is_read == 'Y' ? '읽음' : '안읽음'}"></td>
+                        <td th:text="${data.createdAt}"></td>
+                        <td th:text="${data.isRead == 'Y' ? '읽음' : '안읽음'}"></td>
                     </tr>
                 </tbody>
             </table>
             <div id="no-result" hidden>결과가 없습니다.</div>
             <div class="pagination"></div>
+            <div class="button-group">
+                <button class="btn btn-udh-red" id="deleteBtn">삭제하기</button>
+                <button class="btn btn-udh-blue" id="writeMessageBtn">쪽지 작성하기</button>
+            </div>
             <div class="search">
-                <form action="/message/receiveMessage" method="get">
+                <form action="/message/sentMessage" method="get">
                     <select name="searchCategory" id="search-category">
                         <option value="">카테고리 선택</option>
                         <option th:each="category : ${searchCategories}"
@@ -112,16 +126,27 @@
                     <button class="btn btn-udh-yellow">검색</button>
                 </form>
             </div>
-            <div>
-                <button class="btn btn-udh-red">삭제하기</button>
-                <button class="btn btn-udh-red">차단하기</button>
-                <button class="btn btn-udh-blue">작성하기</button>
-            </div>
         </div>
         <div class="message-detail"></div>
     </div>
 </main>
 </body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const writeMessageBtn = document.querySelector('#writeMessageBtn');
+
+        writeMessageBtn.addEventListener('click', function() {
+            const popupWindow = window.open('/message/sendMessageForm', 'SendMessage', 'width=500,height=410');
+
+            const timer = setInterval(function() {
+                if (popupWindow.closed) {
+                    clearInterval(timer);
+                    location.reload(); // 페이지 새로고침
+                }
+            }, 500);
+        });
+    });
+</script> <!--메시지 작성 폼-->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -154,7 +179,7 @@
 
         for (let page = 1; page <= pages; page++) {
             let url = document.createElement('a');
-            url.href = `/message/receiveMessage?page=${page}`;
+            url.href = `/message/sentMessage?page=${page}`;
 
             if (searchCategory) {
                 url.href += `&searchCategory=${encodeURIComponent(searchCategory)}`;
@@ -180,7 +205,13 @@
         const rows = document.querySelectorAll('.clickable-row');
 
         rows.forEach(row => {
-            row.addEventListener('click', function() {
+            row.addEventListener('click', function(event) {
+
+                if (event.target.type === 'checkbox') {
+                    event.stopPropagation();
+                    return;
+                }
+
                 const no = this.getAttribute('data-no');
                 let url = `/message/messageDetail?no=${no}`;
                 window.location.href = url;
@@ -188,4 +219,73 @@
         });
     });
 </script> <!--테이블 row 링크-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const allCheckbox = document.querySelector('#all-checkbox');
+        const rowCheckboxes = document.querySelectorAll('#row-checkbox');
+        const deleteBtn = document.querySelector('#deleteBtn');
+
+        // 전체 체크박스 이벤트
+        allCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = allCheckbox.checked;
+            });
+        });
+
+        // 개별 체크박스 이벤트
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                allCheckbox.checked = Array.from(rowCheckboxes).every(cb => cb.checked);
+            });
+        });
+
+        // 삭제하기 버튼 클릭 이벤트
+        deleteBtn.addEventListener('click', function() {
+            const checkedRows = getCheckedRows();
+
+            if (checkedRows.length === 0) {
+                alert('삭제할 메시지를 선택해주세요.');
+                return;
+            }
+
+            if (confirm('선택한 메시지를 삭제하시겠습니까?')) {
+                const messageNos = checkedRows.map(row => row.getAttribute('data-no'));
+                deleteMessages(messageNos);
+            }
+        });
+
+        // 체크된 행 가져오기
+        function getCheckedRows() {
+            return Array.from(rowCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.closest('tr'));
+        }
+
+        // 메시지 삭제 함수
+        function deleteMessages(messageNos) {
+            fetch('/message/deleteMessages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [header]: token
+                },
+                body: JSON.stringify({ messageNos: messageNos })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('선택한 메시지가 삭제되었습니다.');
+                    location.reload();
+                } else {
+                    alert('메시지 삭제에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('메시지 삭제 중 오류가 발생했습니다.');
+            });
+        }
+    });
+</script> <!--체크박스, 버튼 할당-->
 </html>

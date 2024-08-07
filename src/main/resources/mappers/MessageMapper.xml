@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.multi.udong.message.model.dao.MessageMapper">
 
-    <select id="selectReceivedMessages" resultType="messageDTO" parameterType="pageDTO">
+    <select id="getReceivedMessages" resultType="messageDTO" parameterType="pageDTO">
         SELECT
             sub.message_no,
             sub.sender_no,
@@ -18,20 +18,74 @@
                 ROW_NUMBER() OVER (ORDER BY msg.created_at DESC) AS rownum
             FROM MSG msg
             WHERE msg.receiver_no = #{memberNo}
-                <if test="searchCategory != null and searchWord != null">
-                    <choose>
-                        <when test="searchCategory == '보낸 사람'">
-                            AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
-                        </when>
-                        <when test="searchCategory == '내용'">
-                            AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
-                        </when>
-                    </choose>
-                </if>
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '보낸 사람'">
+                        AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN MEMBER m ON sub.sender_no = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+        ORDER BY sub.created_at DESC
+    </select>
+
+    <select id="getSentMessages" resultType="messageDTO" parameterType="pageDTO">
+        SELECT
+            sub.message_no,
+            sub.receiver_no,
+            m.nickname AS receiver_nickname,
+            sub.content,
+            sub.created_at,
+            sub.is_read,
+            sub.total_count
+        FROM (
+            SELECT
+                msg.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY msg.created_at DESC) AS rownum
+            FROM MSG msg
+            WHERE msg.sender_no = #{memberNo}
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '받은 사람'">
+                        AND msg.receiver_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
         ) sub
         JOIN MEMBER m ON sub.receiver_no = m.member_no
         WHERE sub.rownum BETWEEN #{start} AND #{end}
         ORDER BY sub.created_at DESC
     </select>
+    
+    <select id="getNicknameByMemberNo" resultType="string">
+        SELECT nickname FROM MEMBER WHERE member_no = #{receiverNo}
+    </select>
+
+    <insert id="sendMessage" parameterType="messageDTO">
+        INSERT INTO MSG (sender_no, receiver_no, content)
+        SELECT
+        #{senderNo},
+            (SELECT member_no
+            FROM MEMBER
+            WHERE nickname = #{receiverNickname}
+            AND is_deleted = 'N'),
+        #{content}
+    </insert>
+
+    <delete id="deleteMessages" parameterType="list">
+        DELETE FROM MSG WHERE message_no In
+        <foreach item="messageNo" collection="list" open="(" separator="," close=")">
+            #{messageNo}
+        </foreach>
+    </delete>
 
 </mapper>

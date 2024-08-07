@@ -14,5 +14,13 @@ import java.util.List;
  */
 @Mapper
 public interface MessageMapper {
-    List<MessageDTO> selectReceivedMessages(PageDTO pageDTO);
+    List<MessageDTO> getReceivedMessages(PageDTO pageDTO);
+
+    List<MessageDTO> getSentMessages(PageDTO pageDTO);
+
+    String getNicknameByMemberNo(int receiverNo);
+
+    void sendMessage(MessageDTO messageDTO);
+
+    int deleteMessages(List<Integer> messageNos);
 }

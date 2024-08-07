@@ -22,5 +22,6 @@ public class MessageDTO {
     private Character isRead;
 
     private String senderNickname;
+    private String receiverNickname;
     private Integer totalCount;
 }

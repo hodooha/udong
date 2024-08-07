@@ -264,24 +264,4 @@
         }
     });
 </script> <!--댓글 비동기-->
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        const answerForm = document.querySelector('#answerForm');
-
-        if (answerForm) {
-            answerForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const content = document.querySelector('#answer-content').value;
-
-                if (content.trim() === '') {
-                    alert('답변 내용을 입력해주세요.');
-                    return;
-                }
-
-                this.submit();
-            });
-        }
-    });
-</script>
 </html>
