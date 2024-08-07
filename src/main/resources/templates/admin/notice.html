@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-member-debug=${blacklistedMembers}">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .admin-content {
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            border-radius: 0 15px 15px 0;
+        }
+
+        h5 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 80px;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .admin-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .admin-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 60px;
+        }
+
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #3B5C9A;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .page-button:hover {
+            background-color: #0B1D40;
+        }
+
+        .sortable {
+            cursor: pointer;
+        }
+
+        .sortable:hover {
+            background-color: #e0e0e0;
+        }
+        .status-btn {
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .status-text {
+            margin-right: 10px;
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+
+<div class="admin-content">
+    <h5 style="text-align: center; margin-bottom: 100px;">공지사항</h5>
+
+    <div id="noticeContainer">
+        <table id="noticeTable" class="admin-table">
+            <thead>
+            <tr>
+                <th>NO.</th>
+                <th>제목</th>
+                <th>팝업여부</th>
+                <th>작성일</th>
+                <th>작성자</th>
+
+            </tr>
+            </thead>
+
+        </table>
+    </div>
+    <div class="pagination"></div>
+</div>
+
+<script th:inline="javascript">
+
+
+
+
+</script>
+
+</body>
+</html>

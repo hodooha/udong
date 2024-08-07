@@ -32,7 +32,20 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<MemBusDTO> getAllSellers() {
-        return adminMapper.selectSellers();
+        List<MemBusDTO> sellers = adminMapper.selectSellers();
+        for (MemBusDTO seller : sellers) {
+            System.out.println("Seller ID: " + seller.getMemberNo());
+            if (seller.getAttachmentDTO() != null) {
+                System.out.println("  Attachment: " + seller.getAttachmentDTO().getSavedName());
+            } else {
+                System.out.println("  No attachment");
+            }
+        }
+        return sellers;
+    }
+    @Override
+    public AttachmentDTO getSellerAttachment(int memberNo) {
+        return adminMapper.getAttachmentByMemberNo((long) memberNo);
     }
 
     @Override
@@ -54,7 +67,16 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public MemBusDTO getSellerByMemberNo(Integer memberNo) {
-        return adminMapper.getSellerByMemberNo(memberNo);
+        MemBusDTO seller = adminMapper.getSellerByMemberNo(memberNo);
+
+        // 로그 출력
+        if (seller != null) {
+            System.out.println("approveStatus: " + seller.getApproveStatus());
+        } else {
+            System.out.println("Seller not found for memberNo: " + memberNo);
+        }
+
+        return seller;
     }
 
     @Override
@@ -75,5 +97,15 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<MemberDTO> getBlacklistedMembers() {
         return adminMapper.findBlacklistedMembers();
+    }
+
+    @Override
+    public List<MemberDTO> getAllBlacklistRelatedMembers() {
+        List<MemberDTO> blacklisted = adminMapper.findBlacklistedMembers();
+        List<MemberDTO> unblacklisted = adminMapper.findUnblacklistedMembers();
+
+        // 두 리스트를 결합하여 반환
+        blacklisted.addAll(unblacklisted);
+        return blacklisted;
     }
 }

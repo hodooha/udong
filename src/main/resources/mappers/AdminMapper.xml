@@ -37,18 +37,25 @@
             <result property="nickname" column="nickname"/>
 
         </association>
+
+        <association property="attachmentDTO" javaType="com.multi.udong.common.model.dto.AttachmentDTO">
+            <result property="savedName" column="saved_name"/>
+            <result property="originalName" column="original_name"/>
+        </association>
     </resultMap>
 
     <select id="selectSellers" resultMap="memBusResultMap">
         SELECT
         b.*,
-        m.*
+        m.*,
+        a.saved_name,
+        a.original_name
         FROM
         MEM_BUS b
         JOIN
         MEMBER m ON b.member_no = m.member_no
         LEFT JOIN
-        ATTACHMENT a ON b.member_no = a.target_no AND a.type_code = 'MEM_BUS'
+        ATTACHMENT a ON b.member_no = a.target_no AND a.type_code = 'BRG'
     </select>
     <select id="getSellerByMemberNo" resultType="com.multi.udong.member.model.dto.MemBusDTO">
         SELECT mb.*, m.member_id

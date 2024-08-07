@@ -52,11 +52,15 @@ public interface AdminMapper {
 
     MemBusDTO getSellerByMemberNo(Integer memberNo);
 
-    AttachmentDTO getAttachmentByMemberNo(Long memberNo);
+    @Select("SELECT * FROM ATTACHMENT WHERE target_no = #{memberNo} AND type_code = 'BRG'")
+    AttachmentDTO getAttachmentByMemberNo(@Param("memberNo") Long memberNo);
 
     // 블랙리스트된 회원 조회
-    @Select("SELECT * FROM MEMBER WHERE is_blacked = 'Y' OR reported_cnt > 0")
+    @Select("SELECT * FROM MEMBER WHERE is_blacked = 'Y'")
     List<MemberDTO> findBlacklistedMembers();
+
+    @Select("SELECT * FROM MEMBER WHERE is_blacked = 'R'")
+    List<MemberDTO> findUnblacklistedMembers();
 
     // 블랙리스트 상태 업데이트 (등록 또는 해제)
     @Update("UPDATE MEMBER SET is_blacked = #{status} WHERE member_no = #{memberNo}")
@@ -71,7 +75,7 @@ public interface AdminMapper {
     void blacklistMember(@Param("memberNo") int memberNo);
 
     // 블랙리스트 해제
-    @Update("UPDATE MEMBER SET is_blacked = 'N', blacked_at = NULL WHERE member_no = #{memberNo}")
+    @Update("UPDATE MEMBER SET is_blacked = 'R', blacked_at = NULL WHERE member_no = #{memberNo}")
     void unblacklistMember(@Param("memberNo") int memberNo);
 
 }

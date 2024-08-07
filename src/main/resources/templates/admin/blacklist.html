@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-member-debug=${blacklistedMembers}">
 <head>
     <meta charset="UTF-8">
     <title>우동행</title>
@@ -104,18 +105,25 @@
                 <td th:text="${member.memberId}"></td>
                 <td th:text="${member.nickname}"></td>
                 <td>
-                    <span th:text="${member.blackedAt != null ? member.blackedAt : '등록된 날짜 없음'}"></span>
+                    <span th:text="${member.blackedAt != null and !member.blackedAt.isEmpty() ? member.blackedAt : '등록된 날짜 없음'}"></span>
                 </td>
                 <td>
-                    <span th:text="${member.isBlacked != 'Y' ? '해제된 날짜 없음' : #dates.format(member.blackedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                    <span th:id="'unblackedAt-' + ${member.memberNo}">
+                        <span th:if="${member.isBlacked == 'N' and member.blackedAt != null and !member.blackedAt.isEmpty()}">
+                            <script th:inline="javascript">
+                                document.write(new Date().toLocaleString());
+                            </script>
+                        </span>
+                        <span th:unless="${member.isBlacked == 'N' and member.blackedAt != null and !member.blackedAt.isEmpty()}">해제된 날짜 없음</span>
+                    </span>
                 </td>
                 <td>
-                    <button th:if="${member.isBlacked.toString() == 'Y'}"
-                            th:onclick="'removeFromBlacklist(' + ${member.memberNo} + ')'"
-                            class="btn-udh-red status-btn">해제</button>
-                    <button th:if="${member.isBlacked.toString() != 'Y'}"
-                            th:onclick="'addToBlacklist(' + ${member.memberNo} + ')'"
-                            class="btn-udh-yellow status-btn">등록</button>
+                    <button th:data-member-no="${member.memberNo}"
+                            th:data-is-blacked="${member.isBlacked}"
+                            th:onclick="'handleBlacklistAction(' + ${member.memberNo} + ')'"
+                            class="status-btn">
+                        <span th:text="${member.isBlacked == 'Y'} ? '해제' : '등록'"></span>
+                    </button>
                 </td>
             </tr>
             </tbody>
@@ -129,10 +137,31 @@
         var token = $("meta[name='_csrf']").attr("content");
         var header = $("meta[name='_csrf_header']").attr("content");
 
-        $(document).ajaxSend(function(e, xhr, options) {
-            xhr.setRequestHeader(header, token);
+        // 모든 AJAX 요청에 CSRF 토큰을 포함시키는 전역 설정
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(header, token);
+            }
+        });
+
+        // 페이지 로드 시 초기 상태 설정
+        $(".status-btn").each(function() {
+            var memberNo = $(this).data("member-no");
+            var isBlacked = $(this).data("is-blacked");
+            updateButtonStatus(memberNo, isBlacked);
         });
     });
+
+    function handleBlacklistAction(memberNo) {
+        var button = $("button[data-member-no='" + memberNo + "']");
+        var isCurrentlyBlacked = button.data("is-blacked") === "Y";
+
+        if (isCurrentlyBlacked) {
+            removeFromBlacklist(memberNo);
+        } else {
+            addToBlacklist(memberNo);
+        }
+    }
 
     function removeFromBlacklist(memberNo) {
         if (confirm("정말로 블랙리스트에서 해제하시겠습니까?")) {
@@ -143,15 +172,17 @@
                 success: function(response) {
                     if (response === "success") {
                         alert("블랙리스트 해제 완료");
-                        updateBlacklistTable();
+
+                        // 상태를 'R'로 업데이트
+                        updateButtonStatus(memberNo, 'R');
+                        var now = new Date().toLocaleString();
+                        $("#unblackedAt-" + memberNo).text(now);
                     } else {
                         alert("오류가 발생했습니다.");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("Error status: " + textStatus);
-                    console.error("Error thrown: " + errorThrown);
-                    console.error("Response text: " + jqXHR.responseText);
+                    console.error("Error:", textStatus, errorThrown);
                     alert("서버와의 통신 중 문제가 발생했습니다.");
                 }
             });
@@ -165,39 +196,44 @@
                 url: "/admin/blacklist/add",
                 data: { memberNo: memberNo },
                 success: function(response) {
-                    if (response === "success") {
-                        alert("블랙리스트 등록 완료");
-                        updateBlacklistTable();
+                    if (response === "success" || response === "already_blacklisted") {
+                        alert(response === "success" ? "블랙리스트 등록 완료" : "이미 블랙리스트에 등록된 회원입니다.");
+
+                        // 상태를 'Y'로 업데이트
+                        updateButtonStatus(memberNo, 'Y');
+                        var now = new Date().toLocaleString();
+                        $("tr:has(button[data-member-no='" + memberNo + "']) td:nth-child(4)").text(now);
+                        $("#unblackedAt-" + memberNo).text("해제된 날짜 없음");
                     } else {
                         alert("오류가 발생했습니다.");
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("Error status: " + textStatus);
-                    console.error("Error thrown: " + errorThrown);
-                    console.error("Response text: " + jqXHR.responseText);
+                    console.error("Error:", textStatus, errorThrown);
                     alert("서버와의 통신 중 문제가 발생했습니다.");
                 }
             });
         }
     }
 
-    function updateBlacklistTable() {
-        $.ajax({
-            url: "/admin/blacklist", // 블랙리스트 조회 경로
-            type: "GET",
-            success: function(data) {
-                // 새 데이터를 테이블에 갱신
-                $("#blacklistContainer").html($(data).find("#blacklistContainer").html());
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                console.error("Error status: " + textStatus);
-                console.error("Error thrown: " + errorThrown);
-                console.error("Response text: " + jqXHR.responseText);
-                alert("블랙리스트 테이블 갱신 중 오류가 발생했습니다.");
-            }
-        });
+    function updateButtonStatus(memberNo, status) {
+        var button = $("button[data-member-no='" + memberNo + "']");
+        if (status === 'Y') {
+            button.removeClass("btn-udh-yellow").addClass("btn-udh-red")
+                   .text("해제")
+                   .data("is-blacked", "Y");
+        } else if (status === 'R') {
+            button.removeClass("btn-udh-red").addClass("btn-udh-yellow")
+                   .text("등록")
+                   .data("is-blacked", "R");
+            $("#unblackedAt-" + memberNo).text(new Date().toLocaleString());
+        } else {
+            button.removeClass("btn-udh-red").addClass("btn-udh-yellow")
+                   .text("등록")
+                   .data("is-blacked", "N");
+        }
     }
 </script>
+
 </body>
 </html>

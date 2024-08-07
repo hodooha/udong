@@ -18,8 +18,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -121,6 +123,16 @@ public class AdminController {
     @GetMapping("/seller")
     public String showSellerManagement(Model model) {
         List<MemBusDTO> sellers = adminService.getAllSellers();
+
+        for (MemBusDTO seller : sellers) {
+            System.out.println("Seller ID: " + seller.getMemberNo());
+            if (seller.getAttachmentDTO() != null) {
+                System.out.println("  Attachment: " + seller.getAttachmentDTO().getSavedName());
+            } else {
+                System.out.println("  No attachment");
+            }
+        }
+
         model.addAttribute("sellers", sellers);
         return "admin/seller";
     }
@@ -147,31 +159,45 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/downloadAttachment/{memberNo}")
-    public ResponseEntity<Resource> downloadAttachment(@PathVariable Long memberNo) throws IOException {
+    @GetMapping("/downloadBusinessLicense/{memberNo}")
+    public ResponseEntity<Resource> downloadBusinessLicense(@PathVariable("memberNo") Long memberNo) throws UnsupportedEncodingException {
+        System.out.println("Downloading business license for member number: " + memberNo);
+
         AttachmentDTO attachment = adminService.getAttachmentByMemberNo(memberNo);
-
-        if (attachment == null) {
+        if (attachment == null || attachment.getSavedName() == null || attachment.getSavedName().isEmpty()) {
+            System.out.println("Attachment or file name is null or empty");
             return ResponseEntity.notFound().build();
         }
 
-        Path filePath = Paths.get("src", "main", "resources", "static", "uploadFiles", attachment.getSavedName());
-        Resource resource = new UrlResource(filePath.toUri());
+        System.out.println("File name: " + attachment.getSavedName());
 
-        if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
+        Path filePath = Paths.get(uploadDir).resolve(attachment.getSavedName());
+        System.out.println("Full file path: " + filePath.toString());
+
+        Resource resource;
+        try {
+            resource = new UrlResource(filePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                System.out.println("File exists and is readable");
+                String encodedFilename = URLEncoder.encode(attachment.getOriginalName(), StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20");
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
+                        .body(resource);
+            } else {
+                System.err.println("File not found or not readable: " + filePath);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            System.err.println("MalformedURLException: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachment.getOriginalName() + "\"")
-                .body(resource);
     }
 
     @GetMapping("/blacklist")
     public String showBlacklist(Model model) {
-        List<MemberDTO> blacklistedMembers = adminService.getBlacklistedMembers();
-        model.addAttribute("blacklistedMembers", blacklistedMembers);
+        List<MemberDTO> blacklistRelatedMembers = adminService.getAllBlacklistRelatedMembers();
+        model.addAttribute("blacklistedMembers", blacklistRelatedMembers);
         return "admin/blacklist";
     }
 
@@ -187,5 +213,11 @@ public class AdminController {
     public String addToBlacklist(@RequestParam("memberNo") Integer memberNo) {
         adminService.addMemberToBlacklist(memberNo);
         return "success";
+    }
+
+    @GetMapping("/notice")
+    public String getAllReports() {
+
+        return "admin/notice";
     }
 }
