@@ -18,6 +18,7 @@ public class ShaItemDTO {
     private int itemNo;
     private String itemGroup;
     private String itemCatCode;
+    private String itemCatName;
     private String title;
     private String content;
     private int ownerNo;

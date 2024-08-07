@@ -19,6 +19,7 @@ public class ShaReqDTO {
     private int reqItem;
     private ShaItemDTO itemDTO;
     private int ownerNo;
+    private String ownerNickname;
     private String reqGroup;
     private int rqstNo;
     private String rqstNickname;

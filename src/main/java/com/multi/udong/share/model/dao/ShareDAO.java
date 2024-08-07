@@ -126,6 +126,10 @@ public class ShareDAO {
         return sqlSession.selectList("ShareMapper.getRequesters", reqDTO);
     }
 
+    public int getReqCounts(SqlSessionTemplate sqlSession, ShaDreamCriteriaDTO criteriaDTO) {
+        return sqlSession.selectOne("ShareMapper.getReqCounts", criteriaDTO);
+    }
+
     public int updateReqStat(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
         return sqlSession.update("ShareMapper.updateReqStat", reqDTO);
     }
@@ -136,5 +140,21 @@ public class ShareDAO {
 
     public int insertEval(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
         return sqlSession.insert("ShareMapper.insertEval", evalDTO);
+    }
+
+    public int deleteReq(SqlSessionTemplate sqlSession, ShaReqDTO shaReqDTO) {
+        return sqlSession.delete("ShareMapper.deleteReq", shaReqDTO);
+    }
+
+    public ShaReqDTO getReqByReqNo(SqlSessionTemplate sqlSession, int reqNo) {
+        return sqlSession.selectOne("ShareMapper.getReqByReqNo", reqNo);
+    }
+
+    public int plusDealCnt(SqlSessionTemplate sqlSession, int itemNo) {
+        return sqlSession.update("ShareMapper.plusDealCnt", itemNo);
+    }
+
+    public int insertReport(SqlSessionTemplate sqlSession, ShaReportDTO reportDTO) {
+        return sqlSession.insert("ShareMapper.insertReport", reportDTO);
     }
 }

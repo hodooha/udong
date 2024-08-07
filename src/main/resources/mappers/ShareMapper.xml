@@ -10,6 +10,7 @@
     <resultMap type="shaItemDTO" id="shaItemMap">
         <id property="itemNo" column="item_no" />
         <result property="itemGroup" column="item_group" />
+        <result property="itemCatName" column="cat_name" />
         <result property="itemCatCode" column="item_cat_code" />
         <result property="title" column="title" />
         <result property="content" column="content" />
@@ -35,12 +36,13 @@
         <id property="reqNo" column="req_no"/>
         <result property="reqItem" column="req_item" />
         <result property="ownerNo" column="owner_no" />
+        <result property="ownerNickname" column="owner_nickname" />
         <result property="rqstNo" column="rqst_no" />
         <result property="rqstNickname" column="nickname" />
-        <result property="createdAt" column="created_at" />
-        <result property="modifiedAt" column="modified_at" />
+        <result property="createdAt" column="req_created_at" />
+        <result property="modifiedAt" column="req_modified_at" />
         <result property="returnDate" column="return_date" />
-        <result property="statusCode" column="status_code" />
+        <result property="statusCode" column="req_status_code" />
         <result property="statusName" column="status_name" />
         <association property="itemDTO" javaType="shaItemDTO" resultMap="shaItemMap"/>
     </resultMap>
@@ -146,7 +148,7 @@
     <select id="searchItems" resultMap="shaItemMap">
         select a.*, c.saved_name
         from (
-        select b.*, e.*, f.eup_myeon_dong_name,
+        select b.*, e.*, f.eup_myeon_dong_name, g.cat_name,
         row_number() over (order by b.created_at desc) as rn
         from sha_items b
         inner join
@@ -161,6 +163,9 @@
         where status_code = 'RNT'
         ) e
         on b.item_no = e.req_item
+        left join
+        sha_cat g
+        on b.item_cat_code = g.cat_code
         where b.deleted_at is null
         and d.is_deleted = 'N'
         <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
@@ -216,7 +221,8 @@
     </insert>
 
     <select id="findRequest" resultMap="shaReqMap">
-        select a.*, b.nickname, c.owner_no
+        select
+        a.req_no, a.req_item, a.rqst_no, a.created_at as req_created_at, a.modified_at as req_modified_at, a.return_date, a.status_code as req_status_code, b.nickname, c.owner_no, c.*, d.nickname as owner_nickname
         from sha_req a
         left join
         member b
@@ -224,6 +230,9 @@
         left join
         sha_items c
         on a.req_item = c.item_no
+        left join
+        member d
+        on c.owner_no = d.member_no
         where req_item = #{reqItem}
         <if test="rqstNo != 0 and rqstNo != ''">
             and a.rqst_no = #{rqstNo}
@@ -331,18 +340,26 @@
         where item_no = #{itemNo}
     </update>
 
+    <update id="plusDealCnt">
+        update
+        sha_items
+        set
+        deal_cnt = deal_cnt + 1
+        where item_no = #{itemNo}
+    </update>
+
     <select id="getLendList" resultMap="shaItemMap">
         select a.*, c.saved_name, e.status_name
         from
         (
-            select b.*, e.*, d.nickname, f.eup_myeon_dong_name,
+            select b.*, e.*, d.nickname, f.eup_myeon_dong_name, g.cat_name,
             row_number() over (order by b.created_at desc) as rn
             from sha_items b
             left join
-            member d
+                member d
             on b.owner_no = d.member_no
             inner join
-            location f
+                location f
             on b.loc_code = f.location_code
             left join
             (
@@ -351,6 +368,9 @@
                 where status_code = 'RNT'
             ) e
             on b.item_no = e.req_item
+            left join
+                sha_cat g
+            on b.item_cat_code = g.cat_code
             where b.deleted_at is null
             and b.owner_no = #{ownerNo}
             <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
@@ -372,7 +392,7 @@
         on a.item_no = c.target_no
         and a.item_group = c.type_code
         left join
-        sha_status e
+            sha_status e
         on a.status_code = e.status_code
         where a.rn between #{start} and #{end}
         order by a.rn
@@ -389,50 +409,75 @@
         <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
     </select>
 
-    <select id="getReqList" resultMap="shaReqMap">
-        select a.*, d.*, e.status_name
-        from
-        (
-            *,
-            row_number() over (order by b.modified_at desc) as rn
-            from
-            sha_req
-        ) a
+    <select id="getReqCounts" resultType="Integer">
+        select count(*)
+        from sha_req a
         left join
-            (
-                select
-                    b.*, c.saved_name
-                from
-                    sha_items b
-                left join
-                    (
-                        select target_no, type_code, saved_name
-                        from
-                        (
-                            select *,
-                                row_number() over (partition by target_no order by file_no) as rn
-                            from attachment
-                        ) sub
-                    where rn = 1
-                    ) c
-                on b.item_no = c.target_no and b.item_group = c.type_code
-            ) d
-        on a.req_item = d.item_no
-        left join
-            sha_status e
-        on a.status_code = e.status_code
-        where a.rn between #{start} and #{end}
-        order by a.rn
-        <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
-        <if test="group != null and group != ''">and item_group = #{group}</if>
-        <if test="reqItem != 0 and reqItem != ''">and a.reqItem = #{reqItem}</if>
-        <if test="rqstNo != 0 and rqstNo != ''">and a.rqstNo = #{rqstNo}</if>
+            sha_items b
+        on
+        a.req_item = b.item_no
+        where
+        rqst_no = #{rqstNo}
+        <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
+        <if test="group != null and group != ''">and b.item_group = #{group}</if>
         <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
-        <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like concat('%', #{keyword}, '%')) </if>
+        <if test="keyword != null and keyword != ''">and (b.title like concat('%', #{keyword}, '%') or b.content like concat('%', #{keyword}, '%')) </if>
     </select>
 
-    <select id="getRequesters" resultMap="shaReqMap">
-        select a.*, b.nickname, c.item_group
+    <select id="getReqList" resultMap="shaReqMap">
+        select a.*, e.status_name
+        from
+        (
+            select
+            g.req_no, g.req_item, g.rqst_no, g.created_at as req_created_at, g.modified_at as req_modified_at, g.return_date, g.status_code as req_status_code, d.*, i.nickname as nickname,
+            row_number() over (order by g.created_at desc) as rn
+            from
+            sha_req g
+            left join
+            member i
+            on g.rqst_no = i.member_no
+            left join
+            (
+                select
+                b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname
+                from
+                sha_items b
+                left join
+                (
+                    select target_no, type_code, saved_name
+                    from
+                    (
+                        select *,
+                        row_number() over (partition by target_no order by file_no) as rn
+                        from attachment
+                    ) sub
+                    where rn = 1
+                ) c
+                on b.item_no = c.target_no and b.item_group = c.type_code
+                left join
+                    sha_cat f
+                on b.item_cat_code = f.cat_code
+                left join
+                    member h
+                on b.owner_no = h.member_no
+            ) d
+            on g.req_item = d.item_no
+            where rqst_no = #{rqstNo}
+            <if test="catCode != null and catCode != ''">and d.item_cat_code = #{catCode}</if>
+            <if test="group != null and group != ''">and d.item_group = #{group}</if>
+            <if test="itemNo != 0 and itemNo != ''">and g.reqItem = #{itemNo}</if>
+            <if test="statusCode != null and statusCode != ''">and g.status_code = #{statusCode}</if>
+            <if test="keyword != null and keyword != ''">and (d.title like concat('%', #{keyword}, '%') or d.content like concat('%', #{keyword}, '%')) </if>
+        ) a
+        left join
+        sha_status e
+        on a.req_status_code = e.status_code
+        where a.rn between #{start} and #{end}
+        order by a.rn
+    </select>
+
+    <select id="getRequesters" resultType="shaReqDTO">
+        select a.*, b.nickname as rqst_nickname, c.item_group as req_group
         from sha_req a
         left join
         member b
@@ -459,5 +504,26 @@
         values
         (#{reqNo}, #{evrNo}, #{eveNo}, #{rating})
     </insert>
+
+    <select id="getReqByReqNo" resultType="shaReqDTO">
+        select *
+        from sha_req
+        where req_no = #{reqNo}
+    </select>
+
+    <delete id="deleteReq">
+        delete
+        from sha_req
+        where req_no = #{reqNo}
+    </delete>
+
+    <insert id="insertReport">
+        insert
+        into adm_report
+        (type_code, reported_no, reported_member, reporter_member, reason, url)
+        values
+        (#{typeCode}, #{reportedNo}, #{reportedMember}, #{reporterMember}, #{reason}, #{url})
+    </insert>
+
 
 </mapper>

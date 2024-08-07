@@ -55,10 +55,9 @@ $(function(){
 
 
     if(bodyId == "dreamLend"){
-        getLendList(1);
+
         window.addEventListener("popstate", function(event) {
             if (event.state) {
-                console.log(event.state);
                 restoreDreamFormState(event.state);
                 updateLendList(event.state);
             }
@@ -68,7 +67,6 @@ $(function(){
         if (savedState) {
              restoreDreamFormState(savedState);
              updateLendList(savedState);
-             console.log(savedState);
         } else {
             getLendList(1);
         }
@@ -78,7 +76,21 @@ $(function(){
     }
 
     if(bodyId == "dreamBorrow"){
-//        getBorrowList(group);
+
+        window.addEventListener("popstate", function(event) {
+            if (event.state) {
+                restoreDreamFormState(event.state);
+                updateBorrowList(event.state);
+            }
+        });
+
+        let savedState = history.state;
+        if (savedState) {
+             restoreDreamFormState(savedState);
+             updateBorrowList(savedState);
+        } else {
+            getBorrowList(1);
+        }
     }
 
 
@@ -309,6 +321,12 @@ function getLendList(page){
     updateLendList(params);
 }
 
+function getBorrowList(page){
+    let params = getDreamSearchParams(page);
+    updateBorrowList(params);
+
+}
+
 function getDreamSearchParams(page){
     let catCode = $('.catSelect').val();
     let group = $("input[name='group']:checked").val();
@@ -333,6 +351,16 @@ function updateLendList(params){
     let reqUrl = "/share/dream/lendList";
     ajax_get(reqUrl, params).done(function(data){
         $('#dreams').replaceWith(data);
+        let newUrl = createUrlWithParams(params);
+        history.pushState(params, '', newUrl);
+    })
+}
+
+function updateBorrowList(params){
+
+    let reqUrl = "/share/dream/borrowList";
+    ajax_get(reqUrl, params).done(function(data){
+        $('#reqDreams').replaceWith(data);
         let newUrl = createUrlWithParams(params);
         history.pushState(params, '', newUrl);
     })
@@ -375,6 +403,18 @@ function updateItemDetail(){
         };
         datePickerActive();
     });
+}
+
+function deleteItem(item){
+    if(item.statusCode == 'RNT'){
+        alert("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
+        $('#deleteModal').modal("hide", true);
+        return;
+    }
+
+    let reqUrl = `/share/delete?itemNo=${item.itemNo}&itemGroup=${item.itemGroup}`;
+
+    location.href = reqUrl;
 }
 
 function shaRequest(item) {
@@ -439,6 +479,7 @@ function getRequesters(itemNo){
         statusCode: "RQD"
     }
     ajax_get(reqUrl, data).done(function(result){
+
         $('#dreamModals').replaceWith(result);
         $('#selectRqst').modal('toggle');
     })
@@ -503,7 +544,7 @@ function getRentedReq(item){
     }
 
     ajax_get(reqUrl, data).done(function(result){
-        $('#evalModal').replaceWith(result);
+        $('#evalAndReportModal').replaceWith(result);
         $('#evalModal').modal('toggle');
         $('.star_rating > .star').click(function() {
             $(this).parent().children('span').removeClass('on');
@@ -535,6 +576,15 @@ function postScore(req){
 
 }
 
+function toggleDeleteModal(item){
+    $('#deleteModal').modal("toggle", true);
+
+    $('#deleteBtn').on("click", function(){
+        deleteItemAtDream(item);
+    })
+
+
+}
 
 function deleteItemAtDream(item) {
     let reqUrl = "/share/delete";
@@ -544,10 +594,118 @@ function deleteItemAtDream(item) {
     }
 
     ajax_get(reqUrl, data).done(function(){
+        $('#deleteModal').modal("toggle", true);
         location.reload();
     })
 
+}
 
+function toggleCancelModal(req){
+    $('#cancelModal').modal("toggle", true);
+
+    $('#cancelReqBtn').on("click", function(){
+        cancelReq(req);
+    })
+
+}
+
+function cancelReq(req){
+    let reqUrl = "/share/dream/deleteReq";
+    let data = {
+        reqNo: req.reqNo
+    }
+
+    ajax_get(reqUrl, data).done(function(){
+        $('#cancelModal').modal("toggle", true);
+        location.reload();
+
+    })
+
+}
+
+function toggleEvalModal(req){
+    console.log(req);
+    $('#evalModal').modal("toggle", true);
+    $('#lenderName').text(req.ownerNickname);
+
+    $('.star_rating > .star').click(function() {
+        $(this).parent().children('span').removeClass('on');
+        $(this).addClass('on').prevAll('span').addClass('on');
+        score = $(this).data('value');
+    })
+
+    $('#evalBtn').on("click", function(){
+        evalWithEndReq(req);
+
+    })
+
+}
+
+function evalWithEndReq(req){
+    let reqUrl = "/share/dream/evalWithEndReq";
+    let data = {
+        reqNo: req.reqNo,
+        evrNo: req.rqstNo,
+        eveNo: req.ownerNo,
+        rating: score,
+        reqItem: req.reqItem
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("평가완료");
+        $('#evalModal').modal('toggle');
+        location.reload();
+
+    })
+}
+
+function toggleReportModalLend(item){
+    let reqUrl = "/share/dream/getRentedReq";
+    let data = {
+        reqItem: item.itemNo,
+        statusCode: "RNT"
+    }
+
+    ajax_get(reqUrl, data).done(function(result){
+        $('#evalAndReportModal').replaceWith(result);
+        $('#reportModal').modal("toggle", true);
+        $('#reportBtn').on("click", function(){
+            postReport();
+        })
+    })
+
+
+}
+
+function postReport(){
+    let reqUrl = "/share/dream/insertReport";
+    let data = $('#reportForm').serialize();
+
+    ajax_post(reqUrl, data).done(function(msg){
+        console.log("신고 완료");
+        alert(msg);
+        $('#reportModal').modal("toggle", true);
+    })
+
+}
+
+function toggleReportModalBorrow(req){
+
+    console.log(req);
+    $('#reportModal').modal("toggle", true);
+
+    $('input[id="itemTitle"]').val(req.itemDTO.title);
+    $('input[name="reportedNo"]').val(req.reqNo);
+    $('input[name="typeCode"]').val(req.itemDTO.itemGroup);
+    $('input[name="itemNo"]').val(req.reqItem);
+    $('input[id="reporterMember"]').val(req.rqstNickname);
+    $('input[name="reporterMember"]').val(req.rqstNo);
+    $('input[id="reportedMember"]').val(req.ownerNickname);
+    $('input[name="reportedMember"]').val(req.itemDTO.ownerNo);
+
+    $('#reportBtn').on("click", function(){
+        postReport();
+    })
 }
 
 

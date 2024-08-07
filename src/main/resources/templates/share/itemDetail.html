@@ -13,6 +13,11 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
 
     <style>
+        button{
+            font-weight: bolder !important;
+
+        }
+
         .owner{
             display: flex;
             align-items: center;
@@ -202,7 +207,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
                             <button type="button" class="btn btn-udh-red"
-                                    th:onclick="|location.href='@{/share/delete(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
+                                  th:onclick="deleteItem([[${item}]])"  >
                                 삭제
                             </button>
                         </div>
