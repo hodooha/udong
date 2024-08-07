@@ -467,6 +467,7 @@ function getRequesters(itemNo){
         statusCode: "RQD"
     }
     ajax_get(reqUrl, data).done(function(result){
+
         $('#dreamModals').replaceWith(result);
         $('#selectRqst').modal('toggle');
     })
@@ -563,6 +564,15 @@ function postScore(req){
 
 }
 
+function toggleDeleteModal(item){
+    $('#deleteModal').modal("toggle", true);
+
+    $('#deleteBtn').on("click", function(){
+        deleteItemAtDream(item);
+    })
+
+
+}
 
 function deleteItemAtDream(item) {
     let reqUrl = "/share/delete";
@@ -572,6 +582,7 @@ function deleteItemAtDream(item) {
     }
 
     ajax_get(reqUrl, data).done(function(){
+        $('#deleteModal').modal("toggle", true);
         location.reload();
     })
 
@@ -593,6 +604,7 @@ function cancelReq(req){
     }
 
     ajax_get(reqUrl, data).done(function(){
+        $('#cancelModal').modal("toggle", true);
         location.reload();
 
     })
@@ -611,23 +623,40 @@ function toggleEvalModal(req){
     })
 
     $('#evalBtn').on("click", function(){
-        let reqUrl = "/share/dream/evalWithEndReq"
-        let data = {
-            reqNo: req.reqNo,
-            evrNo: req.rqstNo,
-            eveNo: req.ownerNo,
-            rating: score,
-            reqItem: req.reqItem
-        }
-
-        ajax_post(reqUrl, data).done(function(){
-            alert("평가완료");
-            $('#evalModal').modal('toggle');
-            location.reload();
-
-        })
+        evalWithEndReq(req);
 
     })
+
+}
+
+function evalWithEndReq(req){
+    let reqUrl = "/share/dream/evalWithEndReq";
+    let data = {
+        reqNo: req.reqNo,
+        evrNo: req.rqstNo,
+        eveNo: req.ownerNo,
+        rating: score,
+        reqItem: req.reqItem
+    }
+
+    ajax_post(reqUrl, data).done(function(){
+        alert("평가완료");
+        $('#evalModal').modal('toggle');
+        location.reload();
+
+    })
+}
+
+function toggleReportModal(item){
+    $('#reportModal').modal("toggle", true);
+
+
+}
+
+function reportByLender(item){
+
+
+
 
 }
 

@@ -487,7 +487,7 @@ public class ShareServiceImpl implements ShareService {
         };
 
         // 물건 거래횟수 변경 (+1)
-        if(shareDAO.plusDealCnt(sqlSession, reqDTO.getReqItem()) < 1){
+        if(shareDAO.plusDealCnt(sqlSession, evalDTO.getReqItem()) < 1){
             throw new Exception("거래횟수 변경을 실패했습니다.");
         };
 

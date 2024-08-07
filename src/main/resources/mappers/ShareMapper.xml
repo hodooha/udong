@@ -469,8 +469,8 @@
         order by a.rn
     </select>
 
-    <select id="getRequesters" resultMap="shaReqMap">
-        select a.*, b.nickname, c.item_group
+    <select id="getRequesters" resultType="shaReqDTO">
+        select a.*, b.nickname as rqst_nickname, c.item_group as req_group
         from sha_req a
         left join
         member b
