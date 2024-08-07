@@ -60,4 +60,18 @@ public interface ClubService {
     int updateReply(ReplyDTO replyDTO) throws Exception;
 
     int deleteReply(ReplyDTO replyDTO) throws Exception;
+
+    int checkLogWriter(int logNo) throws Exception;
+
+    int reportLog(ReportDTO reportDTO) throws Exception;
+
+    int updateLog(LogDTO logDTO) throws Exception;
+
+    AttachmentDTO selectAttachment(int fileNo) throws Exception;
+
+    int updateAttachment(AttachmentDTO newImg) throws Exception;
+
+    int deleteAttachment(AttachmentDTO deletedImg) throws Exception;
+
+    int insertAttachment(AttachmentDTO newImg) throws Exception;
 }

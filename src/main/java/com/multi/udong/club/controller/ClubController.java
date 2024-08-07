@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -1225,6 +1226,283 @@ public class ClubController {
     }
 
 
+    @RequestMapping("/clubLog/logReportForm")
+    public String logReportForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        try {
+
+            LogDTO reportedLog = clubService.selectLogDetail(requestDTO);
+
+            model.addAttribute("reportedLog", reportedLog);
+
+            return "/club/clubLog/logReportForm";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "기록 신고폼 이동 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    @PostMapping("/clubLog/reportLog")
+    public String reportlog(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, @RequestParam("clubNo") int clubNo, Model model, RedirectAttributes redirectAttributes) {
+
+        int reportedNo = reportDTO.getReportedNo();
+
+        // 로그인된 유저의 no를 신고자로 reportDTO에 set
+        int reporterMemberNo = c.getMemberDTO().getMemberNo();
+        reportDTO.setReporterMember(reporterMemberNo);
+
+        // 신고 당하는 대상의 타입 코드를 reportDTO에 set
+        reportDTO.setTypeCode("CL-LOG");
+
+        // 신고 사유를 확인하여 custom이면 따로 파라미터로 받은 직접 입력 사유를 reportDTO에 set
+        String reason = reportDTO.getReason();
+        if(reason.equals("custom")) {
+            reportDTO.setReason(customReason);
+        }
+        System.out.println("###### 신고 사유: " + reason);
+
+        // 관리자 페이지에서 신고 대상 상세 조회로 갈 때 사용할 url을 reportDTO에 set
+        String url = "/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + reportedNo;
+        reportDTO.setUrl(url);
+
+        try {
+
+            // 신고 당하는 기록의 작성자를 피신고자로 reportDTO에 set
+            int reportedMemberNo = clubService.checkLogWriter(reportedNo);
+            reportDTO.setReportedMember(reportedMemberNo);
+
+            clubService.reportLog(reportDTO);
+
+            redirectAttributes.addFlashAttribute("message", "기록 신고가 완료되었습니다.");
+
+            return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + reportedNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+
+    @RequestMapping("/clubLog/logUpdateForm")
+    public String logUpdateForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        int logNo = requestDTO.getLogNo();
+
+        String isLogWriter = checkLogWriter(memberNo, logNo);
+
+        if(isLogWriter.equals("Y")) {
+
+            try {
+
+                LogDTO logDetail = clubService.selectLogDetail(requestDTO);
+
+                model.addAttribute("logDetail", logDetail);
+
+                return "/club/clubLog/logUpdateForm";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "기록 수정폼 이동 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+    }
+
+
+    @PostMapping("clubLog/updateLog")
+    public String updateLog(@AuthenticationPrincipal CustomUserDetails c, LogDTO logDTO, @RequestParam("imgList") MultipartFile[] imgList, @RequestParam("status[]") int[] status, @RequestParam("fileNo[]") int[] fileNo, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = logDTO.getClubNo();
+        int logNo = logDTO.getLogNo();
+
+        String isLogWriter = checkLogWriter(memberNo, logNo);
+        if(isLogWriter.equals("Y")) {
+
+            try {
+
+                int logUpdateResult = clubService.updateLog(logDTO);
+
+                if(logUpdateResult == 1) {
+
+                    System.out.println("###### fileNo 배열: " + Arrays.toString(fileNo));
+                    System.out.println("###### status 배열: " + Arrays.toString(status));
+
+                    // 이미지 저장할 경로 설정
+                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+                    String filePath = root + "/uploadFiles";
+
+                    for(int i = 0; i < 4; i++) {
+
+                        // 기존 파일이 있어 fileNo가 0보다 크고 status가 -2로 새 이미지를 업로드한 경우
+                        // 기존 fileNo를 update
+                        if(fileNo[i] > 0 && status[i] == -2) {
+
+                            // update 성공 시 기존 이미지 제거를 위해 select
+                            AttachmentDTO beforeImg = clubService.selectAttachment(fileNo[i]);
+                            String beforeSavedName = beforeImg.getSavedName();
+
+                            String originFileName = imgList[i].getOriginalFilename();
+                            String ext = originFileName.substring(originFileName.lastIndexOf("."));
+                            String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                            AttachmentDTO newImg = new AttachmentDTO();
+                            newImg.setOriginalName(originFileName);
+                            newImg.setSavedName(savedName);
+                            newImg.setFileNo(fileNo[i]);
+                            newImg.setTypeCode("CL-LOG");
+                            newImg.setTargetNo(logNo);
+
+                            try {
+
+                                imgList[i].transferTo(new File(filePath + "/" + savedName));
+
+                                int updateAttachmentResult = clubService.updateAttachment(newImg);
+
+                                if(updateAttachmentResult == 1) {
+
+                                    // update 성공 시 기존 이미지 제거
+                                    new File(filePath + "/" + beforeSavedName).delete();
+
+                                }
+                                else {
+
+                                    // update 실패 시 새로 생성한 이미지 제거
+                                    new File(filePath + "/" + savedName).delete();
+
+                                }
+
+                            } catch (Exception e) {
+
+                                e.printStackTrace();
+
+                                // 오류 발생 시 생성한 파일을 삭제한다.
+                                new File(filePath + "/" + savedName).delete();
+
+                                model.addAttribute("msg", "기록 수정 과정에서 문제가 발생했습니다.");
+
+                                return "common/errorPage";
+
+                            }
+
+
+                        }
+                        // 기존 파일이 있어 fileNo가 0보다 크고 status가 -3으로 이미지를 삭제한 경우
+                        // 기존 fileNo를 delete
+                        else if(fileNo[i] > 0 && status[i] == -3) {
+
+                            // delete 성공 시 기존 이미지 제거를 위해 select
+                            AttachmentDTO beforeImg = clubService.selectAttachment(fileNo[i]);
+                            String beforeSavedName = beforeImg.getSavedName();
+
+                            AttachmentDTO deletedImg = new AttachmentDTO();
+
+                            deletedImg.setFileNo(fileNo[i]);
+                            deletedImg.setTypeCode("CL-LOG");
+                            deletedImg.setTargetNo(logNo);
+
+                            int deleteAttachmentResult = clubService.deleteAttachment(deletedImg);
+
+                            if(deleteAttachmentResult == 1) {
+
+                                // delete 성공 시 기존 이미지 제거
+                                new File(filePath + "/" + beforeSavedName).delete();
+
+                            }
+
+                        }
+                        // 기존 파일이 없이 fileNo가 0이고 status가 -2로 새 이미지를 업로드한 경우
+                        // 새 이미지를 insert
+                        else if(fileNo[i] == 0 && status[i] == -2) {
+
+                            String originFileName = imgList[i].getOriginalFilename();
+                            String ext = originFileName.substring(originFileName.lastIndexOf("."));
+                            String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                            AttachmentDTO newImg = new AttachmentDTO();
+                            newImg.setOriginalName(originFileName);
+                            newImg.setSavedName(savedName);
+                            newImg.setTypeCode("CL-LOG");
+                            newImg.setTargetNo(logNo);
+
+                            try {
+
+                                imgList[i].transferTo(new File(filePath + "/" + savedName));
+
+                                clubService.insertAttachment(newImg);
+
+                            } catch (Exception e) {
+
+                                e.printStackTrace();
+
+                                // 오류 발생 시 생성한 파일을 삭제한다.
+                                new File(filePath + "/" + savedName).delete();
+
+                                model.addAttribute("msg", "기록 수정 과정에서 문제가 발생했습니다.");
+
+                                return "common/errorPage";
+
+                            }
+
+
+                        }
+
+                    }
+
+
+                }
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "기록 수정 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+            redirectAttributes.addFlashAttribute("message", "기록 수정이 완료되었습니다.");
+
+        }
+
+        return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+    }
+
+
+
 
     // ================= 공통 사용 메소드 =================
 
@@ -1324,6 +1602,33 @@ public class ClubController {
             return "common/errorPage";
 
         }
+
+    }
+
+    public String checkLogWriter(int memberNo, int logNo) {
+
+        String isLogWriter = "N";
+
+        try {
+
+            int logWriter = clubService.checkLogWriter(logNo);
+
+            if(logWriter == memberNo) {
+
+                isLogWriter = "Y";
+
+            }
+
+            return isLogWriter;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return "common/errorPage";
+
+        }
+
 
     }
 

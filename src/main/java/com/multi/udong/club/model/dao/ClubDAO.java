@@ -264,7 +264,7 @@ public class ClubDAO {
      */
     public int reportClub(SqlSessionTemplate sqlSession, ReportDTO reportDTO) {
 
-        return sqlSession.insert("clubMapper.reportClub", reportDTO);
+        return sqlSession.insert("clubMapper.report", reportDTO);
 
     }
 
@@ -388,6 +388,48 @@ public class ClubDAO {
     public int deleteReply(SqlSessionTemplate sqlSession, ReplyDTO replyDTO) {
 
         return sqlSession.delete("clubMapper.deleteReply", replyDTO);
+
+    }
+
+    public int checkLogWriter(SqlSessionTemplate sqlSession, int logNo) {
+
+        return sqlSession.selectOne("clubMapper.checkLogWriter", logNo);
+
+    }
+
+    public int reportLog(SqlSessionTemplate sqlSession, ReportDTO reportDTO) {
+
+        return sqlSession.insert("clubMapper.report", reportDTO);
+
+    }
+
+    public AttachmentDTO selectAttachment(SqlSessionTemplate sqlSession, int fileNo) {
+
+        return sqlSession.selectOne("clubMapper.selectAttachment", fileNo);
+
+    }
+
+    public int updateLog(SqlSessionTemplate sqlSession, LogDTO logDTO) {
+
+        return sqlSession.update("clubMapper.updateLog", logDTO);
+
+    }
+
+    public int updateAttachment(SqlSessionTemplate sqlSession, AttachmentDTO newImg) {
+
+        return sqlSession.update("clubMapper.updateAttachment", newImg);
+
+    }
+
+    public int deleteAttachment(SqlSessionTemplate sqlSession, AttachmentDTO deletedImg) {
+
+        return sqlSession.delete("clubMapper.deleteAttachment", deletedImg);
+
+    }
+
+    public int insertAttachment(SqlSessionTemplate sqlSession, AttachmentDTO newImg) {
+
+        return sqlSession.insert("clubMapper.insertAttachment", newImg);
 
     }
 }

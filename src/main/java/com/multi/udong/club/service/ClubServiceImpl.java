@@ -490,4 +490,53 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+    @Override
+    public int checkLogWriter(int logNo) throws Exception {
+
+        return clubDAO.checkLogWriter(sqlSession, logNo);
+
+    }
+
+    @Override
+    public int reportLog(ReportDTO reportDTO) throws Exception {
+
+        return clubDAO.reportLog(sqlSession, reportDTO);
+
+    }
+
+    @Override
+    public int updateLog(LogDTO logDTO) throws Exception {
+
+        return clubDAO.updateLog(sqlSession, logDTO);
+
+    }
+
+    @Override
+    public AttachmentDTO selectAttachment(int fileNo) throws Exception {
+
+        return clubDAO.selectAttachment(sqlSession, fileNo);
+
+    }
+
+    @Override
+    public int updateAttachment(AttachmentDTO newImg) throws Exception {
+
+        return clubDAO.updateAttachment(sqlSession, newImg);
+
+    }
+
+    @Override
+    public int deleteAttachment(AttachmentDTO deletedImg) throws Exception {
+
+        return clubDAO.deleteAttachment(sqlSession, deletedImg);
+
+    }
+
+    @Override
+    public int insertAttachment(AttachmentDTO newImg) throws Exception {
+
+        return clubDAO.insertAttachment(sqlSession, newImg);
+
+    }
+
 }
