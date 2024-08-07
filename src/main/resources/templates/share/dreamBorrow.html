@@ -73,6 +73,7 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+
         }
 
         .status-area{
@@ -270,7 +271,7 @@
                         <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + req.itemDTO.img}"
                              class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
                     </div>
-                    <div class="col-4 item-info-area "
+                    <div class="col-5 item-info-area "
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
                          style="cursor:pointer;">
                         <div class="card-body p-3">
@@ -292,7 +293,7 @@
                         </div>
                         <div th:if="${req.statusCode == 'RNT'}">반납예정일: [[${req.returnDate}]]</div>
                     </div>
-                    <div class="col-3 btn-area container">
+                    <div class="col-2 btn-area container">
 
                         <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
                             <div class="mb-3 btns-1">

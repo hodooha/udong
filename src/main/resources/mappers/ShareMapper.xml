@@ -477,7 +477,8 @@
     </select>
 
     <select id="getRequesters" resultType="shaReqDTO">
-        select a.*, b.nickname as rqst_nickname, c.item_group as req_group
+        select
+        a.*, b.nickname as rqst_nickname, c.item_group as req_group
         from sha_req a
         left join
         member b
@@ -525,5 +526,30 @@
         (#{typeCode}, #{reportedNo}, #{reportedMember}, #{reporterMember}, #{reason}, #{url})
     </insert>
 
+    <select id="getRaffleItem" resultType="shaItemDTO">
+        select *
+        from sha_items
+        where item_group = 'give'
+        and expiry_date = curdate();
+    </select>
+
+    <update id="updateReqAfterRaffle">
+        update
+        sha_req
+        set
+        status_code = case
+        when req_no = #{reqNo} then 'WIN'
+        else 'LST' end
+        where req_item = #{reqItem}
+    </update>
+
+    <update id="postponeExpiry">
+        update
+        sha_items
+        set
+        expiry_date = date_add(expiry_date, interval 7 day)
+        where
+        item_no = #{itemNo}
+    </update>
 
 </mapper>

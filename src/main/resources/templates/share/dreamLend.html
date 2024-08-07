@@ -269,7 +269,7 @@
                         <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
                              class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
                     </div>
-                    <div class="col-4 item-info-area "
+                    <div class="col-5 item-info-area "
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|"
                          style="cursor:pointer;">
                         <div class="card-body p-3">
@@ -288,7 +288,7 @@
                         <div th:if="${item.statusCode == 'RNT'}" class="align-middle">반납예정일: [[${item.returnDate}]]
                         </div>
                     </div>
-                    <div class="col-3 btn-area container">
+                    <div class="col-2 btn-area container">
                         <div th:if="${item.statusCode == 'AVL' || item.statusCode == 'UNAV'}" class="btn-group">
                             <div class="mb-3 btns-1">
                                 <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|"
