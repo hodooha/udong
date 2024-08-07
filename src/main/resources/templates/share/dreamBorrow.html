@@ -329,6 +329,30 @@
                     </div>
                 </div>
             </div>
+
+            <nav class="row mt-3" th:if="${pageInfo} != null">
+                <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
+                    <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
+                        <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
+                                aria-label="Previous">
+                            <span>&laquo;</span>
+                        </button>
+                    </li>
+                    <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
+                        class="page-item active me-1" aria-current="page">
+                        <button th:text="${page}" class="page-link btn-udh-blue"
+                                th:onclick="getBorrowList([[${page}]])"
+                                th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                    </li>
+                    <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
+                        class="page-item me-1">
+                        <button class="page-link btn-udh-blue " aria-label="Previous"
+                                th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])">
+                            <span>&raquo;</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         </th:block>
 
         <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel"
@@ -378,29 +402,7 @@
             </div>
         </div>
 
-        <nav class="row mt-3" th:if="${pageInfo} != null">
-            <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
-                <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
-                    <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
-                            aria-label="Previous">
-                        <span>&laquo;</span>
-                    </button>
-                </li>
-                <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
-                    class="page-item active me-1" aria-current="page">
-                    <button th:text="${page}" class="page-link btn-udh-blue"
-                            th:onclick="getBorrowList([[${page}]])"
-                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
-                </li>
-                <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
-                    class="page-item me-1">
-                    <button class="page-link btn-udh-blue " aria-label="Previous"
-                            th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])">
-                        <span>&raquo;</span>
-                    </button>
-                </li>
-            </ul>
-        </nav>
+
 
         <div class="modal fade" id="reportModal" tabindex="-1"
              aria-labelledby="reportModalLabel"

@@ -659,7 +659,7 @@ function evalWithEndReq(req){
     })
 }
 
-function toggleReportModal(item){
+function toggleReportModalLend(item){
     let reqUrl = "/share/dream/getRentedReq";
     let data = {
         reqItem: item.itemNo,
