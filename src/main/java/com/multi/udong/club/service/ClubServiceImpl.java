@@ -463,6 +463,13 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public int addLogViews(int logNo) throws Exception {
+
+        return clubDAO.addLogViews(sqlSession, logNo);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);
@@ -599,5 +606,7 @@ public class ClubServiceImpl implements ClubService {
         return clubDAO.deleteReplyLike(sqlSession, likeDTO);
 
     }
+
+
 
 }

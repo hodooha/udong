@@ -437,6 +437,12 @@
         WHERE A.log_no = #{ logNo } AND A.club_no = #{ clubNo }
     </select>
 
+    <update id="addLogViews" parameterType="Integer">
+        UPDATE CL_LOG
+        SET views = views + 1
+        WHERE log_no = #{ logNo }
+    </update>
+
     <insert id="insertReply" parameterType="com.multi.udong.club.model.dto.ReplyDTO">
         INSERT INTO CL_LOG_REPLY
             (log_no, content, writer)

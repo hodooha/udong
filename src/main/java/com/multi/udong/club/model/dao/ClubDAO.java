@@ -367,6 +367,12 @@ public class ClubDAO {
 
     }
 
+    public int addLogViews(SqlSessionTemplate sqlSession, int logNo) {
+
+        return sqlSession.update("clubMapper.addLogViews", logNo);
+
+    }
+
     public int insertReply(SqlSessionTemplate sqlSession, ReplyDTO replyDTO) {
 
         return sqlSession.insert("clubMapper.insertReply", replyDTO);

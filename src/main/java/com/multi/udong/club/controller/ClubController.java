@@ -1076,6 +1076,8 @@ public class ClubController {
 
             try {
 
+                clubService.addLogViews(logNo);
+
                 LogDTO logDetail = clubService.selectLogDetail(requestDTO);
 
                 System.out.println("###### 가져온 기록 상세 >>>>> " + logDetail);
