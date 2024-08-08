@@ -37,7 +37,7 @@
 
     <h2 style="text-align:center; font-weight:bolder;">물건 수정</h2>
 
-    <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="enableAllFileInputs();">
+    <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="return isValid();">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <input type="hidden" th:name="itemNo" th:value="${item.itemNo}"/>
         <input type="hidden" th:name="ownerNo" th:value="${item.ownerNo}"/>

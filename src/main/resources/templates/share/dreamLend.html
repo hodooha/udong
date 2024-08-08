@@ -12,10 +12,7 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
     <style>
-        button{
-            font-weight: bolder !important;
 
-        }
 
         .dream .row > div{
             height: 150px;
@@ -269,7 +266,7 @@
                         <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
                              class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
                     </div>
-                    <div class="col-5 item-info-area "
+                    <div class="col-4 item-info-area "
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|"
                          style="cursor:pointer;">
                         <div class="card-body p-3">
@@ -283,7 +280,7 @@
                             </p>
                         </div>
                     </div>
-                    <div class="col-2 status-area">
+                    <div class="col-3 status-area">
                         <h5 class="align-middle" style="margin:0;">[[${item.statusName}]]</h5>
                         <div th:if="${item.statusCode == 'RNT'}" class="align-middle">반납예정일: [[${item.returnDate}]]
                         </div>
@@ -330,11 +327,7 @@
                                 <button class="btn btn-udh-yellow " style="width:100%">쪽지하기</button>
                             </div>
                         </div>
-                        <div th:if="${item.statusCode == 'GIV'}" class="btn-group">
-                            <div class="btns-1">
-                                <button class="btn btn-udh-silver " style="width:100%">추첨하기</button>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
@@ -485,10 +478,10 @@
                         <div class="star_rating mt-3">
                             <input type="hidden" id="score">
                             <span class="star on" data-value="1"> </span>
-                            <span class="star" data-value="2"> </span>
-                            <span class="star" data-value="3"> </span>
-                            <span class="star" data-value="4"> </span>
-                            <span class="star" data-value="5"> </span>
+                            <span class="star on" data-value="2"> </span>
+                            <span class="star on" data-value="3"> </span>
+                            <span class="star on" data-value="4"> </span>
+                            <span class="star on" data-value="5"> </span>
                         </div>
                     </div>
                     <div class="modal-footer">

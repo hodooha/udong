@@ -46,4 +46,6 @@ public interface ShareService {
     void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception;
 
     void insertReport(ShaReportDTO reportDTO, CustomUserDetails c) throws Exception;
+
+    List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception;
 }

@@ -6,11 +6,8 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
-    <style>
-        button{
-            font-weight: bolder !important;
 
-        }
+    <style>
 
         .card{
             background-color: #F5F5F5 !important;
@@ -86,14 +83,101 @@
             transform: translate(-50%, -50%);
         }
 
+        .card {
+            margin: 0 5px;
+        }
+
     </style>
 </head>
 <body id="rentMain">
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
-
+<div th:fragment="spinner" id="spinner" class="text-center" style="display:none">
+    <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
 <div class="container">
-    <!--<h4>추천</h4>-->
+    <div id="recItem" class="mb-5">
+        <h2 class="m-2 all">추천</h2>
+        <th:block th:if="${#lists.isEmpty(groupItems)}">
+            <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
+                등록된 물건이 없습니다.
+            </div>
+        </th:block>
+
+        <th:block th:unless="${#lists.isEmpty(groupItems)}">
+            <div style="overflow: hidden">
+                <div id="carouselExample" class="carousel carousel-dark slide">
+                    <div class="carousel-inner">
+                        <div th:each="group, groupStat : ${groupItems}"
+                             th:class="${groupStat.index == 0} ? 'carousel-item active' : 'carousel-item'">
+                            <div class="row">
+                                <div th:each="item : ${group}" class="col me-2">
+                                    <div class="card"
+                                         th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
+                                        <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
+                                            <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
+                                                 class="card-img-top" alt="물건이미지" style="height:20em"
+                                                 th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
+                                            <th:block th:switch="${item.statusCode}">
+                                                <div class="blur-info" th:case="UNAV">
+                                                    <h3>대여불가</h3>
+                                                </div>
+
+                                                <div class="blur-info" th:case="RNT">
+                                                    <h3>대여중</h3>
+                                                    <p style="font-size: 0.9em">반납예정일: [[${item.returnDate}]]</p>
+                                                </div>
+
+                                                <div class="blur-info" th:case="GVD">
+                                                    <h3>나눔완료</h3>
+                                                    <p>당첨자: </p>
+                                                </div>
+
+                                            </th:block>
+                                        </div>
+
+
+                                        <div class="card-body">
+                                            <span class="badge text-bg-secondary mb-1"
+                                                  style="width:max-content">[[${item.itemCatName}]]</span>
+                                            <h5 th:text="${item.title}"></h5>
+                                            <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span
+                                                    th:text="${item.viewCnt}"></span>🙋‍♀️
+                                                <span
+                                                        th:text="${item.reqCnt}"></span></p>
+                                            <p>
+                                                <span>[[${item.locName}]]</span> <span>[[${item.displayDate}]]</span>
+                                            </p>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
+                            data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample"
+                            data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+
+
+            </div>
+
+        </th:block>
+
+
+    </div>
+
+
     <h2 class="m-2 all">All</h2>
     <input type="hidden" name="group" value="rent">
 
@@ -119,15 +203,10 @@
         </div>
     </div>
 
-    <div th:fragment="spinner" id="spinner" class="text-center" style="display:none">
-        <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
 
     <div th:fragment="itemList" id="itemList">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4 justify-content-md-center"
-             >
+        >
 
             <th:block th:if="${#lists.isEmpty(itemList)}">
                 <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
@@ -137,7 +216,8 @@
 
             <th:block th:unless="${#lists.isEmpty(itemList)}">
                 <div th:each="item : ${itemList}" class="col">
-                    <div class="card" th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
+                    <div class="card"
+                         th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
                         <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
                             <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
                                  class="card-img-top" alt="물건이미지" style="height:20em"
@@ -161,9 +241,10 @@
                         </div>
 
 
-                        <div class="card-body" >
-                            <span class="badge text-bg-secondary mb-1" style="width:max-content">[[${item.itemCatName}]]</span>
-                            <h5 th:text="${item.title}" ></h5>
+                        <div class="card-body">
+                            <span class="badge text-bg-secondary mb-1"
+                                  style="width:max-content">[[${item.itemCatName}]]</span>
+                            <h5 th:text="${item.title}"></h5>
                             <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️
                                 <span
                                         th:text="${item.reqCnt}"></span></p>
@@ -180,28 +261,29 @@
         </div>
 
 
-            <nav class="row mt-3" th:if="${pageInfo} != null">
-                <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
-                    <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
-                        <button th:onclick="search([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
-                                aria-label="Previous">
-                            <span>&laquo;</span>
-                        </button>
-                    </li>
-                    <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
-                        class="page-item active me-1" aria-current="page">
-                        <button th:text="${page}" class="page-link btn-udh-blue"
-                                th:onclick="search([[${page}]])" th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
-                    </li>
-                    <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
-                        class="page-item me-1">
-                        <button class="page-link btn-udh-blue " aria-label="Previous"
-                                th:onclick="search([[${pageInfo.currentPage+1}]])">
-                            <span>&raquo;</span>
-                        </button>
-                    </li>
-                </ul>
-            </nav>
+        <nav class="row mt-3" th:if="${pageInfo} != null">
+            <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
+                <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
+                    <button th:onclick="search([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
+                            aria-label="Previous">
+                        <span>&laquo;</span>
+                    </button>
+                </li>
+                <li th:each="page : ${#numbers.sequence(pageInfo.startPage, pageInfo.endPage)}"
+                    class="page-item active me-1" aria-current="page">
+                    <button th:text="${page}" class="page-link btn-udh-blue"
+                            th:onclick="search([[${page}]])"
+                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                </li>
+                <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
+                    class="page-item me-1">
+                    <button class="page-link btn-udh-blue " aria-label="Previous"
+                            th:onclick="search([[${pageInfo.currentPage+1}]])">
+                        <span>&raquo;</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
 
     </div>
 

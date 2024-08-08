@@ -439,7 +439,7 @@
             left join
             (
                 select
-                b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname
+                b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname, j.eup_myeon_dong_name
                 from
                 sha_items b
                 left join
@@ -460,6 +460,9 @@
                 left join
                     member h
                 on b.owner_no = h.member_no
+                left join
+                location j
+                on b.loc_code = j.location_code
             ) d
             on g.req_item = d.item_no
             where rqst_no = #{rqstNo}
@@ -551,5 +554,72 @@
         where
         item_no = #{itemNo}
     </update>
+
+    <select id="getCatsInMemReq" resultType="shaCatDTO">
+        select distinct c.cat_code, c.cat_name
+        from sha_req a
+        left join
+        sha_items b
+        on a.req_item = b.item_no
+        left join
+        sha_cat c
+        on b.item_cat_code = c.cat_code
+        where rqst_no = #{memberNo}
+    </select>
+
+    <select id="getHotItems" resultMap="shaItemMap">
+        select a.*, c.saved_name
+        from
+            (
+                select b.*, e.*, f.eup_myeon_dong_name, g.cat_name,
+                row_number() over (order by b.like_cnt desc, b.req_cnt desc, b.deal_cnt desc, b.view_cnt desc) as rn
+                from sha_items b
+                inner join
+                    location f
+                on b.loc_code = f.location_code
+                left join
+                    member d
+                on b.owner_no = d.member_no
+                left join
+                (
+                    select req_item, return_date
+                    from sha_req
+                    where status_code = 'RNT'
+                ) e
+                on b.item_no = e.req_item
+                left join
+                    sha_cat g
+                on b.item_cat_code = g.cat_code
+                where
+                b.deleted_at is null
+                and d.is_deleted = 'N'
+                <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
+                <if test="group != null and group != ''">and b.item_group = #{group}</if>
+                <if test="catList != null">
+                    and b.item_cat_code in
+                    (
+                        <foreach collection="catList" item="cat" separator=",">
+                                #{cat.catCode}
+                        </foreach>
+                    )
+                </if>
+                <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
+            ) a
+        left join
+            (
+                select target_no, saved_name, type_code
+                from
+                (
+                    select *,
+                    row_number() over (partition by target_no order by file_no) as rn
+                    from attachment
+                ) sub
+                where rn = 1
+            ) c
+        on a.item_no = c.target_no
+        and a.item_group = c.type_code
+        where a.rn between #{start} and #{end}
+        order by a.rn
+    </select>
 
 </mapper>
