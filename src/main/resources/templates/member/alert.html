@@ -5,6 +5,22 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        #alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 35px;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+            font-size: 20px;
+        }
+    </style>
 </head>
 <body>
     <div id="msg" th:text="${msg}" hidden></div>
@@ -36,6 +52,13 @@
         // confirm 선택지: 확인, 취소
         // confirm 메시지: "warning" 아이콘
         // confirm 메시지: 메인 메시지는 title 표시, 부가설명 메시지는 각자 상황에 맞게 text로 추가
+
+        // 외부 api에서 사용하는 postMessage를 무시할 수 있게 if문 추가
+        window.addEventListener('message', function(event) {
+            if (typeof event.data === 'string' && event.data.includes('쪽지')) {
+                showAlert(event.data);
+            }
+        }, false);
     });
 </script> <!--msg alert-->
 </html>
