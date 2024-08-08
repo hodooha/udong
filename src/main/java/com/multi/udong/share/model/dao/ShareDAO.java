@@ -157,4 +157,16 @@ public class ShareDAO {
     public int insertReport(SqlSessionTemplate sqlSession, ShaReportDTO reportDTO) {
         return sqlSession.insert("ShareMapper.insertReport", reportDTO);
     }
+
+    public List<ShaItemDTO> getRaffleItem(SqlSessionTemplate sqlSession) {
+        return sqlSession.selectList("ShareMapper.getRaffleItem");
+    }
+
+    public int updateReqAfterRaffle(SqlSessionTemplate sqlSession, ShaReqDTO winner) {
+        return sqlSession.update("ShareMapper.updateReqAfterRaffle", winner);
+    }
+
+    public int postponeExpiry(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
+        return sqlSession.update("ShareMapper.postponeExpiry", itemDTO);
+    }
 }

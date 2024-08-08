@@ -653,7 +653,7 @@ function evalWithEndReq(req){
 
     ajax_post(reqUrl, data).done(function(){
         alert("평가완료");
-        $('#evalModal').modal('toggle');
+        $('#evalModal').modal('toggle', true);
         location.reload();
 
     })
@@ -685,6 +685,7 @@ function postReport(){
         console.log("신고 완료");
         alert(msg);
         $('#reportModal').modal("toggle", true);
+        location.reload();
     })
 
 }

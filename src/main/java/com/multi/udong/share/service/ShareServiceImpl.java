@@ -6,12 +6,14 @@ import com.multi.udong.share.model.dao.ShareDAO;
 import com.multi.udong.share.model.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Random;
 
 
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class ShareServiceImpl implements ShareService {
         long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
 
         String displayDate = null;
-        if (diffTime < SEC){
+        if (diffTime < SEC) {
             return diffTime + "초전";
         }
         diffTime = diffTime / SEC;
@@ -64,7 +66,9 @@ public class ShareServiceImpl implements ShareService {
         diffTime = diffTime / MONTH;
         return diffTime + "년 전";
 
-    };
+    }
+
+    ;
 
     /**
      * 물건 카테고리 조회
@@ -125,7 +129,7 @@ public class ShareServiceImpl implements ShareService {
 
         // db에서 물건 상세정보 가져오기
         ShaItemDTO result = getItemDetail(itemDTO, c);
-        if(result.getDeletedAt() != null){
+        if (result.getDeletedAt() != null) {
             throw new Exception("삭제된 물건입니다.");
         }
 
@@ -173,7 +177,7 @@ public class ShareServiceImpl implements ShareService {
     public ShaItemResultDTO searchItems(ShaCriteriaDTO criteriaDTO) throws Exception {
         ShaItemResultDTO result = new ShaItemResultDTO();
         List<ShaItemDTO> itemList = shareDAO.searchItems(sqlSession, criteriaDTO);
-        for(ShaItemDTO i : itemList){
+        for (ShaItemDTO i : itemList) {
             i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
         }
         result.setItemList(itemList);
@@ -408,7 +412,7 @@ public class ShareServiceImpl implements ShareService {
 
         // 유저의 물건 리스트, 전체 개수 가져오기
         List<ShaItemDTO> lendList = shareDAO.getLendList(sqlSession, criteriaDTO);
-        for(ShaItemDTO i : lendList){
+        for (ShaItemDTO i : lendList) {
             i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
         }
         result.setLendList(lendList);
@@ -433,63 +437,69 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public void approveReq(ShaReqDTO reqDTO) throws Exception {
 
-        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+        if (shareDAO.updateReqStat(sqlSession, reqDTO) < 1) {
             throw new Exception("대여 확정를 실패했습니다.");
-        };
+        }
+        ;
 
         ShaItemDTO target = new ShaItemDTO();
         target.setItemNo(reqDTO.getReqItem());
         target.setStatusCode("RNT");
-        if(shareDAO.updateItStat(sqlSession, target) < 1){
+        if (shareDAO.updateItStat(sqlSession, target) < 1) {
             throw new Exception("물건 상태 변경을 실패했습니다.");
-        };
+        }
+        ;
 
         // 물건 신청자수 변경 (-1)
-        if(shareDAO.minusReqCnt(sqlSession, reqDTO.getReqItem()) < 1){
+        if (shareDAO.minusReqCnt(sqlSession, reqDTO.getReqItem()) < 1) {
             throw new Exception("신청자수 변경을 실패했습니다.");
-        };
+        }
+        ;
 
 
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void evalWithReturnReq (ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception{
+    public void evalWithReturnReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
 
         // 로그인한 유저가 물건의 주인과 동일인인지 확인
-        if(c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()){
+        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()) {
             throw new Exception("권한이 없습니다.");
         }
 
         // 물건 제공자의 차용인 평가 등록
-        if(shareDAO.insertEval(sqlSession, evalDTO) < 1){
+        if (shareDAO.insertEval(sqlSession, evalDTO) < 1) {
             throw new Exception("평가 등록을 실패했습니다.");
-        };
+        }
+        ;
 
         // 등록된 평가 토대로 차용인 점수 & 레벨 변경 - 구현 예정!
-
 
 
         // 반납완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
         reqDTO.setReqNo(evalDTO.getReqNo());
         reqDTO.setStatusCode("RTR");
-        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+        if (shareDAO.updateReqStat(sqlSession, reqDTO) < 1) {
             throw new Exception("반납완료 처리를 실패했습니다.");
-        };
+        }
+        ;
 
         // 물건 상태 변경
         ShaItemDTO itemDTO = new ShaItemDTO();
         itemDTO.setItemNo(evalDTO.getReqItem());
         itemDTO.setStatusCode("AVL");
-        if(shareDAO.updateItStat(sqlSession, itemDTO) < 1){
+        if (shareDAO.updateItStat(sqlSession, itemDTO) < 1) {
             throw new Exception("물건 상태 변경을 실패했습니다.");
-        };
+        }
+        ;
 
         // 물건 거래횟수 변경 (+1)
-        if(shareDAO.plusDealCnt(sqlSession, evalDTO.getReqItem()) < 1){
+        if (shareDAO.plusDealCnt(sqlSession, evalDTO.getReqItem()) < 1) {
             throw new Exception("거래횟수 변경을 실패했습니다.");
-        };
+        }
+        ;
 
     }
 
@@ -504,7 +514,7 @@ public class ShareServiceImpl implements ShareService {
         List<ShaReqDTO> borrowList = shareDAO.getReqList(sqlSession, criteriaDTO);
 
         System.out.println("리스트" + borrowList);
-        for(ShaReqDTO r : borrowList){
+        for (ShaReqDTO r : borrowList) {
             r.getItemDTO().setDisplayDate(convertLocaldatetimeToTime(r.getItemDTO().getModifiedAt()));
         }
 
@@ -522,25 +532,26 @@ public class ShareServiceImpl implements ShareService {
         ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, shaReqDTO.getReqNo());
 
         // 요청자와 로그인한 유저가 같은지 확인
-        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+        if (target.getRqstNo() != c.getMemberDTO().getMemberNo()) {
             throw new Exception("권한이 없습니다.");
         }
 
         // 요청 상태가 '신청완료'인지 확인, 아니면 취소 불가
-        if(!target.getStatusCode().equals("RQD")){
+        if (!target.getStatusCode().equals("RQD")) {
             throw new Exception("'신청완료' 상태 외에는 신청취소가 불가합니다.");
         }
 
 
         // 요청 내역에서 삭제
-        if(shareDAO.deleteReq(sqlSession, target) < 1){
+        if (shareDAO.deleteReq(sqlSession, target) < 1) {
             throw new Exception("대여 및 나눔 신청 삭제를 실패했습니다.");
         }
 
         // 물건 신청자수 변경 (-1)
-        if(shareDAO.minusReqCnt(sqlSession, target.getReqItem()) < 1){
+        if (shareDAO.minusReqCnt(sqlSession, target.getReqItem()) < 1) {
             throw new Exception("신청자수 변경을 실패했습니다.");
-        };
+        }
+        ;
 
     }
 
@@ -549,26 +560,27 @@ public class ShareServiceImpl implements ShareService {
     public void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
 
         // 로그인한 유저가 차용인과 동일인인지 확인
-        if(c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()){
+        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()) {
             throw new Exception("권한이 없습니다.");
         }
 
         // 차용인의 대여인 평가 등록
-        if(shareDAO.insertEval(sqlSession, evalDTO) < 1){
+        if (shareDAO.insertEval(sqlSession, evalDTO) < 1) {
             throw new Exception("평가 등록을 실패했습니다.");
-        };
+        }
+        ;
 
         // 등록된 평가 토대로 대여인 점수 & 레벨 변경 - 구현 예정!
-
 
 
         // 평가완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
         reqDTO.setReqNo(evalDTO.getReqNo());
         reqDTO.setStatusCode("REV");
-        if(shareDAO.updateReqStat(sqlSession, reqDTO) < 1){
+        if (shareDAO.updateReqStat(sqlSession, reqDTO) < 1) {
             throw new Exception("평가완료 처리를 실패했습니다.");
-        };
+        }
+        ;
 
 
     }
@@ -581,9 +593,73 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("권한이 없습니다.");
         }
 
-        if(shareDAO.insertReport(sqlSession, reportDTO) < 1){
+        if (shareDAO.insertReport(sqlSession, reportDTO) < 1) {
             throw new Exception("신고 접수를 실패했습니다.");
-        };
+        }
+
+    }
+
+    // 매일 오후 12시에 나눔 품목들의 마감일 확인
+    @Scheduled(cron = "0 0 12 * * ?")
+    public void raffleGiveItem() throws Exception {
+
+        // 오늘 날짜인 나눔 물건 조회
+        List<ShaItemDTO> itemList = shareDAO.getRaffleItem(sqlSession);
+
+        System.out.println("=====추첨해야할 나눔 물건 목록=====");
+        System.out.println(itemList);
+
+        // 오늘 날짜인 나눔 물건의 당첨자 추첨
+        if (itemList != null) {
+            for (ShaItemDTO i : itemList) {
+                letsRaffle(i);
+            }
+        }
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void letsRaffle(ShaItemDTO itemDTO) throws Exception {
+
+        // 해당 물건을 나눔 요청한 요청자 목록 조회
+        ShaReqDTO reqDTO = new ShaReqDTO();
+        reqDTO.setReqItem(itemDTO.getItemNo());
+        reqDTO.setStatusCode("RQD");
+        List<ShaReqDTO> reqList = shareDAO.getRequesters(sqlSession, reqDTO);
+
+        if (reqList.isEmpty()) {
+            if (shareDAO.postponeExpiry(sqlSession, itemDTO) < 1) {
+                throw new Exception("마감일이 연기를 실패했습니다.");
+            }
+
+            System.out.println("===== 나눔일 연기된 물건 =====");
+            System.out.println(itemDTO);
+        } else {
+
+            System.out.println("===== 나눔 물건의 요청자 목록 =====");
+            System.out.println(reqList);
+
+            // 당첨자 추첨
+            Random r = new Random(itemDTO.getItemNo()); // 시드는 물건 번호로
+            int luckyNum = r.nextInt(reqList.size());
+            ShaReqDTO winner = reqList.get(luckyNum);
+
+            System.out.println("===== 당첨자!!! =====");
+            System.out.println(winner);
+
+            // 당첨자 req 상태 '당첨'으로 변경, 당첨자 외 다른 req 상태 '낙첨'으로 변경
+            if (shareDAO.updateReqAfterRaffle(sqlSession, winner) < 1) {
+                throw new Exception("요청 상태 변경을 실패했습니다.");
+            }
+
+
+            // 물건 상태 변경
+            itemDTO.setStatusCode("GVD");
+            if (shareDAO.updateItStat(sqlSession, itemDTO) < 1) {
+                throw new Exception("물건 상태 변경을 실패했습니다.");
+            }
+
+        }
     }
 
 
