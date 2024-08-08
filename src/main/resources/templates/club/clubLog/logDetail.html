@@ -179,18 +179,12 @@
 
         const logNo = [[${logDetail.logNo}]];
 
-        window.onload = function() {
-            var message = [[${message}]];
-            if (message) {
-                alert(message);
-            }
-        }
-
     </script>
 </head>
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
 
 <div class="content" style="padding: 40px; height: 670px">
 
@@ -380,14 +374,34 @@
 
     }
 
-    function confirmDeleteLog() {
-        if (confirm("정말로 기록을 삭제하시겠습니까?")) {
+    async function confirmDeleteLog() {
+        const result = await Swal.fire({
+            title: "정말로 기록을 삭제하시겠습니까?",
+            icon: "warning",
+            confirmButtonColor: "#CB3333",
+            confirmButtonText: "삭제",
+            showCancelButton: true,
+            cancelButtonColor: "#979797",
+            cancelButtonText: "취소"
+        });
+
+        if (result.isConfirmed) {
             document.getElementById('deleteLogForm').submit();
         }
     }
 
-    function confirmDeleteReply(num) {
-        if (confirm("정말로 댓글을 삭제하시겠습니까?")) {
+    async function confirmDeleteReply(num) {
+        const result = await Swal.fire({
+            title: "정말로 댓글을 삭제하시겠습니까?",
+            icon: "warning",
+            confirmButtonColor: "#CB3333",
+            confirmButtonText: "삭제",
+            showCancelButton: true,
+            cancelButtonColor: "#979797",
+            cancelButtonText: "취소"
+        });
+
+        if (result.isConfirmed) {
             document.getElementById('deleteReplyForm' + num).submit();
         }
     }

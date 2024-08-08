@@ -137,20 +137,11 @@
         })
 
     </script>
-    <script th:inline="javascript">
-
-        window.onload = function() {
-            var message = [[${message}]];
-            if (message) {
-                alert(message);
-            }
-        }
-
-    </script>
 </head>
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
 
 <div class="content" style="padding: 40px;">
     <div class="top">

@@ -554,7 +554,7 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
-    public int deleteLog(LogDTO logDTO) throws Exception {
+    public int deleteLog(LogDTO logDTO, int deletedImgCount) throws Exception {
 
         int result = 0;
 
@@ -566,7 +566,7 @@ public class ClubServiceImpl implements ClubService {
 
             int attachmentResult = clubDAO.deleteLogImg(sqlSession, logNo);
 
-            if (attachmentResult > 0) {
+            if (attachmentResult == deletedImgCount) {
 
                 result = 1;
 

@@ -68,20 +68,11 @@
             margin-bottom: 20px;
         }
     </style>
-    <script th:inline="javascript">
-
-        window.onload = function() {
-            var message = [[${message}]];
-            if (message) {
-                alert(message);
-            }
-        }
-
-    </script>
 </head>
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
 
 <div class="content" style="padding: 40px; height: 670px;">
 
@@ -189,14 +180,37 @@
 
 <script>
 
-    function confirmLeaveClub() {
-        if (confirm("정말로 모임에서 탈퇴하시겠습니까?")) {
+    async function confirmLeaveClub() {
+        const result = await Swal.fire({
+            title: "정말로 모임에서 탈퇴하시겠습니까?",
+            icon: "warning",
+            confirmButtonColor: "#CB3333",
+            confirmButtonText: "탈퇴",
+            showCancelButton: true,
+            cancelButtonColor: "#979797",
+            cancelButtonText: "취소"
+        });
+
+        if (result.isConfirmed) {
             document.getElementById('leaveClubForm').submit();
         }
     }
 
-    function confirmDeleteClub() {
-        if (confirm("모임을 해체하면 모임과 관련된 데이터는 되돌릴 수 없습니다. 정말로 모임을 해체하시겠습니까?")) {
+
+    async function confirmDeleteClub() {
+        const result = await Swal.fire({
+            title: "정말로 모임을 해체하시겠습니까?",
+            html: "모임을 해체하면 모임과 관련된 데이터는 되돌릴 수 없습니다.",
+            icon: "warning",
+            confirmButtonColor: "#CB3333",
+            confirmButtonText: "해체",
+            showCancelButton: true,
+            cancelButtonColor: "#979797",
+            cancelButtonText: "취소",
+            footer: `<a href="/club/clubMember/memberMain?clubNo=${encodeURIComponent(clubNo)}">모임장 위임하러 가기</a>`
+        });
+
+        if (result.isConfirmed) {
             document.getElementById('deleteClubForm').submit();
         }
     }

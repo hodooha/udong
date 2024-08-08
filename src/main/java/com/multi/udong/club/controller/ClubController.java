@@ -342,7 +342,8 @@ public class ClubController {
 
                 clubService.requestJoinClub(requestDTO);
 
-                redirectAttributes.addFlashAttribute("message", "가입 신청이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "가입 신청이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
             }
 
@@ -391,7 +392,8 @@ public class ClubController {
 
                 clubService.cancelJoinRequest(requestDTO);
 
-                redirectAttributes.addFlashAttribute("message", "가입 신청이 취소되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "가입 신청이 취소되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
 
             } catch (Exception e) {
@@ -441,7 +443,8 @@ public class ClubController {
 
                 clubService.leaveClub(requestDTO);
 
-                redirectAttributes.addFlashAttribute("message", "모임 탈퇴가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "모임 탈퇴가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
             } catch (Exception e) {
 
@@ -509,7 +512,8 @@ public class ClubController {
 
                     new File(filePath + "/" + savedName).delete();
 
-                    redirectAttributes.addFlashAttribute("message", "모임 해체가 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alert", "모임 해체가 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "success");
 
                     return "redirect:/club/clubMain?page=1";
 
@@ -617,7 +621,8 @@ public class ClubController {
             // service의 모임 신고 메서드 호출
             clubService.reportClub(reportDTO);
 
-            redirectAttributes.addFlashAttribute("message", "모임 신고가 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "모임 신고가 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
             return "redirect:/club/clubHome?clubNo=" + reportedNo;
 
@@ -802,7 +807,8 @@ public class ClubController {
 
                 }
 
-                redirectAttributes.addFlashAttribute("message", "모임 수정이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "모임 수정이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
             } catch (Exception e) {
 
@@ -892,7 +898,8 @@ public class ClubController {
         }
 
         // 미가입인 상태일 때는 모임 홈으로 이동
-        redirectAttributes.addFlashAttribute("message", "모임 기록은 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alert", "모임 기록은 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "warning");
 
         return "redirect:/club/clubHome?clubNo=" + clubNo;
 
@@ -1173,7 +1180,8 @@ public class ClubController {
 
                 clubService.updateReply(replyDTO);
 
-                redirectAttributes.addFlashAttribute("message", "댓글 수정이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "댓글 수정이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
             } catch (Exception e) {
 
@@ -1211,7 +1219,8 @@ public class ClubController {
 
                 clubService.deleteReply(replyDTO);
 
-                redirectAttributes.addFlashAttribute("message", "댓글 삭제가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alert", "댓글 삭제가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
             } catch (Exception e) {
 
@@ -1288,7 +1297,8 @@ public class ClubController {
 
             clubService.reportLog(reportDTO);
 
-            redirectAttributes.addFlashAttribute("message", "기록 신고가 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "기록 신고가 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
             return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + reportedNo;
 
@@ -1495,7 +1505,8 @@ public class ClubController {
 
             }
 
-            redirectAttributes.addFlashAttribute("message", "기록 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "기록 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
         }
 
@@ -1520,22 +1531,27 @@ public class ClubController {
 
                 List<AttachmentDTO> deletedImg = clubService.selectLogImg(logNo);
 
-                int deleteLogResult = clubService.deleteLog(logDTO);
+                int deleteLogResult = clubService.deleteLog(logDTO, deletedImg.size());
 
                 if(deleteLogResult == 1) {
 
-                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-                    String filePath = root + "/uploadFiles";
+                    if(deletedImg.size() > 0) {
 
-                    for(AttachmentDTO img : deletedImg) {
+                        String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+                        String filePath = root + "/uploadFiles";
 
-                        String savedName = img.getSavedName();
+                        for (AttachmentDTO img : deletedImg) {
 
-                        new File(filePath + "/" + savedName).delete();
+                            String savedName = img.getSavedName();
+
+                            new File(filePath + "/" + savedName).delete();
+
+                        }
 
                     }
 
-                    redirectAttributes.addFlashAttribute("message", "기록 삭제가 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alert", "기록 삭제가 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "success");
 
                     return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
 
