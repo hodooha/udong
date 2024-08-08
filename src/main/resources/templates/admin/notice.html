@@ -125,13 +125,22 @@
                 <th>제목</th>
                 <th>팝업</th>
                 <th>작성일</th>
-                <th>작성자</th>
+
             </tr>
             </thead>
             <tbody>
+            <tr th:each="notice : ${notices}" th:onclick="loadNoticeDetail(${notice.noticeNo})">
+                <td th:text="${notice.noticeNo}"></td>
+                <td th:text="${notice.title}"></td>
+                <td th:text="${notice.popup ?: false ? 'Y' : 'N'}"></td>
+                <td th:text="${notice.createdAt}"></td>
+
+            </tr>
             </tbody>
+
         </table>
     </div>
+
     <div class="pagination"></div>
     <div id="contentContainer" class="content-container"></div>
 </div>
@@ -142,75 +151,80 @@
     });
 
     function loadNoticeInsertForm() {
-    $.ajax({
-        url: '/admin/noticeInsertForm',
-        method: 'GET',
-        success: function(response) {
-            $('.admin-content > h5').hide();
-            $('.btn-container').hide();
-            $('#noticeContainer').hide();
-            $('.pagination').hide();
-            $('#contentContainer').html(response).show();
+        $.ajax({
+            url: '/admin/noticeInsertForm',
+            method: 'GET',
+            success: function(response) {
+                $('.admin-content > h5').hide();
+                $('.btn-container').hide();
+                $('#noticeContainer').hide();
+                $('.pagination').hide();
+                $('#contentContainer').html(response).show();
 
-            // 폼 제출 이벤트 핸들러 추가
-            $('#noticeForm').off('submit').on('submit', function(e) {
-                e.preventDefault();
-                submitNoticeForm(this);
-            });
-        },
-        error: function() {
-            alert('폼을 불러오는 데 실패했습니다.');
-        }
-    });
-}
+                // 폼 제출 이벤트 핸들러 추가
+                $('#noticeForm').off('submit').on('submit', function(e) {
+                    e.preventDefault();
+                    submitNoticeForm(this);
+                });
+            },
+            error: function() {
+                alert('폼을 불러오는 데 실패했습니다.');
+            }
+        });
+    }
 
     function submitNoticeForm(form) {
-    var formData = new FormData(form);
-    $.ajax({
-        url: $(form).attr('action'),
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            alert('공지사항이 성공적으로 등록되었습니다.');
-            loadNoticeList();
-        },
-        error: function() {
-            alert('공지사항 등록에 실패했습니다.');
-        }
-    });
-}
+        var formData = new FormData(form);
+        $.ajax({
+            url: $(form).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert('공지사항이 성공적으로 등록되었습니다.');
+                loadNoticeList();
+            },
+            error: function() {
+                alert('공지사항 등록에 실패했습니다.');
+            }
+        });
+    }
 
     function loadNoticeList() {
-    $.ajax({
-        url: '/admin/notice/list',
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-            var tbody = $('#noticeTable tbody');
-            tbody.empty();
-            response.forEach(function(notice) {
-                tbody.append('<tr>' +
-                    '<td>' + notice.noticeNo + '</td>' +
-                    '<td>' + notice.title + '</td>' +
-                    '<td>' + (notice.isPopup ? 'Y' : 'N') + '</td>' +
-                    '<td>' + notice.createdAt + '</td>' +
-                    '<td>' + notice.writer + '</td>' +
-                    '</tr>');
-            });
-            $('.admin-content > h5').show();
-            $('.btn-container').show();
-            $('#noticeContainer').show();
-            $('.pagination').show();
-            $('#contentContainer').empty();
-        },
-        error: function(xhr, status, error) {
-            console.error("AJAX 오류: " + status + " - " + error);
-            alert('공지사항 목록을 불러오는데 실패했습니다.');
-        }
-    });
-}
+        $.ajax({
+            url: '/admin/notice/list',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                var tbody = $('#noticeTable tbody');
+                tbody.empty();
+                response.forEach(function(notice) {
+                    var row = $('<tr>');
+                    row.append('<td>' + notice.noticeNo + '</td>');
+                    row.append('<td>' + notice.title + '</td>');
+                    row.append('<td>' + (notice.isPopup ? 'Y' : 'N') + '</td>');
+                    row.append('<td>' + notice.createdAt + '</td>');
+
+                    // 클릭 이벤트 추가
+                    row.on('click', function() {
+                        window.location.href = '/admin/detail/' + notice.noticeNo;
+                    });
+
+                    tbody.append(row);
+                });
+                $('.admin-content > h5').show();
+                $('.btn-container').show();
+                $('#noticeContainer').show();
+                $('.pagination').show();
+                $('#contentContainer').empty();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류: " + status + " - " + error);
+                alert('공지사항 목록을 불러오는데 실패했습니다.');
+            }
+        });
+    }
 
     function previewImage(event) {
         var reader = new FileReader();

@@ -16,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -236,7 +238,9 @@ public class AdminController {
     }
 
     @PostMapping("/notice/insert")
-    public String insertNotice(@ModelAttribute NoticeDTO notice, RedirectAttributes redirectAttributes) {
+    public String insertNotice(@ModelAttribute NoticeDTO notice,
+                               RedirectAttributes redirectAttributes,
+                               @AuthenticationPrincipal UserDetails userDetails) {
         noticeService.save(notice);
         redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
         return "redirect:/admin/notice";
@@ -245,6 +249,12 @@ public class AdminController {
     @GetMapping("/noticeInsertForm")
     public String showNoticeInsertForm() {
         return "admin/noticeInsertForm";
+    }
+    @GetMapping("/detail/{noticeNo}")
+    public String getNoticeDetail(@PathVariable("noticeNo") int noticeNo, Model model) {
+        NoticeDTO notice = noticeService.findById(noticeNo);
+        model.addAttribute("notice", notice);
+        return "admin/noticeDetail"; // noticeDetail.html 파일을 반환
     }
 
 }
