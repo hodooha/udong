@@ -130,7 +130,7 @@
 
     <resultMap id="replyLikeResultMap" type="com.multi.udong.club.model.dto.LikeDTO">
 
-        <id property="logNo" column="liked_reply_no"/>
+        <id property="replyNo" column="liked_reply_no"/>
         <id property="memberNo" column="reply_like_member_no"/>
         <result property="likedAt" column="reply_liked_at"/>
 
@@ -541,6 +541,21 @@
     <delete id="deleteLogLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
         DELETE FROM CL_LOG_LIKE
         WHERE log_no = #{ logNo } AND member_no = #{ memberNo }
+    </delete>
+
+    <insert id="insertReplyLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
+        INSERT INTO CL_LOG_REPLY_LIKE
+        (reply_no, member_no)
+        VALUES
+        (
+        #{ replyNo },
+        #{ memberNo }
+        )
+    </insert>
+
+    <delete id="deleteReplyLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
+        DELETE FROM CL_LOG_REPLY_LIKE
+        WHERE reply_no = #{ replyNo } AND member_no = #{ memberNo }
     </delete>
 
 </mapper>

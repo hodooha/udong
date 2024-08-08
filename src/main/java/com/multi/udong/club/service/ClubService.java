@@ -82,4 +82,8 @@ public interface ClubService {
     int insertLogLike(LikeDTO likeDTO) throws Exception;
 
     int deleteLogLike(LikeDTO likeDTO) throws Exception;
+
+    int insertReplyLike(LikeDTO likeDTO) throws Exception;
+
+    int deleteReplyLike(LikeDTO likeDTO) throws Exception;
 }

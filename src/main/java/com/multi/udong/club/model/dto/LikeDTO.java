@@ -7,8 +7,9 @@ import java.time.LocalDateTime;
 @Data
 public class LikeDTO {
 
-    private int logNo;
     private int memberNo;
+    private int logNo;
+    private int replyNo;
     private LocalDateTime likedAt;
 
 }

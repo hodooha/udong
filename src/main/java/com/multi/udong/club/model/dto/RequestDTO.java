@@ -11,8 +11,9 @@ import lombok.Data;
 @Data
 public class RequestDTO {
 
-    private int clubNo;
     private int memberNo;
+    private int clubNo;
     private int logNo;
+    private int replyNo;
 
 }

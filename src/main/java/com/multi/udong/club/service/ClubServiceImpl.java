@@ -586,4 +586,18 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+    @Override
+    public int insertReplyLike(LikeDTO likeDTO) throws Exception {
+
+        return clubDAO.insertReplyLike(sqlSession, likeDTO);
+
+    }
+
+    @Override
+    public int deleteReplyLike(LikeDTO likeDTO) throws Exception {
+
+        return clubDAO.deleteReplyLike(sqlSession, likeDTO);
+
+    }
+
 }

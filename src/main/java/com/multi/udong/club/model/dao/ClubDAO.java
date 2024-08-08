@@ -462,4 +462,18 @@ public class ClubDAO {
         return sqlSession.delete("clubMapper.deleteLogLike", likeDTO);
 
     }
+
+    public int insertReplyLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
+
+        return sqlSession.insert("clubMapper.insertReplyLike", likeDTO);
+
+    }
+
+    public int deleteReplyLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
+
+        return sqlSession.delete("clubMapper.deleteReplyLike", likeDTO);
+
+    }
+
+
 }

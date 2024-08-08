@@ -1579,7 +1579,7 @@ public class ClubController {
 
                 clubService.insertLogLike(likeDTO);
 
-                System.out.println("###### 좋아요 성공?: ");
+                System.out.println("###### 좋아요 성공!");
 
 
             } catch (Exception e) {
@@ -1617,7 +1617,7 @@ public class ClubController {
 
                 clubService.deleteLogLike(likeDTO);
 
-                System.out.println("###### 좋아요 취소?: ");
+                System.out.println("###### 좋아요 취소!");
 
 
             } catch (Exception e) {
@@ -1633,6 +1633,80 @@ public class ClubController {
     }
 
 
+    @PostMapping("/clubLog/insertReplyLike")
+    public ResponseEntity<Void> insertReplyLike(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+        int replyNo = requestDTO.getReplyNo();
+
+        System.out.println("###### 현재 clubNo: " + clubNo);
+        System.out.println("###### 좋아요할 replyNo: " + replyNo);
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            LikeDTO likeDTO = new LikeDTO();
+            likeDTO.setMemberNo(memberNo);
+            likeDTO.setReplyNo(replyNo);
+
+            try {
+
+                clubService.insertReplyLike(likeDTO);
+
+                System.out.println("###### 좋아요 성공!");
+
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
+
+    @PostMapping("/clubLog/deleteReplyLike")
+    public ResponseEntity<Void> deleteReplyLike(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+        int replyNo = requestDTO.getReplyNo();
+
+        System.out.println("###### 현재 clubNo: " + clubNo);
+        System.out.println("###### 좋아요 취소할 replyNo: " + replyNo);
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            LikeDTO likeDTO = new LikeDTO();
+            likeDTO.setMemberNo(memberNo);
+            likeDTO.setReplyNo(replyNo);
+
+            try {
+
+                clubService.deleteReplyLike(likeDTO);
+
+                System.out.println("###### 좋아요 취소!");
+
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
 
 
     // ================= 공통 사용 메소드 =================
