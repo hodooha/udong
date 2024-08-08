@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.multi.udong.admin.model.dao.NoticeDAO">
+
+    <resultMap id="noticeResultMap" type="com.multi.udong.admin.model.dto.NoticeDTO">
+        <id property="noticeNo" column="notice_no"/>
+        <result property="startedAt" column="started_at"/>
+        <result property="endedAt" column="ended_at"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="writer" column="writer"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="modifiedAt" column="modified_at"/>
+        <result property="popup" column="is_popup"/>
+    </resultMap>
+
+    <!-- 공지사항 삽입 -->
+    <insert id="insertNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO">
+        INSERT INTO ADM_NOTICE (started_at, ended_at, title, content, writer, is_popup)
+        VALUES (#{startedAt}, #{endedAt}, #{title}, #{content}, #{writer}, #{popup})
+    </insert>
+
+    <!-- 모든 공지사항 조회 -->
+    <select id="findAllNotices" resultMap="noticeResultMap">
+        SELECT * FROM ADM_NOTICE
+        ORDER BY notice_no DESC
+    </select>
+
+    <!-- 특정 공지사항 조회 -->
+    <select id="findNoticeById" parameterType="int" resultMap="noticeResultMap">
+        SELECT * FROM ADM_NOTICE WHERE notice_no = #{noticeNo}
+    </select>
+
+    <!-- 공지사항 업데이트 -->
+    <update id="updateNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO">
+        UPDATE ADM_NOTICE
+        SET started_at = #{startedAt}, ended_at = #{endedAt}, title = #{title},
+        content = #{content}, writer = #{writer}, is_popup = #{popup}
+        WHERE notice_no = #{noticeNo}
+    </update>
+
+    <!-- 공지사항 삭제 -->
+    <delete id="deleteNotice" parameterType="int">
+        DELETE FROM ADM_NOTICE WHERE notice_no = #{noticeNo}
+    </delete>
+</mapper>

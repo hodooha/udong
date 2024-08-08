@@ -1,7 +1,9 @@
 package com.multi.udong.admin.controller;
 
+import com.multi.udong.admin.model.dto.NoticeDTO;
 import com.multi.udong.admin.model.dto.ReportDTO;
 import com.multi.udong.admin.service.AdminService;
+import com.multi.udong.admin.service.NoticeService;
 import com.multi.udong.admin.service.ReportService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
@@ -17,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -34,6 +37,9 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @Autowired
+    private NoticeService noticeService;
 
     @Value("${file.upload-dir:${user.dir}/src/main/resources/static/uploadFiles}")
     private String uploadDir;
@@ -215,9 +221,30 @@ public class AdminController {
         return "success";
     }
 
+    //공지사항
     @GetMapping("/notice")
-    public String getAllReports() {
-
+    public String getAllNotices(Model model) {
+        List<NoticeDTO> notices = noticeService.findAll();
+        model.addAttribute("notices", notices);
         return "admin/notice";
     }
+
+    @GetMapping("/notice/list")
+    @ResponseBody
+    public List<NoticeDTO> getNoticeList() {
+        return noticeService.findAll();
+    }
+
+    @PostMapping("/notice/insert")
+    public String insertNotice(@ModelAttribute NoticeDTO notice, RedirectAttributes redirectAttributes) {
+        noticeService.save(notice);
+        redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
+        return "redirect:/admin/notice";
+    }
+
+    @GetMapping("/noticeInsertForm")
+    public String showNoticeInsertForm() {
+        return "admin/noticeInsertForm";
+    }
+
 }

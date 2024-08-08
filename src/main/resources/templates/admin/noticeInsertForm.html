@@ -1,0 +1,109 @@
+<div class="form-container"
+     style="border: 1px solid #ccc; padding: 20px; border-radius: 10px; background-color: #f9f9f9;"
+     xmlns:th="http://www.w3.org/1999/xhtml">
+    <form id="noticeForm" th:action="@{/admin/notice/insert}" method="post" enctype="multipart/form-data">
+        <div class="form-group-inline" style="margin-bottom: 15px;">
+            <label for="title" style="display: block; font-weight: bold;">제목</label>
+            <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+        <div class="form-group-inline" style="margin-bottom: 15px;">
+            <label for="startedAt" style="display: block; font-weight: bold;">게시기간</label>
+            <input type="datetime-local" id="startedAt" name="startedAt" required style="width: 48%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-right: 4%;">
+            <input type="datetime-local" id="endedAt" name="endedAt" required style="width: 48%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <div style="margin-top: 10px;">
+                <label for="isPopup" style="font-weight: bold; margin-right: 10px;">팝업 여부</label>
+                <input type="checkbox" id="isPopup" name="isPopup">
+            </div>
+        </div>
+        <div class="form-content-wrapper" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <div class="form-group-file" style="flex: 1; margin-right: 20px;">
+                <label for="file" style="display: block; font-weight: bold; margin-bottom: 5px;">이미지첨부</label>
+                <input type="file" id="file" name="file" onchange="previewImage(event)" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px;">
+                <img id="image-preview" src="#" alt="이미지 미리보기" style="max-width: 100%; max-height: 200px; object-fit: contain; display: none;">
+            </div>
+            <div class="form-group-textarea" style="flex: 2;">
+                <label for="content" style="display: block; font-weight: bold; margin-bottom: 5px;">내용</label>
+                <textarea id="content" name="content" placeholder="내용을 입력하세요" required style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;"></textarea>
+            </div>
+        </div>
+        <div class="btn-submit-container" style="display: flex; justify-content: center; margin-top: 30px;">
+            <button type="submit" class="btn-submit" style="width: 120px; height: 40px; background-color: #3B5C9A; color: #FFFFFF; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; text-align: center;">작성완료</button>
+        </div>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        loadNoticeList(); // 페이지 로드 시 리스트 불러오기
+
+        $('#noticeForm').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    alert('공지사항이 성공적으로 등록되었습니다.');
+                    $('.admin-content > h5').show(); // 제목 다시 보이기
+                    $('.btn-container').show(); // 글 작성 버튼 컨테이너 다시 보이기
+                    $('#contentContainer').empty(); // 폼 내용 지우기
+                    loadNoticeList(); // 리스트 새로고침
+                    $('.pagination').show(); // 페이지네이션 다시 보이기
+                },
+                error: function() {
+                    alert('공지사항 등록에 실패했습니다.');
+                }
+            });
+        });
+    });
+
+    function loadNoticeInsertForm() {
+        $.ajax({
+            url: '/admin/noticeInsertForm',
+            method: 'GET',
+            success: function(response) {
+                $('.admin-content > h5').hide(); // 제목 숨기기
+                $('.btn-container').hide(); // 글 작성 버튼 컨테이너 숨기기
+                $('#noticeContainer').hide(); // 공지사항 목록 컨테이너 숨기기
+                $('.pagination').hide(); // 페이지네이션 숨기기
+                $('#contentContainer').html(response).show(); // 폼 내용을 삽입하고 보이게 하기
+            },
+            error: function() {
+                alert('폼을 불러오는 데 실패했습니다.');
+            }
+        });
+    }
+
+    function loadNoticeList() {
+        $.ajax({
+            url: '/admin/notice/list',
+            method: 'GET',
+            dataType: 'json', // 응답 데이터 타입을 JSON으로 명시
+            success: function(response) {
+                var tbody = $('#noticeTable tbody');
+                tbody.empty();
+                response.forEach(function(notice) {
+                    tbody.append('<tr>' +
+                        '<td>' + notice.noticeNo + '</td>' +
+                        '<td>' + notice.title + '</td>' +
+                        '<td>' + (notice.isPopup ? 'Y' : 'N') + '</td>' +
+                        '<td>' + notice.createdAt + '</td>' +
+                        '<td>' + notice.writer + '</td>' +
+                        '</tr>');
+                });
+                $('.admin-content > h5').show();
+                $('.btn-container').show();
+                $('#noticeContainer').show();
+                $('.pagination').show();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류: " + status + " - " + error);
+                alert('공지사항 목록을 불러오는데 실패했습니다.');
+            }
+        });
+    }
+</script>
