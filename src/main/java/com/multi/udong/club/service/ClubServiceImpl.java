@@ -539,4 +539,51 @@ public class ClubServiceImpl implements ClubService {
 
     }
 
+    @Override
+    public List<AttachmentDTO> selectLogImg(int logNo) throws Exception {
+
+        return clubDAO.selectLogImg(sqlSession, logNo);
+
+    }
+
+    @Override
+    public int deleteLog(LogDTO logDTO) throws Exception {
+
+        int result = 0;
+
+        int logNo = logDTO.getLogNo();
+
+        int logResult =  clubDAO.deleteLog(sqlSession, logDTO);
+
+        if(logResult == 1) {
+
+            int attachmentResult = clubDAO.deleteLogImg(sqlSession, logNo);
+
+            if (attachmentResult > 0) {
+
+                result = 1;
+
+            }
+
+        }
+
+        return result;
+
+    }
+
+    @Override
+    public int insertLogLike(LikeDTO likeDTO) throws Exception {
+
+        return clubDAO.insertLogLike(sqlSession, likeDTO);
+
+    }
+
+
+    @Override
+    public int deleteLogLike(LikeDTO likeDTO) throws Exception {
+
+        return clubDAO.deleteLogLike(sqlSession, likeDTO);
+
+    }
+
 }

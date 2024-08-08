@@ -432,4 +432,34 @@ public class ClubDAO {
         return sqlSession.insert("clubMapper.insertAttachment", newImg);
 
     }
+
+    public List<AttachmentDTO> selectLogImg(SqlSessionTemplate sqlSession, int logNo) {
+
+        return sqlSession.selectList("clubMapper.selectLogImg", logNo);
+
+    }
+
+    public int deleteLog(SqlSessionTemplate sqlSession, LogDTO logDTO) {
+
+        return sqlSession.delete("clubMapper.deleteLog", logDTO);
+
+    }
+
+    public int deleteLogImg(SqlSessionTemplate sqlSession, int logNo) {
+
+        return sqlSession.delete("clubMapper.deleteLogImg", logNo);
+
+    }
+
+    public int insertLogLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
+
+        return sqlSession.insert("clubMapper.insertLogLike", likeDTO);
+
+    }
+
+    public int deleteLogLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
+
+        return sqlSession.delete("clubMapper.deleteLogLike", likeDTO);
+
+    }
 }
