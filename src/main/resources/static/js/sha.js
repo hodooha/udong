@@ -456,7 +456,7 @@ function insertReq(data){
 }
 
 function updateShaLike(itemNo){
-    let reqUrl = `/share/like?reqItem=${itemNo}`;
+    let reqUrl = `/share/like?itemNo=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
         updateItemDetail();
     })

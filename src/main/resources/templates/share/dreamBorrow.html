@@ -114,10 +114,15 @@
             width: 100%;
         }
 
+        .btns-1 > button,
+        .btns-2 > button{
+            margin-left: 5px;
+        }
+
         .btns-1,
         .btns-2{
             display:flex;
-            justify-content: space-between;
+            justify-content: flex-end;
         }
 
         .page-link{
@@ -296,29 +301,29 @@
                         <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
                             <div class="mb-3 btns-1">
                                 <button th:onclick="toggleCancelModal([[${req}]])"
-                                        class="btn btn-udh-silver col-12" >신청취소
+                                        class="btn btn-udh-silver col-12" style="width:max-content">신청취소
                                 </button>
 
                             </div>
                             <div class="btns-2 ">
-                                <button class="btn btn-udh-yellow col-12" >쪽지하기</button>
+                                <button class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
                             </div>
                         </div>
 
                         <div th:if="${req.statusCode == 'RNT'}" class="btn-group">
                             <div class="mb-3 btns-1">
-                                <button th:onclick="toggleReportModalBorrow([[${req}]])" class="btn btn-udh-red col-12">물건신고
+                                <button th:onclick="toggleReportModalBorrow([[${req}]])" class="btn btn-udh-red col-12" style="width:max-content">물건신고
                                 </button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-yellow col-12">쪽지하기</button>
+                                <button class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
                             </div>
                         </div>
 
                         <div th:if="${req.statusCode == 'RTR'}" class="btn-group">
                             <div class="btns-1">
                                 <button th:onclick="toggleEvalModal([[${req}]])"
-                                        class="btn btn-udh-silver col-12">평가하기
+                                        class="btn btn-udh-silver col-12" style="width:max-content">평가하기
                                 </button>
 
                             </div>

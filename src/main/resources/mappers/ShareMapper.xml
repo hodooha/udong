@@ -121,20 +121,25 @@
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date
+        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date, e.cat_name
         from sha_items a
-        inner join member b
+        inner join
+            member b
         on a.owner_no = b.member_no
-        inner join location c
+        inner join
+            location c
         on a.loc_code = c.location_code
         left join
         (
-        select *
-        from sha_req
-        where status_code = 'RNT'
-        and req_item = #{itemNo}
+            select *
+            from sha_req
+            where status_code = 'RNT'
+            and req_item = #{itemNo}
         ) d
         on a.item_no = d.req_item
+        left join
+            sha_cat e
+        on a.item_cat_code = e.cat_code
         where a.item_no = #{itemNo}
     </select>
 

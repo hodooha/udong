@@ -620,6 +620,13 @@ public class ShareServiceImpl implements ShareService {
         } else{
             criteriaDTO.setCatList(catsInMemReq);
             itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
+            if(itemList.size() < 12){
+                int i = 12 - itemList.size();
+                criteriaDTO.setEnd(i);
+                criteriaDTO.setCatList(null);
+                List<ShaItemDTO> fillItems = shareDAO.getHotItems(sqlSession, criteriaDTO);
+                itemList.addAll(fillItems);
+            }
             System.out.println("===== 요청했던 물건이 있을때 추천리스트!! =====");
             System.out.println(itemList);
         }

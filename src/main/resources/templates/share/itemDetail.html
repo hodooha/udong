@@ -122,6 +122,8 @@
 
             </div>
             <div class="col-md-6 px-5">
+                <span class="badge text-bg-secondary mb-1"
+                      style="width:max-content; font-size: 0.9em;">[[${item.itemCatName}]]</span>
                 <h2>[[${item.title}]]</h2>
                 <p class="owner">
                     <img style="width:25px; height:25px; margin-right:7px" th:src="${#authentication.principal.memberDTO.savedName == null
@@ -144,10 +146,10 @@
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">응모하기</button>
-                    <button class="btn btn-udh-yellow"><img class="likeImg"
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"
-                                                            th:onclick="updateShaLike([[${item.itemNo}]])"></button>
+                                                            ></button>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -169,10 +171,10 @@
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-yellow"><img class="likeImg"
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"
-                                                            th:onclick="updateShaLike([[${item.itemNo}]])"></button>
+                                                            ></button>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
