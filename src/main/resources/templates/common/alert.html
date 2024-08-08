@@ -46,6 +46,13 @@
             });
         }
 
+        // 외부 api에서 사용하는 postMessage를 무시할 수 있게 if문 추가
+        window.addEventListener('message', function(event) {
+            if (typeof event.data === 'string' && event.data.includes('쪽지')) {
+                showAlert(event.data);
+            }
+        }, false);
+
         // https://sweetalert2.github.io/
 <!--        sweetAlert 속성-->
 <!--            position: "top-end",        // alert 위치-->
@@ -57,13 +64,6 @@
 <!--            backdrop: `                 // 모달창 외부 배경-->
 <!--                rgba(0,0,0,0)               // 배경 색상 (rgb, opacity)-->
 <!--            `-->
-
-        // 외부 api에서 사용하는 postMessage를 무시할 수 있게 if문 추가
-        window.addEventListener('message', function(event) {
-            if (typeof event.data === 'string' && event.data.includes('쪽지')) {
-                showAlert(event.data);
-            }
-        }, false);
     });
 </script> <!--msg alert-->
 </html>
