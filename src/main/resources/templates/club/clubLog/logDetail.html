@@ -259,13 +259,13 @@
 
         <div class="reply-area">
             <p class="p-tag reply">댓글</p>
-            <form th:action="@{/club/clubLog/insertReply}" method="post">
+            <form th:action="@{/club/clubLog/insertReply}" method="post" onsubmit="return validateInsertReplyForm()">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
                 <input type="hidden" name="logNo" th:value="${logDetail.logNo}">
                 <div class="reply-insert-bar">
                     <span th:text="${#authentication.principal.memberDTO.nickname}"></span>
-                    <input type="text" class="input reply-input" name="content" maxlength="100" placeholder=" 댓글 입력..." required>
+                    <input type="text" id="replyInsertInput" class="input reply-input" name="content" maxlength="100" placeholder=" 댓글 입력..." required>
                     <button type="submit" class="btn btn-udh-silver btn-insert-reply">댓글 작성</button>
                 </div>
             </form>
@@ -277,7 +277,7 @@
                                 <span th:text="${reply.writer.nickname}" class="reply-writer-nickname"></span>
                             </td>
                             <td class="reply-content-td">
-                                <form th:action="@{/club/clubLog/updateReply}" method="post" class="reply-update-form">
+                                <form th:action="@{/club/clubLog/updateReply}" method="post" class="reply-update-form" th:onsubmit="'return validateUpdateReplyForm('+ ${iterStat.index + 1} + ')'">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                     <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
                                     <input type="hidden" name="logNo" th:value="${reply.logNo}">
@@ -288,7 +288,7 @@
                                     </div>
                                     <div th:id="'replyContentUpdateInput' + ${iterStat.index + 1}" style="display: none;">
                                         <span style="margin-right: 10px">|</span>
-                                        <input type="text" name="content" class="input reply-update-input" th:value="${reply.content}" maxlength="100" required>
+                                        <input type="text" th:id="'replyUpdateInput' + ${iterStat.index + 1}" name="content" class="input reply-update-input" th:value="${reply.content}" maxlength="100" required>
                                     </div>
                                     <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo}" style="display: flex; margin-left: auto;">
                                         <div th:id="'replyUpdateFormBtn' + ${iterStat.index + 1}">
@@ -404,6 +404,44 @@
         if (result.isConfirmed) {
             document.getElementById('deleteReplyForm' + num).submit();
         }
+    }
+
+    function validateInsertReplyForm() {
+
+        const replyInsertInput = document.getElementById('replyInsertInput').value.trim();
+
+        if (replyInsertInput === "") {
+            Swal.fire({
+                title: '입력 오류',
+                text: '댓글은 공백만 입력할 수 없습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateUpdateReplyForm(num) {
+
+        const replyUpdateInput = document.getElementById('replyUpdateInput' + num).value.trim();
+
+        if (replyUpdateInput === "") {
+            Swal.fire({
+                title: '입력 오류',
+                text: '댓글은 공백만 입력할 수 없습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+
+            return false;
+        }
+
+        return true;
     }
 
     function updateLogLike() {

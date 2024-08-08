@@ -6,6 +6,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
 
         .content {
@@ -121,7 +122,7 @@
     <div th:replace="~{/club/clubSidebar}"></div>
 
     <div class="right-area">
-        <form th:action="@{/club/updateClub}" method="post" encType="multipart/form-data">
+        <form th:action="@{/club/updateClub}" method="post" encType="multipart/form-data" onsubmit="return validateForm()">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="insert-area">
                 <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />
@@ -138,7 +139,7 @@
                             <span>모임명</span>
                         </td>
                         <td style="width: 36%">
-                            <input type="text" class="input club-name-input" name="clubName" th:value="${clubHome.clubName}" maxlength="40" required>
+                            <input type="text" id="clubNameInput" class="input club-name-input" name="clubName" th:value="${clubHome.clubName}" maxlength="40" required>
                         </td>
                         <td style="width: 4%">
                             <span>모임장</span>
@@ -172,7 +173,7 @@
                             </div>
                         </td>
                         <td>
-                            <textarea class="introduction-input" name="introduction" th:text="${clubHome.introduction}" maxlength="1000" required></textarea>
+                            <textarea id="introductionInput" class="introduction-input" name="introduction" th:text="${clubHome.introduction}" maxlength="1000" required></textarea>
                         </td>
                     </tr>
                 </table>
@@ -202,6 +203,26 @@
 
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    function validateForm() {
+
+        const clubNameInput = document.getElementById('clubNameInput').value.trim();
+        const introductionInput = document.getElementById('introductionInput').value.trim();
+
+        if (clubNameInput === "" || introductionInput === "") {
+            Swal.fire({
+                title: '입력 오류',
+                text: '모임명과 소개는 공백만 입력할 수 없습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+
+            return false;
+        }
+
+        return true;
     }
 
 </script>
