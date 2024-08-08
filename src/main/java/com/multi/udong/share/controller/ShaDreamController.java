@@ -233,15 +233,17 @@ public class ShaDreamController {
 
         String msg = "신고가 접수되었습니다.";
 
-//        try {
-//            shareService.insertReport(reportDTO, c);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            msg = e.getMessage();
-//        }
+        try {
+            shareService.insertReport(reportDTO, c);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            msg = e.getMessage();
+        }
 
         return msg;
     }
+
+
 
 }

@@ -512,4 +512,35 @@
             )
     </insert>
 
+    <select id="selectLogImg" parameterType="Integer" resultMap="attachmentResultMap">
+        SELECT *
+        FROM ATTACHMENT
+        WHERE type_code = 'CL-LOG' AND target_no = #{ logNo }
+    </select>
+
+    <delete id="deleteLog" parameterType="com.multi.udong.club.model.dto.LogDTO">
+        DELETE FROM CL_LOG
+        WHERE club_no = #{ clubNo } AND log_no = #{ logNo }
+    </delete>
+
+    <delete id="deleteLogImg" parameterType="Integer">
+        DELETE FROM ATTACHMENT
+        WHERE type_code = 'CL-LOG' AND target_no = #{ logNo }
+    </delete>
+
+    <insert id="insertLogLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
+        INSERT INTO CL_LOG_LIKE
+            (log_no, member_no)
+        VALUES
+            (
+            #{ logNo },
+            #{ memberNo }
+            )
+    </insert>
+
+    <delete id="deleteLogLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
+        DELETE FROM CL_LOG_LIKE
+        WHERE log_no = #{ logNo } AND member_no = #{ memberNo }
+    </delete>
+
 </mapper>

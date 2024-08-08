@@ -5,6 +5,8 @@ import com.multi.udong.club.service.ClubService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.login.service.CustomUserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -1475,11 +1477,9 @@ public class ClubController {
 
                             }
 
-
                         }
 
                     }
-
 
                 }
 
@@ -1498,6 +1498,137 @@ public class ClubController {
         }
 
         return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+    }
+
+
+    @PostMapping("/clubLog/deleteLog")
+    public String deleteLog(@AuthenticationPrincipal CustomUserDetails c, LogDTO logDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = logDTO.getClubNo();
+        int logNo = logDTO.getLogNo();
+
+        String isLogWriter = checkLogWriter(memberNo, logNo);
+        String isAdmin = checkAdmin(memberNo);
+
+        if(isLogWriter.equals("Y") || isAdmin.equals("Y")) {
+
+            try {
+
+                List<AttachmentDTO> deletedImg = clubService.selectLogImg(logNo);
+
+                int deleteLogResult = clubService.deleteLog(logDTO);
+
+                if(deleteLogResult == 1) {
+
+                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
+                    String filePath = root + "/uploadFiles";
+
+                    for(AttachmentDTO img : deletedImg) {
+
+                        String savedName = img.getSavedName();
+
+                        new File(filePath + "/" + savedName).delete();
+
+                    }
+
+                    redirectAttributes.addFlashAttribute("message", "기록 삭제가 완료되었습니다.");
+
+                    return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
+
+                }
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "기록 삭제 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 작성자나 관리자가 아니면 기록 상세 페이지로 이동
+        return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+
+    }
+
+
+    @PostMapping("/clubLog/insertLogLike")
+    public ResponseEntity<Void> insertLogLike(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+        int logNo = requestDTO.getLogNo();
+
+        System.out.println("###### 현재 clubNo: " + clubNo);
+        System.out.println("###### 좋아요할 logNo: " + logNo);
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            LikeDTO likeDTO = new LikeDTO();
+            likeDTO.setMemberNo(memberNo);
+            likeDTO.setLogNo(logNo);
+
+            try {
+
+                clubService.insertLogLike(likeDTO);
+
+                System.out.println("###### 좋아요 성공?: ");
+
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
+
+    @PostMapping("/clubLog/deleteLogLike")
+    public ResponseEntity<Void> deleteLogLike(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+        int logNo = requestDTO.getLogNo();
+
+        System.out.println("###### 현재 clubNo: " + clubNo);
+        System.out.println("###### 좋아요 취소할 logNo: " + logNo);
+
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        if(joinStatus.equals("Y")) {
+
+            LikeDTO likeDTO = new LikeDTO();
+            likeDTO.setMemberNo(memberNo);
+            likeDTO.setLogNo(logNo);
+
+            try {
+
+                clubService.deleteLogLike(likeDTO);
+
+                System.out.println("###### 좋아요 취소?: ");
+
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 
