@@ -6,6 +6,7 @@ import com.multi.udong.admin.service.AdminService;
 import com.multi.udong.admin.service.NoticeService;
 import com.multi.udong.admin.service.ReportService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,21 +18,21 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/admin")
@@ -238,23 +239,106 @@ public class AdminController {
     }
 
     @PostMapping("/notice/insert")
-    public String insertNotice(@ModelAttribute NoticeDTO notice,
-                               RedirectAttributes redirectAttributes,
-                               @AuthenticationPrincipal UserDetails userDetails) {
-        noticeService.save(notice);
+    public String insertNotice(@ModelAttribute NoticeDTO noticeDTO,
+                               @RequestParam("imageFile") MultipartFile imageFile,
+                               @AuthenticationPrincipal CustomUserDetails member,
+                               RedirectAttributes redirectAttributes) {
+
+        noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
+
+        try {
+            AttachmentDTO attachmentDTO = null;
+
+            if (!imageFile.isEmpty()) {
+                String imgPath = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                File mkdir = new File(imgPath);
+                if (!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+
+                String originalFileName = imageFile.getOriginalFilename();
+                String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                attachmentDTO = new AttachmentDTO();
+                attachmentDTO.setOriginalName(originalFileName);
+                attachmentDTO.setSavedName(savedName);
+                attachmentDTO.setTypeCode("NOTI");
+                attachmentDTO.setFileUrl("/uploadFiles/" + savedName);
+
+                imageFile.transferTo(new File(imgPath + File.separator + savedName));
+
+                noticeDTO.setImagePath("/uploadFiles/" + savedName);
+            }
+
+            int noticeNo = noticeService.saveNoticeWithAttachment(noticeDTO, attachmentDTO);
+            System.out.println("Saved notice no: " + noticeNo);
+            System.out.println("Saved image path: " + noticeDTO.getImagePath());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("message", "파일 업로드 중 오류가 발생했습니다.");
+            return "redirect:/admin/noticeInsertForm";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("message", "알 수 없는 오류가 발생했습니다.");
+            return "redirect:/admin/noticeInsertForm";
+        }
+
         redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
         return "redirect:/admin/notice";
     }
 
+
     @GetMapping("/noticeInsertForm")
-    public String showNoticeInsertForm() {
+    public String showInsertForm(Model model) {
+        // 새 NoticeDTO 객체를 생성하여 모델에 추가
+        model.addAttribute("notice", new NoticeDTO());
         return "admin/noticeInsertForm";
     }
     @GetMapping("/detail/{noticeNo}")
     public String getNoticeDetail(@PathVariable("noticeNo") int noticeNo, Model model) {
         NoticeDTO notice = noticeService.findById(noticeNo);
+        if (notice == null) {
+            return "redirect:/error";  // 또는 적절한 에러 페이지로 리다이렉트
+        }
         model.addAttribute("notice", notice);
-        return "admin/noticeDetail"; // noticeDetail.html 파일을 반환
+        System.out.println("Image Path: " + notice.getImagePath());
+        return "admin/noticeDetail";
+    }
+    // 수정 폼
+    @GetMapping("/noticeUpdate")
+    public String showUpdateForm(@RequestParam("noticeNo") int noticeNo, Model model) {
+        NoticeDTO notice = noticeService.getNoticeWithAttachments(noticeNo);
+        if (notice == null) {
+            return "redirect:/errorPage"; // 오류 페이지로 리디렉션
+        }
+        model.addAttribute("notice", notice);
+        return "admin/noticeUpdateForm";
+    }
+
+    // 수정
+    @PostMapping("/notice/update")
+    @ResponseBody
+    public ResponseEntity<?> updateNotice(@ModelAttribute NoticeDTO notice,
+                                          @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            noticeService.updateNotice(notice, file);
+            // 수정 후 리다이렉트 URL을 포함한 JSON 반환
+            return ResponseEntity.ok().body(Map.of(
+                    "message", "공지사항이 성공적으로 수정되었습니다.",
+                    "redirectUrl", "/admin/notice/detail/" + notice.getNoticeNo()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("공지사항 수정 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    // 삭제 처리
+    @PostMapping("/deleteNotice")
+    public String deleteNotice(@RequestParam("noticeNo") int noticeNo) {
+        noticeService.delete(noticeNo);
+        return "redirect:/admin/notice";
     }
 
 }

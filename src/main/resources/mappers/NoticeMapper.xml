@@ -18,7 +18,7 @@
     </resultMap>
 
     <!-- 공지사항 삽입 -->
-    <insert id="insertNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO">
+    <insert id="insertNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO" useGeneratedKeys="true" keyProperty="noticeNo">
         INSERT INTO ADM_NOTICE (started_at, ended_at, title, content, writer, is_popup)
         VALUES (#{startedAt}, #{endedAt}, #{title}, #{content}, #{writer}, #{popup})
     </insert>
@@ -34,16 +34,41 @@
         SELECT * FROM ADM_NOTICE WHERE notice_no = #{noticeNo}
     </select>
 
-    <!-- 공지사항 업데이트 -->
-    <update id="updateNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO">
+    <update id="updateNotice">
         UPDATE ADM_NOTICE
-        SET started_at = #{startedAt}, ended_at = #{endedAt}, title = #{title},
-        content = #{content}, writer = #{writer}, is_popup = #{popup}
-        WHERE notice_no = #{noticeNo}
+        SET title = #{notice.title},
+        content = #{notice.content},
+        started_at = #{notice.startedAt},
+        ended_at = #{notice.endedAt},
+        is_popup = #{notice.popup}
+        WHERE notice_no = #{notice.noticeNo}
     </update>
 
     <!-- 공지사항 삭제 -->
     <delete id="deleteNotice" parameterType="int">
         DELETE FROM ADM_NOTICE WHERE notice_no = #{noticeNo}
     </delete>
+
+    <delete id="deleteAttachmentsByNoticeNo">
+        DELETE FROM ATTACHMENT WHERE type_code = 'NOTI' AND target_no = #{noticeNo}
+    </delete>
+
+    <insert id="insertAttachment">
+        INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name)
+        VALUES (#{typeCode}, #{targetNo}, #{originalName}, #{savedName})
+    </insert>
+
+    <select id="getAttachmentsByNoticeNo" parameterType="int" resultType="com.multi.udong.common.model.dto.AttachmentDTO">
+        SELECT * FROM ATTACHMENT WHERE type_code = 'NOTI' AND target_no = #{noticeNo}
+    </select>
+    <select id="getNoticeById" resultMap="noticeResultMap">
+        SELECT * FROM ADM_NOTICE WHERE notice_no = #{noticeNo}
+    </select>
+    <select id="findNoticeByIdWithAttachments" parameterType="int" resultMap="noticeResultMap">
+        SELECT n.*, a.*
+        FROM ADM_NOTICE n
+        LEFT JOIN ATTACHMENT a ON a.target_no = n.notice_no AND a.type_code = 'NOTI'
+        WHERE n.notice_no = #{noticeNo}
+    </select>
+
 </mapper>
