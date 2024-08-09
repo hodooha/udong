@@ -45,8 +45,6 @@ public interface ClubService {
 
     int insertLog(LogDTO logDTO) throws Exception;
 
-    String checkAdmin(int memberNo) throws Exception;
-
     List<LogDTO> selectLogList(FilterDTO filterDTO) throws Exception;
 
     int selectLogCount(FilterDTO filterDTO) throws Exception;
@@ -77,7 +75,7 @@ public interface ClubService {
 
     List<AttachmentDTO> selectLogImg(int logNo) throws Exception;
 
-    int deleteLog(LogDTO logDTO, int deletedImgCount) throws Exception;
+    int deleteLog(LogDTO logDTO) throws Exception;
 
     int insertLogLike(LikeDTO likeDTO) throws Exception;
 
@@ -88,4 +86,8 @@ public interface ClubService {
     int deleteReplyLike(LikeDTO likeDTO) throws Exception;
 
     int addLogViews(int logNo) throws Exception;
+
+    String checkIsClubDeleted(int clubNo) throws Exception;
+
+    String checkIsLogDeleted(int logNo) throws Exception;
 }

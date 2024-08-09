@@ -23,6 +23,8 @@ public class LogDTO {
     private List<AttachmentDTO> attachments;
     private List<LikeDTO> likes;
     private List<ReplyDTO> replies;
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 
 
 }

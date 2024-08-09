@@ -141,9 +141,14 @@
                     <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
                 </div>
             </form>
-            <a th:href="@{/club/clubLog/logInsertForm(clubNo=${clubNo})}">
-                <button type="button" class="btn btn-udh-blue btn-create-club-log">기록 작성</button>
-            </a>
+            <th:block th:if="${isClubDeleted == 'Y'}">
+                <button type="button" class="btn btn-udh-blue btn-create-club-log" disabled>기록 작성</button>
+            </th:block>
+            <th:block th:if="${isClubDeleted == 'N'}">
+                <a th:href="@{/club/clubLog/logInsertForm(clubNo=${clubNo})}">
+                    <button type="button" class="btn btn-udh-blue btn-create-club-log">기록 작성</button>
+                </a>
+            </th:block>
         </div>
 
         <div class="log-list">

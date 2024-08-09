@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -92,7 +93,6 @@ public class ClubController {
             System.out.println("###### 페이지 개수: " + pages);
 
             model.addAttribute("pages", pages);
-
             model.addAttribute("filter", filterDTO);
 
             return "club/clubMain";
@@ -100,7 +100,6 @@ public class ClubController {
         } catch (Exception e) {
 
             e.printStackTrace();
-
             model.addAttribute("msg", "모임 리스트 조회 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
@@ -179,9 +178,10 @@ public class ClubController {
 
         System.out.println("###### insert할 모임 데이터: " + clubDTO);
 
-        // 이미지 저장할 경로 설정
-        String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-        String filePath = root + "/uploadFiles";
+        // 저장 경로 설정
+        String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+        String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
+        System.out.println("###### 파일 저장 경로: " + filePath);
 
         // 이미지 이름 변경 처리
         String savedName = "";
@@ -274,21 +274,27 @@ public class ClubController {
      * @since 2024 -07-26
      */
     @RequestMapping("/clubHome")
-    public String clubHome(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+    public String clubHome(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
 
-        // 로그인된 유저의 no를 requestDTO에 set
+        // 로그인된 유저의 no를 requestDTO에 set (가입 상태 확인 위해)
         int memberNo = c.getMemberDTO().getMemberNo();
         requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            redirectAttributes.addFlashAttribute("alert", "해체된 모임입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/club/clubMain?page=1";
+        }
 
         System.out.println("###### 상세 조회할 모임 no: " + requestDTO.getClubNo());
 
         try {
 
-            // service의 모임 홈 select 메소드 호출
             ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
-
             System.out.println("###### 가져온 clubHome: " + clubDTO);
-
             model.addAttribute("clubHome", clubDTO);
 
             return "club/clubHome";
@@ -296,7 +302,6 @@ public class ClubController {
         } catch (Exception e) {
 
             e.printStackTrace();
-
             model.addAttribute("msg", "모임 홈 조회 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
@@ -325,9 +330,13 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 회원이 모임에 가입 신청을 하거나 이미 가입되지 않았는지 한 번 더 검증
         String joinStatus = checkJoinStatus(memberNo, clubNo);
-        System.out.println("###### 가입 신청한 유저의 모임 가입 상태: " + joinStatus);
 
         try {
 
@@ -352,7 +361,6 @@ public class ClubController {
         } catch (Exception e) {
 
             e.printStackTrace();
-
             model.addAttribute("msg", "모임 가입 신청 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
@@ -381,9 +389,13 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 회원이 모임 가입 대기 중인지 한 번 더 체크
         String joinStatus = checkJoinStatus(memberNo, clubNo);
-        System.out.println("###### 가입 신청 취소한 유저의 모임 가입 상태: " + joinStatus);
 
         // 가입 신청 후 대기 상태일 때만 가입 신청 취소 메소드 호출
         if(joinStatus.equals("W")) {
@@ -395,11 +407,9 @@ public class ClubController {
                 redirectAttributes.addFlashAttribute("alert", "가입 신청이 취소되었습니다.");
                 redirectAttributes.addFlashAttribute("alertType", "success");
 
-
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "모임 가입 신청 취소 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -432,9 +442,13 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
         String joinStatus = checkJoinStatus(memberNo, clubNo);
-        System.out.println("###### 탈퇴 신청한 유저의 가입 상태: " + joinStatus);
 
         // 가입된 상태일 때만 모임 탈퇴 메소드 호출
         if(joinStatus.equals("Y")) {
@@ -449,7 +463,6 @@ public class ClubController {
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "모임 탈퇴 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -482,47 +495,30 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
         String isMaster = checkClubMaster(memberNo, clubNo);
         System.out.println("###### 모임 해체를 해체한 유저의 모임장 여부: " + isMaster);
 
-        // 서버단에서 로그인된 유저가 관리자인지 한 번 더 검증
-        String isAdmin = checkAdmin(memberNo);
-        System.out.println("###### 모임 해체를 해체한 유저의 관리자 여부: " + isAdmin);
-
         // 모임장이거나 관리자일 때만 모임 해체 메소드 호출
-        if(isMaster.equals("Y") || isAdmin.equals("Y")) {
+        if (isMaster.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
 
-                // 추후 해체에 성공했을 때 이미지 삭제를 위해 이미지 select
-                List<AttachmentDTO> attachment = clubService.selectClubImg(clubNo);
+                clubService.deleteClub(requestDTO);
 
-                int result = clubService.deleteClub(requestDTO);
+                redirectAttributes.addFlashAttribute("alert", "모임 해체가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
-                // 모임 해체 성공 시 이미지 삭제
-                if(result == 1) {
-
-                    System.out.println("###### 삭제할 이미지: " + attachment);
-
-                    String savedName = attachment.get(0).getSavedName();
-
-                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-                    String filePath = root + "/uploadFiles";
-
-                    new File(filePath + "/" + savedName).delete();
-
-                    redirectAttributes.addFlashAttribute("alert", "모임 해체가 완료되었습니다.");
-                    redirectAttributes.addFlashAttribute("alertType", "success");
-
-                    return "redirect:/club/clubMain?page=1";
-
-                }
+                return "redirect:/club/clubMain?page=1";
 
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "모임 해체 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -552,7 +548,12 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         requestDTO.setMemberNo(memberNo);
 
-        System.out.println("###### 신고할 모임 no: " + requestDTO.getClubNo());
+        int clubNo = requestDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         try {
 
@@ -568,7 +569,6 @@ public class ClubController {
         } catch (Exception e) {
 
             e.printStackTrace();
-
             model.addAttribute("msg", "모임 신고폼 이동 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
@@ -594,6 +594,11 @@ public class ClubController {
 
         int reportedNo = reportDTO.getReportedNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, reportedNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 로그인된 유저의 no를 신고자로 reportDTO에 set
         int reporterMemberNo = c.getMemberDTO().getMemberNo();
         reportDTO.setReporterMember(reporterMemberNo);
@@ -603,7 +608,7 @@ public class ClubController {
 
         // 신고 사유를 확인하여 custom이면 따로 파라미터로 받은 직접 입력 사유를 reportDTO에 set
         String reason = reportDTO.getReason();
-        if(reason.equals("custom")) {
+        if (reason.equals("custom")) {
             reportDTO.setReason(customReason);
         }
         System.out.println("###### 신고 사유: " + reason);
@@ -629,7 +634,6 @@ public class ClubController {
         } catch (Exception e) {
 
             e.printStackTrace();
-
             model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
@@ -657,16 +661,19 @@ public class ClubController {
 
         int clubNo = requestDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
         String isMaster = checkClubMaster(memberNo, clubNo);
-        System.out.println("###### 모임 수정을 시도한 유저 모임장 여부: " + isMaster);
 
         // 모임장일 때만 모임 수정폼으로 이동
         if(isMaster.equals("Y")) {
 
             try {
 
-                // service의 모임 홈 select 메소드 호출
                 ClubDTO clubDTO = clubService.selectClubHome(requestDTO);
 
                 System.out.println("###### 가져온 clubHome: " + clubDTO);
@@ -678,8 +685,7 @@ public class ClubController {
             } catch (Exception e) {
 
                 e.printStackTrace();
-
-                model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
+                model.addAttribute("msg", "모임 수정폼 이동 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
 
@@ -707,10 +713,16 @@ public class ClubController {
     @PostMapping("/updateClub")
     public String updateClub(@AuthenticationPrincipal CustomUserDetails c, CategoryDTO categoryDTO, ClubDTO clubDTO, @RequestParam("img") MultipartFile img, Model model, RedirectAttributes redirectAttributes) {
 
+        int memberNo = c.getMemberDTO().getMemberNo();
+
         int clubNo = clubDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
-        int memberNo = c.getMemberDTO().getMemberNo();
         String isMaster = checkClubMaster(memberNo, clubNo);
 
         // 모임장일 때만 모임 수정
@@ -718,15 +730,14 @@ public class ClubController {
 
             List<AttachmentDTO> beforeAttachment = new ArrayList<>();
 
-            // 추후 이미지를 새로 업로드 했을 때 기존 이미지 삭제를 위해 기존 이미지 select
             try {
 
+                // 추후 이미지를 새로 업로드 했을 때 기존 이미지 삭제를 위해 기존 이미지 select
                 beforeAttachment = clubService.selectClubImg(clubNo);
 
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "모임 수정 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -736,9 +747,11 @@ public class ClubController {
             // updateForm에서 받아온 카테고리 코드를 clubDTO에 set
             clubDTO.setCategory(categoryDTO);
 
-            // 이미지 저장할 경로 설정
-            String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-            String filePath = root + "/uploadFiles";
+            // 저장 경로 설정
+            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
+
+            System.out.println("###### 파일 저장 경로: " + filePath);
 
             // 이미지 이름 변경 처리
             String savedName = "";
@@ -836,15 +849,16 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = filterDTO.getClubNo();
 
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
         // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
-        // 서버단에서 로그인된 유저가 관리자인지 한 번 더 검증
-        String isAdmin = checkAdmin(memberNo);
-        System.out.println("###### 모임 기록 리스트 조회를 시도한 유저의 관리자 여부: " + isAdmin);
-
         // 가입된 상태 또는 관리자일 때만 기록 페이지로 이동
-        if(joinStatus.equals("Y") || isAdmin.equals("Y")) {
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
 
@@ -878,17 +892,17 @@ public class ClubController {
                 System.out.println("###### 페이지 개수: " + pages);
 
                 model.addAttribute("pages", pages);
-
                 model.addAttribute("clubNo", clubNo);
-
                 model.addAttribute("filter", filterDTO);
+
+                String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
+                model.addAttribute("isClubDeleted", isClubDeleted);
 
                 return "/club/clubLog/logMain";
 
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "모임 기록 리스트 조회 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -920,7 +934,12 @@ public class ClubController {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
-        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 로그인된 유저가 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
         // 가입된 상태일 때만 기록 작성폼으로 이동
@@ -953,7 +972,12 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = logDTO.getClubNo();
 
-        // 서버단에서 회원이 가입된 상태인지 한 번 더 검증
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 회원이 가입된 상태인지 한 번 더 검증
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
         // 가입된 상태일 때만 기록 작성
@@ -964,9 +988,11 @@ public class ClubController {
             writer.setMemberNo(memberNo);
             logDTO.setWriter(writer);
 
-            // 이미지 저장할 경로 설정
-            String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-            String filePath = root + "/uploadFiles";
+            // 저장 경로 설정
+            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
+
+            System.out.println("###### 파일 저장 경로: " + filePath);
 
             System.out.println("###### img 개수 >>>>> " + imgList.length);
 
@@ -1030,8 +1056,7 @@ public class ClubController {
 
             try {
 
-                int result = clubService.insertLog(logDTO);
-
+                clubService.insertLog(logDTO);
                 int logNo = logDTO.getLogNo();
 
                 return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
@@ -1069,17 +1094,18 @@ public class ClubController {
         requestDTO.setMemberNo(memberNo);
 
         int clubNo = requestDTO.getClubNo();
-
         int logNo = requestDTO.getLogNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
-        // 서버단에서 관리자인지 한 번 더 확인
-        String isAdmin = checkAdmin(memberNo);
-
         // 모임 가입자나 관리자일 때만 기록 상세 조회 메소드 호출
-        if(joinStatus.equals("Y") || isAdmin.equals("Y")) {
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
 
@@ -1093,7 +1119,7 @@ public class ClubController {
                 String profileSavedName = clubMemberDTO.getProfileSavedName();
 
                 // 작성자의 프로필 사진이 없거나 디폴트라면 기본 이미지 이름으로 savedName을 set
-                if(profileSavedName == null || profileSavedName.equals("") || profileSavedName.equals("defaultProfile.png")) {
+                if (profileSavedName == null || profileSavedName.equals("") || profileSavedName.equals("defaultProfile.png")) {
 
                     clubMemberDTO.setProfileSavedName("defaultProfile.png");
                     logDetail.setWriter(clubMemberDTO);
@@ -1115,7 +1141,6 @@ public class ClubController {
 
         }
 
-        // 미가입 상태일 때 모임 홈으로 이동
         return "redirect:/club/clubHome?clubNo=" + clubNo;
 
     }
@@ -1127,6 +1152,11 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
 
         int logNo = replyDTO.getLogNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         // 서버단에서 가입돼 있는지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo,clubNo);
@@ -1146,7 +1176,6 @@ public class ClubController {
             } catch (Exception e) {
 
                 e.printStackTrace();
-
                 model.addAttribute("msg", "댓글 작성 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
@@ -1165,23 +1194,27 @@ public class ClubController {
     public String updateReply(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
-
         int logNo = replyDTO.getLogNo();
-
         int replyNo = replyDTO.getReplyNo();
 
-        String joinStatus = checkJoinStatus(memberNo, clubNo);
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
         String isReplyWriter = checkReplyWriter(memberNo, replyNo);
 
         if(joinStatus.equals("Y") && isReplyWriter.equals("Y")) {
 
             try {
 
-                clubService.updateReply(replyDTO);
+                int result = clubService.updateReply(replyDTO);
 
-                redirectAttributes.addFlashAttribute("alert", "댓글 수정이 완료되었습니다.");
-                redirectAttributes.addFlashAttribute("alertType", "success");
+                if(result == 1) {
+                    redirectAttributes.addFlashAttribute("alert", "댓글 수정이 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "success");
+                }
 
             } catch (Exception e) {
 
@@ -1204,23 +1237,26 @@ public class ClubController {
     public String deleteReply(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
-
         int logNo = replyDTO.getLogNo();
-
         int replyNo = replyDTO.getReplyNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         String isReplyWriter = checkReplyWriter(memberNo, replyNo);
 
-        String isAdmin = checkAdmin(memberNo);
-
-        if(isReplyWriter.equals("Y") || isAdmin.equals("Y")) {
+        if(isReplyWriter.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
 
-                clubService.deleteReply(replyDTO);
+                int result = clubService.deleteReply(replyDTO);
 
-                redirectAttributes.addFlashAttribute("alert", "댓글 삭제가 완료되었습니다.");
-                redirectAttributes.addFlashAttribute("alertType", "success");
+                if(result == 1) {
+                    redirectAttributes.addFlashAttribute("alert", "댓글 삭제가 완료되었습니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "success");
+                }
 
             } catch (Exception e) {
 
@@ -1244,6 +1280,11 @@ public class ClubController {
 
         int memberNo = c.getMemberDTO().getMemberNo();
         requestDTO.setMemberNo(memberNo);
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, requestDTO.getClubNo(), requestDTO.getLogNo())) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         try {
 
@@ -1270,6 +1311,11 @@ public class ClubController {
     public String reportlog(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, @RequestParam("clubNo") int clubNo, Model model, RedirectAttributes redirectAttributes) {
 
         int reportedNo = reportDTO.getReportedNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, reportedNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         // 로그인된 유저의 no를 신고자로 reportDTO에 set
         int reporterMemberNo = c.getMemberDTO().getMemberNo();
@@ -1322,8 +1368,12 @@ public class ClubController {
         requestDTO.setMemberNo(memberNo);
 
         int clubNo = requestDTO.getClubNo();
-
         int logNo = requestDTO.getLogNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         String isLogWriter = checkLogWriter(memberNo, logNo);
 
@@ -1354,12 +1404,17 @@ public class ClubController {
     }
 
 
-    @PostMapping("clubLog/updateLog")
+    @PostMapping("/clubLog/updateLog")
     public String updateLog(@AuthenticationPrincipal CustomUserDetails c, LogDTO logDTO, @RequestParam("imgList") MultipartFile[] imgList, @RequestParam("status[]") int[] status, @RequestParam("fileNo[]") int[] fileNo, Model model, RedirectAttributes redirectAttributes) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = logDTO.getClubNo();
         int logNo = logDTO.getLogNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
         String isLogWriter = checkLogWriter(memberNo, logNo);
         if(isLogWriter.equals("Y")) {
@@ -1522,40 +1577,23 @@ public class ClubController {
         int clubNo = logDTO.getClubNo();
         int logNo = logDTO.getLogNo();
 
-        String isLogWriter = checkLogWriter(memberNo, logNo);
-        String isAdmin = checkAdmin(memberNo);
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
 
-        if(isLogWriter.equals("Y") || isAdmin.equals("Y")) {
+        String isLogWriter = checkLogWriter(memberNo, logNo);
+
+        if(isLogWriter.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
 
-                List<AttachmentDTO> deletedImg = clubService.selectLogImg(logNo);
+                clubService.deleteLog(logDTO);
 
-                int deleteLogResult = clubService.deleteLog(logDTO, deletedImg.size());
+                redirectAttributes.addFlashAttribute("alert", "기록 삭제가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
 
-                if(deleteLogResult == 1) {
-
-                    if(deletedImg.size() > 0) {
-
-                        String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-                        String filePath = root + "/uploadFiles";
-
-                        for (AttachmentDTO img : deletedImg) {
-
-                            String savedName = img.getSavedName();
-
-                            new File(filePath + "/" + savedName).delete();
-
-                        }
-
-                    }
-
-                    redirectAttributes.addFlashAttribute("alert", "기록 삭제가 완료되었습니다.");
-                    redirectAttributes.addFlashAttribute("alertType", "success");
-
-                    return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
-
-                }
+                return "redirect:/club/clubLog/logMain?clubNo=" + clubNo;
 
             } catch (Exception e) {
 
@@ -1581,6 +1619,11 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = requestDTO.getClubNo();
         int logNo = requestDTO.getLogNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         System.out.println("###### 현재 clubNo: " + clubNo);
         System.out.println("###### 좋아요할 logNo: " + logNo);
@@ -1620,6 +1663,11 @@ public class ClubController {
         int clubNo = requestDTO.getClubNo();
         int logNo = requestDTO.getLogNo();
 
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, logNo)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         System.out.println("###### 현재 clubNo: " + clubNo);
         System.out.println("###### 좋아요 취소할 logNo: " + logNo);
 
@@ -1658,6 +1706,11 @@ public class ClubController {
         int clubNo = requestDTO.getClubNo();
         int replyNo = requestDTO.getReplyNo();
 
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, requestDTO.getLogNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         System.out.println("###### 현재 clubNo: " + clubNo);
         System.out.println("###### 좋아요할 replyNo: " + replyNo);
 
@@ -1695,6 +1748,11 @@ public class ClubController {
         int memberNo = c.getMemberDTO().getMemberNo();
         int clubNo = requestDTO.getClubNo();
         int replyNo = requestDTO.getReplyNo();
+
+        // 해체된 모임인지, 삭제된 기록인지 검증
+        if(!checkIsLogDeleted(c, clubNo, requestDTO.getLogNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
 
         System.out.println("###### 현재 clubNo: " + clubNo);
         System.out.println("###### 좋아요 취소할 replyNo: " + replyNo);
@@ -1796,33 +1854,70 @@ public class ClubController {
 
     }
 
-
-    /**
-     * 유저가 관리자인지 확인
-     *
-     * @param memberNo the member no
-     * @return the string
-     * @since 2024 -08-02
-     */
-    public String checkAdmin(int memberNo) {
-
-        String isAdmin = "N";
+    public boolean checkIsClubDeleted(@AuthenticationPrincipal CustomUserDetails c, int clubNo) {
 
         try {
 
-            String authority = clubService.checkAdmin(memberNo);
+            String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
 
-            if(authority.equals("ROLE_ADMIN")) {
-                isAdmin = "Y";
+            if(isClubDeleted == null || isClubDeleted.equals("")) {
+
+                return false;
+
             }
 
-            return isAdmin;
+            if(isClubDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+            }
 
         } catch (Exception e) {
 
             e.printStackTrace();
 
-            return "common/errorPage";
+            return false;
+
+        }
+
+    }
+
+    public boolean checkIsLogDeleted(@AuthenticationPrincipal CustomUserDetails c, int clubNo, int logNo) {
+
+        if(!checkIsClubDeleted(c, clubNo)) {
+
+            return false;
+
+        }
+
+        try {
+
+            String isLogDeleted = clubService.checkIsLogDeleted(logNo);
+
+            if(isLogDeleted == null || isLogDeleted.equals("")) {
+
+                return false;
+
+            }
+
+            if(isLogDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+
+            }
+
+        } catch (Exception e) {
+
+            return false;
 
         }
 

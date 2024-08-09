@@ -266,20 +266,16 @@ public class ClubServiceImpl implements ClubService {
 
         if(clubResult == 1) {
 
-            // 모임의 이미지도 삭제
-            int clubNo = requestDTO.getClubNo();
-            int attachmentResult = clubDAO.deleteClubImg(sqlSession, clubNo);
+            ClubMemberDTO clubMemberDTO = new ClubMemberDTO();
+            clubMemberDTO.setClubNo(requestDTO.getClubNo());
 
-            if(attachmentResult == 1) {
+            int clubMemberResult = clubDAO.deleteClubMember(sqlSession, clubMemberDTO);
+
+            if(clubMemberResult > 0) {
 
                 result = 1;
 
             }
-
-        }
-        else {
-
-            throw new Exception("모임 해체에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
 
         }
 
@@ -435,13 +431,6 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
-    public String checkAdmin(int memberNo) throws Exception {
-
-        return clubDAO.checkAdmin(sqlSession, memberNo);
-
-    }
-
-    @Override
     public List<LogDTO> selectLogList(FilterDTO filterDTO) throws Exception {
 
         return clubDAO.selectLogList(sqlSession, filterDTO);
@@ -466,6 +455,20 @@ public class ClubServiceImpl implements ClubService {
     public int addLogViews(int logNo) throws Exception {
 
         return clubDAO.addLogViews(sqlSession, logNo);
+
+    }
+
+    @Override
+    public String checkIsClubDeleted(int clubNo) throws Exception {
+
+        return clubDAO.checkIsClubDeleted(sqlSession, clubNo);
+
+    }
+
+    @Override
+    public String checkIsLogDeleted(int logNo) throws Exception {
+
+        return clubDAO.checkIsLogDeleted(sqlSession, logNo);
 
     }
 
@@ -554,27 +557,9 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
-    public int deleteLog(LogDTO logDTO, int deletedImgCount) throws Exception {
+    public int deleteLog(LogDTO logDTO) throws Exception {
 
-        int result = 0;
-
-        int logNo = logDTO.getLogNo();
-
-        int logResult =  clubDAO.deleteLog(sqlSession, logDTO);
-
-        if(logResult == 1) {
-
-            int attachmentResult = clubDAO.deleteLogImg(sqlSession, logNo);
-
-            if (attachmentResult == deletedImgCount) {
-
-                result = 1;
-
-            }
-
-        }
-
-        return result;
+        return clubDAO.deleteLog(sqlSession, logDTO);
 
     }
 

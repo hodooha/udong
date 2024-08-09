@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 public class ClubMemberDTO {
 
+    private int clubNo;
     private int memberNo;
     private String nickname;
     private String profileSavedName;

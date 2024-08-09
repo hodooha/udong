@@ -16,6 +16,8 @@
         <result property="createdAt" column="created_at"/>
         <result property="modifiedAt" column="modified_at"/>
         <result property="joinStatus" column="join_status"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="deletedAt" column="deleted_at"/>
 
         <association property="category" resultMap="categoryResultMap"/>
         <association property="location" resultMap="locationResultMap"/>
@@ -79,6 +81,8 @@
         <result property="repliesCount" column="replies_count"/>
         <result property="likesCount" column="likes_count"/>
         <result property="viewerLike" column="viewer_log_like"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="deletedAt" column="deleted_at"/>
 
         <association property="writer" resultMap="logWriterResultMap"/>
 
@@ -92,6 +96,7 @@
 
         <id property="memberNo" column="log_writer"/>
         <result property="nickname" column="log_writer_nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
 
     </resultMap>
 
@@ -124,7 +129,6 @@
 
         <id property="memberNo" column="reply_writer"/>
         <result property="nickname" column="reply_writer_nickname"/>
-        <result property="profileSavedName" column="profile_saved_name"/>
 
     </resultMap>
 
@@ -208,7 +212,7 @@
         FROM CL A
         LEFT JOIN CL_CATEGORY B ON A.category_code = B.category_code
         LEFT JOIN LOCATION C ON A.location_code = C.location_code
-        WHERE A.location_code = #{ locationCode }
+        WHERE A.location_code = #{ locationCode } AND A.is_deleted = 'N'
         <if test="categoryCode != 'ALL' and categoryCode != null and categoryCode != ''">
             AND A.category_code = #{ categoryCode }
         </if>
@@ -224,7 +228,7 @@
 
     <select id="selectClubCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
         SELECT COUNT(*) club_count FROM CL
-        WHERE location_code = #{ locationCode }
+        WHERE location_code = #{ locationCode } AND is_deleted = 'N'
         <if test="categoryCode != 'ALL' and categoryCode != null and categoryCode != ''">
             AND category_code = #{ categoryCode }
         </if>
@@ -292,10 +296,13 @@
         WHERE club_no = #{ clubNo } AND member_no = #{ memberNo } AND join_status = 'Y'
     </delete>
 
-    <delete id="deleteClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
-        DELETE FROM CL
+    <update id="deleteClub" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        UPDATE CL
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
         WHERE club_no = #{ clubNo }
-    </delete>
+    </update>
 
     <delete id="deleteClubImg" parameterType="Integer">
         DELETE FROM ATTACHMENT
@@ -321,7 +328,8 @@
         SET
             category_code = #{ category.categoryCode },
             club_name = #{ clubName },
-            introduction = #{ introduction }
+            introduction = #{ introduction },
+            modified_at = NOW()
         WHERE club_no = #{ clubNo }
     </update>
 
@@ -363,12 +371,6 @@
             )
     </insert>
 
-    <select id="checkAdmin" parameterType="Integer" resultType="String">
-        SELECT authority
-        FROM MEMBER
-        WHERE member_no = #{ memberNo }
-    </select>
-
     <select id="selectLogList" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultMap="logResultMap">
         SELECT
         A.log_no,
@@ -383,7 +385,7 @@
         (SELECT E.saved_name FROM ATTACHMENT E WHERE E.type_code = 'CL-LOG' AND E.target_no = A.log_no ORDER BY E.file_no LIMIT 1) AS saved_name
         FROM CL_LOG A
         LEFT JOIN MEMBER B ON A.writer = B.member_no
-        WHERE A.club_no = #{ clubNo }
+        WHERE A.club_no = #{ clubNo } AND A.is_deleted = 'N'
         <if test="searchWord != null and searchWord != ''">
             AND (
                 A.title LIKE CONCAT('%', #{ searchWord }, '%')
@@ -396,7 +398,7 @@
 
     <select id="selectLogCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
         SELECT COUNT(*) log_count FROM CL_LOG
-        WHERE club_no = #{ clubNo }
+        WHERE club_no = #{ clubNo } AND is_deleted = 'N'
         <if test="searchWord != null and searchWord != ''">
             AND (
                 title LIKE CONCAT('%', #{ searchWord }, '%')
@@ -414,6 +416,8 @@
             A.views,
             A.created_at,
             A.modified_at,
+            A.is_deleted,
+            A.deleted_at,
             A.writer AS log_writer,
             B.nickname AS log_writer_nickname,
             C.reply_no,
@@ -429,7 +433,7 @@
             E.*,
             (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no AND F.member_no = #{ memberNo }) AS viewer_reply_like,
             (SELECT COUNT(*) FROM CL_LOG_REPLY_LIKE F WHERE F.reply_no = C.reply_no) AS reply_likes_count,
-            (SELECT COUNT(*) FROM ATTACHMENT E WHERE E.type_code = 'MEM' AND E.target_no = #{ memberNo }) AS profile_saved_name
+            (SELECT saved_name FROM ATTACHMENT E WHERE E.type_code = 'MEM' AND E.target_no = log_writer) AS profile_saved_name
         FROM CL_LOG A
         LEFT JOIN MEMBER B ON A.writer = B.member_no
         LEFT JOIN CL_LOG_REPLY C ON A.log_no = C.log_no
@@ -524,10 +528,13 @@
         WHERE type_code = 'CL-LOG' AND target_no = #{ logNo }
     </select>
 
-    <delete id="deleteLog" parameterType="com.multi.udong.club.model.dto.LogDTO">
-        DELETE FROM CL_LOG
+    <update id="deleteLog" parameterType="com.multi.udong.club.model.dto.LogDTO">
+        UPDATE CL_LOG
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
         WHERE club_no = #{ clubNo } AND log_no = #{ logNo }
-    </delete>
+    </update>
 
     <delete id="deleteLogImg" parameterType="Integer">
         DELETE FROM ATTACHMENT
@@ -562,6 +569,26 @@
     <delete id="deleteReplyLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
         DELETE FROM CL_LOG_REPLY_LIKE
         WHERE reply_no = #{ replyNo } AND member_no = #{ memberNo }
+    </delete>
+    
+    <select id="checkIsClubDeleted" parameterType="Integer" resultType="String">
+        SELECT is_deleted
+        FROM CL
+        WHERE club_no = #{ clubNo }
+    </select>
+
+    <select id="checkIsLogDeleted" parameterType="Integer" resultType="String">
+        SELECT is_deleted
+        FROM CL_LOG
+        WHERE log_no = #{ logNo }
+    </select>
+
+    <delete id="deleteClubMember" parameterType="com.multi.udong.club.model.dto.ClubMemberDTO">
+        DELETE FROM CL_MEMBER
+        WHERE club_no = #{ clubNo }
+        <if test="memberNo != 0">
+            AND member_no = #{ memberNo }
+        </if>
     </delete>
 
 </mapper>
