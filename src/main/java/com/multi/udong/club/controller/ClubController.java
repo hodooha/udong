@@ -1428,9 +1428,10 @@ public class ClubController {
                     System.out.println("###### fileNo 배열: " + Arrays.toString(fileNo));
                     System.out.println("###### status 배열: " + Arrays.toString(status));
 
-                    // 이미지 저장할 경로 설정
-                    String root = "/Users/hyeoni/Desktop/workspace/multiit/final_udonghaeng/udong/src/main/resources/static";
-                    String filePath = root + "/uploadFiles";
+                    // 저장 경로 설정
+                    String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                    String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
+                    System.out.println("###### 파일 저장 경로: " + filePath);
 
                     for(int i = 0; i < 4; i++) {
 
