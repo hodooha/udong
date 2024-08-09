@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 60%;
+            height: 60vh;
+            margin-top: 120px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .selection-buttons {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        .selection-button {
+            display: flex;
+            width: 200px;
+            height: 200px;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+            &:hover {
+                transform: translateY(-8px);
+                background-color: #FFB83D;
+            }
+        }
+        .selection-button img {
+            width: 90%;
+            height: auto;
+        }
+        .selection-button span {
+            font-size: 30px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/member/alert}"></div>
+<div>
+    <div class="container">
+        <h1>가입할 회원 유형을 선택해주세요.</h1>
+        <h5>판매자 가입은 사업자등록증이 필요합니다.</h5>
+        <div class="selection-buttons">
+            <a href="/signup/member" class="selection-button">
+                <img th:src="@{/img/signup-member.png}" alt="일반회원"/>
+                <span>일반회원</span>
+            </a>
+            <a href="/signup/seller" class="selection-button">
+                <img th:src="@{/img/signup-seller.png}" alt="판매자"/>
+                <span>판매자</span>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

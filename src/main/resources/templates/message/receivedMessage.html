@@ -24,14 +24,6 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
-        .message-detail {
-            min-width: 800px;
-            text-align: center;
-            border: 1px solid #000000;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -45,7 +37,7 @@
         th {
             background-color: #f2f2f2;
         }
-        .clickable-row:hover {
+        .clickable-row:hover, .clickable-row.active {
             background-color: #f2f2f2;
             cursor: pointer;
         }
@@ -83,7 +75,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
-<div th:replace="~{/common/alert}"></div>
+<div th:replace="~{/member/alert}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
@@ -97,12 +89,16 @@
                     </tr>
                 </thead>
                 <tbody id="result-table">
-                    <tr th:each="data : ${tableData}" th:attr="data-no=${data.messageNo}, data-table='message'" class="clickable-row">
+                    <tr class="clickable-row"
+                        th:each="data : ${tableData}"
+                        th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
+                        th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|">
+                        <!--th:onclick https://velog.io/@leejk0924/Tymeleaf%EC%9D%98-thonclick-%EC%82%AC%EC%9A%A9%EB%B2%95-->
                         <td><input type="checkbox" id="row-checkbox"></td>
                         <td th:text="${data.senderNickname}"></td>
                         <td th:text="${data.content}"></td>
                         <td th:text="${data.createdAt}"></td>
-                        <td th:text="${data.isRead == 'Y' ? '읽음' : '안읽음'}"></td>
+                        <td th:text="${data.isRead.equals('Y') ? '읽음' : '안읽음'}"></td>
                     </tr>
                 </tbody>
             </table>
@@ -129,26 +125,10 @@
                 </form>
             </div>
         </div>
-        <div class="message-detail"></div>
+        <div th:replace="~{/message/messageDetail}"></div>
     </div>
 </main>
 </body>
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        const writeMessageBtn = document.querySelector('#writeMessageBtn');
-
-        writeMessageBtn.addEventListener('click', function() {
-            const popupWindow = window.open('/message/sendMessageForm', 'SendMessage', 'width=500,height=410');
-
-            const timer = setInterval(function() {
-                if (popupWindow.closed) {
-                    clearInterval(timer);
-                    location.reload(); // 페이지 새로고침
-                }
-            }, 500);
-        });
-    });
-</script> <!--메시지 작성 폼-->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -173,7 +153,6 @@
         const pagination = document.querySelector('.pagination');
         const pages = /*[[${pages}]]*/ 1;
         const currentPage = /*[[${page}]]*/ 1;
-        const table = /*[[${table}]]*/ '';
         const searchCategory = /*[[${searchCategory}]]*/ '';
         const searchWord = /*[[${searchWord}]]*/ '';
 
@@ -201,26 +180,21 @@
         }
     });
 </script> <!--페이지네이션-->
-<script>
+<script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
 
         const rows = document.querySelectorAll('.clickable-row');
+        const currentMemberNo = /*[[${messageNo}]]*/ null;
 
         rows.forEach(row => {
-            row.addEventListener('click', function(event) {
+            const messageNo = row.getAttribute('messageNo');
 
-                if (event.target.type === 'checkbox') {
-                    event.stopPropagation();
-                    return;
-                }
-
-                const no = this.getAttribute('data-no');
-                let url = `/message/messageDetail?no=${no}`;
-                window.location.href = url;
-            });
+            if (messageNo == currentMemberNo) {
+                row.classList.add('active');
+            }
         });
     });
-</script> <!--테이블 row 링크-->
+</script> <!--테이블 row-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -230,6 +204,7 @@
         const rowCheckboxes = document.querySelectorAll('#row-checkbox');
         const deleteBtn = document.querySelector('#deleteBtn');
         const sendReplyBtn = document.querySelector('#sendReplyBtn');
+        const writeMessageBtn = document.querySelector('#writeMessageBtn');
 
         // 전체 체크박스 이벤트
         allCheckbox.addEventListener('change', function() {
@@ -241,25 +216,53 @@
         // 개별 체크박스 이벤트
         rowCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
-                allCheckbox.checked = Array.from(rowCheckboxes).every(cb => cb.checked);
+                allCheckbox.checked = Array.from(rowCheckboxes).every(checkBox => checkBox.checked);
+            });
+
+            checkbox.addEventListener('click', function() {
+                event.stopPropagation();
             });
         });
 
+        // 체크된 행 가져오기
+        function getCheckedRows() {
+            return Array.from(rowCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.closest('tr'));
+        }
+
         // 삭제하기 버튼 클릭 이벤트
-        deleteBtn.addEventListener('click', function() {
+        deleteBtn.addEventListener('click', async function() {
             const checkedRows = getCheckedRows();
 
             if (checkedRows.length === 0) {
-                alert('삭제할 메시지를 선택해주세요.');
+                showErrorAlert('삭제할 쪽지를 선택해주세요.');
                 return;
             }
 
-            if (confirm('선택한 메시지를 삭제하시겠습니까?')) {
-                const messageNos = checkedRows.map(row => row.getAttribute('data-no'));
+            if (await showConfirmAlert('선택한 쪽지를 삭제하시겠습니까?')) {
+                const messageNos = checkedRows.map(row => row.getAttribute('messageNo'));
 
-                console.log('messageNos: ', messageNos);
-
-                deleteMessages(messageNos);
+                fetch('/message/deleteMessages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify({ messageNos: messageNos })
+                })
+                .then(response => response.json())
+                .then(async data => { // 여기에 async 추가
+                    if (data.success) {
+                        if (await showSuccessAlert('선택한 쪽지가 삭제되었습니다.')) {
+                            location.reload();
+                        };
+                    } else {
+                        showErrorAlert('쪽지 삭제에 실패했습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorAlert('쪽지 삭제 중 오류가 발생했습니다.');
+                });
             }
         });
 
@@ -268,62 +271,32 @@
             const checkedRows = getCheckedRows();
 
             if (checkedRows.length === 0) {
-                alert('답장할 메시지를 선택해주세요.');
+                showErrorAlert('답장할 쪽지를 선택해주세요.');
                 return;
             }
 
             if (checkedRows.length > 1) {
-                alert('답장은 하나의 메시지만 선택할 수 있습니다.');
+                showErrorAlert('답장은 하나의 쪽지만 선택할 수 있습니다.');
                 return;
             }
 
-            const messageNo = checkedRows[0].getAttribute('data-no');
-            openReplyForm(messageNo);
+            const senderNo = checkedRows[0].getAttribute('senderNo');
+            window.open(`/message/sendMessageForm?memberNo=${senderNo}`, 'ReplyMessage', 'width=500,height=410');
         });
 
-        // 체크된 행 가져오기
-        function getCheckedRows() {
-            return Array.from(rowCheckboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.closest('tr'));
-        }
+        // 작성 버튼 클릭 이벤트
+        writeMessageBtn.addEventListener('click', function() {
+            window.open('/message/sendMessageForm', 'SendMessage', 'width=500,height=410');
+        });
 
-        // 메시지 삭제 함수
-        function deleteMessages(messageNos) {
-            fetch('/message/deleteMessages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [header]: token
-                },
-                body: JSON.stringify({ messageNos: messageNos })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('선택한 메시지가 삭제되었습니다.');
-                    location.reload();
-                } else {
-                    alert('메시지 삭제에 실패했습니다.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('메시지 삭제 중 오류가 발생했습니다.');
-            });
-        }
-
-        // 답장 폼 열기
-        function openReplyForm(messageNo) {
-            const popupWindow = window.open(`/message/replyForm?messageNo=${messageNo}`, 'ReplyMessage', 'width=500,height=410');
-
-            const timer = setInterval(function() {
-
-                if (popupWindow.closed) {
-                    clearInterval(timer);
+        // 작성 완료 알림 이벤트
+        window.addEventListener('message', async function(event) {
+            if (typeof event.data === 'string' && event.data.includes('쪽지')) {
+                if (await showSuccessAlert(event.data)) {
                     location.reload();
                 }
-
-            }, 500);
-        }
+            }
+        }, false);
     });
 </script> <!--체크박스, 버튼 할당-->
 </html>

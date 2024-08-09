@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            height: 80vh;
+        }
+        .signup {
+            display: flex;
+            justify-content: center;
+            width: 600px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .signup form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s;
+
+            &:focus {
+                border-color: #4a90e2;
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+            }
+        }
+        .input-group label {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background-color: white;
+            padding: 0 5px;
+            font-size: 14px;
+            color: #333;
+        }
+        .id-input-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 20px;
+        }
+        .email-group {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: start;
+        }
+        .btn {
+            min-width: 120px;
+            width: 120px;
+            transition: all 0.3s;
+        }
+        .error-message {
+            font-size: 18px;
+            visibility: hidden;
+        }
+        .success {
+            color: #01DF01;
+        }
+        .error {
+            color: #FA5858;
+        }
+        .clear-input {
+            position: absolute;
+            right: 150px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 30px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/member/alert}"></div>
+<form action="/signup" method="post" enctype="multipart/form-data">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <div class="container">
+        <div class="signup">
+            <h2>일반 회원 가입</h2>
+
+            <div class="input-group">
+                <div class="id-input-wrapper">
+                    <label>아이디</label>
+                    <input type="text" name="memberId" placeholder="아이디" required>
+                    <button class="clear-input" type="button">&times;</button>
+                    <button class="btn btn-udh-yellow" type="button" id="checkDuplicate">중복검사</button>
+                </div>
+            </div>
+            <div class="error-message" id="id-message"></div>
+
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" required>
+            </div>
+            <div class="error-message" id="password-message"></div>
+
+            <div class="input-group">
+                <label>비밀번호 확인</label>
+                <input type="password" name="confirmPassword" placeholder="비밀번호 확인" required>
+            </div>
+            <div class="error-message" id="password-confirm-message"></div>
+
+            <div class="input-group">
+                <label>전화번호</label>
+                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" required>
+            </div>
+            <div class="error-message" id="phone-message"></div>
+
+            <div class="input-group">
+                <div class="email-group">
+                    <label>이메일</label>
+                    <input type="text" id="emailId" placeholder="이메일" required>
+                    <span style="padding-top: 10px;">@</span>
+                    <input type="text" id="emailDomain" placeholder="직접 입력" required>
+                    <select id="domainSelect">
+                        <option value="">직접 입력</option>
+                        <option value="gmail.com">gmail.com</option>
+                        <option value="naver.com">naver.com</option>
+                        <option value="nate.com">nate.com</option>
+                        <option value="daum.com">daum.com</option>
+                        <option value="kakao.com">kakao.com</option>
+                    </select>
+                    <input type="hidden" name="email" required>
+                </div>
+            </div>
+            <div class="error-message" id="email-message"></div>
+
+            <button class="btn btn-udh-blue" id="signup-btn" disabled>회원가입</button>
+        </div>
+    </div>
+</form>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const memberIdInput = document.querySelector('input[name="memberId"]');
+        const passwordInput = document.querySelector('input[name="memberPw"]');
+        const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const checkDuplicateButton = document.getElementById('checkDuplicate');
+        const clearButton = document.querySelector('.clear-input');
+        const submitButton = document.querySelector('#signup-btn');
+
+        const emailId = document.querySelector('#emailId');
+        const emailDomain = document.querySelector('#emailDomain');
+        const domainSelect = document.querySelector('#domainSelect');
+
+        const idMessage = document.querySelector('#id-message');
+        const passwordMessage = document.querySelector('#password-message');
+        const passwordConfirmMessage = document.querySelector('#password-confirm-message');
+        const phoneMessage = document.querySelector('#phone-message');
+        const emailMessage = document.querySelector('#email-message');
+
+        // 아이디 유효성 검사
+        function isValidId(id) {
+            return id.trim().length > 0;
+        }
+
+        // 비밀번호 유효성 검사
+        function isValidPassword(password) {
+            let regex = /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,15}$/;
+            return regex.test(password);
+        }
+
+        // 전화번호 유효성 검사
+        function isValidPhone(phone) {
+            let regex = /^\d{11}$/;
+            return regex.test(phone);
+        }
+
+        // 이메일 아이디 유효성 검사
+        function isValidEmailId(emailId) {
+            const regex = /^[A-Za-z0-9]+$/;
+            return regex.test(emailId);
+        }
+
+        // 이메일 도메인 유효성 검사
+        function isValidDomain(domain) {
+            let regex = /^[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+            return regex.test(domain);
+        }
+
+        // 메세지 표시
+        function showMessage(element, message, isError) {
+            element.textContent = message;
+            element.classList.remove('error', 'success');
+            element.classList.add(isError ? 'error' : 'success');
+            element.style.visibility = 'visible';
+        }
+
+        function hideMessage(element) {
+            element.style.visibility = 'hidden'
+        }
+
+        // 실시간 비밀번호 유효성 검사
+        let isPwChecked = false;
+        passwordInput.addEventListener('blur', function() {
+            if (!isValidPassword(this.value.trim())) {
+                showMessage(passwordMessage, '비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
+                isPwChecked = false;
+                checkAllFields();
+            } else {
+                hideMessage(passwordMessage);
+                isPwChecked = true;
+                checkAllFields();
+            }
+        });
+
+        // 실시간 비밀번호 확인 검사
+        let isPwConfirmed = false;
+        confirmPasswordInput.addEventListener('blur', function() {
+            if (this.value.trim() !== passwordInput.value.trim()) {
+                showMessage(passwordConfirmMessage, '비밀번호가 일치하지 않습니다.', true);
+                isPwConfirmed = false;
+                checkAllFields();
+            } else {
+                hideMessage(passwordConfirmMessage);
+                isPwConfirmed = true;
+                checkAllFields();
+            }
+        });
+
+        // 실시간 전화번호 유효성 검사
+        let isPhoneChecked = false;
+        phoneInput.addEventListener('blur', function() {
+            if (!isValidPhone(this.value.trim())) {
+                showMessage(phoneMessage, '전화번호는 11자리 숫자만 입력 가능합니다.', true);
+                isPhoneChecked = false;
+                checkAllFields();
+            } else {
+                hideMessage(phoneMessage);
+                isPhoneChecked = true;
+                checkAllFields();
+            }
+        });
+
+        // 실시간 이메일 유효성 검사
+        let isEmailChecked = false;
+        emailId.addEventListener('blur', checkEmail);
+        emailDomain.addEventListener('blur', checkEmail);
+        emailDomain.addEventListener('onchange', checkEmail);
+        function checkEmail() {
+            const fullEmail = emailId.value.trim() + '@' + emailDomain.value.trim();
+            if (!isValidEmailId(emailId.value.trim()) || !isValidDomain(emailDomain.value.trim())) {
+                showMessage(emailMessage, '유효하지 않은 이메일 형식입니다.', true);
+                isEmailChecked = false;
+                checkAllFields();
+            } else {
+                hideMessage(emailMessage);
+                isEmailChecked = true;
+                checkAllFields();
+            }
+        }
+
+        // 이메일 도메인 선택
+        domainSelect.addEventListener('change', function() {
+            emailDomain.value = this.value;
+
+            if (this.value === '') {
+                emailDomain.readOnly = false;
+                emailDomain.focus();
+            } else {
+                emailDomain.readOnly = true;
+            }
+        });
+
+        function checkAllFields() {
+            if (isIdChecked && isPwChecked && isPwConfirmed && isPhoneChecked && isEmailChecked) {
+                emailInput.value = emailId.value.trim() + '@' + emailDomain.value.trim();
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
+
+        // 아이디 중복 검사
+        let isIdChecked = false;
+        checkDuplicateButton.addEventListener('click', checkDuplicateId);
+        function checkDuplicateId() {
+
+            let memberId = memberIdInput.value.trim()
+            if (!isValidId(memberId)) {
+                showMessage(idMessage, '아이디를 입력해주세요.', true);
+                memberIdInput.focus();
+                return;
+            }
+
+            fetch('/isIdDuplicate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [header]: token
+                },
+                body: JSON.stringify({ memberId: memberId })
+            })
+            .then(response => response.text())
+            .then(result => {
+                if(result === 'available') {
+                    showMessage(idMessage, '사용 가능한 아이디입니다.', false);
+                    memberIdInput.readOnly = true;
+                    checkDuplicateButton.disabled = true;
+                    isIdChecked = true;
+                    checkAllFields();
+                } else {
+                    showMessage(idMessage, '사용 중인 아이디입니다.', true);
+                    isIdChecked = false;
+                    checkAllFields();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버 오류가 발생했습니다.');
+            });
+        }
+
+        // 아이디 중복검사 초기화
+        clearButton.addEventListener('click', function() {
+            memberIdInput.value = '';
+            memberIdInput.focus();
+            memberIdInput.readOnly = false;
+            checkDuplicateButton.disabled = false;
+            isIdChecked = false;
+            checkAllFields();
+        });
+    });
+</script> <!--유효성 검사 스크립트-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        let formChanged = false;
+
+        // 폼 내의 모든 입력 요소에 대해 변경 이벤트 리스너 추가
+        form.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('change', () => {
+                formChanged = true;
+            });
+        });
+
+        // beforeunload 이벤트 리스너 추가
+        window.addEventListener('beforeunload', function (e) {
+            if (formChanged) {
+                e.preventDefault(); // 표준
+                e.returnValue = ''; // 구형 브라우저 지원
+            }
+        });
+
+        // 폼 제출 시 경고 메시지 방지
+        form.addEventListener('submit', function() {
+            formChanged = false;
+        });
+    });
+</script>
+</html>

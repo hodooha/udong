@@ -19,7 +19,7 @@ public class MessageDTO {
     private Integer receiverNo;
     private String content;
     private String createdAt;
-    private Character isRead;
+    private String isRead;
 
     private String senderNickname;
     private String receiverNickname;

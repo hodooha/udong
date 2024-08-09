@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        .message-detail {
+            display: flex;
+            flex:1;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 800px;
+            text-align: center;
+            border: 1px solid #000000;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .message-detail span {
+            border: 1px solid #000000;
+            border-radius: 5px;
+            padding: 0.5rem;
+            min-width: 200px;
+            display: block;
+            text-align: left;
+        }
+        .detail-person {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .detail-date,
+        .detail-content,
+        .separate {
+            display: flex;
+            gap: 10px;
+        }
+        .detail-content span {
+            flex: 1;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <th:block th:if="${detail != null}">
+        <div class="message-detail">
+            <h2>쪽지 상세</h2>
+
+            <div class="detail-person">
+                <div class="separate">
+                    <p th:text="${#strings.equals(type, 'receive') ? '보낸 사람' : '받은 사람'}"></p>
+                    <span th:text="${#strings.equals(type, 'receive') ? detail.senderNickname : detail.receiverNickname}"></span>
+                </div>
+                <div class="separate">
+                    <button class="btn btn-udh-red">차단하기</button>
+                    <button class="btn btn-udh-red">신고하기</button>
+                </div>
+            </div>
+
+            <div class="detail-date">
+                <p th:text="${#strings.equals(type, 'receive') ? '받은 날짜' : '보낸 날짜'}"></p>
+                <span th:text="${detail.createdAt}"></span>
+            </div>
+
+            <div class="detail-content">
+                <p>쪽지 내용</p>
+                <span th:text="${detail.content}"></span>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-udh-red" id="deleteDetailBtn">삭제하기</button>
+                <button class="btn btn-udh-blue" id="sendReplyDetailBtn">답장하기</button>
+            </div>
+
+        </div>
+    </th:block>
+</body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        const deleteDetailBtn = document.querySelector('#deleteDetailBtn');
+        const sendReplyDetailBtn = document.querySelector('#sendReplyDetailBtn');
+
+        // 삭제하기 버튼 클릭 이벤트
+        deleteDetailBtn.addEventListener('click', async function() {
+
+            if (await showConfirmAlert('쪽지를 삭제하시겠습니까?')) {
+                const memberNo = /*[[${messageNo}]]*/ null;
+
+                fetch('/message/deleteMessages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify({ messageNos: [memberNo] })
+                })
+                .then(response => response.json())
+                .then(async data => { // 여기에 async 추가
+                    if (data.success) {
+                        if (await showSuccessAlert('선택한 쪽지가 삭제되었습니다.')) {
+                            location.reload();
+                        };
+                    } else {
+                        showErrorAlert('쪽지 삭제에 실패했습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorAlert('쪽지 삭제 중 오류가 발생했습니다.');
+                });
+            }
+        });
+    });
+</script>
+</html>

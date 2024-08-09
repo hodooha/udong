@@ -73,9 +73,31 @@ public class MessageServiceImpl implements MessageService{
         messageMapper.sendMessage(messageDTO);
     }
 
+    /**
+     * Delete messages boolean.
+     *
+     * @param messageNos the message nos
+     * @return the boolean
+     * @since 2024 -08-08
+     */
     @Override
     public boolean deleteMessages(List<Integer> messageNos) {
 
         return messageMapper.deleteMessages(messageNos) > 0;
+    }
+
+    /**
+     * Get message detail message dto.
+     *
+     * @param messageNo the message no
+     * @return the message dto
+     * @since 2024 -08-08
+     */
+    @Override
+    public MessageDTO getMessageDetail(Integer messageNo) {
+
+        messageMapper.updateMessageIsRead(messageNo);
+
+        return messageMapper.getMessageDetail(messageNo);
     }
 }

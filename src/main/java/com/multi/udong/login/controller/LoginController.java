@@ -58,10 +58,23 @@ public class LoginController {
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "message", required = false) String message,
                             Model model) {
+
         if (error != null) {
-            model.addAttribute("msg", message);
+            model.addAttribute("alert", message);
+            model.addAttribute("alertType", "error");
         }
         return "member/login";
+    }
+
+    /**
+     * Select role string.
+     *
+     * @return the string
+     * @since 2024 -08-09
+     */
+    @GetMapping("/selectRole")
+    public String selectRole() {
+        return "member/selectRole";
     }
 
     /**
@@ -71,9 +84,21 @@ public class LoginController {
      * @return the string
      * @since 2024 -07-23
      */
-    @GetMapping("/signup")
-    public String signup(Model model) {
-        return "member/signup";
+    @GetMapping("/signup/member")
+    public String signupMember(Model model) {
+        return "member/signupMember";
+    }
+
+    /**
+     * Signup seller string.
+     *
+     * @param model the model
+     * @return the string
+     * @since 2024 -08-09
+     */
+    @GetMapping("/signup/seller")
+    public String signupSeller(Model model) {
+        return "member/signupSeller";
     }
 
     @Value("${nts.api.service-key}")
@@ -163,18 +188,21 @@ public class LoginController {
                     }
 
                     authenticateUserAndSetSession(memberDTO, request);
-                    model.addAttribute("msg", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 통보됩니다.");
+                    model.addAttribute("alert", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 통보됩니다.");
+                    model.addAttribute("alertType", "success");
                     return "/index";
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
                     model.addAttribute("msg", "유효하지 않은 사업자등록증입니다");
+                    model.addAttribute("alertType", "error");
                     return "member/signup";
                 }
                 
             } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
                 model.addAttribute("msg", "유효하지 않은 이미지입니다");
+                model.addAttribute("alertType", "error");
                 return "member/signup";
             }
         }
@@ -183,6 +211,7 @@ public class LoginController {
             memberService.signup(memberDTO);
             authenticateUserAndSetSession(memberDTO, request);
             model.addAttribute("msg","회원가입이 완료되었습니다.");
+            model.addAttribute("alertType", "success");
             return "/index";
             
         } catch (Exception e) {

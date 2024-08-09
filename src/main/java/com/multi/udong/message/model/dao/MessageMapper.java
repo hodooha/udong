@@ -23,4 +23,8 @@ public interface MessageMapper {
     void sendMessage(MessageDTO messageDTO);
 
     int deleteMessages(List<Integer> messageNos);
+
+    MessageDTO getMessageDetail(Integer messageNo);
+
+    void updateMessageIsRead(Integer messageNo);
 }

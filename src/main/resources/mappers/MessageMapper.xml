@@ -88,4 +88,19 @@
         </foreach>
     </delete>
 
+    <select id="getMessageDetail" resultType="messageDTO">
+        SELECT
+            msg.*,
+            s.nickname AS sender_nickname,
+            r.nickname AS receiver_nickname
+        FROM MSG msg
+        LEFT JOIN MEMBER s ON msg.sender_no = s.member_no
+        LEFT JOIN MEMBER r ON msg.receiver_no = r.member_no
+        WHERE msg.message_no = #{messageNo}
+    </select>
+
+    <update id="updateMessageIsRead">
+        UPDATE MSG SET is_read = 'Y' WHERE message_no = #{messageNo}
+    </update>
+
 </mapper>
