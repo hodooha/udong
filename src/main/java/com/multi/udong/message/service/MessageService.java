@@ -21,4 +21,6 @@ public interface MessageService {
     void sendMessage(MessageDTO messageDTO);
 
     boolean deleteMessages(List<Integer> messageNos);
+
+    MessageDTO getMessageDetail(Integer messageNo);
 }

@@ -116,7 +116,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
-<div th:replace="~{/common/alert}"></div>
+<div th:replace="~{/member/alert}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
@@ -302,8 +302,8 @@
             }
 
             // 닉네임 유효성 검사
-            if (nickname.length < 2 || nickname.length > 20) {
-                showMessage(nicknameMessage, '닉네임은 최대 20글자까지 가능합니다.', true);
+            if (nickname.trim().length < 2 || nickname.trim().length > 20) {
+                showMessage(nicknameMessage, '닉네임은 2~20 글자만 가능합니다.', true);
                 nicknameInput.focus();
                 return;
             }
@@ -359,11 +359,6 @@
             }
         });
 
-        // 이메일 유효성 검사 함수
-        function isValidEmail(email) {
-            let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return regex.test(email);
-        }
 
         // 이메일 수정 폼 제출
         updateEmailForm.addEventListener('submit', function(e) {

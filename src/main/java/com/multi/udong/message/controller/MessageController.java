@@ -33,6 +33,7 @@ public class MessageController {
      * @param page           the page
      * @param searchCategory the search category
      * @param searchWord     the search word
+     * @param messageNo      the message no
      * @param model          the model
      * @since 2024 -08-06
      */
@@ -41,6 +42,7 @@ public class MessageController {
                                     @RequestParam(value = "page", defaultValue = "1") int page,
                                     @RequestParam(value = "searchCategory", required = false) String searchCategory,
                                     @RequestParam(value = "searchWord", required = false) String searchWord,
+                                    @RequestParam(value = "messageNo", required = false) Integer messageNo,
                                     Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -54,6 +56,16 @@ public class MessageController {
         pageDTO.setSearchCategory(searchCategory);
         pageDTO.setSearchWord(searchWord);
 
+        // 상세 정보
+        if (messageNo != null) {
+            MessageDTO detail = messageService.getMessageDetail(messageNo);
+
+            model.addAttribute("type", "receive");
+            model.addAttribute("messageNo", messageNo);
+            model.addAttribute("detail", detail);
+        }
+
+        List<String> header = Arrays.asList("보낸 사람", "내용", "받은 날짜", "상태");
         List<MessageDTO> data = messageService.getReceivedMessages(pageDTO);
 
         if (!data.isEmpty()) {
@@ -61,13 +73,17 @@ public class MessageController {
             pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
         }
 
-        List<String> header = Arrays.asList("보낸 사람", "내용", "받은 날짜", "상태");
         List<String> searchCategories = Arrays.asList("보낸 사람", "내용");
 
+        // 테이블
         model.addAttribute("tableHeader", header);
         model.addAttribute("tableData", data);
+
+        // 페이지
         model.addAttribute("pages", pages);
         model.addAttribute("page", page);
+
+        // 검색 결과
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
         model.addAttribute("searchWord", searchWord);
@@ -80,6 +96,7 @@ public class MessageController {
      * @param page           the page
      * @param searchCategory the search category
      * @param searchWord     the search word
+     * @param messageNo      the message no
      * @param model          the model
      * @since 2024 -08-07
      */
@@ -88,6 +105,7 @@ public class MessageController {
                                 @RequestParam(value = "page", defaultValue = "1") int page,
                                 @RequestParam(value = "searchCategory", required = false) String searchCategory,
                                 @RequestParam(value = "searchWord", required = false) String searchWord,
+                                @RequestParam(value = "messageNo", required = false) Integer messageNo,
                                 Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -101,6 +119,16 @@ public class MessageController {
         pageDTO.setSearchCategory(searchCategory);
         pageDTO.setSearchWord(searchWord);
 
+        // 상세 정보
+        if (messageNo != null) {
+            MessageDTO detail = messageService.getMessageDetail(messageNo);
+
+            model.addAttribute("type", "send");
+            model.addAttribute("messageNo", messageNo);
+            model.addAttribute("detail", detail);
+        }
+
+        List<String> header = Arrays.asList("받은 사람", "내용", "보낸 날짜", "상태");
         List<MessageDTO> data = messageService.getSentMessages(pageDTO);
 
         if (!data.isEmpty()) {
@@ -108,13 +136,17 @@ public class MessageController {
             pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
         }
 
-        List<String> header = Arrays.asList("받은 사람", "내용", "보낸 날짜", "상태");
         List<String> searchCategories = Arrays.asList("받은 사람", "내용");
 
+        // 테이블
         model.addAttribute("tableHeader", header);
         model.addAttribute("tableData", data);
+
+        // 페이지
         model.addAttribute("pages", pages);
         model.addAttribute("page", page);
+
+        // 검색 결과
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
         model.addAttribute("searchWord", searchWord);
@@ -133,6 +165,7 @@ public class MessageController {
 
         if (receiverNo != null) {
             String receiverNickname = messageService.getNicknameByMemberNo(receiverNo);
+            System.out.println("receiverNickname : " + receiverNickname);
             model.addAttribute("receiverNickname", receiverNickname);
         }
     }
@@ -157,9 +190,19 @@ public class MessageController {
         return ResponseEntity.ok("쪽지를 보냈습니다.");
     }
 
+    /**
+     * Delete messages map.
+     *
+     * @param request the request
+     * @return the map
+     * @since 2024 -08-08
+     */
     @PostMapping("/deleteMessages")
     @ResponseBody
     public Map<String, Boolean> deleteMessages(@RequestBody Map<String, List<Integer>> request) {
+
+        System.out.println("request:" + request);
+
         List<Integer> messageNos = request.get("messageNos");
 
         Map<String, Boolean> result = new HashMap<>();

@@ -62,12 +62,12 @@
     </style>
 </head>
 <body>
-<div th:replace="~{/common/alert}"></div>
+<div th:replace="~{/member/alert}"></div>
 <div class="message-form">
     <h2>메시지 작성</h2>
     <form>
         <label for="receiverNickname">받는 사람:</label>
-        <input type="text" id="receiverNickname" th:value="${receiverNickname}" th:text="${receiverNickname}" required>
+        <input type="text" id="receiverNickname" th:value="${receiverNickname}" required>
         <label for="content">내용:</label>
         <textarea id="content" required></textarea>
         <button class="btn btn-udh-blue">보내기</button>
