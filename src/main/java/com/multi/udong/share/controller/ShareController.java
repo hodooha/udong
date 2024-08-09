@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,7 +36,7 @@ public class ShareController {
      * The constant IMAGE_PATH.
      */
 // 이미지 저장 경로
-    static final String IMAGE_PATH = "C:\\Users\\user\\uploadFiles";
+    static final String IMAGE_PATH = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString() + File.separator;
 
     /**
      * 대여 메인페이지 이동
@@ -664,6 +665,14 @@ public class ShareController {
         return msg;
     }
 
+    /**
+     * 추천 물건 조회
+     *
+     * @param c     the c
+     * @param model the model
+     * @return the string
+     * @since 2024 -08-08
+     */
     @GetMapping("/recommendItem")
     public String recommendItem(@AuthenticationPrincipal CustomUserDetails c, Model model){
 

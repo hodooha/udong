@@ -260,8 +260,9 @@
     <delete id="deleteImgList">
         delete
         from attachment
-        <foreach collection="list" item="img" separator=",">
-            where file_no = #{img.fileNo}
+        where file_no in
+        <foreach collection="list" item="img" open="(" separator="," close=")">
+           #{img.fileNo}
         </foreach>
     </delete>
 
@@ -368,9 +369,9 @@
             on b.loc_code = f.location_code
             left join
             (
-                select req_item, return_date
+                select req_item, return_date, rqst_no
                 from sha_req
-                where status_code = 'RNT'
+                where status_code in ('RNT', 'GVD')
             ) e
             on b.item_no = e.req_item
             left join
@@ -626,5 +627,28 @@
         where a.rn between #{start} and #{end}
         order by a.rn
     </select>
+
+    <update id="updateScore">
+        update
+        member
+        set score = score + #{rating}
+        where member_no = #{eveNo}
+
+        <selectKey resultType="int" keyProperty="totalScore" order="AFTER">
+            select score
+            from member
+            where member_no = #{eveNo}
+        </selectKey>
+    </update>
+
+    <update id="updateLevel">
+        update
+        member a
+        join
+            sha_level b
+        on #{totalScore} between b.min_score and b.max_score
+        set a.level = b.level_no
+        where a.member_no = #{eveNo}
+    </update>
 
 </mapper>

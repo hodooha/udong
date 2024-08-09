@@ -43,6 +43,7 @@ public class ShaItemDTO {
     private List<String> delFilesNo;
     private List<String> delFilesName;
     private boolean liked;
+    private int rqstNo;
 
 }
 

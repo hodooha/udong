@@ -2,6 +2,7 @@ package com.multi.udong.share.controller;
 
 
 import com.multi.udong.login.service.CustomUserDetails;
+import com.multi.udong.member.service.MemberService;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * The type Sha dream controller.
+ *
+ * @author 하지은
+ * @since 2024 -08-09
+ */
 @RequiredArgsConstructor
 @RequestMapping("/share/dream")
 @Controller
 public class ShaDreamController {
 
     private final ShareService shareService;
+    private final MemberService memberService;
 
     /**
      * 빌려(나눠)드림 페이지 이동
@@ -39,6 +47,7 @@ public class ShaDreamController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
         }
         model.addAttribute("catList", catList);
         return "share/dreamLend";
@@ -64,11 +73,20 @@ public class ShaDreamController {
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
+            return "common/errorPage";
         }
         model.addAttribute("catList", catList);
         return "share/dreamBorrow";
     }
 
+    /**
+     * 빌려드림 목록 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @param c           the c
+     * @param model       the model
+     * @return the lend list
+     */
     @GetMapping("/lendList")
     public String getLendList(ShaDreamCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -100,6 +118,14 @@ public class ShaDreamController {
 
     }
 
+    /**
+     * 요청드림 목록 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @param c           the c
+     * @param model       the model
+     * @return the borrow list
+     */
     @GetMapping("/borrowList")
     public String getBorrowList(ShaDreamCriteriaDTO criteriaDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -131,6 +157,14 @@ public class ShaDreamController {
         return "share/dreamBorrow :: #reqDreams";
     }
 
+    /**
+     * 물건의 대여 요청자 조회
+     *
+     * @param reqDTO the req dto
+     * @param c      the c
+     * @param model  the model
+     * @return the requesters
+     */
     @GetMapping("/requesters")
     public String getRequesters(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -147,6 +181,15 @@ public class ShaDreamController {
         return "share/dreamLend :: #dreamModals";
     }
 
+    /**
+     * 빌려드림 내 대여확정 처리
+     *
+     * @param reqDTO the req dto
+     * @param c      the c
+     * @param model  the model
+     * @return the string
+     * @since 2024 -08-09
+     */
     @PostMapping("/approveReq")
     public String approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -162,6 +205,13 @@ public class ShaDreamController {
         return "share/dreamLend";
     }
 
+    /**
+     * 해당 물건의 대여중인 요청 건 조회
+     *
+     * @param reqDTO the req dto
+     * @param model  the model
+     * @return the rented req
+     */
     @GetMapping("/getRentedReq")
     public String getRentedReq(ShaReqDTO reqDTO, Model model) {
 
@@ -177,11 +227,24 @@ public class ShaDreamController {
         return "share/dreamLend :: #evalAndReportModal";
     }
 
+    /**
+     * 빌려드림 목록 내 대여인의 차용인 평가 및 반납완료 처리
+     *
+     * @param evalDTO the eval dto
+     * @param c       the c
+     * @param model   the model
+     * @return the string
+     * @since 2024 -08-06
+     */
     @PostMapping("/evalWithReturnReq")
     public String evalWithReturnReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
         System.out.println(evalDTO);
         try {
             shareService.evalWithReturnReq(evalDTO, c);
+
+            // 대여인 점수 & 레벨 변경 후 사용자 세션 최신화
+            memberService.updateMemberSession();
+
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
@@ -190,6 +253,15 @@ public class ShaDreamController {
         return "share/dreamLend";
     }
 
+    /**
+     * 요청드림 내 대여 및 나눔 요청 취소
+     *
+     * @param shaReqDTO the sha req dto
+     * @param c         the c
+     * @param model     the model
+     * @return the string
+     * @since 2024 -08-06
+     */
     @GetMapping("/deleteReq")
     public String deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -204,12 +276,25 @@ public class ShaDreamController {
         return "share/dreamBorrow";
     }
 
+    /**
+     * 요청드림 내 차용인의 대여인 평가 및 평가완료 처리
+     *
+     * @param evalDTO the eval dto
+     * @param c       the c
+     * @param model   the model
+     * @return the string
+     * @since 2024 -08-06
+     */
     @PostMapping("/evalWithEndReq")
     public String evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
         System.out.println(evalDTO);
         try {
             shareService.evalWithEndReq(evalDTO, c);
+
+            // 차용인 점수 & 레벨 변경 후 사용자 세션 최신화
+            memberService.updateMemberSession();
+
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
@@ -220,6 +305,15 @@ public class ShaDreamController {
 
     }
 
+    /**
+     * 신고 등록
+     *
+     * @param itemNo    the item no
+     * @param reportDTO the report dto
+     * @param c         the c
+     * @return the string
+     * @since 2024 -08-09
+     */
     @PostMapping("/insertReport")
     @ResponseBody
     public String insertReport(@RequestParam("itemNo") int itemNo, ShaReportDTO reportDTO, @AuthenticationPrincipal CustomUserDetails c) {

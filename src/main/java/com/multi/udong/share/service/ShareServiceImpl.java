@@ -473,8 +473,32 @@ public class ShareServiceImpl implements ShareService {
         }
         ;
 
-        // 등록된 평가 토대로 차용인 점수 & 레벨 변경 - 구현 예정!
+        // 등록된 평가 토대로 차용인 점수 & 레벨 변경
+        if (shareDAO.updateScore(sqlSession, evalDTO) < 1) {
+            throw new Exception("차용인 점수 업데이트를 실패했습니다.");
+        }
+        ;
+        System.out.println("=== 최종 점수 === ");
+        System.out.println(evalDTO);
+        if (shareDAO.updateLevel(sqlSession, evalDTO) < 1) {
+            throw new Exception("차용인 레벨 업데이트를 실패했습니다.");
+        }
+        ;
 
+        // 대여인 점수 & 레벨 변경
+        ShaEvalDTO lenderEval = new ShaEvalDTO();
+        lenderEval.setEveNo(evalDTO.getEvrNo());
+        lenderEval.setRating(5);
+        if (shareDAO.updateScore(sqlSession, lenderEval) < 1) {
+            throw new Exception("대여인 점수 업데이트를 실패했습니다.");
+        }
+        ;
+        System.out.println("=== 최종 점수 === ");
+        System.out.println(lenderEval);
+        if (shareDAO.updateLevel(sqlSession, lenderEval) < 1) {
+            throw new Exception("대여인 레벨 업데이트를 실패했습니다.");
+        }
+        ;
 
         // 반납완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
@@ -501,6 +525,7 @@ public class ShareServiceImpl implements ShareService {
         ;
 
     }
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -569,8 +594,32 @@ public class ShareServiceImpl implements ShareService {
         }
         ;
 
-        // 등록된 평가 토대로 대여인 점수 & 레벨 변경 - 구현 예정!
+        // 등록된 평가 토대로 대여인 점수 & 레벨 변경
+        if (shareDAO.updateScore(sqlSession, evalDTO) < 1) {
+            throw new Exception("대여인 점수 업데이트를 실패했습니다.");
+        }
+        ;
+        System.out.println("=== 최종 점수 === ");
+        System.out.println(evalDTO);
+        if (shareDAO.updateLevel(sqlSession, evalDTO) < 1) {
+            throw new Exception("대여인 레벨 업데이트를 실패했습니다.");
+        }
+        ;
 
+        // 차용인 점수 & 레벨 변경
+        ShaEvalDTO lenderEval = new ShaEvalDTO();
+        lenderEval.setEveNo(evalDTO.getEvrNo());
+        lenderEval.setRating(1);
+        if (shareDAO.updateScore(sqlSession, lenderEval) < 1) {
+            throw new Exception("차용인 점수 업데이트를 실패했습니다.");
+        }
+        ;
+        System.out.println("=== 최종 점수 === ");
+        System.out.println(lenderEval);
+        if (shareDAO.updateLevel(sqlSession, lenderEval) < 1) {
+            throw new Exception("차용인 레벨 업데이트를 실패했습니다.");
+        }
+        ;
 
         // 평가완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
@@ -613,14 +662,14 @@ public class ShareServiceImpl implements ShareService {
         criteriaDTO.setStart(1);
         criteriaDTO.setEnd(12);
 
-        if(catsInMemReq.isEmpty()){
+        if (catsInMemReq.isEmpty()) {
             itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
             System.out.println("===== 요청했던 물건이 없을때의 추천리스트!! =====");
             System.out.println(itemList);
-        } else{
+        } else {
             criteriaDTO.setCatList(catsInMemReq);
             itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
-            if(itemList.size() < 12){
+            if (itemList.size() < 12) {
                 int i = 12 - itemList.size();
                 criteriaDTO.setEnd(i);
                 criteriaDTO.setCatList(null);
@@ -676,7 +725,7 @@ public class ShareServiceImpl implements ShareService {
             System.out.println(reqList);
 
             // 당첨자 추첨
-            int luckyNum = (int)(Math.random()*reqList.size());
+            int luckyNum = (int) (Math.random() * reqList.size());
             ShaReqDTO winner = reqList.get(luckyNum);
 
             System.out.println("===== 럭키넘버!!! =====");

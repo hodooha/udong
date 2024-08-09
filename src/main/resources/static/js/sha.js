@@ -469,8 +469,12 @@ function updateItStat(item){
         return;
     }
     let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
+
     ajax_get(reqUrl).done(function(){
-        updateItemDetail();
+        if(path.includes("/share/dream")){
+            getLendList(url.searchParams.get('page'));
+        } else{
+        updateItemDetail();}
     })
 
 }
@@ -538,12 +542,38 @@ function approveReq(final){
 
     ajax_post(reqUrl, data).done(function(){
         alert("대여가 확정되었습니다.");
-        location.reload();
+        getLendList(url.searchParams.get('page'));
 
     })
 }
 
-function getRentedReq(item){
+function sendMsg(memberNo){
+    console.log(memberNo);
+    window.open(`/message/sendMessageForm?memberNo=${memberNo}`, 'SendMessage', 'width=500,height=410');
+
+    // 작성 완료 알림 이벤트
+    window.addEventListener('message', async function(event) {
+        if (typeof event.data === 'string' && event.data.includes('쪽지')) {
+            if (await showSuccessAlert(event.data)) {
+                location.reload();
+            }
+        }
+    }, false);
+}
+
+// sweetalert 함수
+function showSuccessAlert(msg) {
+    return Swal.fire({
+        title: msg,
+        confirmButtonColor: "#3B5C9A",
+        confirmButtonText: "확인",
+        icon: "success"
+    }).then(result => {
+        return result.isConfirmed;
+    });
+}
+
+function evalWithReturnReq(item){
     console.log(item);
     let reqUrl = "/share/dream/getRentedReq";
     let data = {
@@ -557,12 +587,13 @@ function getRentedReq(item){
         $('.star_rating > .star').click(function() {
             $(this).parent().children('span').removeClass('on');
             $(this).addClass('on').prevAll('span').addClass('on');
-            score = $(this).data('value');
+            $('#score').val($(this).data('value'));
         })
     })
 }
 
 function postScore(req){
+    let score = $('#score').val();
     console.log(score);
     console.log(req);
     let reqUrl = "/share/dream/evalWithReturnReq"
@@ -580,8 +611,6 @@ function postScore(req){
         location.reload();
 
     })
-
-
 }
 
 function toggleDeleteModal(item){
@@ -590,8 +619,6 @@ function toggleDeleteModal(item){
     $('#deleteBtn').on("click", function(){
         deleteItemAtDream(item);
     })
-
-
 }
 
 function deleteItemAtDream(item) {
