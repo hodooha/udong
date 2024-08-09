@@ -177,4 +177,12 @@ public class ShareDAO {
     public List<ShaItemDTO> getHotItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) {
         return sqlSession.selectList("ShareMapper.getHotItems", criteriaDTO);
     }
+
+    public int updateScore(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
+        return sqlSession.update("ShareMapper.updateScore", evalDTO);
+    }
+
+    public int updateLevel(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
+        return sqlSession.update("ShareMapper.updateLevel", evalDTO);
+    }
 }

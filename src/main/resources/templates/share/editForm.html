@@ -122,7 +122,7 @@
             </div>
             <div id="imgPreview" class="col-md-3 mt-3">
                 <div th:each="img, imgStat : ${item.imgList}" th:id="'img-input-'+${imgStat.count}">
-                    <img th:src="@{'/shaUploadFiles/'+${img.savedName}}" style="height:60px" th:id="'ex-img'+${imgStat.count}">
+                    <img th:src="@{'/uploadFiles/'+${img.savedName}}" style="height:60px" th:id="'ex-img'+${imgStat.count}">
 
                 </div>
 

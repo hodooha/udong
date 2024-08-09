@@ -269,9 +269,9 @@
                         [[${req.itemDTO.itemGroup == 'rent' ? '대여' : '나눔'}]]
                     </div>
                     <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
-                         class="col-2 img-area">
-                        <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + req.itemDTO.img}"
-                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
+                         class="col-2 img-area" th:classappend="${req.itemDTO.statusCode != 'AVL' && req.itemDTO.statusCode != 'GIV'? ' div-blur' : ''}">
+                        <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + req.itemDTO.img}"
+                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;" th:classappend="${req.itemDTO.statusCode != 'AVL'  && req.itemDTO.statusCode != 'GIV' ? ' img-blur' : ''}">
                     </div>
                     <div class="col-4 item-info-area "
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
@@ -287,8 +287,8 @@
                         </div>
                     </div>
                     <div class="col-3 status-area">
-                        <h5 th:if="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0;">&#127882;[[${req.statusName}]]&#127882;</h5>
-                        <h5 th:unless="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0">[[${req.statusName}]]</h5>
+                        <h5 th:if="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0;color:#CB3333; font-weight: bolder;">&#127882;[[${req.statusName}]]&#127882;</h5>
+                        <h5 th:unless="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0; ">[[${req.statusName}]]</h5>
                         <div class="align-middle" style="margin:0; font-size:0.8em;">[[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd
                             HH:mm')}]]
                         </div>
@@ -306,7 +306,7 @@
 
                             </div>
                             <div class="btns-2 ">
-                                <button class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
+                                <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
                             </div>
                         </div>
 
@@ -316,7 +316,7 @@
                                 </button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
+                                <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
                             </div>
                         </div>
 
@@ -324,6 +324,15 @@
                             <div class="btns-1">
                                 <button th:onclick="toggleEvalModal([[${req}]])"
                                         class="btn btn-udh-silver col-12" style="width:max-content">평가하기
+                                </button>
+
+                            </div>
+
+                        </div>
+                        <div th:if="${req.statusCode == 'WIN'}" class="btn-group">
+                            <div class="btns-1">
+                                <button
+                                        th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
                                 </button>
 
                             </div>
@@ -362,7 +371,8 @@
              aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color: #979797;
+                    color: #FFFFFF;">
                         <h5 class="modal-title">정말 신청을 취소할까요?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
@@ -382,7 +392,8 @@
         <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color: #3B5C9A;
+                         color: #FFFFFF;">
                         <h1 class="modal-title fs-5" id="evalModalLabel">이웃을 평가해주세요. </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -412,7 +423,7 @@
              aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header " style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
                         <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>

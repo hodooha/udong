@@ -13,6 +13,7 @@ public class ShaEvalDTO {
     private int evrNo;
     private int eveNo;
     private int rating;
+    private int totalScore;
     private LocalDate createdAt;
 
 }

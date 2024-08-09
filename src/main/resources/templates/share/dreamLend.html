@@ -197,6 +197,24 @@
           background:bisque;
         }
 
+        .div-blur{
+            background-color: black;
+            position:relative;
+        }
+
+        .img-blur{
+            opacity: 0.5;
+        }
+
+        .blur-info{
+            color:white;
+            position:absolute;
+            top: 50%;
+            left: 50%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
     </style>
 </head>
 <body id="dreamLend">
@@ -267,9 +285,9 @@
                         [[${item.itemGroup == 'rent' ? '대여' : '나눔'}]]
                     </div>
                     <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|"
-                         class="col-2 img-area">
-                        <img th:src="${item.img == null ? '/img/noimg.jpg' : '/shaUploadFiles/' + item.img}"
-                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;">
+                         class="col-2 img-area" th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur' : ''}">
+                        <img th:src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}"
+                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;" th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                     </div>
                     <div class="col-4 item-info-area "
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|"
@@ -303,7 +321,7 @@
                             </div>
                             <div class="btns-2">
                                 <button th:text="${item.statusCode == 'AVL' ? '일시중단' : '중단해제'}"
-                                        class="btn btn-udh-silver" style="width:max-content"></button>
+                                        class="btn btn-udh-silver" style="width:max-content" th:onclick="updateItStat([[${item}]])"></button>
                                 <button class="btn btn-udh-blue" style="width:max-content"
                                         th:onclick="selectReq([[${item.itemNo}]])">대여확정
                                 </button>
@@ -321,15 +339,15 @@
                                 </button>
                             </div>
                             <div class="btns-2">
-                                <button class="btn btn-udh-yellow" style="width:max-content">쪽지하기</button>
+                                <button class="btn btn-udh-yellow" style="width:max-content" th:onclick="sendMsg([[${item.rqstNo}]])">쪽지하기</button>
                                 <button class="btn btn-udh-blue" style="width:max-content"
-                                        th:onclick="getRentedReq([[${item}]])">반납완료
+                                        th:onclick="evalWithReturnReq([[${item}]])">반납완료
                                 </button>
                             </div>
                         </div>
                         <div th:if="${item.statusCode == 'GVD'}" class="btn-group">
                             <div class="btns-1">
-                                <button class="btn btn-udh-yellow " style="width:max-content">쪽지하기</button>
+                                <button th:onclick="sendMsg([[${item.rqstNo}]])" class="btn btn-udh-yellow " style="width:max-content">쪽지하기</button>
                             </div>
                         </div>
 
@@ -371,7 +389,8 @@
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header" style="background-color: #979797;
+                    color: #FFFFFF;">
                     <h5 class="modal-title">정말 삭제할까요?</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
@@ -391,7 +410,8 @@
         <div class="modal fade" id="selectRqst" aria-hidden="true" aria-labelledby="selectRqstLabel" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header " style="background-color: #3B5C9A;
+                         color: #FFFFFF;" >
                         <h1 class="modal-title fs-5" id="selectRqstLabel">대여를 확정할 이웃을 선택해주세요.</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -446,7 +466,8 @@
         <div class="modal fade" id="approveReq" aria-hidden="true" aria-labelledby="approveReqLabel" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color: #3B5C9A;
+                         color: #FFFFFF;">
                         <h1 class="modal-title fs-5" id="approveReqLabel">반납예정일을 확인해주세요.</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -472,7 +493,8 @@
         <div class="modal fade" id="evalModal" tabindex="-1" aria-labelledby="evalModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header" style="background-color: #3B5C9A;
+                         color: #FFFFFF;">
                         <h1 class="modal-title fs-5" id="evalModalLabel">이웃 평가 후 '반납완료' 처리가 가능합니다. </h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -481,7 +503,7 @@
 
 
                         <div class="star_rating mt-3">
-                            <input type="hidden" id="score">
+                            <input type="hidden" id="score" value="5">
                             <span class="star on" data-value="1"> </span>
                             <span class="star on" data-value="2"> </span>
                             <span class="star on" data-value="3"> </span>
@@ -497,11 +519,11 @@
             </div>
         </div>
 
-        <div th:fragment="reportModal" class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel"
+        <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header " style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
                         <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -580,6 +602,7 @@
     </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
