@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<html xmlns:th="http://www.thymeleaf.org" th:attr="data-member-debug=${blacklistedMembers}">
 <head>
     <meta charset="UTF-8">
     <title>우동행</title>
@@ -16,21 +15,29 @@
 
         h5 {
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
         }
 
         .admin-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 80px;
+            margin-top: 0;
         }
 
         .admin-table th, .admin-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
+        .admin-table th:nth-child(1) { width: 10%; }
+        .admin-table th:nth-child(2) { width: 40%; }
+        .admin-table th:nth-child(3) { width: 10%; }
+        .admin-table th:nth-child(4) { width: 20%; }
+        .admin-table th:nth-child(5) { width: 20%; }
 
         .admin-table th {
             background-color: #f2f2f2;
@@ -78,6 +85,26 @@
         .status-text {
             margin-right: 10px;
         }
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            margin-top: -50px;
+        }
+        .btn-udh-blue{
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+         .content-container {
+            margin-top: 10px;
+        }
     </style>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
@@ -86,6 +113,9 @@
 
 <div class="admin-content">
     <h5 style="text-align: center; margin-bottom: 100px;">공지사항</h5>
+    <div class="btn-container">
+        <button class="btn-udh-blue" onclick="loadNoticeInsertForm()">글 작성</button>
+    </div>
 
     <div id="noticeContainer">
         <table id="noticeTable" class="admin-table">
@@ -93,23 +123,118 @@
             <tr>
                 <th>NO.</th>
                 <th>제목</th>
-                <th>팝업여부</th>
+                <th>팝업</th>
                 <th>작성일</th>
-                <th>작성자</th>
 
             </tr>
             </thead>
+            <tbody>
+            <tr th:each="notice : ${notices}" th:onclick="loadNoticeDetail(${notice.noticeNo})">
+                <td th:text="${notice.noticeNo}"></td>
+                <td th:text="${notice.title}"></td>
+                <td th:text="${notice.popup ?: false ? 'Y' : 'N'}"></td>
+                <td th:text="${notice.createdAt}"></td>
+
+            </tr>
+            </tbody>
 
         </table>
     </div>
+
     <div class="pagination"></div>
+    <div id="contentContainer" class="content-container"></div>
 </div>
 
 <script th:inline="javascript">
+    $(document).ready(function() {
+        loadNoticeList();
+    });
 
+    function loadNoticeInsertForm() {
+        $.ajax({
+            url: '/admin/noticeInsertForm',
+            method: 'GET',
+            success: function(response) {
+                $('.admin-content > h5').hide();
+                $('.btn-container').hide();
+                $('#noticeContainer').hide();
+                $('.pagination').hide();
+                $('#contentContainer').html(response).show();
 
+                // 폼 제출 이벤트 핸들러 추가
+                $('#noticeForm').off('submit').on('submit', function(e) {
+                    e.preventDefault();
+                    submitNoticeForm(this);
+                });
+            },
+            error: function() {
+                alert('폼을 불러오는 데 실패했습니다.');
+            }
+        });
+    }
 
+    function submitNoticeForm(form) {
+        var formData = new FormData(form);
+        $.ajax({
+            url: $(form).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert('공지사항이 성공적으로 등록되었습니다.');
+                loadNoticeList();
+            },
+            error: function() {
+                alert('공지사항 등록에 실패했습니다.');
+            }
+        });
+    }
 
+    function loadNoticeList() {
+        $.ajax({
+            url: '/admin/notice/list',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                var tbody = $('#noticeTable tbody');
+                tbody.empty();
+                response.forEach(function(notice) {
+                    var row = $('<tr>');
+                    row.append('<td>' + notice.noticeNo + '</td>');
+                    row.append('<td>' + notice.title + '</td>');
+                    row.append('<td>' + (notice.isPopup ? 'Y' : 'N') + '</td>');
+                    row.append('<td>' + notice.createdAt + '</td>');
+
+                    // 클릭 이벤트 추가
+                    row.on('click', function() {
+                        window.location.href = '/admin/detail/' + notice.noticeNo;
+                    });
+
+                    tbody.append(row);
+                });
+                $('.admin-content > h5').show();
+                $('.btn-container').show();
+                $('#noticeContainer').show();
+                $('.pagination').show();
+                $('#contentContainer').empty();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류: " + status + " - " + error);
+                alert('공지사항 목록을 불러오는데 실패했습니다.');
+            }
+        });
+    }
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){
+            var output = document.getElementById('image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
 </script>
 
 </body>

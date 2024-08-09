@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+
+        }
+        .main-content {
+            padding: 20px;
+            border-radius: 5px;
+        }
+        h5 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 15px;
+
+        }
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .form-group-inline label {
+            margin-right: 10px;
+            min-width: 100px;
+        }
+        .form-group-inline input[type="text"],
+        .form-group-inline input[type="datetime-local"] {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-right: 20px;
+        }
+        .form-group-inline input[type="datetime-local"]:last-child {
+            margin-right: 0; /* 마지막 input 요소의 여백 제거 */
+        }
+        .form-group-inline .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        .form-group-inline .checkbox-group input[type="checkbox"] {
+            margin-right: 5px;
+            transform: scale(1.5);
+        }
+        .form-content-wrapper {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group-file,
+        .form-group-textarea {
+            flex: 1;
+        }
+        .form-group-file label,
+        .form-group-textarea label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group-file input[type="file"] {
+            display: block;
+            margin-bottom: 10px;
+        }
+        #image-preview-container {
+            max-width: 100%;
+            height: 200px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            background-color: #f9f9f9;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-radius: 4px;
+        }
+        #image-preview-container img {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        .form-group-textarea textarea {
+            width: 100%;
+            height: 200px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            resize: vertical;
+            margin-top: 36px;
+        }
+        .btn-submit-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 40px;
+            background-color: #27447B;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            padding: 0;
+        }
+        .btn-submit:hover {
+            background-color: #142657;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-content">
+        <h5>&#128226; 공지사항</h5>
+        <form id="noticeForm" th:action="@{/admin/notice/insert}" method="post" enctype="multipart/form-data">
+            <div class="form-group-inline">
+                <label for="title">제목</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group-inline">
+                <label for="startedAt">게시기간</label>
+                <input type="datetime-local" id="startedAt" name="startedAt" required>
+                <input type="datetime-local" id="endedAt" name="endedAt" required>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="popup" name="popup">
+                    <label for="popup">메인팝업여부</label>
+                </div>
+            </div>
+            <div class="form-content-wrapper">
+                <div class="form-group-file">
+                    <label for="file">이미지첨부</label>
+                    <input type="file" id="file" name="file" accept="image/*">
+                    <div id="image-preview-container"></div>
+                </div>
+                <div class="form-group-textarea">
+                    <label for="content">내용</label>
+                    <textarea id="content" name="content" required></textarea>
+                </div>
+            </div>
+            <div class="btn-submit-container">
+                <button type="submit" class="btn-submit">작성완료</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function showPreview(event) {
+        var files = event.target.files;
+        var container = document.getElementById('image-preview-container');
+        container.innerHTML = ""; // 기존 이미지 초기화
+        for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(files[i]);
+        }
+    }
+
+    document.getElementById('file').addEventListener('change', showPreview);
+</script>
+</body>
+</html>

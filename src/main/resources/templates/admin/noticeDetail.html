@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        body {
+           margin: 0;
+           padding: 0;
+           background-color: #f9f9f9;
+       }
+       .container {
+           max-width: 1200px;
+           margin: 0 auto;
+           padding: 20px;
+           background-color: #ffffff;
+           border-radius: 5px;
+           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+       }
+       .main-content {
+           padding: 20px;
+       }
+       h2 {
+           text-align: center;
+           margin-bottom: 40px;
+           font-size: 24px;
+           font-weight: bold;
+       }
+       .notice-header {
+           display: flex;
+           justify-content: space-between;
+           border-bottom: 1px solid #ddd;
+           padding-bottom: 10px;
+           margin-bottom: 20px;
+       }
+       .notice-header .title {
+           font-size: 20px;
+           font-weight: bold;
+       }
+       .notice-header .info {
+           font-size: 14px;
+           color: #666;
+       }
+       .notice-content {
+           font-size: 16px;
+           line-height: 1.5;
+           white-space: pre-wrap; /* 줄바꿈을 인식 */
+           margin-bottom: 40px;
+       }
+       .btn-group {
+           display: flex;
+           justify-content: center;
+           gap: 10px;
+       }
+       .btn-group button {
+           padding: 10px 20px;
+           border: none;
+           border-radius: 5px;
+           cursor: pointer;
+           font-size: 16px;
+       }
+       .btn-list {
+           background-color: #3B5C9A;
+           color: white;
+       }
+       .btn-delete {
+           background-color: #d9534f;
+           color: white;
+       }
+       .btn-edit {
+           background-color: #f0ad4e;
+           color: white;
+       }
+       .btn-group button:hover {
+           opacity: 0.9;
+       }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-content">
+        <h2>공지사항</h2>
+        <div class="notice-header">
+            <div class="title" th:text="${notice.title}"></div>
+            <div class="info">
+                <p><strong>등록일:</strong> <span th:text="${#temporals.format(notice.createdAt, 'yyyy.MM.dd')}"></span></p>
+                <p><strong>메인 게시 기간:</strong> <span th:text="${#temporals.format(notice.startedAt, 'yyyy.MM.dd')}"></span> ~ <span th:text="${#temporals.format(notice.endedAt, 'yyyy.MM.dd')}"></span></p>
+                <p><strong>팝업 여부:</strong> <span th:text="${notice.popup != null ? (notice.popup ? 'Y' : 'N') : 'N'}"></span></p>
+            </div>
+        </div>
+        <div class="notice-content" th:text="${notice.content}"></div>
+        <div class="button-container">
+            <button class="btn-submit btn-udh-blue" onclick="history.back()">뒤로가기</button>
+            <form th:action="@{/admin/noticeUpdate}" method="get">
+                <input name="noticeNo" th:value="${notice.noticeNo}" type="hidden" />
+                <button class="btn-submit btn-udh-yellow" type="submit">수정하기</button>
+            </form>
+            <form th:action="@{/admin/deleteNotice}" method="post" style="display: inline;" onsubmit="return confirm('정말로 삭제하시겠습니까?');">
+                <input name="noticeNo" th:value="${notice.noticeNo}" type="hidden" />
+                <button type="submit" class="btn-submit btn-udh-red">삭제하기</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
