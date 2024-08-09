@@ -169,4 +169,12 @@ public class ShareDAO {
     public int postponeExpiry(SqlSessionTemplate sqlSession, ShaItemDTO itemDTO) {
         return sqlSession.update("ShareMapper.postponeExpiry", itemDTO);
     }
+
+    public List<ShaCatDTO> getCatsInMemReq(SqlSessionTemplate sqlSession, Integer memberNo) {
+        return sqlSession.selectList("ShareMapper.getCatsInMemReq", memberNo);
+    }
+
+    public List<ShaItemDTO> getHotItems(SqlSessionTemplate sqlSession, ShaCriteriaDTO criteriaDTO) {
+        return sqlSession.selectList("ShareMapper.getHotItems", criteriaDTO);
+    }
 }

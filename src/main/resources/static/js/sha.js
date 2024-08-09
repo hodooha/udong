@@ -28,6 +28,7 @@ $(function(){
     const bodyId = $("body").attr("id");
     if(bodyId == "giveMain" || bodyId == "rentMain"){
         getCatList();
+        getRecItems();
 
         window.addEventListener("popstate", function(event) {
             if (event.state) {
@@ -35,6 +36,8 @@ $(function(){
                 updateItemList(event.state);
             }
         });
+
+
     }
 
     if(bodyId == "registerForm" || bodyId == "itemDetail"){
@@ -263,15 +266,20 @@ function setImgPreview(input){
 function isValid() {
     let isGive = $('input[name=itemGroup]:checked').val();
     let selectedDate = $('#datePicker').val();
+    let title = $('#title').val();
     console.log(selectedDate);
+    if(title.trim() == ""){
+        alert("제목을 다시 입력해주세요.");
+        return false;
+    }
     if(isGive == 'give'){
         if(selectedDate == null || selectedDate == ''){
             alert("마감일을 선택해주세요.");
             return false;
-        } else{
-            return true;
         }
     }
+    enableAllFileInputs();
+    return true;
 }
 
 function enableAllFileInputs() {
@@ -448,7 +456,7 @@ function insertReq(data){
 }
 
 function updateShaLike(itemNo){
-    let reqUrl = `/share/like?reqItem=${itemNo}`;
+    let reqUrl = `/share/like?itemNo=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
         updateItemDetail();
     })
@@ -706,6 +714,16 @@ function toggleReportModalBorrow(req){
 
     $('#reportBtn').on("click", function(){
         postReport();
+    })
+}
+
+function getRecItems(){
+
+    let reqUrl = "/share/recommendItem"
+
+    ajax_get(reqUrl).done(function(result){
+        console.log("완료");
+        $('#recItem').replaceWith(result);
     })
 }
 

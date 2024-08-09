@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Random;
 
 
 @RequiredArgsConstructor
@@ -599,8 +598,45 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    @Override
+    public List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception {
+
+        List<ShaItemDTO> itemList = null;
+        List<ShaCatDTO> catsInMemReq = shareDAO.getCatsInMemReq(sqlSession, c.getMemberDTO().getMemberNo());
+
+        System.out.println("===== 유저가 대여 및 나눔 요청한 물건 카테고리 =====");
+        System.out.println(catsInMemReq);
+
+        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
+        criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
+        criteriaDTO.setGroup("rent");
+        criteriaDTO.setStart(1);
+        criteriaDTO.setEnd(12);
+
+        if(catsInMemReq.isEmpty()){
+            itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
+            System.out.println("===== 요청했던 물건이 없을때의 추천리스트!! =====");
+            System.out.println(itemList);
+        } else{
+            criteriaDTO.setCatList(catsInMemReq);
+            itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
+            if(itemList.size() < 12){
+                int i = 12 - itemList.size();
+                criteriaDTO.setEnd(i);
+                criteriaDTO.setCatList(null);
+                List<ShaItemDTO> fillItems = shareDAO.getHotItems(sqlSession, criteriaDTO);
+                itemList.addAll(fillItems);
+            }
+            System.out.println("===== 요청했던 물건이 있을때 추천리스트!! =====");
+            System.out.println(itemList);
+        }
+
+        return itemList;
+    }
+
+
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(cron = "0 29 16 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -629,7 +665,7 @@ public class ShareServiceImpl implements ShareService {
 
         if (reqList.isEmpty()) {
             if (shareDAO.postponeExpiry(sqlSession, itemDTO) < 1) {
-                throw new Exception("마감일이 연기를 실패했습니다.");
+                throw new Exception("마감일 연기를 실패했습니다.");
             }
 
             System.out.println("===== 나눔일 연기된 물건 =====");
@@ -640,10 +676,11 @@ public class ShareServiceImpl implements ShareService {
             System.out.println(reqList);
 
             // 당첨자 추첨
-            Random r = new Random(itemDTO.getItemNo()); // 시드는 물건 번호로
-            int luckyNum = r.nextInt(reqList.size());
+            int luckyNum = (int)(Math.random()*reqList.size());
             ShaReqDTO winner = reqList.get(luckyNum);
 
+            System.out.println("===== 럭키넘버!!! =====");
+            System.out.println(luckyNum);
             System.out.println("===== 당첨자!!! =====");
             System.out.println(winner);
 
@@ -651,7 +688,6 @@ public class ShareServiceImpl implements ShareService {
             if (shareDAO.updateReqAfterRaffle(sqlSession, winner) < 1) {
                 throw new Exception("요청 상태 변경을 실패했습니다.");
             }
-
 
             // 물건 상태 변경
             itemDTO.setStatusCode("GVD");

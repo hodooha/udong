@@ -13,20 +13,17 @@
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
 
     <style>
-        button{
-            font-weight: bolder !important;
 
-        }
 
         .owner{
             display: flex;
             align-items: center;
-            font-size: 30px;
+            font-size: 20px;
         }
 
         .level{
-            width:25px;
-            margin-left: 5px;
+            width:20px;
+            margin-left: 3px;
 
 
         }
@@ -125,9 +122,16 @@
 
             </div>
             <div class="col-md-6 px-5">
+                <span class="badge text-bg-secondary mb-1"
+                      style="width:max-content; font-size: 0.9em;">[[${item.itemCatName}]]</span>
                 <h2>[[${item.title}]]</h2>
                 <p class="owner">
-                    [[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
+                    <img style="width:25px; height:25px; margin-right:7px" th:src="${#authentication.principal.memberDTO.savedName == null
+                   || #authentication.principal.memberDTO.savedName == ''
+                   || #authentication.principal.memberDTO.savedName == 'defaultProfile.png'
+                      ? '/img/defaultProfile.png'
+                      : '/uploadFiles/' + #authentication.principal.memberDTO.savedName}"
+                         class="user-icon">[[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
                 <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt"
                                                                                  th:text="${item.viewCnt}"></span>🙋‍♀️
                     <span
@@ -142,10 +146,10 @@
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">응모하기</button>
-                    <button class="btn btn-udh-yellow"><img class="likeImg"
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"
-                                                            th:onclick="updateShaLike([[${item.itemNo}]])"></button>
+                                                            ></button>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -167,10 +171,10 @@
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
                     <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-yellow"><img class="likeImg"
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"
-                                                            th:onclick="updateShaLike([[${item.itemNo}]])"></button>
+                                                            ></button>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">

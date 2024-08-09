@@ -2,6 +2,8 @@ package com.multi.udong.share.model.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 대여 및 나눔 물건 검색 조건을 담은 dto
  *
@@ -12,6 +14,7 @@ import lombok.Data;
 public class ShaCriteriaDTO {
 
     private String catCode;
+    private List<ShaCatDTO> catList;
     private String keyword;
     private String group;
     private Long locCode;

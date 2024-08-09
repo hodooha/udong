@@ -246,6 +246,7 @@ public class ShareController {
         // 첨부파일 목록 정리 (데이터가 있는 것만!)
         fileList = fileList.stream().filter((x) -> !x.isEmpty()).collect(Collectors.toList());
         List<AttachmentDTO> imgList = new ArrayList<>();
+        System.out.println(fileList);
 
         try {
 
@@ -662,6 +663,28 @@ public class ShareController {
 
         return msg;
     }
+
+    @GetMapping("/recommendItem")
+    public String recommendItem(@AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        try {
+            List<ShaItemDTO> itemList = shareService.recommendItem(c);
+            List<List<ShaItemDTO>> groupItems = new ArrayList<>();
+
+            for(int i=0; i<itemList.size(); i+=4){
+                groupItems.add(itemList.subList(i, i+4));
+            }
+
+            model.addAttribute("groupItems", groupItems);
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/rentMain :: #recItem";
+
+    }
+
+
 
 
 
