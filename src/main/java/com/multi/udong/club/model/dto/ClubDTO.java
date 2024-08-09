@@ -30,5 +30,7 @@ public class ClubDTO {
     private String joinStatus;
     private List<AttachmentDTO> attachment;
     private List<ClubMemberDTO> clubMember;
+    private String isDeleted;
+    private LocalDateTime deletedAt;
 
 }

@@ -205,27 +205,32 @@
                     <p th:text="${logDetail.createdAt}" class="p-tag log-etc"></p>
                 </td>
                 <td class="btn-right-area">
-                    <a th:href="@{/club/clubLog/logReportForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
-                        <button class="btn btn-udh-blue btn-right">
-                            기록 신고
-                        </button>
-                    </a>
-                    <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo}">
-                        <a th:href="@{/club/clubLog/logUpdateForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
+                    <th:block th:if="${logDetail.isDeleted == 'Y'}">
+                        <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px;">❕ 삭제된 기록입니다.</span>
+                    </th:block>
+                    <th:block th:if="${logDetail.isDeleted == 'N'}">
+                        <a th:href="@{/club/clubLog/logReportForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
                             <button class="btn btn-udh-blue btn-right">
-                                기록 수정
+                                기록 신고
                             </button>
                         </a>
-                    </th:block>
-                    <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
-                        <form id="deleteLogForm" th:action="@{/club/clubLog/deleteLog}" method="post" style="display: inline">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                            <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
-                            <input type="hidden" name="logNo" th:value="${logDetail.logNo}">
-                            <button type="button" class="btn btn-udh-red btn-right" onclick="confirmDeleteLog()">
-                                기록 삭제
-                            </button>
-                        </form>
+                        <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo}">
+                            <a th:href="@{/club/clubLog/logUpdateForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
+                                <button class="btn btn-udh-blue btn-right">
+                                    기록 수정
+                                </button>
+                            </a>
+                        </th:block>
+                        <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+                            <form id="deleteLogForm" th:action="@{/club/clubLog/deleteLog}" method="post" style="display: inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="clubNo" th:value="${logDetail.clubNo}">
+                                <input type="hidden" name="logNo" th:value="${logDetail.logNo}">
+                                <button type="button" class="btn btn-udh-red btn-right" onclick="confirmDeleteLog()">
+                                    기록 삭제
+                                </button>
+                            </form>
+                        </th:block>
                     </th:block>
                 </td>
             </tr>
@@ -266,7 +271,12 @@
                 <div class="reply-insert-bar">
                     <span th:text="${#authentication.principal.memberDTO.nickname}"></span>
                     <input type="text" id="replyInsertInput" class="input reply-input" name="content" maxlength="100" placeholder=" 댓글 입력..." required>
-                    <button type="submit" class="btn btn-udh-silver btn-insert-reply">댓글 작성</button>
+                    <th:block th:if="${logDetail.isDeleted == 'N'}">
+                        <button type="submit" class="btn btn-udh-silver btn-insert-reply">댓글 작성</button>
+                    </th:block>
+                    <th:block th:if="${logDetail.isDeleted == 'Y'}">
+                        <button type="submit" class="btn btn-udh-silver btn-insert-reply" disabled>댓글 작성</button>
+                    </th:block>
                 </div>
             </form>
             <hr>
@@ -292,7 +302,12 @@
                                     </div>
                                     <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo}" style="display: flex; margin-left: auto;">
                                         <div th:id="'replyUpdateFormBtn' + ${iterStat.index + 1}">
-                                            <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'">수정</button>
+                                            <th:block th:if="${logDetail.isDeleted == 'N'}">
+                                                <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'">수정</button>
+                                            </th:block>
+                                            <th:block th:if="${logDetail.isDeleted == 'Y'}">
+                                                <button type="button" class="btn btn-udh-silver btn-reply" th:onclick="'activeReplyUpdateForm(' + ${iterStat.index + 1} + ')'" disabled>수정</button>
+                                            </th:block>
                                         </div>
                                         <div th:id="'replyUpdateBtn' + ${iterStat.index + 1}" style="display: none;">
                                             <button type="submit" class="btn btn-udh-blue btn-reply">완료</button>
@@ -309,7 +324,12 @@
                                     <input type="hidden" th:id="'replyNo' + ${iterStat.index + 1}" name="replyNo" th:value="${reply.replyNo}" />
                                     <div th:if="${reply.writer.memberNo == #authentication.principal.memberDTO.memberNo || #authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
                                         <div th:id="'replyDeleteBtn' + ${iterStat.index + 1}">
-                                            <button type="button" class="btn btn-udh-red btn-reply" th:onclick="'confirmDeleteReply(' + ${iterStat.index + 1} + ')'">삭제</button>
+                                            <th:block th:if="${logDetail.isDeleted == 'N'}">
+                                                <button type="button" class="btn btn-udh-red btn-reply" th:onclick="'confirmDeleteReply(' + ${iterStat.index + 1} + ')'">삭제</button>
+                                            </th:block>
+                                            <th:block th:if="${logDetail.isDeleted == 'Y'}">
+                                                <button type="button" class="btn btn-udh-red btn-reply" th:onclick="'confirmDeleteReply(' + ${iterStat.index + 1} + ')'" disabled>삭제</button>
+                                            </th:block>
                                         </div>
                                     </div>
                                 </form>
@@ -529,7 +549,7 @@
         $.ajax({
             url: '/club/clubLog/insertReplyLike',
             type: 'POST',
-            data: { clubNo: clubNo, replyNo: replyNo },
+            data: { clubNo: clubNo, logNo: logNo, replyNo: replyNo },
             success: function(response) {
                 var spanElement = document.getElementById('replyLikesCount' + num);
                 var curLikeCount = parseInt(spanElement.textContent, 10);
@@ -550,7 +570,7 @@
         $.ajax({
             url: '/club/clubLog/deleteReplyLike',
             type: 'POST',
-            data: { clubNo: clubNo, replyNo: replyNo },
+            data: { clubNo: clubNo, logNo: logNo, replyNo: replyNo },
             success: function(response) {
                 var spanElement = document.getElementById('replyLikesCount' + num);
                 var curLikeCount = parseInt(spanElement.textContent, 10);

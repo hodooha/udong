@@ -234,22 +234,7 @@ public class ClubDAO {
      */
     public int deleteClub(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
 
-        return sqlSession.delete("clubMapper.deleteClub", requestDTO);
-
-    }
-
-
-    /**
-     * 모임 이미지 삭제
-     *
-     * @param sqlSession the sql session
-     * @param clubNo     the club no
-     * @return the int
-     * @since 2024 -08-02
-     */
-    public int deleteClubImg(SqlSessionTemplate sqlSession, int clubNo) {
-
-        return sqlSession.delete("clubMapper.deleteClubImg", clubNo);
+        return sqlSession.update("clubMapper.deleteClub", requestDTO);
 
     }
 
@@ -340,12 +325,6 @@ public class ClubDAO {
     public int insertLogImg(SqlSessionTemplate sqlSession, AttachmentDTO attachment) {
 
         return sqlSession.insert("clubMapper.insertLogImg", attachment);
-
-    }
-
-    public String checkAdmin(SqlSessionTemplate sqlSession, int memberNo) {
-
-        return sqlSession.selectOne("clubMapper.checkAdmin", memberNo);
 
     }
 
@@ -447,15 +426,10 @@ public class ClubDAO {
 
     public int deleteLog(SqlSessionTemplate sqlSession, LogDTO logDTO) {
 
-        return sqlSession.delete("clubMapper.deleteLog", logDTO);
+        return sqlSession.update("clubMapper.deleteLog", logDTO);
 
     }
 
-    public int deleteLogImg(SqlSessionTemplate sqlSession, int logNo) {
-
-        return sqlSession.delete("clubMapper.deleteLogImg", logNo);
-
-    }
 
     public int insertLogLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
 
@@ -482,4 +456,21 @@ public class ClubDAO {
     }
 
 
+    public String checkIsClubDeleted(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.selectOne("clubMapper.checkIsClubDeleted", clubNo);
+
+    }
+
+    public String checkIsLogDeleted(SqlSessionTemplate sqlSession, int logNo) {
+
+        return sqlSession.selectOne("clubMapper.checkIsLogDeleted", logNo);
+
+    }
+
+    public int deleteClubMember(SqlSessionTemplate sqlSession, ClubMemberDTO clubMemberDTO) {
+
+        return sqlSession.delete("clubMapper.deleteClubMember", clubMemberDTO);
+
+    }
 }
