@@ -3,10 +3,10 @@ package com.multi.udong.sale.controller;
 import com.multi.udong.admin.model.dto.ReportDTO;
 import com.multi.udong.admin.service.ReportService;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
-import com.multi.udong.login.service.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -69,10 +70,12 @@ public class SaleController {
     }
 
     @PostMapping("/insert")
-    public String insertSale(@ModelAttribute SaleDTO saleDTO, @RequestParam("imageFiles") List<MultipartFile> imageFiles,
+    public String insertSale(@ModelAttribute SaleDTO saleDTO,
+                             @RequestParam("imageFiles") List<MultipartFile> imageFiles,
                              @RequestParam(value = "startedAtCombined", required = false) String startedAtCombined,
                              @RequestParam(value = "endedAtCombined", required = false) String endedAtCombined,
-                             @AuthenticationPrincipal CustomUserDetails member, Model model) {
+                             @AuthenticationPrincipal CustomUserDetails member,
+                             Model model) {
 
         saleDTO.setLocationCode(member.getMemberDTO().getMemAddressDTO().getLocationCode());
         saleDTO.setWriter(member.getMemberDTO().getMemberNo());
@@ -95,10 +98,11 @@ public class SaleController {
 
         try {
             List<AttachmentDTO> imgList = new ArrayList<>();
-            String imgPath = new File("src/main/resources/static/uploadFiles").getAbsolutePath();
+            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String savePath = path + File.separator;
 
             if (!imageFiles.isEmpty()) {
-                File mkdir = new File(imgPath);
+                File mkdir = new File(savePath);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
@@ -113,7 +117,7 @@ public class SaleController {
                     img.setTypeCode(String.valueOf(saleDTO.getSaleNo()));
 
                     imgList.add(img);
-                    f.transferTo(new File(imgPath + "\\" + savedName));
+                    f.transferTo(new File(savePath + savedName));
 
                     if (saleDTO.getImagePath() == null) {
                         saleDTO.setImagePath("/uploadFiles/" + savedName);
@@ -194,8 +198,10 @@ public class SaleController {
             report.setStatus("W");
 
             if (!file.isEmpty()) {
-                String imgPath = new File("src/main/resources/static/uploadFiles").getAbsolutePath();
-                File mkdir = new File(imgPath);
+                String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                String savePath = path + File.separator;
+
+                File mkdir = new File(savePath);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
@@ -203,7 +209,7 @@ public class SaleController {
                 String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
                 String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
 
-                file.transferTo(new File(imgPath + "\\" + savedName));
+                file.transferTo(new File(savePath + savedName));
                 report.setImageFileName(savedName);
                 report.setUrl(report.getUrl() + "?file=" + savedName);
             }

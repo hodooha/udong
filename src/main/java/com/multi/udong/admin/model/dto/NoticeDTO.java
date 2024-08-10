@@ -1,6 +1,9 @@
 package com.multi.udong.admin.model.dto;
 
+import com.multi.udong.common.model.dto.AttachmentDTO;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class NoticeDTO {
     private Integer noticeNo;
@@ -12,6 +15,10 @@ public class NoticeDTO {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private Boolean Popup;
+    private String imagePath;
+    private List<AttachmentDTO> attachments;
+    private String img;
+
 
     public Integer getNoticeNo() {
         return noticeNo;
@@ -85,6 +92,30 @@ public class NoticeDTO {
         Popup = popup;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public List<AttachmentDTO> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<AttachmentDTO> attachments) {
+        this.attachments = attachments;
+    }
+
+    public String getImg() {
+        return img;
+    }
+
+    public void setImg(String img) {
+        this.img = img;
+    }
+
     @Override
     public String toString() {
         return "NoticeDTO{" +
@@ -97,6 +128,9 @@ public class NoticeDTO {
                 ", createdAt=" + createdAt +
                 ", modifiedAt=" + modifiedAt +
                 ", Popup=" + Popup +
+                ", imagePath='" + imagePath + '\'' +
+                ", attachments=" + attachments +
+                ", img='" + img + '\'' +
                 '}';
     }
 }

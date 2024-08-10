@@ -31,4 +31,12 @@ public class AttachmentDAO {
             }
         });
     }
+    public void insertAttachment(AttachmentDTO attachmentDTO) {
+        String sql = "INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql,
+                attachmentDTO.getTypeCode(),
+                attachmentDTO.getTargetNo(),
+                attachmentDTO.getOriginalName(),
+                attachmentDTO.getSavedName());
+    }
 }
