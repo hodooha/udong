@@ -118,6 +118,19 @@ public class ShaDreamController {
 
     }
 
+    @GetMapping("/lendItem")
+    public String getLendItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        try {
+            ShaItemDTO item = shareService.getItemDetail(itemDTO, c);
+            model.addAttribute("item", item);
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamLend :: #dream";
+    }
+
     /**
      * 요청드림 목록 조회
      *

@@ -100,6 +100,72 @@ $(function(){
 
 });
 
+function showAlerts(){
+    const alert = $('#alert').val();
+    const alertType = $('#alertType').val();
+    console.log(alert);
+    console.log(alertType);
+    if(alert){
+        switch(alertType) {
+            case 'success':
+                showSuccessAlert(alert);
+                break;
+            case 'error':
+                showErrorAlert(alert);
+                break;
+            case 'confirm':
+                showConfirmAlert(alert);
+                break;
+            default:
+                showAlert(alert);
+        }
+    }
+}
+
+function showSuccessAlert(alert) {
+    return Swal.fire({
+        title: alert,
+        confirmButtonColor: "#3B5C9A",
+        confirmButtonText: "확인",
+        icon: "success"
+    }).then(result => {
+        return result.isConfirmed;
+    });
+}
+
+function showErrorAlert(alert) {
+    Swal.fire({
+        title: alert,
+        confirmButtonColor: "#3B5C9A",
+        confirmButtonText: "확인",
+        icon: "error"
+    });
+}
+
+function showConfirmAlert(alert) {
+    return Swal.fire({
+        title: alert,
+        showCancelButton: true,
+        confirmButtonColor: "#3B5C9A",
+        confirmButtonText: "확인",
+        cancelButtonText: "취소",
+        icon: "warning"
+    }).then(result => {
+        return result.isConfirmed;
+    });
+}
+
+function showAlert(msg) {
+    Swal.fire({
+        title: msg,
+        showCancelButton: true,
+        confirmButtonColor: "#3B5C9A",
+        confirmButtonText: "확인",
+        cancelButtonText: "취소",
+        icon: "success"
+    });
+}
+
 function datePickerActive(){
     $('#datePicker').datepicker({
         format: 'yyyy-mm-dd',
@@ -430,7 +496,7 @@ function shaRequest(item) {
 
     if(item.itemGroup == 'rent'){
         if(returnDate == ''){
-            alert("반납희망일을 설정해주세요.");
+            showConfirmAlert("반납희망일을 설정해주세요.");
             return;
         }
     }
@@ -448,8 +514,8 @@ function shaRequest(item) {
 function insertReq(data){
     let reqUrl = "/share/request";
     ajax_post(reqUrl, data).done(function(msg){
-        updateItemDetail();
         alert(msg);
+        updateItemDetail();
     })
 
 
@@ -465,18 +531,32 @@ function updateShaLike(itemNo){
 function updateItStat(item){
 
     if(item.statusCode == "RNT"){
-        alert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+        showConfirmAlert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         return;
     }
     let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
 
     ajax_get(reqUrl).done(function(){
         if(path.includes("/share/dream")){
-            getLendList(url.searchParams.get('page'));
+            getLendItem(item.itemNo);
         } else{
         updateItemDetail();}
     })
 
+}
+
+function getLendItem(itemNo){
+    let reqUrl = "/share/dream/lendItem"
+    let data = {
+        itemNo: itemNo
+    };
+
+    ajax_get(reqUrl, data).done(function(result){
+        let itemRow = $(`div[data-dream-id='dream${itemNo}']`);
+        console.log(itemRow);
+        console.log(result);
+        itemRow.replaceWith(result);
+    })
 }
 
 function selectReq(itemNo){
@@ -514,7 +594,7 @@ function checkReturnDate(requesters){
     $('#approveBtn').on("click", function(){
         seletedReq.returnDate = $('#datePicker').val();
         if(seletedReq.returnDate == ''){
-            alert("반납예정일을 선택해주세요.");
+            showConfirmAlert("반납예정일을 선택해주세요.");
             return;
         };
         approveReq(seletedReq);
@@ -527,23 +607,22 @@ function checkReturnDate(requesters){
     })
 }
 
-function approveReq(final){
-    console.log(final);
+function approveReq(req){
+    console.log(req);
     $('#approveReq').modal('toggle');
 
     let reqUrl = "/share/dream/approveReq";
     let data = {
-       reqNo : final.reqNo,
-       rqstNo: final.rqstNo,
+       reqNo : req.reqNo,
+       rqstNo: req.rqstNo,
        statusCode: "RNT",
-       reqItem : final.reqItem,
-       returnDate: final.returnDate
+       reqItem : req.reqItem,
+       returnDate: req.returnDate
     }
 
-    ajax_post(reqUrl, data).done(function(){
-        alert("대여가 확정되었습니다.");
-        getLendList(url.searchParams.get('page'));
-
+    ajax_post(reqUrl, data).done(async function(){
+        await showSuccessAlert("대여가 확정되었습니다.");
+        getLendItem(req.reqItem);
     })
 }
 
@@ -559,18 +638,6 @@ function sendMsg(memberNo){
             }
         }
     }, false);
-}
-
-// sweetalert 함수
-function showSuccessAlert(msg) {
-    return Swal.fire({
-        title: msg,
-        confirmButtonColor: "#3B5C9A",
-        confirmButtonText: "확인",
-        icon: "success"
-    }).then(result => {
-        return result.isConfirmed;
-    });
 }
 
 function evalWithReturnReq(item){
@@ -605,10 +672,10 @@ function postScore(req){
         reqItem: req.reqItem
     }
 
-    ajax_post(reqUrl, data).done(function(){
-        alert("평가완료");
+    ajax_post(reqUrl, data).done(async function(){
+        await showSuccessAlert("평가가 완료되었습니다.");
         $('#evalModal').modal('toggle');
-        location.reload();
+        getLendItem(req.reqItem);
 
     })
 }
@@ -666,7 +733,7 @@ function toggleEvalModal(req){
     $('.star_rating > .star').click(function() {
         $(this).parent().children('span').removeClass('on');
         $(this).addClass('on').prevAll('span').addClass('on');
-        score = $(this).data('value');
+        $('#score').val($(this).data('value'));
     })
 
     $('#evalBtn').on("click", function(){
@@ -677,6 +744,7 @@ function toggleEvalModal(req){
 }
 
 function evalWithEndReq(req){
+    let score = $('#score').val();
     let reqUrl = "/share/dream/evalWithEndReq";
     let data = {
         reqNo: req.reqNo,
@@ -686,8 +754,8 @@ function evalWithEndReq(req){
         reqItem: req.reqItem
     }
 
-    ajax_post(reqUrl, data).done(function(){
-        alert("평가완료");
+    ajax_post(reqUrl, data).done(async function(){
+        await showSuccessAlert("평가가 완료되었습니다.");
         $('#evalModal').modal('toggle', true);
         location.reload();
 
@@ -718,9 +786,8 @@ function postReport(){
 
     ajax_post(reqUrl, data).done(function(msg){
         console.log("신고 완료");
-        alert(msg);
         $('#reportModal').modal("toggle", true);
-        location.reload();
+        showSuccessAlert(msg);
     })
 
 }

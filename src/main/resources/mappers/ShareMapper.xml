@@ -121,7 +121,7 @@
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date, e.cat_name
+        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.return_date, e.cat_name, f.saved_name, g.status_name
         from sha_items a
         inner join
             member b
@@ -140,6 +140,22 @@
         left join
             sha_cat e
         on a.item_cat_code = e.cat_code
+        left join
+        (
+        select target_no, saved_name, type_code
+        from
+        (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        ) sub
+        where rn = 1
+        ) f
+        on a.item_no = f.target_no
+        and a.item_group = f.type_code
+        left join
+        sha_status g
+        on a.status_code = g.status_code
         where a.item_no = #{itemNo}
     </select>
 
@@ -369,9 +385,12 @@
             on b.loc_code = f.location_code
             left join
             (
-                select req_item, return_date, rqst_no
+                select req_item, return_date, rqst_no, nickname as rqst_nickname
                 from sha_req
-                where status_code in ('RNT', 'GVD')
+                left join
+                member
+                on rqst_no = member_no
+                where status_code in ('RNT', 'WIN')
             ) e
             on b.item_no = e.req_item
             left join

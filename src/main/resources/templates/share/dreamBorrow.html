@@ -12,7 +12,9 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
     <style>
-
+        html {
+          scrollbar-gutter: stable;
+        }
 
         .dream .row > div{
             height: 150px;
@@ -254,7 +256,7 @@
 
     </div>
 
-    <div th:replace="~{/share/rentMain :: #spinner}"></div>
+<!--    <div th:replace="~{/share/rentMain :: #spinner}"></div>-->
 
     <div th:fragment="reqDreams" id="reqDreams">
         <th:block th:if="${#lists.isEmpty(borrowList)}">
@@ -346,7 +348,7 @@
                 <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
                     <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
                         <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
-                                aria-label="Previous">
+                                aria-label="Previous" style="caret-color: transparent;">
                             <span>&laquo;</span>
                         </button>
                     </li>
@@ -354,12 +356,12 @@
                         class="page-item active me-1" aria-current="page">
                         <button th:text="${page}" class="page-link btn-udh-blue"
                                 th:onclick="getBorrowList([[${page}]])"
-                                th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                                th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}" style="caret-color: transparent;"></button>
                     </li>
                     <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
                         class="page-item me-1">
                         <button class="page-link btn-udh-blue " aria-label="Previous"
-                                th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])">
+                                th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])" style="caret-color: transparent;">
                             <span>&raquo;</span>
                         </button>
                     </li>
@@ -400,7 +402,7 @@
                     <div class="modal-body text-center">
                         <span id="lenderName"></span>님의 매너를 평가해 주세요.
                         <div class="star_rating mt-3">
-                            <input type="hidden" id="score">
+                            <input type="hidden" id="score" value="5">
                             <span class="star on" data-value="1"> </span>
                             <span class="star on" data-value="2"> </span>
                             <span class="star on" data-value="3"> </span>
@@ -500,6 +502,7 @@
 
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>

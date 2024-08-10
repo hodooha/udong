@@ -44,6 +44,7 @@ public class ShaItemDTO {
     private List<String> delFilesName;
     private boolean liked;
     private int rqstNo;
+    private String rqstNickname;
 
 }
 

@@ -93,7 +93,7 @@
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
 <div th:fragment="spinner" id="spinner" class="text-center" style="display:none">
-    <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem; z-index:9999;">
+    <div class="spinner-border text-warning float" role="status" style="width: 3rem; height: 3rem; z-index:9999;">
         <span class="visually-hidden">Loading...</span>
     </div>
 </div>
@@ -265,7 +265,7 @@
             <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
                 <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
                     <button th:onclick="search([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
-                            aria-label="Previous">
+                            aria-label="Previous" style="caret-color: transparent;">
                         <span>&laquo;</span>
                     </button>
                 </li>
@@ -273,12 +273,12 @@
                     class="page-item active me-1" aria-current="page">
                     <button th:text="${page}" class="page-link btn-udh-blue"
                             th:onclick="search([[${page}]])"
-                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}" style="caret-color: transparent;"></button>
                 </li>
                 <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
                     class="page-item me-1">
                     <button class="page-link btn-udh-blue " aria-label="Previous"
-                            th:onclick="search([[${pageInfo.currentPage+1}]])">
+                            th:onclick="search([[${pageInfo.currentPage+1}]])" style="caret-color: transparent;">
                         <span>&raquo;</span>
                     </button>
                 </li>
@@ -288,6 +288,7 @@
     </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>

@@ -685,7 +685,7 @@ public class ShareServiceImpl implements ShareService {
 
 
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 29 16 * * ?")
+    @Scheduled(cron = "0 51 22 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -696,55 +696,56 @@ public class ShareServiceImpl implements ShareService {
 
         // 오늘 날짜인 나눔 물건의 당첨자 추첨
         if (itemList != null) {
-            for (ShaItemDTO i : itemList) {
-                letsRaffle(i);
-            }
+            letsRaffle(itemList);
         }
 
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void letsRaffle(ShaItemDTO itemDTO) throws Exception {
+    private void letsRaffle(List<ShaItemDTO> itemList) throws Exception {
 
-        // 해당 물건을 나눔 요청한 요청자 목록 조회
-        ShaReqDTO reqDTO = new ShaReqDTO();
-        reqDTO.setReqItem(itemDTO.getItemNo());
-        reqDTO.setStatusCode("RQD");
-        List<ShaReqDTO> reqList = shareDAO.getRequesters(sqlSession, reqDTO);
+        for (ShaItemDTO i : itemList) {
+            // 해당 물건을 나눔 요청한 요청자 목록 조회
+            ShaReqDTO reqDTO = new ShaReqDTO();
+            reqDTO.setReqItem(i.getItemNo());
+            reqDTO.setStatusCode("RQD");
+            List<ShaReqDTO> reqList = shareDAO.getRequesters(sqlSession, reqDTO);
 
-        if (reqList.isEmpty()) {
-            if (shareDAO.postponeExpiry(sqlSession, itemDTO) < 1) {
-                throw new Exception("마감일 연기를 실패했습니다.");
+            if (reqList.isEmpty()) {
+                if (shareDAO.postponeExpiry(sqlSession, i) < 1) {
+                    throw new Exception("마감일 연기를 실패했습니다.");
+                }
+
+                System.out.println("===== 나눔일 연기된 물건 =====");
+                System.out.println(i);
+            } else {
+
+                System.out.println("===== 나눔 물건의 요청자 목록 =====");
+                System.out.println(reqList);
+
+                // 당첨자 추첨
+                int luckyNum = (int) (Math.random() * reqList.size());
+                ShaReqDTO winner = reqList.get(luckyNum);
+
+                System.out.println("===== 럭키넘버!!! =====");
+                System.out.println(luckyNum);
+                System.out.println("===== 당첨자!!! =====");
+                System.out.println(winner);
+
+                // 당첨자 req 상태 '당첨'으로 변경, 당첨자 외 다른 req 상태 '낙첨'으로 변경
+                if (shareDAO.updateReqAfterRaffle(sqlSession, winner) < 1) {
+                    throw new Exception("요청 상태 변경을 실패했습니다.");
+                }
+
+                // 물건 상태 변경
+                i.setStatusCode("GVD");
+                if (shareDAO.updateItStat(sqlSession, i) < 1) {
+                    throw new Exception("물건 상태 변경을 실패했습니다.");
+                }
+
             }
-
-            System.out.println("===== 나눔일 연기된 물건 =====");
-            System.out.println(itemDTO);
-        } else {
-
-            System.out.println("===== 나눔 물건의 요청자 목록 =====");
-            System.out.println(reqList);
-
-            // 당첨자 추첨
-            int luckyNum = (int) (Math.random() * reqList.size());
-            ShaReqDTO winner = reqList.get(luckyNum);
-
-            System.out.println("===== 럭키넘버!!! =====");
-            System.out.println(luckyNum);
-            System.out.println("===== 당첨자!!! =====");
-            System.out.println(winner);
-
-            // 당첨자 req 상태 '당첨'으로 변경, 당첨자 외 다른 req 상태 '낙첨'으로 변경
-            if (shareDAO.updateReqAfterRaffle(sqlSession, winner) < 1) {
-                throw new Exception("요청 상태 변경을 실패했습니다.");
-            }
-
-            // 물건 상태 변경
-            itemDTO.setStatusCode("GVD");
-            if (shareDAO.updateItStat(sqlSession, itemDTO) < 1) {
-                throw new Exception("물건 상태 변경을 실패했습니다.");
-            }
-
         }
+
     }
 
 
