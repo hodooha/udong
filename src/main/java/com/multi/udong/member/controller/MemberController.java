@@ -15,11 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -142,12 +144,18 @@ public class MemberController {
         int pages = 1;
 
         List<List<String>> data = memberService.selectAllAct(table, pageDTO);
+        List<String> clubNo = new ArrayList<>();
+
         if (!data.isEmpty()) {
             count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
             pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
 
             for (List<String> list : data) {
                 list.remove(list.size() - 1);
+                if (table.equals("clubLog")) {
+                    clubNo.add(list.get(1));
+                    list.remove(1);
+                }
             }
         }
 
@@ -156,6 +164,9 @@ public class MemberController {
 
         model.addAttribute("tableHeaders", headers);
         model.addAttribute("tableData", data);
+        if (table.equals("clubLog")) {
+            model.addAttribute("clubNo", clubNo);
+        }
         model.addAttribute("page", pageDTO.getPage());
         model.addAttribute("table", table);
         model.addAttribute("pages", pages);
@@ -279,18 +290,22 @@ public class MemberController {
     /**
      * 입력한 정보로 현재 사용자의 회원정보를 수정함
      *
-     * @param c         the c
-     * @param file      the file
-     * @param memberDTO the member dto
-     * @param model     the model
+     * @param c                  the c
+     * @param file               the file
+     * @param currentPw          the current pw
+     * @param memberDTO          the member dto
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-26
      */
     @PostMapping("/updateProfile")
     public String updateProfile(@AuthenticationPrincipal CustomUserDetails c,
                                 @RequestParam(value = "file", required = false) MultipartFile file,
+                                @RequestParam(value = "current-password", required = false) String currentPw,
                                 MemberDTO memberDTO,
-                                Model model) {
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
 
         // memberDTO에 현재 사용자의 회원번호를 입력
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -310,14 +325,16 @@ public class MemberController {
         } else { // 프로필 사진을 수정하지 않을 때
 
             // 비밀번호를 수정할 때
-            if (memberDTO.getMemberPw() != null) {
+            if (currentPw != null && memberDTO.getMemberPw() != null) {
+                System.out.println("memberDTO : " + memberDTO);
+                BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
-                // '현재 사용자의 비밀번호'와 입력한 '현재 비밀번호'가 일치하지 않으면
-                if (memberDTO.getMemberPw() != c.getMemberDTO().getMemberPw()) {
-                    model.addAttribute("msg", "현재 비밀번호가 일치하지 않습니다.");
-                    return "member/memInfo";
+                // '입력한 현재 비밀번호' 와 '현재 사용자의 비밀번호' 가 일치하지 않으면
+                if (!bCryptPasswordEncoder.matches(currentPw, c.getMemberDTO().getMemberPw())) {
+                    redirectAttributes.addFlashAttribute("alert", "현재 비밀번호가 일치하지 않습니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "error");
+                    return "redirect:/member/memInfo";
                 }
-
             }
 
             // 프로필 수정 진행
@@ -326,8 +343,9 @@ public class MemberController {
 
         // 수정 후 사용자 세션 최신화
         memberService.updateMemberSession();
-        model.addAttribute("msg", "회원정보 수정이 완료되었습니다.");
-        return "member/dashBoard";
+        redirectAttributes.addFlashAttribute("alert", "회원정보 수정이 완료되었습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "success");
+        return "redirect:/member/memInfo";
     }
 
     /**

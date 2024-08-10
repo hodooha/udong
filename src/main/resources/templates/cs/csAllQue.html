@@ -77,12 +77,14 @@
             background-color: #3B5C9A;
             text-decoration: none;
             border-radius: 5px;
-        }
-        .pagination a.active {
-            background-color: #0B1D40;
-        }
-        .pagination a:hover:not(.active) {
-            background-color: #ddd;
+
+            &.active {
+                background-color: #0B1D40;
+            }
+
+            &:hover:not(.active) {
+                background-color: #ddd;
+            }
         }
         h2 {
             text-align: left;

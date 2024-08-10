@@ -21,11 +21,16 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+        }
+        #result-table {
+            min-height: 500px;
         }
         th, td {
             border: 1px solid #ddd;
@@ -56,12 +61,14 @@
             background-color: #3B5C9A;
             text-decoration: none;
             border-radius: 5px;
-        }
-        .pagination a.active {
-            background-color: #0B1D40;
-        }
-        .pagination a:hover:not(.active) {
-            background-color: #ddd;
+
+            &.active {
+                background-color: #0B1D40;
+            }
+
+            &:hover:not(.active) {
+                background-color: #ddd;
+            }
         }
     </style>
 </head>
@@ -73,7 +80,6 @@
     <div class="content-area">
         <div class="act">
             <h2>나의 활동 기록</h2>
-            <h5>우동 소식</h5>
             <table>
                 <thead>
                     <tr>
@@ -81,7 +87,9 @@
                     </tr>
                 </thead>
                 <tbody id="result-table">
-                    <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}, data-table=${table}" class="clickable-row">
+                    <tr th:each="data : ${tableData}"
+                        th:attr="data-no=${data[0]},
+                                 data-club-no=${table == 'clubLog'} ? ${clubNo[0]} : ''" class="clickable-row">
                         <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" th:text="${element}"></td>
                     </tr>
                 </tbody>
@@ -92,7 +100,6 @@
                 <form action="/member/act" method="get">
                     <input type="hidden" name="table" th:value="${table}">
                     <select name="searchCategory" id="search-category">
-                        <option value="">카테고리 선택</option>
                         <option th:each="category : ${searchCategories}"
                                 th:value="${category}"
                                 th:text="${category}"
@@ -159,7 +166,7 @@
         }
     });
 </script> <!--페이지네이션-->
-<script>
+<script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
 
         const rows = document.querySelectorAll('.clickable-row');
@@ -167,7 +174,9 @@
         rows.forEach(row => {
             row.addEventListener('click', function() {
                 const no = this.getAttribute('data-no');
-                const table = this.getAttribute('data-table');
+                const table = /*[[${table}]]*/ null;
+                const clubNo = this.getAttribute('data-club-no');
+
                 let url;
 
                 switch(table) {
@@ -181,22 +190,22 @@
                         url = `/news/detail/${no}`;
                         break;
                     case 'club':
-                        url = `/club/detail/${no}`;
+                        url = `/club/clubHome?clubNo=${no}`;
                         break;
                     case 'clubLog':
-                        url = `/club/log/detail/${no}`;
+                        url = `/club/clubLog/logDetail?clubNo=${clubNo}&logNo=${no}`;
                         break;
                     case 'clubSchedule':
                         url = `/club/schedule/detail/${no}`;
                         break;
                     case 'shareLike':
-                        url = `/share/detail/${no}`;
+                        url = `/share/rent/detail?itemNo=${no}`;
                         break;
                     case 'saleBoard':
                         url = `/sale/detail/${no}`;
                         break;
                 }
-
+                console.log('url:', url);
                 window.location.href = url;
             });
         });

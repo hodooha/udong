@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -8,15 +8,7 @@
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
+<div id="msg" th:text="${msg}" hidden></div>
 <img th:src="@{/img/coding.gif}" alt="우동행" style="margin: 0 auto; margin-top: 100px; display: block;">
-<div id="msg" th:text="${msg}" style="display: none;"></div>
 </body>
-<script th:inline="javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-        var msg = document.getElementById('msg');
-        if (msg && msg.textContent) {
-            alert(msg.textContent);
-        }
-    });
-</script> <!--msg alert-->
 </html>

@@ -293,6 +293,7 @@
                 ROW_NUMBER() OVER (ORDER BY c.created_at DESC) AS rownum
             FROM CL c
             WHERE c.master = #{memberNo}
+            AND c.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -319,6 +320,7 @@
     <select id="selectClubLog" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
         SELECT
             sub.log_no,
+            sub.club_no,
             cc.category_name,
             l.eup_myeon_dong_name,
             c.club_name,
@@ -332,7 +334,9 @@
                 COUNT(*) OVER() AS total_count,
                 ROW_NUMBER() OVER (ORDER BY cl.created_at DESC) AS rownum
             FROM CL_LOG cl
+            JOIN CL c ON cl.club_no = c.club_no
             WHERE cl.writer = #{memberNo}
+            AND c.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -375,7 +379,9 @@
                 COUNT(*) OVER() AS total_count,
                 ROW_NUMBER() OVER (ORDER BY cs.gathering_at DESC) AS rownum
             FROM CL_SCHEDULE cs
+            JOIN CL c ON cs.club_no = c.club_no
             WHERE cs.maker = #{memberNo}
+            AND c.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">

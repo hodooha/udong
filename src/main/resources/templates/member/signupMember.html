@@ -74,6 +74,8 @@
         }
         .error-message {
             font-size: 18px;
+            height: 18px;
+            line-height: 18px;
             visibility: hidden;
         }
         .success {
@@ -128,7 +130,7 @@
 
             <div class="input-group">
                 <label>전화번호</label>
-                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" required>
+                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" oninput="removeInvalidChars(this)" required>
             </div>
             <div class="error-message" id="phone-message"></div>
 
@@ -180,35 +182,6 @@
         const phoneMessage = document.querySelector('#phone-message');
         const emailMessage = document.querySelector('#email-message');
 
-        // 아이디 유효성 검사
-        function isValidId(id) {
-            return id.trim().length > 0;
-        }
-
-        // 비밀번호 유효성 검사
-        function isValidPassword(password) {
-            let regex = /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,15}$/;
-            return regex.test(password);
-        }
-
-        // 전화번호 유효성 검사
-        function isValidPhone(phone) {
-            let regex = /^\d{11}$/;
-            return regex.test(phone);
-        }
-
-        // 이메일 아이디 유효성 검사
-        function isValidEmailId(emailId) {
-            const regex = /^[A-Za-z0-9]+$/;
-            return regex.test(emailId);
-        }
-
-        // 이메일 도메인 유효성 검사
-        function isValidDomain(domain) {
-            let regex = /^[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
-            return regex.test(domain);
-        }
-
         // 메세지 표시
         function showMessage(element, message, isError) {
             element.textContent = message;
@@ -216,9 +189,71 @@
             element.classList.add(isError ? 'error' : 'success');
             element.style.visibility = 'visible';
         }
-
         function hideMessage(element) {
-            element.style.visibility = 'hidden'
+            element.style.visibility = 'hidden';
+        }
+
+
+        // 아이디 유효성 검사
+        function isValidId(id) {
+            return id.trim().length > 0;
+        }
+
+        // 아이디 중복 검사
+        let isIdChecked = false;
+        checkDuplicateButton.addEventListener('click', function() {
+            let memberId = memberIdInput.value.trim()
+
+            if (!isValidId(memberId)) {
+                showMessage(idMessage, '아이디를 입력해주세요.', true);
+                memberIdInput.focus();
+                return;
+            }
+
+            fetch('/isIdDuplicate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [header]: token
+                },
+                body: JSON.stringify({ memberId: memberId })
+            })
+            .then(response => response.text())
+            .then(result => {
+                if(result === 'available') {
+                    showMessage(idMessage, '사용 가능한 아이디입니다.', false);
+                    memberIdInput.readOnly = true;
+                    checkDuplicateButton.disabled = true;
+                    isIdChecked = true;
+                    checkAllFields();
+                } else {
+                    showMessage(idMessage, '사용 중인 아이디입니다. 다른 아이디를 사용해 주세요.', true);
+                    isIdChecked = false;
+                    checkAllFields();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('서버 오류가 발생했습니다.');
+            });
+        });
+
+        // 아이디 중복검사 초기화
+        clearButton.addEventListener('click', function() {
+            memberIdInput.value = '';
+            memberIdInput.focus();
+            memberIdInput.readOnly = false;
+            checkDuplicateButton.disabled = false;
+            isIdChecked = false;
+            hideMessage(idMessage);
+            checkAllFields();
+        });
+
+
+        // 비밀번호 유효성 검사
+        function isValidPassword(password) {
+            let regex = /^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,15}$/;
+            return regex.test(password);
         }
 
         // 실시간 비밀번호 유효성 검사
@@ -249,6 +284,13 @@
             }
         });
 
+
+        // 전화번호 유효성 검사
+        function isValidPhone(phone) {
+            let regex = /^\d{11}$/;
+            return regex.test(phone);
+        }
+
         // 실시간 전화번호 유효성 검사
         let isPhoneChecked = false;
         phoneInput.addEventListener('blur', function() {
@@ -263,22 +305,17 @@
             }
         });
 
-        // 실시간 이메일 유효성 검사
-        let isEmailChecked = false;
-        emailId.addEventListener('blur', checkEmail);
-        emailDomain.addEventListener('blur', checkEmail);
-        emailDomain.addEventListener('onchange', checkEmail);
-        function checkEmail() {
-            const fullEmail = emailId.value.trim() + '@' + emailDomain.value.trim();
-            if (!isValidEmailId(emailId.value.trim()) || !isValidDomain(emailDomain.value.trim())) {
-                showMessage(emailMessage, '유효하지 않은 이메일 형식입니다.', true);
-                isEmailChecked = false;
-                checkAllFields();
-            } else {
-                hideMessage(emailMessage);
-                isEmailChecked = true;
-                checkAllFields();
-            }
+
+        // 이메일 아이디 유효성 검사
+        function isValidEmailId(emailId) {
+            const regex = /^[A-Za-z0-9]+$/;
+            return regex.test(emailId);
+        }
+
+        // 이메일 도메인 유효성 검사
+        function isValidDomain(domain) {
+            let regex = /^[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]([a-zA-Z0-9-]*[a-zA-Z0-9])?)+$/;
+            return regex.test(domain);
         }
 
         // 이메일 도메인 선택
@@ -291,8 +328,30 @@
             } else {
                 emailDomain.readOnly = true;
             }
+            checkEmail();
         });
 
+        // 실시간 이메일 유효성 검사
+        let isEmailChecked = false;
+        emailId.addEventListener('blur', checkEmail);
+        emailDomain.addEventListener('blur', checkEmail);
+        emailDomain.addEventListener('input', checkEmail);
+        function checkEmail() {
+            let fullEmail = emailId.value.trim() + '@' + emailDomain.value.trim();
+
+            if (!isValidEmailId(emailId.value.trim()) || !isValidDomain(emailDomain.value.trim())) {
+                showMessage(emailMessage, '유효하지 않은 이메일 형식입니다.', true);
+                isEmailChecked = false;
+                checkAllFields();
+            } else {
+                hideMessage(emailMessage);
+                isEmailChecked = true;
+                checkAllFields();
+            }
+        }
+
+
+        // 제출 가능 여부 확인
         function checkAllFields() {
             if (isIdChecked && isPwChecked && isPwConfirmed && isPhoneChecked && isEmailChecked) {
                 emailInput.value = emailId.value.trim() + '@' + emailDomain.value.trim();
@@ -301,57 +360,11 @@
                 submitButton.disabled = true;
             }
         }
-
-        // 아이디 중복 검사
-        let isIdChecked = false;
-        checkDuplicateButton.addEventListener('click', checkDuplicateId);
-        function checkDuplicateId() {
-
-            let memberId = memberIdInput.value.trim()
-            if (!isValidId(memberId)) {
-                showMessage(idMessage, '아이디를 입력해주세요.', true);
-                memberIdInput.focus();
-                return;
-            }
-
-            fetch('/isIdDuplicate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    [header]: token
-                },
-                body: JSON.stringify({ memberId: memberId })
-            })
-            .then(response => response.text())
-            .then(result => {
-                if(result === 'available') {
-                    showMessage(idMessage, '사용 가능한 아이디입니다.', false);
-                    memberIdInput.readOnly = true;
-                    checkDuplicateButton.disabled = true;
-                    isIdChecked = true;
-                    checkAllFields();
-                } else {
-                    showMessage(idMessage, '사용 중인 아이디입니다.', true);
-                    isIdChecked = false;
-                    checkAllFields();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('서버 오류가 발생했습니다.');
-            });
-        }
-
-        // 아이디 중복검사 초기화
-        clearButton.addEventListener('click', function() {
-            memberIdInput.value = '';
-            memberIdInput.focus();
-            memberIdInput.readOnly = false;
-            checkDuplicateButton.disabled = false;
-            isIdChecked = false;
-            checkAllFields();
-        });
     });
+
+    function removeInvalidChars(input) {
+        input.value = input.value.replace(/\D/g, '').slice(0, 11);
+    }
 </script> <!--유효성 검사 스크립트-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
