@@ -21,8 +21,8 @@
 
     <!-- 공지사항 삽입 -->
     <insert id="insertNotice" parameterType="com.multi.udong.admin.model.dto.NoticeDTO" useGeneratedKeys="true" keyProperty="noticeNo">
-        INSERT INTO ADM_NOTICE (started_at, ended_at, title, content, writer, is_popup)
-        VALUES (#{startedAt}, #{endedAt}, #{title}, #{content}, #{writer}, #{popup})
+        INSERT INTO ADM_NOTICE (started_at, ended_at, title, content, writer, is_popup, created_at, modified_at)
+        VALUES (#{startedAt}, #{endedAt}, #{title}, #{content}, #{writer}, #{popup}, NOW(), NOW())
     </insert>
 
     <!-- 모든 공지사항 조회 -->
@@ -45,7 +45,8 @@
         content = #{notice.content},
         started_at = #{notice.startedAt},
         ended_at = #{notice.endedAt},
-        is_popup = #{notice.popup}
+        is_popup = #{notice.popup},
+        modified_at = NOW()
         WHERE notice_no = #{notice.noticeNo}
     </update>
 
