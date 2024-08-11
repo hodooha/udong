@@ -137,7 +137,7 @@
             <tr th:each="notice : ${notices}" th:onclick="loadNoticeDetail([[${notice.noticeNo}]])">
                 <td th:text="${notice.noticeNo}"></td>
                 <td th:text="${notice.title}"></td>
-                <td th:text="${notice.popup ?: false ? 'Y' : 'N'}"></td>
+                <td th:text="${notice.popupString}"></td>
                 <td th:text="${notice.createdAt}"></td>
 
             </tr>
@@ -213,7 +213,7 @@
                      var row = $('<tr>');
                      row.append('<td>' + notice.noticeNo + '</td>');
                      row.append('<td>' + notice.title + '</td>');
-                     row.append('<td>' + (notice.isPopup ? 'Y' : 'N') + '</td>');
+                     row.append('<td>' + notice.popupString + '</td>');
                      row.append('<td>' + notice.createdAt + '</td>');
 
                      // 클릭 이벤트 수정

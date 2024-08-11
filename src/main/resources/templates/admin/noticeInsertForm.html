@@ -128,6 +128,12 @@
             background-color: #142657;
             color: #FFFFFF;
         }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -141,8 +147,10 @@
             </div>
             <div class="form-group-inline">
                 <label for="startedAt">게시기간</label>
-                <input type="datetime-local" id="startedAt" name="startedAt" required>
+                <input type="datetime-local" id="startedAt" name="startedAt" required min="">
+                <span id="dateError" class="error-message" style="display: none;">오늘 이후의 날짜를 선택해 주세요.</span>
                 <input type="datetime-local" id="endedAt" name="endedAt" required>
+                <span id="endedAtError" class="error-message">시작일 이후의 날짜를 선택해 주세요.</span>
                 <div class="checkbox-group">
                     <input type="checkbox" id="popup" name="popup">
                     <label for="popup">메인팝업여부</label>
@@ -166,25 +174,81 @@
             <div class="btn-submit-container">
                 <button type="submit" class="btn-submit">작성완료</button>
             </div>
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <span th:text="${error}"></span>
+            </div>
         </form>
     </div>
 </div>
 
 <script th:inline="javascript">
-    function showPreview(event) {
-          var file = event.target.files[0];
-          var reader = new FileReader();
-          reader.onload = function(e) {
-              var img = document.createElement('img');
-              img.src = e.target.result;
-              var container = document.getElementById('image-preview-container');
-              container.innerHTML = '';
-              container.appendChild(img);
-          };
-          reader.readAsDataURL(file);
-      }
+    document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('noticeForm');
+        var startedAtInput = document.getElementById('startedAt');
+        var endedAtInput = document.getElementById('endedAt');
+        var startedAtError = document.getElementById('startedAtError');
+        var endedAtError = document.getElementById('endedAtError');
 
-      document.getElementById('file').addEventListener('change', showPreview);
+        function setMinDate() {
+            var now = new Date();
+            var formattedDateTime = now.toISOString().slice(0, 16);
+            startedAtInput.setAttribute('min', formattedDateTime);
+            endedAtInput.setAttribute('min', formattedDateTime);
+        }
+
+        function validateDates() {
+            var now = new Date();
+            var startDate = new Date(startedAtInput.value);
+            var endDate = new Date(endedAtInput.value);
+            var isValid = true;
+
+            // 시작일 검증
+            if (startDate < now) {
+                startedAtError.style.display = 'inline';
+                isValid = false;
+            } else {
+                startedAtError.style.display = 'none';
+            }
+
+            // 종료일 검증
+            if (endDate <= startDate) {
+                endedAtError.style.display = 'inline';
+                isValid = false;
+            } else {
+                endedAtError.style.display = 'none';
+            }
+
+            return isValid;
+        }
+
+        startedAtInput.addEventListener('change', validateDates);
+        endedAtInput.addEventListener('change', validateDates);
+
+        form.addEventListener('submit', function(event) {
+            if (!validateDates()) {
+                event.preventDefault(); // 폼 제출 방지
+                alert('입력한 날짜를 확인해주세요.'); // 사용자에게 알림
+            }
+        });
+
+        // 초기 설정
+        setMinDate();
+    });
+
+                    function showPreview(event) {
+                          var file = event.target.files[0];
+                          var reader = new FileReader();
+                          reader.onload = function(e) {
+                              var img = document.createElement('img');
+                              img.src = e.target.result;
+                              var container = document.getElementById('image-preview-container');
+                              container.innerHTML = '';
+                              container.appendChild(img);
+                          };
+                          reader.readAsDataURL(file);
+                      }
+
+                      document.getElementById('file').addEventListener('change', showPreview);
 </script>
 </body>
 </html>

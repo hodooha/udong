@@ -32,7 +32,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin")
@@ -241,10 +244,12 @@ public class AdminController {
     @PostMapping("/notice/insert")
     public String insertNotice(@ModelAttribute NoticeDTO noticeDTO,
                                @RequestParam("imageFile") MultipartFile imageFile,
+                               @RequestParam(value = "popup", required = false) String popup,
                                @AuthenticationPrincipal CustomUserDetails member,
                                RedirectAttributes redirectAttributes) {
 
         noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
+        noticeDTO.setPopup(popup != null && popup.equals("on"));
 
         try {
             AttachmentDTO attachmentDTO = null;
@@ -275,18 +280,20 @@ public class AdminController {
             System.out.println("Saved notice no: " + noticeNo);
             System.out.println("Saved image path: " + noticeDTO.getImagePath());
 
+            redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
+            return "redirect:/admin/notice";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/noticeInsertForm";
         } catch (IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("message", "파일 업로드 중 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("error", "파일 업로드 중 오류가 발생했습니다.");
             return "redirect:/admin/noticeInsertForm";
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("message", "알 수 없는 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("error", "알 수 없는 오류가 발생했습니다.");
             return "redirect:/admin/noticeInsertForm";
         }
-
-        redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
-        return "redirect:/admin/notice";
     }
 
 

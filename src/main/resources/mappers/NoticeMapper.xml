@@ -14,7 +14,9 @@
         <result property="writer" column="writer"/>
         <result property="createdAt" column="created_at"/>
         <result property="modifiedAt" column="modified_at"/>
-        <result property="popup" column="is_popup"/>
+        <result property="Popup" column="is_popup"/>
+        <result property="popupString" column="popupString"/>
+
     </resultMap>
 
     <!-- 공지사항 삽입 -->
@@ -25,7 +27,10 @@
 
     <!-- 모든 공지사항 조회 -->
     <select id="findAllNotices" resultMap="noticeResultMap">
-        SELECT * FROM ADM_NOTICE
+        SELECT notice_no, started_at, ended_at, title, content, writer, created_at, modified_at,
+        CASE WHEN is_popup = 1 THEN 'Y' ELSE 'N' END AS popupString,
+        is_popup
+        FROM ADM_NOTICE
         ORDER BY notice_no DESC
     </select>
 

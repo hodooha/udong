@@ -35,6 +35,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public int saveNoticeWithAttachment(NoticeDTO noticeDTO, AttachmentDTO attachmentDTO) {
+
         System.out.println("Saving notice: " + noticeDTO);
         int result = noticeDAO.insertNotice(noticeDTO);
         System.out.println("Insert result: " + result);
@@ -66,7 +67,18 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public List<NoticeDTO> findAll() {
-        return noticeDAO.findAllNotices();
+        List<NoticeDTO> notices = noticeDAO.findAllNotices();
+        for (NoticeDTO notice : notices) {
+            if (notice.getPopup() != null) {
+                notice.setPopupString(notice.getPopup() ? "Y" : "N");
+            } else {
+                notice.setPopupString("N");
+            }
+
+            // 디버깅 로그 추가
+            System.out.println("Notice ID: " + notice.getNoticeNo() + ", Popup: " + notice.getPopup() + ", PopupString: " + notice.getPopupString());
+        }
+        return notices;
     }
 
     @Override
