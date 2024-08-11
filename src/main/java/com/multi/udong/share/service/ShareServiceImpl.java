@@ -10,64 +10,22 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.List;
 
 
+/**
+ * The type Share service.
+ *
+ * @author 하지은
+ * @since 2024 -08-11
+ */
 @RequiredArgsConstructor
 @Service
 public class ShareServiceImpl implements ShareService {
 
     private final SqlSessionTemplate sqlSession;
     private final ShareDAO shareDAO;
-    public static final int SEC = 60;
-    public static final int MIN = 60;
-    public static final int HOUR = 24;
-    public static final int DAY = 30;
-    public static final int MONTH = 12;
-
-
-    /**
-     * 물건 상세 조회 시 보여지는 날짜 설정 메소드
-     *
-     * @param localDateTime the local date time
-     * @return the string
-     * @since 2024 -08-01
-     */
-    public static String convertLocaldatetimeToTime(LocalDateTime localDateTime) {
-
-        LocalDateTime now = LocalDateTime.now();
-
-        long diffTime = localDateTime.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
-
-        String displayDate = null;
-        if (diffTime < SEC) {
-            return diffTime + "초전";
-        }
-        diffTime = diffTime / SEC;
-        if (diffTime < MIN) {
-            return diffTime + "분 전";
-        }
-        diffTime = diffTime / MIN;
-        if (diffTime < HOUR) {
-            return diffTime + "시간 전";
-        }
-        diffTime = diffTime / HOUR;
-        if (diffTime < DAY) {
-            return diffTime + "일 전";
-        }
-        diffTime = diffTime / DAY;
-        if (diffTime < MONTH) {
-            return diffTime + "개월 전";
-        }
-
-        diffTime = diffTime / MONTH;
-        return diffTime + "년 전";
-
-    }
-
-    ;
 
     /**
      * 물건 카테고리 조회
@@ -121,16 +79,16 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public ShaItemDTO getItemDetailWithViewCnt(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
-        if (shareDAO.plusViewCnt(sqlSession, itemDTO.getItemNo()) < 1) {
-            throw new Exception("조회수 변경을 실패했습니다.");
-        }
-        ;
-
         // db에서 물건 상세정보 가져오기
         ShaItemDTO result = getItemDetail(itemDTO, c);
         if (result.getDeletedAt() != null) {
             throw new Exception("삭제된 물건입니다.");
         }
+
+        if (shareDAO.plusViewCnt(sqlSession, itemDTO.getItemNo()) < 1) {
+            throw new Exception("조회수 변경을 실패했습니다.");
+        }
+        ;
 
         return result;
     }
@@ -140,6 +98,7 @@ public class ShareServiceImpl implements ShareService {
      * 물건 상세 정보 조회 (물건 정보 & 사진목록)
      *
      * @param itemDTO the item dto
+     * @param c       the c
      * @return the item detail
      * @throws Exception the exception
      * @since 2024 -07-23
@@ -149,7 +108,11 @@ public class ShareServiceImpl implements ShareService {
     public ShaItemDTO getItemDetail(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         ShaItemDTO item = shareDAO.getItemDetail(sqlSession, itemDTO);
-        item.setDisplayDate(convertLocaldatetimeToTime(item.getModifiedAt()));
+        if(item == null){
+            throw new Exception("존재하지 않는 물건입니다.");
+        }
+        item.convertLocaldatetimeToTime();
+        item.maskNickname();
         List<AttachmentDTO> imgList = shareDAO.getItemImgs(sqlSession, item);
         item.setImgList(imgList);
 
@@ -177,7 +140,8 @@ public class ShareServiceImpl implements ShareService {
         ShaItemResultDTO result = new ShaItemResultDTO();
         List<ShaItemDTO> itemList = shareDAO.searchItems(sqlSession, criteriaDTO);
         for (ShaItemDTO i : itemList) {
-            i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
+            i.convertLocaldatetimeToTime();
+            i.maskNickname();
         }
         result.setItemList(itemList);
         result.setTotalCounts(getItemCounts(criteriaDTO));
@@ -310,7 +274,7 @@ public class ShareServiceImpl implements ShareService {
 //        imgDTO.setTypeCode(itemDTO.getItemGroup());
 
         // 삭제하려는 유저와 물건 소유자가 같은지 확인
-        if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
+        if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("삭제 권한이 없습니다.");
         }
 
@@ -338,6 +302,7 @@ public class ShareServiceImpl implements ShareService {
      *
      * @param itemDTO the item dto
      * @param c       the c
+     * @return
      * @throws Exception the exception
      * @since 2024 -07-31
      */
@@ -349,7 +314,7 @@ public class ShareServiceImpl implements ShareService {
         ShaItemDTO target = getItemDetail(itemDTO, c);
 
         // 변경하려는 유저와 물건 소유자가 같은지 확인
-        if (target.getOwnerNo() != c.getMemberDTO().getMemberNo()) {
+        if (target.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("변경 권한이 없습니다.");
         }
 
@@ -367,18 +332,21 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("물건 상태 변경을 실패했습니다.");
         }
         ;
+
     }
 
     /**
      * 찜 등록 및 삭제 (+물건의 찜횟수 변경)
      *
      * @param likeDTO the like dto
+     * @param c
+     * @return
      * @throws Exception the exception
      * @since 2024 -08-01
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateShaLike(ShaLikeDTO likeDTO) throws Exception {
+    public ShaItemDTO updateShaLike(ShaLikeDTO likeDTO, CustomUserDetails c) throws Exception {
 
         // 유저의 기존 찜 내역에 해당 물건이 없다면 추가
         if (shareDAO.getShaLike(sqlSession, likeDTO) == null) {
@@ -400,8 +368,21 @@ public class ShareServiceImpl implements ShareService {
                 throw new Exception("찜 횟수 변경을 실패했습니다.");
             }
         }
+
+        ShaItemDTO item = new ShaItemDTO();
+        item.setItemNo(likeDTO.getItemNo());
+        item = getItemDetail(item, c);
+
+        return item;
     }
 
+    /**
+     * 빌려드림 목록 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the lend list
+     * @throws Exception the exception
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
@@ -412,7 +393,7 @@ public class ShareServiceImpl implements ShareService {
         // 유저의 물건 리스트, 전체 개수 가져오기
         List<ShaItemDTO> lendList = shareDAO.getLendList(sqlSession, criteriaDTO);
         for (ShaItemDTO i : lendList) {
-            i.setDisplayDate(convertLocaldatetimeToTime(i.getModifiedAt()));
+            i.convertLocaldatetimeToTime();
         }
         result.setLendList(lendList);
         result.setTotalCounts(shareDAO.getLendCounts(sqlSession, criteriaDTO));
@@ -420,6 +401,13 @@ public class ShareServiceImpl implements ShareService {
         return result;
     }
 
+    /**
+     * 해당 물건의 신청자 목록 조회
+     *
+     * @param reqDTO the req dto
+     * @return the requesters
+     * @throws Exception the exception
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ShaReqDTO> getRequesters(ShaReqDTO reqDTO) throws Exception {
@@ -432,9 +420,20 @@ public class ShareServiceImpl implements ShareService {
     }
 
 
+    /**
+     * 대여인의 차용인 선택 및 대여 확정처리
+     *
+     * @param reqDTO the req dto
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void approveReq(ShaReqDTO reqDTO) throws Exception {
+
+        if (!reqDTO.getReturnDate().isAfter(LocalDate.now())) {
+            throw new Exception("반납예정일은 오늘 날짜부터 선택 가능합니다.");
+        }
 
         if (shareDAO.updateReqStat(sqlSession, reqDTO) < 1) {
             throw new Exception("대여 확정를 실패했습니다.");
@@ -458,12 +457,20 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    /**
+     * 대여인의 차용인 평가 및 반납완료 처리
+     *
+     * @param evalDTO the eval dto
+     * @param c       the c
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void evalWithReturnReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
 
         // 로그인한 유저가 물건의 주인과 동일인인지 확인
-        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()) {
+        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("권한이 없습니다.");
         }
 
@@ -527,6 +534,13 @@ public class ShareServiceImpl implements ShareService {
     }
 
 
+    /**
+     * 요청드림 조회
+     *
+     * @param criteriaDTO the criteria dto
+     * @return the borrow list
+     * @throws Exception the exception
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public ShaDreamResultDTO getBorrowList(ShaDreamCriteriaDTO criteriaDTO) throws Exception {
@@ -539,7 +553,7 @@ public class ShareServiceImpl implements ShareService {
 
         System.out.println("리스트" + borrowList);
         for (ShaReqDTO r : borrowList) {
-            r.getItemDTO().setDisplayDate(convertLocaldatetimeToTime(r.getItemDTO().getModifiedAt()));
+            r.getItemDTO().convertLocaldatetimeToTime();
         }
 
         result.setBorrowList(borrowList);
@@ -548,6 +562,14 @@ public class ShareServiceImpl implements ShareService {
         return result;
     }
 
+    /**
+     * 대여 및 나눔 신청 취소
+     *
+     * @param shaReqDTO the sha req dto
+     * @param c         the c
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void deleteReq(ShaReqDTO shaReqDTO, CustomUserDetails c) throws Exception {
@@ -556,7 +578,7 @@ public class ShareServiceImpl implements ShareService {
         ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, shaReqDTO.getReqNo());
 
         // 요청자와 로그인한 유저가 같은지 확인
-        if (target.getRqstNo() != c.getMemberDTO().getMemberNo()) {
+        if (target.getRqstNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("권한이 없습니다.");
         }
 
@@ -579,12 +601,20 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    /**
+     * 차용인의 대여인 평가 및 req 상태 변경
+     *
+     * @param evalDTO the eval dto
+     * @param c       the c
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
 
         // 로그인한 유저가 차용인과 동일인인지 확인
-        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo()) {
+        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("권한이 없습니다.");
         }
 
@@ -633,11 +663,19 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    /**
+     * 신고 등록
+     *
+     * @param reportDTO the report dto
+     * @param c         the c
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Override
     public void insertReport(ShaReportDTO reportDTO, CustomUserDetails c) throws Exception {
 
         // 신고자와 로그인한 유저가 다를 경우 예외 던지기
-        if (reportDTO.getReporterMember() != c.getMemberDTO().getMemberNo()) {
+        if (reportDTO.getReporterMember() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("권한이 없습니다.");
         }
 
@@ -647,6 +685,14 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    /**
+     * 추천 물건 조회
+     *
+     * @param c the c
+     * @return the list
+     * @throws Exception the exception
+     * @since 2024 -08-11
+     */
     @Override
     public List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception {
 
@@ -664,6 +710,10 @@ public class ShareServiceImpl implements ShareService {
 
         if (catsInMemReq.isEmpty()) {
             itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
+            for(ShaItemDTO i : itemList){
+                i.convertLocaldatetimeToTime();
+                i.maskNickname();
+            }
             System.out.println("===== 요청했던 물건이 없을때의 추천리스트!! =====");
             System.out.println(itemList);
         } else {
@@ -676,6 +726,10 @@ public class ShareServiceImpl implements ShareService {
                 List<ShaItemDTO> fillItems = shareDAO.getHotItems(sqlSession, criteriaDTO);
                 itemList.addAll(fillItems);
             }
+            for(ShaItemDTO i : itemList){
+                i.convertLocaldatetimeToTime();
+                i.maskNickname();
+            }
             System.out.println("===== 요청했던 물건이 있을때 추천리스트!! =====");
             System.out.println(itemList);
         }
@@ -684,8 +738,14 @@ public class ShareServiceImpl implements ShareService {
     }
 
 
-    // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 51 22 * * ?")
+    /**
+     * 나눔 물건 중 오늘자 마감 조회, 있으면 래플 실행
+     *
+     * @throws Exception the exception
+     * @since 2024 -08-08
+     */
+// 매일 오후 12시에 나눔 품목들의 마감일 확인
+    @Scheduled(cron = "0 27 14 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -701,6 +761,7 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    // 나눔 물건 당첨자 선정 및 req, item 상태 변경
     @Transactional(rollbackFor = Exception.class)
     private void letsRaffle(List<ShaItemDTO> itemList) throws Exception {
 
@@ -743,10 +804,27 @@ public class ShareServiceImpl implements ShareService {
                     throw new Exception("물건 상태 변경을 실패했습니다.");
                 }
 
+                // 물건 제공자 점수 및 레벨업
+                ShaEvalDTO giverEval = new ShaEvalDTO();
+                giverEval.setEveNo(i.getOwnerNo());
+                giverEval.setRating(5);
+                if (shareDAO.updateScore(sqlSession, giverEval) < 1) {
+                    throw new Exception("나눔 제공인 점수 업데이트를 실패했습니다.");
+                }
+                ;
+                System.out.println("=== 최종 점수 === ");
+                System.out.println(giverEval);
+                if (shareDAO.updateLevel(sqlSession, giverEval) < 1) {
+                    throw new Exception("나눔 제공인 레벨 업데이트를 실패했습니다.");
+                }
+                ;
             }
         }
 
     }
+
+
+
 
 
 }

@@ -3,8 +3,6 @@ $(function(){
     urlSearch = url.searchParams;
     path = url.pathname;
 
-    spinner = $('#spinner');
-
     if(path.includes("/share/rent")){
         $('#giveBtn').addClass("gray");
         $('#rentBtn').removeClass("gray");
@@ -27,7 +25,6 @@ $(function(){
 
     const bodyId = $("body").attr("id");
     if(bodyId == "giveMain" || bodyId == "rentMain"){
-        getCatList();
         getRecItems();
 
         window.addEventListener("popstate", function(event) {
@@ -37,6 +34,12 @@ $(function(){
             }
         });
 
+        let savedState = history.state;
+        if (savedState) {
+         restoreFormState(savedState);
+         updateItemList(savedState);
+         console.log(savedState);
+        }
 
     }
 
@@ -70,12 +73,7 @@ $(function(){
         if (savedState) {
              restoreDreamFormState(savedState);
              updateLendList(savedState);
-        } else {
-            getLendList(1);
         }
-
-
-
     }
 
     if(bodyId == "dreamBorrow"){
@@ -91,8 +89,6 @@ $(function(){
         if (savedState) {
              restoreDreamFormState(savedState);
              updateBorrowList(savedState);
-        } else {
-            getBorrowList(1);
         }
     }
 
@@ -100,24 +96,25 @@ $(function(){
 
 });
 
-function showAlerts(){
-    const alert = $('#alert').val();
-    const alertType = $('#alertType').val();
+function showAlerts(alert, alertType){
+    if(alert == null || alert == ''){
+        alert = $('#alert').val();
+    }
+    if(alertType == null || alert == ''){
+        alertType = $('#alertType').val();
+    }
     console.log(alert);
     console.log(alertType);
     if(alert){
         switch(alertType) {
             case 'success':
-                showSuccessAlert(alert);
-                break;
+                return showSuccessAlert(alert);
             case 'error':
-                showErrorAlert(alert);
-                break;
+                return showErrorAlert(alert);
             case 'confirm':
-                showConfirmAlert(alert);
-                break;
+                return showConfirmAlert(alert);
             default:
-                showAlert(alert);
+                return showAlert(alert);
         }
     }
 }
@@ -158,11 +155,9 @@ function showConfirmAlert(alert) {
 function showAlert(msg) {
     Swal.fire({
         title: msg,
-        showCancelButton: true,
         confirmButtonColor: "#3B5C9A",
         confirmButtonText: "확인",
-        cancelButtonText: "취소",
-        icon: "success"
+        icon: "warning"
     });
 }
 
@@ -195,7 +190,6 @@ function ajax_get(reqUrl, data){
         url: reqUrl,
         type: "get",
         data: data,
-        beforeSend: showSpinner(),
         error: function(data){
             console.log(data);
         }
@@ -204,7 +198,6 @@ function ajax_get(reqUrl, data){
         console.log(data);
     })
     .always(function(){
-        hideSpinner();
     });
 }
 
@@ -218,7 +211,6 @@ function ajax_post(reqUrl, data){
         data: data,
         beforeSend: function(xhr){
             xhr.setRequestHeader(header, token);
-            showSpinner();
         },
         error: function(data){
             console.log(data);
@@ -228,30 +220,6 @@ function ajax_post(reqUrl, data){
         console.log(data);
     })
     .always(function(){
-        hideSpinner();
-    });
-}
-
-function hideSpinner(){
-    spinner.hide();
-}
-
-function showSpinner(){
-    spinner.show();
-}
-
-function getCatList() {
-    let reqUrl = "/share/getCatList";
-    ajax_get(reqUrl).done(function(fragment){
-        $('#catSelect').replaceWith(fragment);
-        const savedState = history.state;
-        if (savedState) {
-         restoreFormState(savedState);
-         updateItemList(savedState);
-         console.log(savedState);
-        } else {
-         search(1);
-        }
     });
 }
 
@@ -335,12 +303,12 @@ function isValid() {
     let title = $('#title').val();
     console.log(selectedDate);
     if(title.trim() == ""){
-        alert("제목을 다시 입력해주세요.");
+        showAlert("제목을 다시 입력해주세요.");
         return false;
     }
     if(isGive == 'give'){
         if(selectedDate == null || selectedDate == ''){
-            alert("마감일을 선택해주세요.");
+            showAlert("마감일을 선택해주세요.");
             return false;
         }
     }
@@ -375,6 +343,7 @@ function getSearchParams(page){
 
 function updateItemList(params){
     let reqUrl = "/share/search";
+
     ajax_get(reqUrl, params).done(function(fragment){
         $('#itemList').replaceWith(fragment);
 
@@ -469,19 +438,21 @@ function updateItemDetail(){
     let itemGroup = url.pathname.includes("rent") ? "rent" : "give";
     let itemNo = urlSearch.get("itemNo");
     let reqUrl = `/share/${itemGroup}/updateDetail?itemNo=${itemNo}`;
-    ajax_get(reqUrl).done(function(data){
+    ajax_get(reqUrl).done(async function(data){
         $('#detail').replaceWith(data);
         if($('#isDeleted').val() != ''){
-            alert("삭제된 물건입니다.");
-            history.back();
+            if(await showErrorAlert("삭제된 물건입니다.")){
+                history.back();
+            };
         };
         datePickerActive();
+        console.log("업데이트 성공");
     });
 }
 
 function deleteItem(item){
     if(item.statusCode == 'RNT'){
-        alert("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
+        showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
         $('#deleteModal').modal("hide", true);
         return;
     }
@@ -513,34 +484,44 @@ function shaRequest(item) {
 
 function insertReq(data){
     let reqUrl = "/share/request";
-    ajax_post(reqUrl, data).done(function(msg){
-        alert(msg);
-        updateItemDetail();
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            updateItemDetail();
+        };
     })
-
 
 }
 
 function updateShaLike(itemNo){
     let reqUrl = `/share/like?itemNo=${itemNo}`;
     ajax_get(reqUrl).done(function(data){
-        updateItemDetail();
+        console.log(data);
+        let item = data.item;
+        $('#likeCnt').text(item.likeCnt);
+        if(item.liked){
+            $('.likeImg').attr("src", "/img/like.png");
+        } else{
+            $('.likeImg').attr("src", "/img/notlike.png");
+        }
     })
 }
 
 function updateItStat(item){
 
     if(item.statusCode == "RNT"){
-        showConfirmAlert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
+        showAlert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         return;
     }
     let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
 
-    ajax_get(reqUrl).done(function(){
+    ajax_get(reqUrl).done(function(data){
         if(path.includes("/share/dream")){
             getLendItem(item.itemNo);
         } else{
-        updateItemDetail();}
+            updateItemDetail();
+        }
     })
 
 }
@@ -590,13 +571,17 @@ function checkReturnDate(requesters){
     $('#selectRqst').modal('toggle');
     $('#approveReq').modal('toggle');
 
-
     $('#approveBtn').on("click", function(){
+        let now = new Date();
         seletedReq.returnDate = $('#datePicker').val();
         if(seletedReq.returnDate == ''){
             showConfirmAlert("반납예정일을 선택해주세요.");
             return;
         };
+        if(new Date(seletedReq.returnDate) < now){
+            showConfirmAlert("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
+            return;
+        }
         approveReq(seletedReq);
     })
 
@@ -620,9 +605,12 @@ function approveReq(req){
        returnDate: req.returnDate
     }
 
-    ajax_post(reqUrl, data).done(async function(){
-        await showSuccessAlert("대여가 확정되었습니다.");
-        getLendItem(req.reqItem);
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            getLendItem(req.reqItem);
+        };
     })
 }
 
@@ -673,10 +661,10 @@ function postScore(req){
     }
 
     ajax_post(reqUrl, data).done(async function(){
-        await showSuccessAlert("평가가 완료되었습니다.");
-        $('#evalModal').modal('toggle');
-        getLendItem(req.reqItem);
-
+        if(await showSuccessAlert("평가가 완료되었습니다.")){
+            $('#evalModal').modal('toggle');
+            getLendItem(req.reqItem);
+        };
     })
 }
 
@@ -814,7 +802,6 @@ function toggleReportModalBorrow(req){
 function getRecItems(){
 
     let reqUrl = "/share/recommendItem"
-
     ajax_get(reqUrl).done(function(result){
         console.log("완료");
         $('#recItem').replaceWith(result);

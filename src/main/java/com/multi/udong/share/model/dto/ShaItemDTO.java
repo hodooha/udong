@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
@@ -45,6 +46,63 @@ public class ShaItemDTO {
     private boolean liked;
     private int rqstNo;
     private String rqstNickname;
+    private String mRqstNickname;
 
+    public void maskNickname() {
+
+        if (this.rqstNickname == null || this.rqstNickname.isEmpty() || this.rqstNickname.trim().isEmpty()) {
+            this.mRqstNickname = this.rqstNickname;
+        } else {
+            int len = this.rqstNickname.length();
+            if (len == 2) {
+                this.mRqstNickname = this.rqstNickname.charAt(0) + "*";
+            } else if (len >= 3) {
+                this.mRqstNickname = this.rqstNickname.charAt(0) + "*".repeat(len - 2) + this.rqstNickname.substring(len - 1);
+            }
+        }
+    }
+
+    public static final int SEC = 60;
+    public static final int MIN = 60;
+    public static final int HOUR = 24;
+    public static final int DAY = 30;
+    public static final int MONTH = 12;
+
+    public void convertLocaldatetimeToTime() {
+
+        LocalDateTime now = LocalDateTime.now();
+
+        long diffTime = this.modifiedAt.until(now, ChronoUnit.SECONDS); // now보다 이후면 +, 전이면 -
+
+        String displayDate = null;
+        if (diffTime < SEC) {
+            this.displayDate = diffTime + "초전";
+            return;
+        }
+        diffTime = diffTime / SEC;
+        if (diffTime < MIN) {
+            this.displayDate = diffTime + "분 전";
+            return;
+        }
+        diffTime = diffTime / MIN;
+        if (diffTime < HOUR) {
+            this.displayDate = diffTime + "시간 전";
+            return;
+        }
+        diffTime = diffTime / HOUR;
+        if (diffTime < DAY) {
+            this.displayDate = diffTime + "일 전";
+            return;
+        }
+        diffTime = diffTime / DAY;
+        if (diffTime < MONTH) {
+            this.displayDate = diffTime + "개월 전";
+            return;
+        }
+
+        diffTime = diffTime / MONTH;
+        this.displayDate = diffTime + "년 전";
+
+    }
 }
 

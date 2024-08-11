@@ -6,12 +6,15 @@ import com.multi.udong.member.service.MemberService;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Sha dream controller.
@@ -37,19 +40,43 @@ public class ShaDreamController {
      */
     @GetMapping("/lend")
     public String dreamLendMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+        // 결과값 초기 설정
         List<ShaCatDTO> catList = null;
+        ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
+
         try {
             // 로그인 확인
             if (c == null) {
                 throw new Exception("로그인을 먼저 해주세요.");
             }
+
+            // 검색 조건 설정
+            ShaDreamCriteriaDTO criteriaDTO = new ShaDreamCriteriaDTO();
+            if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
+                criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+            }
+            criteriaDTO.setPageRange(1);
+
+            // 빌려(나눠)드림 목록 조회
+            ShaDreamResultDTO resultDTO = shareService.getLendList(criteriaDTO);
+
+            // 클라이언트에 보여지는 페이지네이션 정보 설정
+            pageInfo.setCurrentPage(1);
+            pageInfo.setPageInfo(resultDTO.getTotalCounts());
+
+            // 결과값에 물건 목록과 페이지네이션 정보 저장
+            model.addAttribute("lendList", resultDTO.getLendList());
+            model.addAttribute("pageInfo", pageInfo);
+
+            // 카테고리 목록 조회
             catList = shareService.getShaCat();
+            model.addAttribute("catList", catList);
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
             return "common/errorPage";
         }
-        model.addAttribute("catList", catList);
+
         return "share/dreamLend";
     }
 
@@ -63,19 +90,45 @@ public class ShaDreamController {
      */
     @GetMapping("/borrow")
     public String dreamBorrowMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+
+        // 결과값 초기 설정
         List<ShaCatDTO> catList = null;
+        ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
+
         try {
             // 로그인 확인
             if (c == null) {
                 throw new Exception("로그인을 먼저 해주세요.");
             }
+
+            // 검색 조건 설정
+            ShaDreamCriteriaDTO criteriaDTO = new ShaDreamCriteriaDTO();
+            if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
+                criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+            }
+            criteriaDTO.setPageRange(1);
+
+            // 빌려(나눠)드림 목록 조회
+            ShaDreamResultDTO resultDTO = shareService.getBorrowList(criteriaDTO);
+
+            // 클라이언트에 보여지는 페이지네이션 정보 설정
+            pageInfo.setCurrentPage(1);
+            pageInfo.setPageInfo(resultDTO.getTotalCounts());
+
+            // 결과값에 물건 목록과 페이지네이션 정보 저장
+            model.addAttribute("borrowList", resultDTO.getBorrowList());
+            model.addAttribute("pageInfo", pageInfo);
+
+            // 카테고리 목록 조회
             catList = shareService.getShaCat();
+            model.addAttribute("catList", catList);
+
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
             return "common/errorPage";
         }
-        model.addAttribute("catList", catList);
+
         return "share/dreamBorrow";
     }
 
@@ -93,7 +146,10 @@ public class ShaDreamController {
         // 결과값 초기 설정
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
 
-        criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+        // 검색 조건 설정
+        if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
+            criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+        }
         criteriaDTO.setPageRange(criteriaDTO.getPage());
 
         try {
@@ -145,7 +201,10 @@ public class ShaDreamController {
         // 결과값 초기 설정
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
 
-        criteriaDTO.setRqstNo(c.getMemberDTO().getMemberNo());
+        // 검색 조건 설정
+        if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
+            criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+        }
         criteriaDTO.setPageRange(criteriaDTO.getPage());
 
         try {
@@ -204,18 +263,21 @@ public class ShaDreamController {
      * @since 2024 -08-09
      */
     @PostMapping("/approveReq")
-    public String approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    @ResponseBody
+    public ResponseEntity<?> approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
-        System.out.println("넘어온 확정 req" + reqDTO);
+        Map<String, Object> result = new HashMap<>();
         try {
             shareService.approveReq(reqDTO);
+            result.put("msg", "대여가 확정되었습니다.");
+            result.put("type", "success");
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
+            result.put("msg", e.getMessage());
+            result.put("type", "error");
         }
 
-
-        return "share/dreamLend";
+        return ResponseEntity.ok().body(result);
     }
 
     /**
