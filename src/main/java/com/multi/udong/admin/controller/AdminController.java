@@ -246,22 +246,9 @@ public class AdminController {
     @ResponseBody
     public ResponseEntity<?> insertNotice(@ModelAttribute NoticeDTO noticeDTO,
                                           @RequestParam("imageFile") MultipartFile imageFile,
-                                          @RequestParam(value = "popup", required = false) String popup,
                                           @AuthenticationPrincipal CustomUserDetails member) {
         try {
-            // 현재 시간 가져오기
-            LocalDateTime now = LocalDateTime.now();
-
-            // 날짜 유효성 검사
-            if (noticeDTO.getStartedAt().isBefore(now)) {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "시작일은 현재 시간 이후여야 합니다."));
-            }
-            if (noticeDTO.getEndedAt().isBefore(noticeDTO.getStartedAt())) {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "종료일은 시작일 이후여야 합니다."));
-            }
-
             noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
-            noticeDTO.setPopup(popup != null && popup.equals("on"));
 
             AttachmentDTO attachmentDTO = null;
 
@@ -288,29 +275,29 @@ public class AdminController {
             }
 
             int noticeNo = noticeService.saveNoticeWithAttachment(noticeDTO, attachmentDTO);
+            System.out.println("Saved notice no: " + noticeNo);
+            System.out.println("Saved image path: " + noticeDTO.getImagePath());
 
-            if (noticeNo > 0) {
-                System.out.println("Saved notice no: " + noticeNo);
-                System.out.println("Saved image path: " + noticeDTO.getImagePath());
-                return ResponseEntity.ok().body(Map.of("success", true, "message", "공지사항이 성공적으로 등록되었습니다.", "noticeNo", noticeNo));
-            } else {
-                throw new RuntimeException("공지사항 등록에 실패했습니다.");
-            }
-
+            return ResponseEntity.ok().body(Map.of(
+                    "success", true,
+                    "message", "공지사항이 성공적으로 등록되었습니다.",
+                    "noticeNo", noticeNo
+            ));
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", "파일 업로드 중 오류가 발생했습니다."));
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", "공지사항 등록에 실패했습니다: " + e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "파일 업로드 중 오류가 발생했습니다."
+            ));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", "알 수 없는 오류가 발생했습니다."));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "알 수 없는 오류가 발생했습니다."
+            ));
         }
     }
+
 
     @GetMapping("/noticeInsertForm")
     public String showInsertForm(Model model) {
@@ -345,14 +332,36 @@ public class AdminController {
     public ResponseEntity<?> updateNotice(@ModelAttribute NoticeDTO notice,
                                           @RequestParam(value = "file", required = false) MultipartFile file) {
         try {
+            // 현재 시간 가져오기
+            LocalDateTime now = LocalDateTime.now();
+
+            // 날짜 유효성 검사
+            if (notice.getStartedAt().isBefore(now)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "시작일은 현재 시간 이후여야 합니다."
+                ));
+            }
+            if (notice.getEndedAt().isBefore(notice.getStartedAt())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "종료일은 시작일 이후여야 합니다."
+                ));
+            }
+
             noticeService.updateNotice(notice, file);
-            // 수정 후 리다이렉트 URL을 포함한 JSON 반환
+
             return ResponseEntity.ok().body(Map.of(
+                    "success", true,
                     "message", "공지사항이 성공적으로 수정되었습니다.",
-                    "redirectUrl", "/admin/notice/detail/" + notice.getNoticeNo()
+                    "noticeNo", notice.getNoticeNo()
             ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("공지사항 수정 중 오류가 발생했습니다: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "공지사항 수정 중 오류가 발생했습니다: " + e.getMessage()
+            ));
         }
     }
 
