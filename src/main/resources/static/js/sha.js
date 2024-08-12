@@ -399,6 +399,8 @@ function updateLendList(params){
     })
 }
 
+
+
 function updateBorrowList(params){
 
     let reqUrl = "/share/dream/borrowList";
@@ -417,6 +419,34 @@ function createUrlWithParams(params) {
     url.searchParams.set('page', params.page);
     return url.toString();
 }
+
+function getLendItem(itemNo){
+    let reqUrl = "/share/dream/lendItem"
+    let data = {
+        itemNo: itemNo
+    };
+
+    ajax_get(reqUrl, data).done(function(result){
+        let itemRow = $(`div[data-dream-id='dream${itemNo}']`);
+        console.log(itemRow);
+        console.log(result);
+        itemRow.replaceWith(result);
+    })
+}
+
+//function getBorrowItem(reqNo){
+//    let reqUrl = "/share/dream/borrowItem"
+//    let data = {
+//        reqNo: reqNo
+//    };
+//
+//    ajax_get(reqUrl, data).done(function(result){
+//        let itemRow = $(`div[data-dream-id='dream${reqNo}']`);
+//        console.log(itemRow);
+//        console.log(result);
+//        itemRow.replaceWith(result);
+//    })
+//}
 
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
@@ -526,19 +556,6 @@ function updateItStat(item){
 
 }
 
-function getLendItem(itemNo){
-    let reqUrl = "/share/dream/lendItem"
-    let data = {
-        itemNo: itemNo
-    };
-
-    ajax_get(reqUrl, data).done(function(result){
-        let itemRow = $(`div[data-dream-id='dream${itemNo}']`);
-        console.log(itemRow);
-        console.log(result);
-        itemRow.replaceWith(result);
-    })
-}
 
 function selectReq(itemNo){
     console.log(itemNo);
@@ -660,8 +677,10 @@ function postScore(req){
         reqItem: req.reqItem
     }
 
-    ajax_post(reqUrl, data).done(async function(){
-        if(await showSuccessAlert("평가가 완료되었습니다.")){
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
             $('#evalModal').modal('toggle');
             getLendItem(req.reqItem);
         };
@@ -705,10 +724,13 @@ function cancelReq(req){
         reqNo: req.reqNo
     }
 
-    ajax_get(reqUrl, data).done(function(){
+    ajax_get(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
         $('#cancelModal').modal("toggle", true);
-        location.reload();
-
+        if(await showAlerts(msg, type)){
+            location.reload();
+        }
     })
 
 }
@@ -742,11 +764,14 @@ function evalWithEndReq(req){
         reqItem: req.reqItem
     }
 
-    ajax_post(reqUrl, data).done(async function(){
-        await showSuccessAlert("평가가 완료되었습니다.");
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
         $('#evalModal').modal('toggle', true);
-        location.reload();
-
+        if(await showAlerts(msg, type)){
+//            getBorrowItem(req.reqNo); -- 추후 수정 예정
+            location.reload();
+        }
     })
 }
 
@@ -772,12 +797,13 @@ function postReport(){
     let reqUrl = "/share/dream/insertReport";
     let data = $('#reportForm').serialize();
 
-    ajax_post(reqUrl, data).done(function(msg){
-        console.log("신고 완료");
-        $('#reportModal').modal("toggle", true);
-        showSuccessAlert(msg);
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            $('#reportModal').modal("toggle", true);
+        }
     })
-
 }
 
 function toggleReportModalBorrow(req){
@@ -807,6 +833,7 @@ function getRecItems(){
         $('#recItem').replaceWith(result);
     })
 }
+
 
 
 

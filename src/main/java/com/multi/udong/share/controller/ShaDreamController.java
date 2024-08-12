@@ -104,7 +104,7 @@ public class ShaDreamController {
             // 검색 조건 설정
             ShaDreamCriteriaDTO criteriaDTO = new ShaDreamCriteriaDTO();
             if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
-                criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+                criteriaDTO.setRqstNo(c.getMemberDTO().getMemberNo());
             }
             criteriaDTO.setPageRange(1);
 
@@ -203,7 +203,7 @@ public class ShaDreamController {
 
         // 검색 조건 설정
         if(!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")){
-            criteriaDTO.setOwnerNo(c.getMemberDTO().getMemberNo());
+            criteriaDTO.setRqstNo(c.getMemberDTO().getMemberNo());
         }
         criteriaDTO.setPageRange(criteriaDTO.getPage());
 
@@ -227,6 +227,19 @@ public class ShaDreamController {
 
 
         return "share/dreamBorrow :: #reqDreams";
+    }
+
+    @GetMapping("/borrowItem")
+    public String getBorrowItem(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
+
+        try {
+            ShaReqDTO req = shareService.findRequest(reqDTO);
+            model.addAttribute("req", req);
+        } catch (Exception e) {
+            model.addAttribute("msg", e.getMessage());
+        }
+
+        return "share/dreamBorrow :: #dream";
     }
 
     /**
@@ -258,13 +271,12 @@ public class ShaDreamController {
      *
      * @param reqDTO the req dto
      * @param c      the c
-     * @param model  the model
      * @return the string
      * @since 2024 -08-09
      */
     @PostMapping("/approveReq")
     @ResponseBody
-    public ResponseEntity<?> approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    public ResponseEntity<?> approveReq(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c) {
 
         Map<String, Object> result = new HashMap<>();
         try {
@@ -307,25 +319,30 @@ public class ShaDreamController {
      *
      * @param evalDTO the eval dto
      * @param c       the c
-     * @param model   the model
      * @return the string
      * @since 2024 -08-06
      */
     @PostMapping("/evalWithReturnReq")
-    public String evalWithReturnReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
-        System.out.println(evalDTO);
+    @ResponseBody
+    public ResponseEntity<?> evalWithReturnReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c) {
+
+        Map<String, Object> result = new HashMap<>();
         try {
             shareService.evalWithReturnReq(evalDTO, c);
 
             // 대여인 점수 & 레벨 변경 후 사용자 세션 최신화
             memberService.updateMemberSession();
 
+            result.put("type", "success");
+            result.put("msg", "평가 및 반납이 완료되었습니다.");
+
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
+            result.put("type", "error");
+            result.put("msg", e.getMessage());
         }
 
-        return "share/dreamLend";
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -333,22 +350,26 @@ public class ShaDreamController {
      *
      * @param shaReqDTO the sha req dto
      * @param c         the c
-     * @param model     the model
      * @return the string
      * @since 2024 -08-06
      */
     @GetMapping("/deleteReq")
-    public String deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    @ResponseBody
+    public ResponseEntity<?> deleteReq(ShaReqDTO shaReqDTO, @AuthenticationPrincipal CustomUserDetails c) {
 
-        System.out.println("삭제 대상 req" + shaReqDTO);
+        Map<String, Object> result = new HashMap<>();
+
         try {
             shareService.deleteReq(shaReqDTO, c);
+            result.put("type","success");
+            result.put("msg", "신청 취소가 완료되었습니다.");
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
+            result.put("type","error");
+            result.put("msg", e.getMessage());
         }
 
-        return "share/dreamBorrow";
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -361,21 +382,27 @@ public class ShaDreamController {
      * @since 2024 -08-06
      */
     @PostMapping("/evalWithEndReq")
-    public String evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    @ResponseBody
+    public ResponseEntity<?> evalWithEndReq(ShaEvalDTO evalDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
 
-        System.out.println(evalDTO);
+        Map<String, Object> result = new HashMap<>();
+
         try {
             shareService.evalWithEndReq(evalDTO, c);
 
             // 차용인 점수 & 레벨 변경 후 사용자 세션 최신화
             memberService.updateMemberSession();
 
+            result.put("type", "success");
+            result.put("msg", "평가 및 거래가 완료되었습니다.");
+
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
+            result.put("type", "error");
+            result.put("msg", e.getMessage());
         }
 
-        return "share/dreamBorrow";
+        return ResponseEntity.ok().body(result);
 
 
     }
@@ -391,8 +418,9 @@ public class ShaDreamController {
      */
     @PostMapping("/insertReport")
     @ResponseBody
-    public String insertReport(@RequestParam("itemNo") int itemNo, ShaReportDTO reportDTO, @AuthenticationPrincipal CustomUserDetails c) {
+    public ResponseEntity<?> insertReport(@RequestParam("itemNo") int itemNo, ShaReportDTO reportDTO, @AuthenticationPrincipal CustomUserDetails c) {
 
+        Map<String, Object> result = new HashMap<>();
         reportDTO.reasonConcat();
         String itemGroup = reportDTO.getTypeCode();
         reportDTO.setUrl("/share/" + itemGroup + "/detail?itemNo=" + itemNo);
@@ -400,17 +428,17 @@ public class ShaDreamController {
 
         System.out.println(reportDTO);
 
-        String msg = "신고가 접수되었습니다.";
-
         try {
             shareService.insertReport(reportDTO, c);
-
+            result.put("type", "success");
+            result.put("msg", "신고가 접수되었습니다.");
         } catch (Exception e) {
             e.printStackTrace();
-            msg = e.getMessage();
+            result.put("type", "error");
+            result.put("msg", e.getMessage());
         }
 
-        return msg;
+        return ResponseEntity.ok().body(result);
     }
 
 

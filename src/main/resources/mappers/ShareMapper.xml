@@ -225,13 +225,21 @@
         left join
         member d
         on c.owner_no = d.member_no
-        where req_item = #{reqItem}
+        where 1=1
+        <if test="reqNo != 0 and reqNo != ''">
+            and req_no = #{reqNo}
+        </if>
+        <if test="reqItem != 0 and reqItem != ''">
+            and req_item = #{reqItem}
+        </if>
         <if test="rqstNo != 0 and rqstNo != ''">
             and a.rqst_no = #{rqstNo}
         </if>
         <if test="statusCode != null and statusCode != ''">
             and a.status_code = #{statusCode}
         </if>
+
+
     </select>
 
     <update id="updateItem">
