@@ -127,7 +127,7 @@ public class LoginController {
         memberDTO.setNickname(randomNickname);
 
         // 사업자등록증 파일이 있다면
-        if (!file.isEmpty()) {
+        if (file != null) {
             
             // 파일 저장 메소드
             AttachmentDTO attachmentDTO = memberController.settingFile(file);
@@ -194,14 +194,14 @@ public class LoginController {
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
-                    model.addAttribute("msg", "유효하지 않은 사업자등록증입니다");
+                    model.addAttribute("alert", "유효하지 않은 사업자등록증입니다");
                     model.addAttribute("alertType", "error");
                     return "member/signup";
                 }
                 
             } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
-                model.addAttribute("msg", "유효하지 않은 이미지입니다");
+                model.addAttribute("alert", "유효하지 않은 이미지입니다");
                 model.addAttribute("alertType", "error");
                 return "member/signup";
             }
@@ -210,7 +210,7 @@ public class LoginController {
         try {
             memberService.signup(memberDTO);
             authenticateUserAndSetSession(memberDTO, request);
-            model.addAttribute("msg","회원가입이 완료되었습니다.");
+            model.addAttribute("alert","회원가입이 완료되었습니다.");
             model.addAttribute("alertType", "success");
             return "/index";
             

@@ -20,10 +20,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             transition: all 0.3s;
             z-index: 1000;
-        }
-        .chatbot:hover{
-            background: #FFD594;
-            transform: translateY(-5px);
+
+            &:hover {
+                background: #FFD594;
+                transform: translateY(-5px);
+            }
         }
         .chatbot img {
             width: 90%;
@@ -48,11 +49,12 @@
             visibility: hidden;
             transform: translateY(20px);
             transition: all 0.3s;
-        }
-        .chatbot-window.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+
+            &.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
         }
         .chatbot-header {
             padding: 10px;
@@ -83,17 +85,19 @@
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.2s ease;
-        }
-        .chatbot-message.user {
-            background-color: #4A90E2;
-            color: white;
-            align-self: flex-end;
-        }
-        .chatbot-message.url {
-            color: blue;
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 12px;
+
+            &.user {
+                background-color: #4A90E2;
+                color: white;
+                align-self: flex-end;
+            }
+
+            &.url {
+                color: blue;
+                text-decoration: underline;
+                cursor: pointer;
+                font-size: 12px;
+            }
         }
         .chatbot-buttons {
             display: flex;

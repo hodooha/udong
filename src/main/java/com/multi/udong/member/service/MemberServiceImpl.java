@@ -285,6 +285,8 @@ public class MemberServiceImpl implements MemberService {
         }
 
         if (memberDTO.getMemberPw() != null && !memberDTO.getMemberPw().isEmpty()) {
+            memberDTO.setMemberPw(bCryptPasswordEncoder.encode(memberDTO.getMemberPw()));
+            System.out.println("memberDTO service : " + memberDTO);
             memberMapper.updateMemberPw(memberDTO);
         }
     }

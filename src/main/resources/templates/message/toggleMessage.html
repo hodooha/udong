@@ -37,11 +37,12 @@
             visibility: hidden;
             transform: translateY(-20px);
             transition: all 0.3s;
-        }
-        .message-window.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+
+            &.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
         }
         .message-body {
             padding: 10px;

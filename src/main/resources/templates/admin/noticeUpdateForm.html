@@ -132,59 +132,99 @@
 </head>
 <body>
 <div class="container">
-    <div class="main-content">
-        <h5>&#128226; 공지사항</h5>
-        <form id="noticeForm" th:action="@{/admin/notice/insert}" method="post" enctype="multipart/form-data">
-            <div class="form-group-inline">
-                <label for="title">제목</label>
-                <input type="text" id="title" name="title" required>
-            </div>
-            <div class="form-group-inline">
-                <label for="startedAt">게시기간</label>
-                <input type="datetime-local" id="startedAt" name="startedAt" required>
-                <input type="datetime-local" id="endedAt" name="endedAt" required>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="popup" name="popup">
-                    <label for="popup">메인팝업여부</label>
+    <div id="main-content">
+        <h5>&#128226; 공지사항 수정</h5>
+        <div th:if="${notice != null}">
+            <form id="noticeForm" th:action="@{/admin/notice/update}" method="post" enctype="multipart/form-data" th:object="${notice}">
+                <input type="hidden" th:field="*{noticeNo}" th:value="${notice.noticeNo}"/>
+                <div class="form-group-inline">
+                    <label for="title">제목</label>
+                    <input type="text" id="title" th:field="*{title}" th:value="${notice.title}" required>
                 </div>
-            </div>
-            <div class="form-content-wrapper">
-                <div>
-                    <label for="file">이미지 첨부</label>
-                    <input type="file" id="file" name="imageFile" accept="image/*">
-                    <div id="image-preview-container">
-                        <img th:if="${notice.imagePath != null}"
-                             th:src="@{${notice.imagePath}}"
-                             alt="Current Image">
+                <div class="form-group-inline">
+                    <label for="startedAt">게시기간</label>
+                    <input type="datetime-local" id="startedAt" th:field="*{startedAt}" th:value="${notice.startedAt}" required>
+                    <input type="datetime-local" id="endedAt" th:field="*{endedAt}" th:value="${notice.endedAt}" required>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="popup" th:field="*{popup}" th:checked="${notice.popup}">
+                        <label for="popup">메인팝업여부</label>
                     </div>
                 </div>
-                <div class="form-group-textarea">
-                    <label for="content">내용</label>
-                    <textarea id="content" name="content" required></textarea>
+                <div class="form-content-wrapper">
+                    <div class="form-group-file">
+                        <label for="file">이미지첨부</label>
+                        <input type="file" id="file" name="file" accept="image/*">
+                        <div id="image-preview-container">
+                            <img th:if="${notice.imagePath != null}" th:src="@{${notice.imagePath}}" alt="Current Image">
+                        </div>
+                    </div>
+                    <div class="form-group-textarea">
+                        <label for="content">내용</label>
+                        <textarea id="content" th:field="*{content}" th:text="${notice.content}" required></textarea>
+                    </div>
                 </div>
-            </div>
-            <div class="btn-submit-container">
-                <button type="submit" class="btn-submit">작성완료</button>
-            </div>
-        </form>
+                <div class="btn-submit-container">
+                    <button type="submit" class="btn-submit">수정완료</button>
+                </div>
+            </form>
+        </div>
+        <div th:unless="${notice != null}">
+            <p>공지사항을 찾을 수 없습니다.</p>
+        </div>
     </div>
 </div>
 
 <script th:inline="javascript">
     function showPreview(event) {
-          var file = event.target.files[0];
-          var reader = new FileReader();
-          reader.onload = function(e) {
-              var img = document.createElement('img');
-              img.src = e.target.result;
-              var container = document.getElementById('image-preview-container');
-              container.innerHTML = '';
-              container.appendChild(img);
-          };
-          reader.readAsDataURL(file);
-      }
+        var files = event.target.files;
+        var container = document.getElementById('image-preview-container');
+        container.innerHTML = ""; // 기존 이미지 초기화
+        for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(files[i]);
+        }
+    }
 
-      document.getElementById('file').addEventListener('change', showPreview);
+    document.getElementById('file').addEventListener('change', showPreview);
+
+    // 날짜 형식을 datetime-local 입력에 맞게 변환
+    document.addEventListener('DOMContentLoaded', function() {
+        var startedAt = document.getElementById('startedAt');
+        var endedAt = document.getElementById('endedAt');
+
+        if(startedAt && startedAt.value) {
+            startedAt.value = new Date(startedAt.value).toISOString().slice(0, 16);
+        }
+        if(endedAt && endedAt.value) {
+            endedAt.value = new Date(endedAt.value).toISOString().slice(0, 16);
+        }
+    });
+
+    $('#noticeForm').submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+
+    $.ajax({
+        url: '/admin/notice/update',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            alert("수정이 완료되었습니다.");
+            loadNoticeDetail(formData.get('noticeNo'));  // 수정된 공지사항의 세부사항을 로드
+        },
+        error: function(xhr) {
+            alert(xhr.responseText);
+        }
+    });
+});
+
 </script>
 </body>
 </html>
