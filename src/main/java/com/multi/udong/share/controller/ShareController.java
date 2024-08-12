@@ -258,8 +258,10 @@ public class ShareController {
 
 
         } catch (Exception e) {
-            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
+            model.addAttribute("type", "error");
+            model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
         return "share/itemDetail :: #detail";
@@ -390,8 +392,10 @@ public class ShareController {
 
 
         } catch (Exception e) {
-            model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
+            model.addAttribute("type", "error");
+            model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
 
         }
         return "share/rentMain :: #itemList";
@@ -725,7 +729,10 @@ public class ShareController {
 
             model.addAttribute("groupItems", groupItems);
         } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
         return "share/rentMain :: #recItem";

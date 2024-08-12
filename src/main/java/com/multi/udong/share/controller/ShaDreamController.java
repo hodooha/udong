@@ -167,11 +167,12 @@ public class ShaDreamController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
         return "share/dreamLend :: #dreams";
-
     }
 
     @GetMapping("/lendItem")
@@ -181,7 +182,9 @@ public class ShaDreamController {
             ShaItemDTO item = shareService.getItemDetail(itemDTO, c);
             model.addAttribute("item", item);
         } catch (Exception e) {
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
         return "share/dreamLend :: #dream";
@@ -222,24 +225,12 @@ public class ShaDreamController {
             model.addAttribute("pageInfo", pageInfo);
         } catch (Exception e) {
             e.printStackTrace();
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
-
 
         return "share/dreamBorrow :: #reqDreams";
-    }
-
-    @GetMapping("/borrowItem")
-    public String getBorrowItem(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model){
-
-        try {
-            ShaReqDTO req = shareService.findRequest(reqDTO);
-            model.addAttribute("req", req);
-        } catch (Exception e) {
-            model.addAttribute("msg", e.getMessage());
-        }
-
-        return "share/dreamBorrow :: #dream";
     }
 
     /**
@@ -259,7 +250,9 @@ public class ShaDreamController {
             System.out.println(requesters);
         } catch (Exception e) {
             e.printStackTrace();
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
 
@@ -308,7 +301,9 @@ public class ShaDreamController {
             model.addAttribute("req", result);
         } catch (Exception e) {
             e.printStackTrace();
+            model.addAttribute("type", "error");
             model.addAttribute("msg", e.getMessage());
+            return "share/shareAlert :: #error";
         }
 
         return "share/dreamLend :: #evalAndReportModal";

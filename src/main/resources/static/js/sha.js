@@ -394,6 +394,7 @@ function updateLendList(params){
     let reqUrl = "/share/dream/lendList";
     ajax_get(reqUrl, params).done(function(data){
         $('#dreams').replaceWith(data);
+        showAlerts();
         let newUrl = createUrlWithParams(params);
         history.pushState(params, '', newUrl);
     })
@@ -406,6 +407,7 @@ function updateBorrowList(params){
     let reqUrl = "/share/dream/borrowList";
     ajax_get(reqUrl, params).done(function(data){
         $('#reqDreams').replaceWith(data);
+        showAlerts();
         let newUrl = createUrlWithParams(params);
         history.pushState(params, '', newUrl);
     })
@@ -431,6 +433,7 @@ function getLendItem(itemNo){
         console.log(itemRow);
         console.log(result);
         itemRow.replaceWith(result);
+        showAlerts();
     })
 }
 
@@ -571,6 +574,7 @@ function getRequesters(itemNo){
     ajax_get(reqUrl, data).done(function(result){
 
         $('#dreamModals').replaceWith(result);
+        showAlerts();
         $('#selectRqst').modal('toggle');
     })
 
@@ -769,7 +773,6 @@ function evalWithEndReq(req){
         let msg = result.msg;
         $('#evalModal').modal('toggle', true);
         if(await showAlerts(msg, type)){
-//            getBorrowItem(req.reqNo); -- 추후 수정 예정
             location.reload();
         }
     })
@@ -784,6 +787,7 @@ function toggleReportModalLend(item){
 
     ajax_get(reqUrl, data).done(function(result){
         $('#evalAndReportModal').replaceWith(result);
+        showAlerts();
         $('#reportModal').modal("toggle", true);
 
     })
@@ -825,6 +829,7 @@ function getRecItems(){
     ajax_get(reqUrl).done(function(result){
         console.log("완료");
         $('#recItem').replaceWith(result);
+        showAlerts();
     })
 }
 

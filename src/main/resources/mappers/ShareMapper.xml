@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="ShareMapper">
-    <resultMap type="ShaCatDTO" id="shaCatMap">
-        <!-- 언더바가 들어가는 쿼리문에 한하여 매핑을 해줘야함 -->
-        <id property="catCode" column="cat_code"/>
-        <result property="catName" column="cat_name"/>
-    </resultMap>
 
     <resultMap type="shaItemDTO" id="shaItemMap">
         <id property="itemNo" column="item_no"/>
@@ -48,7 +43,7 @@
         <association property="itemDTO" javaType="shaItemDTO" resultMap="shaItemMap"/>
     </resultMap>
 
-    <select id="getShaCat" resultMap="shaCatMap">
+    <select id="getShaCat" resultType="shaCatDTO">
         select *
         from sha_cat
         order by
@@ -621,7 +616,8 @@
         where
         b.deleted_at is null
         and d.is_deleted = 'N'
-        <if test="memberNo != null and memberNo != 0">and b.item_no not in
+        <if test="memberNo != null and memberNo != 0">
+            and b.item_no not in
             (
             select req_item
             from sha_req
