@@ -718,6 +718,7 @@ public class ShareServiceImpl implements ShareService {
             System.out.println(itemList);
         } else {
             criteriaDTO.setCatList(catsInMemReq);
+            criteriaDTO.setMemberNo(c.getMemberDTO().getMemberNo());
             itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
             if (itemList.size() < 12) {
                 int i = 12 - itemList.size();

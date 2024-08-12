@@ -785,9 +785,7 @@ function toggleReportModalLend(item){
     ajax_get(reqUrl, data).done(function(result){
         $('#evalAndReportModal').replaceWith(result);
         $('#reportModal').modal("toggle", true);
-        $('#reportBtn').on("click", function(){
-            postReport();
-        })
+
     })
 
 
@@ -797,12 +795,11 @@ function postReport(){
     let reqUrl = "/share/dream/insertReport";
     let data = $('#reportForm').serialize();
 
-    ajax_post(reqUrl, data).done(async function(result){
+    ajax_post(reqUrl, data).done(function(result){
         let type = result.type;
         let msg = result.msg;
-        if(await showAlerts(msg, type)){
-            $('#reportModal').modal("toggle", true);
-        }
+        $('#reportModal').modal("toggle", true);
+        showAlerts(msg, type)
     })
 }
 
@@ -820,9 +817,6 @@ function toggleReportModalBorrow(req){
     $('input[id="reportedMember"]').val(req.ownerNickname);
     $('input[name="reportedMember"]').val(req.itemDTO.ownerNo);
 
-    $('#reportBtn').on("click", function(){
-        postReport();
-    })
 }
 
 function getRecItems(){
