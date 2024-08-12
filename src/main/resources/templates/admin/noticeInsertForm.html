@@ -49,7 +49,7 @@
             margin-right: 20px;
         }
         .form-group-inline input[type="datetime-local"]:last-child {
-            margin-right: 0; /* 마지막 input 요소의 여백 제거 */
+            margin-right: 0;
         }
         .form-group-inline .checkbox-group {
             display: flex;
@@ -88,11 +88,13 @@
             flex-wrap: wrap;
             gap: 10px;
             border-radius: 4px;
+            margin-top: 20px;
         }
         #image-preview-container img {
             max-width: 200px;
             max-height: 200px;
             object-fit: cover;
+
         }
         .form-group-textarea textarea {
             width: 100%;
@@ -102,7 +104,7 @@
             border-radius: 4px;
             box-sizing: border-box;
             resize: vertical;
-            margin-top: 36px;
+            margin-top: 20px;
         }
         .btn-submit-container {
             display: flex;
@@ -134,12 +136,34 @@
             margin-top: 5px;
             display: none;
         }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="main-content">
         <h5>&#128226; 공지사항</h5>
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+        <div th:if="${message}" class="alert alert-success" role="alert">
+            <span th:text="${message}"></span>
+        </div>
         <form id="noticeForm" th:action="@{/admin/notice/insert}" method="post" enctype="multipart/form-data">
             <div class="form-group-inline">
                 <label for="title">제목</label>
@@ -147,10 +171,10 @@
             </div>
             <div class="form-group-inline">
                 <label for="startedAt">게시기간</label>
-                <input type="datetime-local" id="startedAt" name="startedAt" required min="">
-                <span id="dateError" class="error-message" style="display: none;">오늘 이후의 날짜를 선택해 주세요.</span>
+                <input type="datetime-local" id="startedAt" name="startedAt" required>
+                <span id="startedAtError" class="error-message"></span>
                 <input type="datetime-local" id="endedAt" name="endedAt" required>
-                <span id="endedAtError" class="error-message">시작일 이후의 날짜를 선택해 주세요.</span>
+                <span id="endedAtError" class="error-message"></span>
                 <div class="checkbox-group">
                     <input type="checkbox" id="popup" name="popup">
                     <label for="popup">메인팝업여부</label>
@@ -160,11 +184,7 @@
                 <div>
                     <label for="file">이미지 첨부</label>
                     <input type="file" id="file" name="imageFile" accept="image/*">
-                    <div id="image-preview-container">
-                        <img th:if="${notice.imagePath != null}"
-                             th:src="@{${notice.imagePath}}"
-                             alt="Current Image">
-                    </div>
+                    <div id="image-preview-container"></div>
                 </div>
                 <div class="form-group-textarea">
                     <label for="content">내용</label>
@@ -173,9 +193,6 @@
             </div>
             <div class="btn-submit-container">
                 <button type="submit" class="btn-submit">작성완료</button>
-            </div>
-            <div th:if="${error}" class="alert alert-danger" role="alert">
-                <span th:text="${error}"></span>
             </div>
         </form>
     </div>
@@ -188,6 +205,8 @@
         var endedAtInput = document.getElementById('endedAt');
         var startedAtError = document.getElementById('startedAtError');
         var endedAtError = document.getElementById('endedAtError');
+        var submitButton = document.querySelector('.btn-submit');
+        var alertContainer = document.getElementById('alertContainer');
 
         function setMinDate() {
             var now = new Date();
@@ -202,53 +221,80 @@
             var endDate = new Date(endedAtInput.value);
             var isValid = true;
 
-            // 시작일 검증
             if (startDate < now) {
+                startedAtError.textContent = '시작일은 현재 시간 이후여야 합니다.';
                 startedAtError.style.display = 'inline';
                 isValid = false;
             } else {
                 startedAtError.style.display = 'none';
             }
 
-            // 종료일 검증
             if (endDate <= startDate) {
+                endedAtError.textContent = '종료일은 시작일 이후여야 합니다.';
                 endedAtError.style.display = 'inline';
                 isValid = false;
             } else {
                 endedAtError.style.display = 'none';
             }
 
+            submitButton.disabled = !isValid;
             return isValid;
         }
 
-        startedAtInput.addEventListener('change', validateDates);
-        endedAtInput.addEventListener('change', validateDates);
+        function showAlert(message, type) {
+            var alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.textContent = message;
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alertDiv);
+        }
+
+        startedAtInput.addEventListener('input', validateDates);
+        endedAtInput.addEventListener('input', validateDates);
 
         form.addEventListener('submit', function(event) {
-            if (!validateDates()) {
-                event.preventDefault(); // 폼 제출 방지
-                alert('입력한 날짜를 확인해주세요.'); // 사용자에게 알림
+            event.preventDefault();
+            if (validateDates()) {
+                var formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('공지사항이 성공적으로 등록되었습니다.', 'success');
+                        form.reset();
+                    } else {
+                        showAlert(data.error || '오류가 발생했습니다. 다시 시도해주세요.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('서버 오류가 발생했습니다. 나중에 다시 시도해주세요.', 'danger');
+                });
+            } else {
+                showAlert('입력한 날짜를 확인해주세요.', 'danger');
             }
         });
 
-        // 초기 설정
         setMinDate();
+        setInterval(setMinDate, 60000); // 1분마다 최소 날짜 갱신
+
+        // 이미지 미리보기
+        document.getElementById('file').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = document.createElement('img');
+                img.src = e.target.result;
+                var container = document.getElementById('image-preview-container');
+                container.innerHTML = '';
+                container.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        });
     });
-
-                    function showPreview(event) {
-                          var file = event.target.files[0];
-                          var reader = new FileReader();
-                          reader.onload = function(e) {
-                              var img = document.createElement('img');
-                              img.src = e.target.result;
-                              var container = document.getElementById('image-preview-container');
-                              container.innerHTML = '';
-                              container.appendChild(img);
-                          };
-                          reader.readAsDataURL(file);
-                      }
-
-                      document.getElementById('file').addEventListener('change', showPreview);
 </script>
 </body>
 </html>

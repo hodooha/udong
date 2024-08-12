@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +32,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -242,16 +243,26 @@ public class AdminController {
     }
 
     @PostMapping("/notice/insert")
-    public String insertNotice(@ModelAttribute NoticeDTO noticeDTO,
-                               @RequestParam("imageFile") MultipartFile imageFile,
-                               @RequestParam(value = "popup", required = false) String popup,
-                               @AuthenticationPrincipal CustomUserDetails member,
-                               RedirectAttributes redirectAttributes) {
-
-        noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
-        noticeDTO.setPopup(popup != null && popup.equals("on"));
-
+    @ResponseBody
+    public ResponseEntity<?> insertNotice(@ModelAttribute NoticeDTO noticeDTO,
+                                          @RequestParam("imageFile") MultipartFile imageFile,
+                                          @RequestParam(value = "popup", required = false) String popup,
+                                          @AuthenticationPrincipal CustomUserDetails member) {
         try {
+            // 현재 시간 가져오기
+            LocalDateTime now = LocalDateTime.now();
+
+            // 날짜 유효성 검사
+            if (noticeDTO.getStartedAt().isBefore(now)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "시작일은 현재 시간 이후여야 합니다."));
+            }
+            if (noticeDTO.getEndedAt().isBefore(noticeDTO.getStartedAt())) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "error", "종료일은 시작일 이후여야 합니다."));
+            }
+
+            noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
+            noticeDTO.setPopup(popup != null && popup.equals("on"));
+
             AttachmentDTO attachmentDTO = null;
 
             if (!imageFile.isEmpty()) {
@@ -277,25 +288,29 @@ public class AdminController {
             }
 
             int noticeNo = noticeService.saveNoticeWithAttachment(noticeDTO, attachmentDTO);
-            System.out.println("Saved notice no: " + noticeNo);
-            System.out.println("Saved image path: " + noticeDTO.getImagePath());
 
-            redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
-            return "redirect:/admin/notice";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/admin/noticeInsertForm";
+            if (noticeNo > 0) {
+                System.out.println("Saved notice no: " + noticeNo);
+                System.out.println("Saved image path: " + noticeDTO.getImagePath());
+                return ResponseEntity.ok().body(Map.of("success", true, "message", "공지사항이 성공적으로 등록되었습니다.", "noticeNo", noticeNo));
+            } else {
+                throw new RuntimeException("공지사항 등록에 실패했습니다.");
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "파일 업로드 중 오류가 발생했습니다.");
-            return "redirect:/admin/noticeInsertForm";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", "파일 업로드 중 오류가 발생했습니다."));
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", "공지사항 등록에 실패했습니다: " + e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("error", "알 수 없는 오류가 발생했습니다.");
-            return "redirect:/admin/noticeInsertForm";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", "알 수 없는 오류가 발생했습니다."));
         }
     }
-
 
     @GetMapping("/noticeInsertForm")
     public String showInsertForm(Model model) {
