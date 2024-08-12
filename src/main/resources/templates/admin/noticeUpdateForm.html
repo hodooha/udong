@@ -206,6 +206,9 @@
         var startedAtError = $('#startedAtError');
         var endedAtError = $('#endedAtError');
         var submitButton = $('.btn-submit');
+        var fileInput = $('#file');
+        var deleteImageCheckbox = $('#deleteImage');
+        var imagePreviewContainer = $('#image-preview-container');
 
         function validateDates() {
             var now = new Date();
@@ -235,10 +238,48 @@
         startedAt.on('input', validateDates);
         endedAt.on('input', validateDates);
 
+        function showPreview(event) {
+            var files = event.target.files;
+            imagePreviewContainer.empty();
+            if (files.length > 0) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('<img>').attr('src', e.target.result).appendTo(imagePreviewContainer);
+                };
+                reader.readAsDataURL(files[0]);
+                deleteImageCheckbox.prop('checked', false);
+            } else {
+                restoreOriginalImage();
+            }
+        }
+
+        function restoreOriginalImage() {
+            var originalImageSrc = /*[[${notice.imagePath}]]*/ null;
+            if (originalImageSrc) {
+                imagePreviewContainer.html('<img src="' + originalImageSrc + '" alt="Current Image">');
+            } else {
+                imagePreviewContainer.empty();
+            }
+        }
+
+        fileInput.on('change', showPreview);
+
+        deleteImageCheckbox.on('change', function() {
+            if (this.checked) {
+                imagePreviewContainer.empty();
+                fileInput.val('');
+            } else {
+                restoreOriginalImage();
+            }
+        });
+
         form.submit(function(e) {
             e.preventDefault();
             if (validateDates()) {
                 var formData = new FormData(this);
+                if (deleteImageCheckbox.is(':checked')) {
+                    formData.append('deleteImage', 'true');
+                }
                 $.ajax({
                     url: $(this).attr('action'),
                     type: 'POST',
@@ -262,21 +303,6 @@
                 alert('입력한 날짜를 확인해주세요.');
             }
         });
-
-        function showPreview(event) {
-            var files = event.target.files;
-            var container = $('#image-preview-container');
-            container.empty();
-            for (var i = 0; i < files.length; i++) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    $('<img>').attr('src', e.target.result).appendTo(container);
-                };
-                reader.readAsDataURL(files[i]);
-            }
-        }
-
-        $('#file').on('change', showPreview);
 
         // 초기 유효성 검사 실행
         validateDates();

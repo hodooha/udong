@@ -38,4 +38,5 @@ public interface NoticeDAO {
 
     // 첨부파일 조회
     List<AttachmentDTO> getAttachmentsByNoticeNo(@Param("noticeNo") int noticeNo);
+    void updateNoticeImagePath(NoticeDTO notice);
 }

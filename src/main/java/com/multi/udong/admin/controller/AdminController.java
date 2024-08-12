@@ -330,7 +330,8 @@ public class AdminController {
     @PostMapping("/notice/update")
     @ResponseBody
     public ResponseEntity<?> updateNotice(@ModelAttribute NoticeDTO notice,
-                                          @RequestParam(value = "file", required = false) MultipartFile file) {
+                                          @RequestParam(value = "file", required = false) MultipartFile file,
+                                          @RequestParam(value = "deleteImage", required = false) Boolean deleteImage) {
         try {
             // 현재 시간 가져오기
             LocalDateTime now = LocalDateTime.now();
@@ -349,7 +350,29 @@ public class AdminController {
                 ));
             }
 
-            noticeService.updateNotice(notice, file);
+            AttachmentDTO attachmentDTO = null;
+
+            if (deleteImage != null && deleteImage) {
+                // 기존 이미지 삭제 로직
+                notice.setImagePath(null);
+            } else if (file != null && !file.isEmpty()) {
+                // 새 이미지 업로드 로직
+                String imgPath = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                String originalFileName = file.getOriginalFilename();
+                String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                attachmentDTO = new AttachmentDTO();
+                attachmentDTO.setOriginalName(originalFileName);
+                attachmentDTO.setSavedName(savedName);
+                attachmentDTO.setTypeCode("NOTI");
+                attachmentDTO.setFileUrl("/uploadFiles/" + savedName);
+
+                file.transferTo(new File(imgPath + File.separator + savedName));
+                notice.setImagePath("/uploadFiles/" + savedName);
+            }
+
+            noticeService.updateNotice(notice, attachmentDTO);
 
             return ResponseEntity.ok().body(Map.of(
                     "success", true,
