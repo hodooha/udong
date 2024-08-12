@@ -12,6 +12,11 @@
             display: flex;
             width: 100%;
         }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
         .right-area {
             flex-grow: 1;
             padding-left: 30px;
@@ -132,6 +137,7 @@
     <div th:replace="~{/club/clubSidebar}"></div>
 
     <div class="right-area">
+        <p class="menu">&#128221; 모임 기록</p>
         <div class="top">
             <form class="search-form" th:action="@{/club/clubLog/logMain}" method="get">
                 <div class="search-bar">

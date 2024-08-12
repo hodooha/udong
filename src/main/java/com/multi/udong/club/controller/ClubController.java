@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1784,6 +1786,170 @@ public class ClubController {
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
+
+    // ================= 모임 일정 =================
+
+    @RequestMapping("/clubSchedule/scheduleMain")
+    public String scheduleMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = filterDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태 또는 관리자일 때만 일정 페이지로 이동
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                // 받아온 page로 시작 및 시작 index를 설정
+                filterDTO.setStartAndStartIndex(filterDTO.getPage());
+
+                // 일정 리스트 select 메소드 호출
+                List<ScheduleDTO> scheduleList = clubService.selectScheduleList(filterDTO);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 - H시 mm분");
+
+                for(ScheduleDTO one : scheduleList) {
+
+                    LocalDateTime gatheringAt = one.getGatheringAt();
+                    String gatheringAtStr = gatheringAt.format(formatter);
+                    one.setGatheringAtStr(gatheringAtStr);
+
+                }
+
+                System.out.println("###### 가져온 일정 리스트: " + scheduleList);
+                model.addAttribute("scheduleList", scheduleList);
+
+                // 일정 개수 받아와 페이지 수 계산
+                int scheduleCount = clubService.selectScheduleCount(filterDTO);
+                System.out.println("###### 일정 총 개수: " + scheduleCount);
+
+                int pages = 0;
+
+                if (scheduleCount != 0) {
+
+                    pages = scheduleCount / 5;
+
+                    if (scheduleCount % 5 != 0) {
+                        pages += 1;
+                    }
+
+                }
+
+                System.out.println("###### 페이지 개수: " + pages);
+
+                model.addAttribute("pages", pages);
+                model.addAttribute("clubNo", clubNo);
+
+                String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
+                model.addAttribute("isClubDeleted", isClubDeleted);
+
+                return "/club/clubSchedule/scheduleMain";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 일정 리스트 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 미가입인 상태일 때는 모임 홈으로 이동
+        redirectAttributes.addFlashAttribute("alert", "모임 일정은 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "warning");
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @RequestMapping("/clubSchedule/scheduleInsertForm")
+    public String scheduleInsertForm(@AuthenticationPrincipal CustomUserDetails c, @RequestParam("clubNo") int clubNo, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태일 때만 일정 생성폼으로 이동
+        if(joinStatus.equals("Y")) {
+
+            model.addAttribute("clubNo", clubNo);
+
+            return "/club/clubSchedule/scheduleInsertForm";
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubSchedule/insertSchedule")
+    public String insertSchedule(@AuthenticationPrincipal CustomUserDetails c, ScheduleDTO scheduleDTO, @RequestParam("gatheringAtBeforeProcessing") String gatheringAtBeforeProcessing, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = scheduleDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태일 때만 일정 생성
+        if(joinStatus.equals("Y")) {
+
+            LocalDateTime gatheringAt = LocalDateTime.parse(gatheringAtBeforeProcessing);
+            scheduleDTO.setGatheringAt(gatheringAt);
+
+            ClubMemberDTO maker = new ClubMemberDTO();
+            maker.setMemberNo(memberNo);
+            scheduleDTO.setMaker(maker);
+
+            try {
+
+                clubService.insertSchedule(scheduleDTO);
+
+                int scheduleNo = scheduleDTO.getScheduleNo();
+
+                // return "redirect:/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
+                return "redirect:/club/clubSchedule/scheduleMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 일정 생성 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
 
 
     // ================= 공통 사용 메소드 =================

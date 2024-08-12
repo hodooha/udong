@@ -473,6 +473,43 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public List<ScheduleDTO> selectScheduleList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectScheduleList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectScheduleCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectScheduleCount(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int insertSchedule(ScheduleDTO scheduleDTO) throws Exception {
+
+        int result = 0;
+
+        int scheduleResult = clubDAO.insertSchedule(sqlSession, scheduleDTO);
+
+        if(scheduleResult == 1) {
+
+            int participantResult = clubDAO.insertScheduleParticipant(sqlSession, scheduleDTO);
+
+            if(participantResult == 1) {
+
+                result = 1;
+
+            }
+
+        }
+
+        return result;
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

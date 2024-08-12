@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .top{
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .sort-bar{
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: #E5E5E5;
+            border-radius: 0.375rem;
+            padding: 0px 20px 0px 15px;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .sort-recruiting {
+            margin-right: 10px;
+        }
+        .btn-create-club-schedule {
+            margin-left: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        .schedule-one {
+            cursor: pointer;
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .status-close {
+            width: 60px;
+            text-align: center;
+            background-color: #979797;
+            color: #FFFFFF;
+            border-radius: 3px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 12px;
+            padding: 2px;
+            margin-bottom: 8px;
+        }
+        .status-open {
+            width: 60px;
+            text-align: center;
+            background-color: #FFB83D;
+            color: #FFFFFF;
+            border-radius: 3px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 12px;
+            padding: 2px;
+            margin-bottom: 8px;
+        }
+        .schedule-title {
+            font-family: 'Freesentation-7Bold';
+            font-size: 15px;
+        }
+        .schedule-content {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .schedule-gathering {
+            font-size: 12px;
+        }
+        .schedule-personnel {
+            font-size: 10px;
+            color: #6F6F6F;
+        }
+        .btn-pagination {
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 12px !important;
+            padding: 4px 8px 4px 8px !important;
+            margin: 0px 7px 20px 0px;
+        }
+        .no-data-div {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .no-data-p {
+            background-color: #E5E5E5;
+            padding: 20px 30px 20px 30px;
+            margin-top: 180px;
+            width: 220px;
+            white-space: nowrap;
+        }
+
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            var pages = [[${pages}]];
+            var paginationDiv = $('#pagination');
+            for (var i = 1; i <= pages; i++) {
+
+                var button = $('<button></button>')
+                .text(i)
+                .addClass('btn btn-udh-blue btn-pagination')
+                .attr('onclick', 'selectScheduleList(' + i + ')');
+
+                paginationDiv.append(button);
+            }
+
+        })
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
+
+<div class="content" style="padding: 40px; height: 670px;">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <p class="menu">&#128197; 모임 일정</p>
+        <div class="top">
+            <div class="sort-bar">
+                <input type="hidden" th:value="${clubNo}" name="clubNo">
+                <input type="checkbox" class="sort-recruiting">
+                <span>모집 중만 보기</span>
+            </div>
+            <div style="left-margin: auto;">
+                <th:block th:if="${isClubDeleted == 'Y'}">
+                    <button type="button" class="btn btn-udh-blue btn-create-club-schedule" disabled>일정 생성</button>
+                </th:block>
+                <th:block th:if="${isClubDeleted == 'N'}">
+                    <a th:href="@{/club/clubSchedule/scheduleInsertForm(clubNo=${clubNo})}">
+                        <button type="button" class="btn btn-udh-blue btn-create-club-schedule">일정 생성</button>
+                    </a>
+                </th:block>
+            </div>
+        </div>
+
+        <div class="schedule-list">
+            <hr>
+            <th:block th:if="${#lists.isEmpty(scheduleList)}">
+                <div class="no-data-div">
+                    <p class="no-data-p">❌ 조회할 일정이 없습니다.</p>
+                </div>
+            </th:block>
+            <div th:each="one : ${scheduleList}" class="schedule-one" th:data-gathering-at="${one.gatheringAt}">
+                <table style="width: 100%">
+                    <tr class="schedule-one-line">
+                        <td>
+                            <th:block th:if="${one.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or one.gatheringAt.isEqual(T(java.time.LocalDateTime).now())}">
+                                <p class="p-tag status-close">마감</p>
+                            </th:block>
+                            <th:block th:if="${one.gatheringAt.isAfter(T(java.time.LocalDateTime).now())}">
+                                <p class="p-tag status-open">모집 중</p>
+                            </th:block>
+                            <input type="hidden" th:value="${one.scheduleNo}">
+                            <p th:text="${one.title}" class="p-tag schedule-title"></p>
+                            <p th:text="${one.content}" class="p-tag schedule-content"></p>
+                            <p class="p-tag schedule-gathering">
+                                <span>&#128197;</span>
+                                <span th:text="${one.gatheringAtStr}"></span>
+                            </p>
+                            <p class="p-tag schedule-personnel">
+                                <span>&#128100;</span>
+                                <span th:text="${one.currentPersonnel}"></span> /
+                                <span th:text="${one.maxPersonnel}"></span> 명
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <hr>
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination">
+
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function selectScheduleList(page) {
+
+		window.location.href = "/club/clubSchedule/scheduleMain?clubNo="+clubNo+"&page="+page;
+
+	}
+
+    $(document).on('click', '.schedule-one', function() {
+        var scheduleNo = $(this).find('input').val();
+        var url = "/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
+        window.location.href = url;
+    });
+
+    $(document).ready(function() {
+
+        $('.sort-recruiting').on('change', function() {
+            var isChecked = $(this).is(':checked');
+            var currentTime = new Date(); // 현재 시간
+
+            $('.schedule-one').each(function() {
+                var gatheringAt = new Date($(this).data('gathering-at'));
+
+                if (isChecked) {
+                    if (gatheringAt > currentTime) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    });
+
+</script>
+</body>
+</html>

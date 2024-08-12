@@ -90,4 +90,10 @@ public interface ClubService {
     String checkIsClubDeleted(int clubNo) throws Exception;
 
     String checkIsLogDeleted(int logNo) throws Exception;
+
+    List<ScheduleDTO> selectScheduleList(FilterDTO filterDTO) throws Exception;
+
+    int selectScheduleCount(FilterDTO filterDTO) throws Exception;
+
+    int insertSchedule(ScheduleDTO scheduleDTO) throws Exception;
 }

@@ -473,4 +473,28 @@ public class ClubDAO {
         return sqlSession.delete("clubMapper.deleteClubMember", clubMemberDTO);
 
     }
+
+    public List<ScheduleDTO> selectScheduleList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("clubMapper.selectScheduleList", filterDTO);
+
+    }
+
+    public int selectScheduleCount(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectScheduleCount", filterDTO);
+
+    }
+
+    public int insertSchedule(SqlSessionTemplate sqlSession, ScheduleDTO scheduleDTO) {
+
+        return sqlSession.insert("clubMapper.insertSchedule", scheduleDTO);
+
+    }
+
+    public int insertScheduleParticipant(SqlSessionTemplate sqlSession, ScheduleDTO scheduleDTO) {
+
+        return sqlSession.insert("clubMapper.insertScheduleParticipant", scheduleDTO);
+
+    }
 }

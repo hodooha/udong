@@ -48,6 +48,7 @@
 
         <id property="memberNo" column="master"/>
         <result property="nickname" column="master_nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
 
     </resultMap>
 
@@ -65,6 +66,7 @@
 
         <id property="memberNo" column="member_no"/>
         <result property="nickname" column="nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
 
     </resultMap>
 
@@ -137,6 +139,42 @@
         <id property="replyNo" column="liked_reply_no"/>
         <id property="memberNo" column="reply_like_member_no"/>
         <result property="likedAt" column="reply_liked_at"/>
+
+    </resultMap>
+
+    <resultMap id="scheduleResultMap" type="com.multi.udong.club.model.dto.ScheduleDTO">
+
+        <id property="scheduleNo" column="schedule_no"/>
+
+        <result property="clubNo" column="clubNo"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="currentPersonnel" column="current_personnel"/>
+        <result property="maxPersonnel" column="max_personnel"/>
+        <result property="gatheringAt" column="gathering_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="deletedAt" column="deleted_at"/>
+        
+        <association property="maker" resultMap="scheduleMakerResultMap"/>
+        
+        <collection property="participants" resultMap="scheduleParticipantResultMap"/>
+
+    </resultMap>
+
+    <resultMap id="scheduleMakerResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+
+        <id property="memberNo" column="maker"/>
+        <result property="nickname" column="maker_nickname"/>
+        <result property="profileSavedName" column="maker_profile_saved_name"/>
+
+    </resultMap>
+
+    <resultMap id="scheduleParticipantResultMap" type="com.multi.udong.club.model.dto.ClubMemberDTO">
+
+        <id property="memberNo" column="participant"/>
+        <result property="nickname" column="participant_nickname"/>
+        <result property="profileSavedName" column="participant_profile_saved_name"/>
 
     </resultMap>
 
@@ -558,12 +596,12 @@
 
     <insert id="insertReplyLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
         INSERT INTO CL_LOG_REPLY_LIKE
-        (reply_no, member_no)
+            (reply_no, member_no)
         VALUES
-        (
-        #{ replyNo },
-        #{ memberNo }
-        )
+            (
+            #{ replyNo },
+            #{ memberNo }
+            )
     </insert>
 
     <delete id="deleteReplyLike" parameterType="com.multi.udong.club.model.dto.LikeDTO">
@@ -590,5 +628,51 @@
             AND member_no = #{ memberNo }
         </if>
     </delete>
+
+    <select id="selectScheduleList" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultMap="scheduleResultMap">
+        SELECT
+            A.schedule_no,
+            A.club_no,
+            A.title,
+            A.content,
+            (SELECT COUNT(*) FROM CL_SCHEDULE_PARTICIPANT B WHERE B.schedule_no = A.schedule_no) AS current_personnel,
+            A.max_personnel,
+            A.gathering_at,
+            A.created_at
+        FROM CL_SCHEDULE A
+        WHERE A.club_no = #{ clubNo } AND A.is_deleted = 'N'
+        ORDER BY A.gathering_at DESC
+        LIMIT #{ startIndex }, #{ pageCount }
+    </select>
+
+    <select id="selectScheduleCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
+        SELECT COUNT(*)
+        FROM CL_SCHEDULE
+        WHERE club_no = #{ clubNo } AND is_deleted = 'N'
+    </select>
+
+    <insert id="insertSchedule" parameterType="com.multi.udong.club.model.dto.ScheduleDTO" useGeneratedKeys="true" keyProperty="scheduleNo">
+        INSERT INTO CL_SCHEDULE
+            (club_no, title, content, maker, max_personnel, gathering_at)
+        VALUES
+            (
+            #{ clubNo },
+            #{ title },
+            #{ content },
+            #{ maker.memberNo },
+            #{ maxPersonnel },
+            #{ gatheringAt }
+            )
+    </insert>
+
+    <insert id="insertScheduleParticipant" parameterType="com.multi.udong.club.model.dto.ScheduleDTO">
+        INSERT INTO CL_SCHEDULE_PARTICIPANT
+            (schedule_no, member_no)
+        VALUES
+            (
+            #{ scheduleNo },
+            #{ maker.memberNo }
+            )
+    </insert>
 
 </mapper>
