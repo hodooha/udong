@@ -6,6 +6,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Repository
@@ -184,5 +185,17 @@ public class ShareDAO {
 
     public int updateLevel(SqlSessionTemplate sqlSession, ShaEvalDTO evalDTO) {
         return sqlSession.update("ShareMapper.updateLevel", evalDTO);
+    }
+
+    public List<MemberItemPreferenceDTO> getMemberItemPreferences(SqlSessionTemplate sqlSession, Long locationCode){
+        return sqlSession.selectList("ShareMapper.getMemberItemPreferences", locationCode);
+    }
+
+    public List<Integer> getAddRecomItems(SqlSessionTemplate sqlSession, List<Integer> recomItemNums, int i, Long locationCode) {
+        return sqlSession.selectList("ShareMapper.getAddRecomItems", Map.of("excludedItems", recomItemNums, "limit", i, "locationCode", locationCode));
+    }
+
+    public List<ShaItemDTO> getItemListByItemNums(SqlSessionTemplate sqlSession, List<Integer> recomItemNums) {
+        return sqlSession.selectList("ShareMapper.getItemListByItemNums", recomItemNums);
     }
 }

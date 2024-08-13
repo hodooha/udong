@@ -34,7 +34,7 @@ public class ShareController {
      * The constant IMAGE_PATH.
      */
 // 이미지 저장 경로
-    static final String IMAGE_PATH = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString() + File.separator;
+    static final String IMAGE_PATH = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString() + File.separator;
 
     /**
      * 대여 메인페이지 이동
@@ -716,6 +716,7 @@ public class ShareController {
      * @return the string
      * @since 2024 -08-08
      */
+
     @GetMapping("/recommendItem")
     public String recommendItem(@AuthenticationPrincipal CustomUserDetails c, Model model) {
 
@@ -723,8 +724,8 @@ public class ShareController {
             List<ShaItemDTO> itemList = shareService.recommendItem(c);
             List<List<ShaItemDTO>> groupItems = new ArrayList<>();
 
-            for (int i = 0; i < itemList.size(); i += 4) {
-                groupItems.add(itemList.subList(i, i + 4));
+            for(int i=0; i<itemList.size(); i += 4){
+                groupItems.add(itemList.subList(i, i+4));
             }
 
             model.addAttribute("groupItems", groupItems);
