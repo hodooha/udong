@@ -34,6 +34,8 @@
         <typeAlias type="com.multi.udong.cs.model.dto.CSAnswerDTO" alias="csAnswerDTO"/>
         <typeAlias type="com.multi.udong.message.model.dto.MessageDTO" alias="messageDTO"/>
         <typeAlias type="com.multi.udong.message.model.dto.MessageBlockDTO" alias="messageBlockDTO"/>
+        <typeAlias type="com.multi.udong.notification.model.dto.NotiDTO" alias="notiDTO"/>
+        <typeAlias type="com.multi.udong.notification.model.dto.NotiSetDTO" alias="notiSetDTO"/>
 
         <typeAlias type="com.multi.udong.sale.model.dto.SaleDTO" alias="saleDTO"/>
 
@@ -48,6 +50,7 @@
         <mapper resource="mappers/MemberMapper.xml"/>
         <mapper resource="mappers/CSMapper.xml"/>
         <mapper resource="mappers/MessageMapper.xml"/>
+        <mapper resource="mappers/NotiMapper.xml"/>
 
         <mapper resource="mappers/SaleMapper.xml"/>
         <mapper resource="mappers/ReportMapper.xml"/>

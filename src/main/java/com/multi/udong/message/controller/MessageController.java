@@ -2,16 +2,22 @@ package com.multi.udong.message.controller;
 
 import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.model.dto.PageDTO;
+import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 import com.multi.udong.message.service.MessageService;
+import com.multi.udong.notification.controller.NotiController;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The type Message controller.
@@ -25,6 +31,7 @@ import java.util.*;
 public class MessageController {
 
     private final MessageService messageService;
+    private final NotiController notiController;
 
     /**
      * Message main string.
@@ -58,10 +65,12 @@ public class MessageController {
 
         // 상세 정보
         if (messageNo != null) {
-            MessageDTO detail = messageService.getMessageDetail(messageNo);
+            MessageDTO detail = messageService.getReceivedMessageDetail(messageNo);
 
             model.addAttribute("type", "receive");
             model.addAttribute("messageNo", messageNo);
+            model.addAttribute("senderNo", detail.getSenderNo());
+            model.addAttribute("isBlocked", messageService.getIsBlocked(detail));
             model.addAttribute("detail", detail);
         }
 
@@ -121,10 +130,12 @@ public class MessageController {
 
         // 상세 정보
         if (messageNo != null) {
-            MessageDTO detail = messageService.getMessageDetail(messageNo);
+            MessageDTO detail = messageService.getSentMessageDetail(messageNo);
 
             model.addAttribute("type", "send");
             model.addAttribute("messageNo", messageNo);
+            model.addAttribute("receiverNo", detail.getReceiverNo());
+            model.addAttribute("isBlocked", messageService.getIsBlocked(detail));
             model.addAttribute("detail", detail);
         }
 
@@ -165,9 +176,47 @@ public class MessageController {
 
         if (receiverNo != null) {
             String receiverNickname = messageService.getNicknameByMemberNo(receiverNo);
-            System.out.println("receiverNickname : " + receiverNickname);
             model.addAttribute("receiverNickname", receiverNickname);
         }
+    }
+
+    /**
+     * Block.
+     *
+     * @param c     the c
+     * @param page  the page
+     * @param model the model
+     * @since 2024 -08-12
+     */
+    @GetMapping("/block")
+    public void block(@AuthenticationPrincipal CustomUserDetails c,
+                      @RequestParam(value = "page", defaultValue = "1") int page,
+                      Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int count;
+        int pages = 1;
+
+        PageDTO pageDTO = new PageDTO();
+        pageDTO.setMemberNo(memberNo);
+        pageDTO.setPage(page);
+        pageDTO.setStartEnd(page);
+
+        List<String> header = Arrays.asList("차단된 닉네임", "차단 일자");
+        List<MessageBlockDTO> data = messageService.getBlockList(pageDTO);
+
+        if (!data.isEmpty()) {
+            count = data.get(0).getTotalCount();
+            pages = (count % 10 == 0) ? count / 10 : count / 10 + 1;
+        }
+
+        // 테이블
+        model.addAttribute("tableHeader", header);
+        model.addAttribute("tableData", data);
+
+        // 페이지
+        model.addAttribute("pages", pages);
+        model.addAttribute("page", page);
     }
 
     /**
@@ -185,9 +234,13 @@ public class MessageController {
 
         int memberNo = c.getMemberDTO().getMemberNo();
         messageDTO.setSenderNo(memberNo);
-        messageService.sendMessage(messageDTO);
 
-        return ResponseEntity.ok("쪽지를 보냈습니다.");
+        if (messageService.sendMessage(messageDTO)) {
+            notiController.newMessageNoti(messageDTO);
+            return ResponseEntity.ok("쪽지를 보냈습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 회원입니다.");
+        }
     }
 
     /**
@@ -201,12 +254,68 @@ public class MessageController {
     @ResponseBody
     public Map<String, Boolean> deleteMessages(@RequestBody Map<String, List<Integer>> request) {
 
-        System.out.println("request:" + request);
-
         List<Integer> messageNos = request.get("messageNos");
 
         Map<String, Boolean> result = new HashMap<>();
         result.put("success", messageService.deleteMessages(messageNos));
+        return result;
+    }
+
+    /**
+     * Block messages map.
+     *
+     * @param c       the c
+     * @param request the request
+     * @return the map
+     * @since 2024 -08-10
+     */
+    @PostMapping("/blockMessages")
+    @ResponseBody
+    public Map<String, Object> blockMessages(@AuthenticationPrincipal CustomUserDetails c,
+                                             @RequestBody Map<String, Object> request) {
+
+        int blockerNo = c.getMemberDTO().getMemberNo();
+
+        List<Integer> blockedNos = (List<Integer>) request.get("senderNos");
+        boolean isBlocked = (boolean) request.get("isBlocked");
+
+        Map<String, Object> result = new HashMap<>();
+
+        for (int blockedNo : blockedNos) {
+
+            if (blockedNo == blockerNo) {
+                result.put("errorMessage", "자기 자신은 차단할 수 없습니다.");
+                result.put("success", false);
+                return result;
+            }
+
+            if (messageService.isAdmin(blockedNo).equals("ROLE_ADMIN")) {
+                result.put("errorMessage", "관리자는 차단할 수 없습니다.");
+                result.put("success", false);
+                return result;
+            }
+        }
+
+        boolean blockResult = false;
+        if (isBlocked) {
+            blockResult = messageService.unblockMessages(blockerNo, blockedNos);
+        } else {
+            try {
+                blockResult = messageService.blockMessages(blockerNo, blockedNos);
+            } catch (Exception e) {
+                result.put("errorMessage", "이미 차단된 회원입니다.");
+                result.put("success", false);
+            }
+        }
+
+        if (blockResult) {
+            result.put("message", isBlocked ? "차단이 해제되었습니다." : "회원이 차단되었습니다.");
+            result.put("success", true);
+        } else {
+            result.put("errorMessage", isBlocked ? "차단 해제에 실패하였습니다." : "차단에 실패하였습니다.");
+            result.put("success", false);
+        }
+
         return result;
     }
 }

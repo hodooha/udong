@@ -182,7 +182,6 @@
         const userInput = document.querySelector('.user-input');
         const chatbotBody = document.querySelector('.chatbot-body');
 
-        document.querySelector('.chatbot').addEventListener('click', toggleChatbot);
         document.querySelector('.chatbot-input button').addEventListener('click', sendMessage);
         userInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -191,16 +190,27 @@
         });
 
         let gotWelcomeMessage = false;
+        const chatbotWindow = document.querySelector('#chatbot-window');
 
         // 챗봇 토글
-        function toggleChatbot() {
-            const chatbotWindow = document.querySelector('#chatbot-window');
+        document.querySelector('.chatbot').addEventListener('click', function(event) {
+            event.stopPropagation();
             chatbotWindow.classList.toggle('show');
             if (!gotWelcomeMessage) {
                 getWelcomeMessage();
                 gotWelcomeMessage = true;
             }
-        }
+        });
+
+        chatbotWindow.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', function(event) {
+            if (chatbotWindow.classList.contains('show')) {
+                chatbotWindow.classList.remove('show');
+            }
+        });
 
         // 웰컴 메시지
         function getWelcomeMessage() {

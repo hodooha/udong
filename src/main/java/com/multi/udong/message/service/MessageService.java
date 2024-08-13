@@ -1,6 +1,7 @@
 package com.multi.udong.message.service;
 
 import com.multi.udong.member.model.dto.PageDTO;
+import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 
 import java.util.List;
@@ -18,9 +19,21 @@ public interface MessageService {
 
     String getNicknameByMemberNo(int receiverNo);
 
-    void sendMessage(MessageDTO messageDTO);
+    boolean sendMessage(MessageDTO messageDTO);
 
     boolean deleteMessages(List<Integer> messageNos);
 
-    MessageDTO getMessageDetail(Integer messageNo);
+    Boolean blockMessages(int blockerNo, List<Integer> messageNos);
+
+    boolean unblockMessages(int blockerNo, List<Integer> blockedNos);
+
+    String isAdmin(int blockedNo);
+
+    MessageDTO getReceivedMessageDetail(Integer messageNo);
+
+    MessageDTO getSentMessageDetail(Integer messageNo);
+
+    boolean getIsBlocked(MessageDTO messageNo);
+
+    List<MessageBlockDTO> getBlockList(PageDTO pageDTO);
 }

@@ -55,10 +55,23 @@
 <body>
     <div class="message-window">
         <div class="message-body">
-            <table></table>
+            <table>
+                <tbody id="result-table">
+                <tr th:each="data : ${tableData}"
+                    th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
+                    th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|"
+                    th:class="${data.isRead == 'N' ? 'clickable-row unread-message' : 'clickable-row'}">
+                    <td th:text="${data.senderNickname}">
+                        <span th:if="${data.isRead == 'N'}" class="new">new</span>
+                    </td>
+                    <td th:text="${data.createdAt}"></td>
+                    <td th:text="${data.content}"></td>
+                </tr>
+                </tbody>
+            </table>
         </div>
         <div class="message-footer">
-            <a th:href="@{/message/receivedMessage(page=1)}">쪽지 전체 보기</a>
+            <a th:href="@{/message/receivedMessage(page=1)}">모든 쪽지 보기</a>
         </div>
     </div>
 </body>
@@ -68,12 +81,20 @@
         const messageBtn = document.querySelector('.message-btn');
         const messageWindow = document.querySelector('.message-window');
 
-        messageBtn.addEventListener('click', toggleWindow);
-
-        function toggleWindow() {
+        messageBtn.addEventListener('click', function(event) {
+            event.stopPropagation();
             messageWindow.classList.toggle('show');
-        }
+        });
 
+        messageWindow.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', function(event) {
+            if (messageWindow.classList.contains('show')) {
+                messageWindow.classList.remove('show');
+            }
+        });
     });
-</script>
+</script> <!--토글-->
 </html>

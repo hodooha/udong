@@ -68,7 +68,8 @@ public class CSController {
                            Model model) {
 
         if (c == null) {
-            model.addAttribute("msg","로그인이 필요한 기능입니다.");
+            model.addAttribute("alert","로그인이 필요한 기능입니다.");
+            model.addAttribute("alertType", "error");
             return "cs/csMain";
         }
 
@@ -159,11 +160,19 @@ public class CSController {
      * @since 2024 -08-01
      */
     @GetMapping("/insertQueForm")
-    public void insertQueForm (Model model) {
+    public String insertQueForm (@AuthenticationPrincipal CustomUserDetails c,
+                               Model model) {
+
+        if (c == null) {
+            model.addAttribute("alert","로그인이 필요한 기능입니다.");
+            model.addAttribute("alertType", "error");
+            return "cs/csMain";
+        }
 
         List<TypeDTO> csTypes = csService.getAllTypes();
 
         model.addAttribute("csTypes", csTypes);
+        return "cs/insertQueForm";
     }
 
     /**

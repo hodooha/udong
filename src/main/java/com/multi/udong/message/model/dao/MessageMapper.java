@@ -1,8 +1,10 @@
 package com.multi.udong.message.model.dao;
 
 import com.multi.udong.member.model.dto.PageDTO;
+import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -24,7 +26,19 @@ public interface MessageMapper {
 
     int deleteMessages(List<Integer> messageNos);
 
+    int blockMessages(@Param("blockerNo") int blockerNo, @Param("blockedNo") int blockedNo);
+
+    int unblockMessages(@Param("blockerNo") int blockerNo, @Param("blockedNo") int blockedNo);
+
     MessageDTO getMessageDetail(Integer messageNo);
 
     void updateMessageIsRead(Integer messageNo);
+
+    Integer getMemberNoByNickname(String receiverNickname);
+
+    boolean getIsBlocked(MessageDTO messageDTO);
+
+    String isAdmin(int blockedNo);
+
+    List<MessageBlockDTO> getBlockList(PageDTO pageDTO);
 }

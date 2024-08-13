@@ -125,6 +125,10 @@
     <div class="right-section">
 
         <th:block th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+            <button type="button" class="noti-btn">
+                <i class="fi fi-rs-bell"></i>
+            </button>
+
             <button type="button" class="message-btn">
                 <i class="fi fi-rs-envelope"></i>
             </button>
@@ -173,6 +177,7 @@
 </header>
 </div>
 <div th:replace="~{/message/toggleMessage}"></div>
+<div th:replace="~{/notification/toggleNoti}"></div>
 <div th:replace="~{/cs/chatbot}"></div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {

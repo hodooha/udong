@@ -55,8 +55,8 @@
                     <p th:text="${#strings.equals(type, 'receive') ? '보낸 사람' : '받은 사람'}"></p>
                     <span th:text="${#strings.equals(type, 'receive') ? detail.senderNickname : detail.receiverNickname}"></span>
                 </div>
-                <div class="separate">
-                    <button class="btn btn-udh-red">차단하기</button>
+                <div class="separate" th:if="${#strings.equals(type, 'receive')}">
+                    <button class="btn btn-udh-red" id="detailBlockBtn" th:text="${isBlocked ? '차단 해제하기' : '차단하기'}"></button>
                     <button class="btn btn-udh-red">신고하기</button>
                 </div>
             </div>
@@ -72,8 +72,8 @@
             </div>
 
             <div class="button-group">
-                <button class="btn btn-udh-red" id="deleteDetailBtn">삭제하기</button>
-                <button class="btn btn-udh-blue" id="sendReplyDetailBtn">답장하기</button>
+                <button class="btn btn-udh-red" id="detailDeleteBtn">삭제하기</button>
+                <button class="btn btn-udh-blue" id="detailSendReplyBtn">답장하기</button>
             </div>
 
         </div>
@@ -84,14 +84,15 @@
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        const deleteDetailBtn = document.querySelector('#deleteDetailBtn');
-        const sendReplyDetailBtn = document.querySelector('#sendReplyDetailBtn');
+        const detailBlockBtn = document.querySelector('#detailBlockBtn');
+        const detailDeleteBtn = document.querySelector('#detailDeleteBtn');
+        const detailSendReplyBtn = document.querySelector('#detailSendReplyBtn');
 
         // 삭제하기 버튼 클릭 이벤트
-        deleteDetailBtn.addEventListener('click', async function() {
+        detailDeleteBtn.addEventListener('click', async function() {
 
             if (await showConfirmAlert('쪽지를 삭제하시겠습니까?')) { // 여기에 async 추가
-                const memberNo = /*[[${messageNo}]]*/ null;
+                const messageNo = /*[[${messageNo}]]*/ null;
 
                 fetch('/message/deleteMessages', {
                     method: 'POST',
@@ -99,7 +100,7 @@
                         'Content-Type': 'application/json',
                         [header]: token
                     },
-                    body: JSON.stringify({ messageNos: [memberNo] })
+                    body: JSON.stringify({ messageNos: [messageNo] })
                 })
                 .then(response => response.json())
                 .then(async data => { // 여기에 async 추가
@@ -116,6 +117,45 @@
                     showErrorAlert('쪽지 삭제 중 오류가 발생했습니다.');
                 });
             }
+        });
+
+        // 차단하기 버튼 클릭 이벤트
+        detailBlockBtn.addEventListener('click', async function() {
+
+            const isBlocked = /*[[${isBlocked}]]*/ false;
+            const confirmMessage = isBlocked ? '차단을 해제하시겠습니까?' : '이 회원을 차단하시겠습니까?';
+
+            if (await showConfirmAlert(confirmMessage)) {
+                const senderNo = /*[[${senderNo}]]*/ null;
+
+                fetch('/message/blockMessages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify({ senderNos: [senderNo], isBlocked: isBlocked })
+                })
+                .then(response => response.json())
+                .then(async data => {
+                    if (data.success) {
+                        await showSuccessAlert(data.message);
+                        location.reload();
+                    } else {
+                        await showErrorAlert(data.errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorAlert('차단 중 오류가 발생했습니다.');
+                });
+            }
+        });
+
+        // 답장하기 버튼 클릭 이벤트
+        detailSendReplyBtn.addEventListener('click', function() {
+            const senderNo = /*[[${senderNo}]]*/ null;
+            window.open(`/message/sendMessageForm?memberNo=${senderNo}`, 'ReplyMessage', 'width=500,height=410');
         });
     });
 </script>

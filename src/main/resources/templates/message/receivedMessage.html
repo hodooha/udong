@@ -34,12 +34,30 @@
             padding: 8px;
             text-align: center;
         }
+        .new {
+            position: absolute;
+            margin-left: 5px;
+            border-radius: 10px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            padding: 2px 5px;
+        }
         th {
             background-color: #f2f2f2;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
         .clickable-row:hover, .clickable-row.active {
             background-color: #f2f2f2;
             cursor: pointer;
+        }
+        .unread-message {
+            font-weight: bold;
+            background-color: #f0f8ff;
         }
         #no-result {
             margin: 20px;
@@ -82,7 +100,7 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="message">
-            <h2>받은 메일함</h2>
+            <h2>받은 쪽지함</h2>
             <table>
                 <thead>
                     <tr>
@@ -91,12 +109,15 @@
                     </tr>
                 </thead>
                 <tbody id="result-table">
-                    <tr class="clickable-row"
-                        th:each="data : ${tableData}"
+                    <tr th:each="data : ${tableData}"
                         th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
-                        th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|">
+                        th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|"
+                        th:class="${data.isRead == 'N' ? 'clickable-row unread-message' : 'clickable-row'}">
                         <!--th:onclick https://velog.io/@leejk0924/Tymeleaf%EC%9D%98-thonclick-%EC%82%AC%EC%9A%A9%EB%B2%95-->
-                        <td><input type="checkbox" id="row-checkbox"></td>
+                        <td>
+                            <input type="checkbox" id="row-checkbox">
+                            <span th:if="${data.isRead == 'N'}" class="new">new</span>
+                        </td>
                         <td th:text="${data.senderNickname}"></td>
                         <td th:text="${data.content}"></td>
                         <td th:text="${data.createdAt}"></td>
@@ -115,7 +136,6 @@
             <div class="search">
                 <form action="/message/receivedMessage" method="get">
                     <select name="searchCategory" id="search-category">
-                        <option value="">카테고리 선택</option>
                         <option th:each="category : ${searchCategories}"
                                 th:value="${category}"
                                 th:text="${category}"
@@ -205,6 +225,7 @@
         const allCheckbox = document.querySelector('#all-checkbox');
         const rowCheckboxes = document.querySelectorAll('#row-checkbox');
         const deleteBtn = document.querySelector('#deleteBtn');
+        const blockBtn = document.querySelector('#blockBtn');
         const sendReplyBtn = document.querySelector('#sendReplyBtn');
         const writeMessageBtn = document.querySelector('#writeMessageBtn');
 
@@ -221,7 +242,7 @@
                 allCheckbox.checked = Array.from(rowCheckboxes).every(checkBox => checkBox.checked);
             });
 
-            checkbox.addEventListener('click', function() {
+            checkbox.addEventListener('click', function(event) {
                 event.stopPropagation();
             });
         });
@@ -268,6 +289,41 @@
             }
         });
 
+        // 차단하기 버튼 클릭 이벤트
+        blockBtn.addEventListener('click', async function() {
+            const checkedRows = getCheckedRows();
+
+            if (checkedRows.length === 0) {
+                showErrorAlert('차단할 회원의 쪽지를 선택해주세요.');
+                return;
+            }
+
+            if (await showConfirmAlert('선택한 회원을 차단하시겠습니까?')) {
+                const senderNos = checkedRows.map(row => row.getAttribute('senderNo'));
+
+                fetch('/message/blockMessages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [header]: token
+                    },
+                    body: JSON.stringify({ senderNos: senderNos.map(Number), isBlocked : false })
+                })
+                .then(response => response.json())
+                .then(async data => { // 여기에 async 추가
+                    if (data.success) {
+                        await showSuccessAlert(data.message);
+                    } else {
+                        await showErrorAlert(data.errorMessage);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showErrorAlert('차단 중 오류가 발생했습니다.');
+                });
+            }
+        });
+
         // 답장하기 버튼 클릭 이벤트
         sendReplyBtn.addEventListener('click', function() {
             const checkedRows = getCheckedRows();
@@ -288,7 +344,9 @@
 
         // 작성 버튼 클릭 이벤트
         writeMessageBtn.addEventListener('click', function() {
-            window.open('/message/sendMessageForm', 'SendMessage', 'width=500,height=410');
+            window.open('/message/sendMessageForm',
+                        'SendMessage',
+                        'width=500, height=410, left=300, top=300');
         });
 
         // 작성 완료 알림 이벤트

@@ -13,25 +13,30 @@
             sub.total_count
         FROM (
             SELECT
-                msg.*,
-                COUNT(*) OVER() AS total_count,
-                ROW_NUMBER() OVER (ORDER BY msg.created_at DESC) AS rownum
-            FROM MSG msg
-            WHERE msg.receiver_no = #{memberNo}
-            <if test="searchCategory != null and searchWord != null">
-                <choose>
-                    <when test="searchCategory == '보낸 사람'">
-                        AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
-                    </when>
-                    <when test="searchCategory == '내용'">
-                        AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
-                    </when>
-                </choose>
-            </if>
+            msg.*,
+            COUNT(*) OVER() AS total_count,
+            ROW_NUMBER() OVER (ORDER BY
+                CASE WHEN msg.is_read = 'N' THEN 0 ELSE 1 END,
+                msg.created_at DESC
+        ) AS rownum
+        FROM MSG msg
+        WHERE msg.receiver_no = #{memberNo}
+        <if test="searchCategory != null and searchWord != null">
+            <choose>
+                <when test="searchCategory == '보낸 사람'">
+                    AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                </when>
+                <when test="searchCategory == '내용'">
+                    AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
+                </when>
+            </choose>
+        </if>
         ) sub
         JOIN MEMBER m ON sub.sender_no = m.member_no
         WHERE sub.rownum BETWEEN #{start} AND #{end}
-        ORDER BY sub.created_at DESC
+        ORDER BY
+            CASE WHEN sub.is_read = 'N' THEN 0 ELSE 1 END,
+            sub.created_at DESC
     </select>
 
     <select id="getSentMessages" resultType="messageDTO" parameterType="pageDTO">
@@ -67,7 +72,16 @@
     </select>
     
     <select id="getNicknameByMemberNo" resultType="string">
-        SELECT nickname FROM MEMBER WHERE member_no = #{receiverNo}
+        SELECT nickname
+        FROM MEMBER
+        WHERE member_no = #{receiverNo}
+    </select>
+
+    <select id="getMemberNoByNickname" resultType="int">
+        SELECT member_no
+        FROM MEMBER
+        WHERE nickname = #{receiverNickname}
+        AND is_deleted = 'N'
     </select>
 
     <insert id="sendMessage" parameterType="messageDTO">
@@ -88,6 +102,19 @@
         </foreach>
     </delete>
 
+    <insert id="blockMessages" parameterType="int">
+        INSERT INTO MSG_BLOCK (blocker_no, blocked_no)
+        SELECT #{blockerNo}, #{blockedNo}
+        FROM MEMBER
+        WHERE member_no = #{blockedNo}
+        AND is_deleted = 'N'
+    </insert>
+
+    <delete id="unblockMessages" parameterType="int">
+        DELETE FROM MSG_BLOCK
+        WHERE blocker_no = #{blockerNo} AND blocked_no = #{blockedNo}
+    </delete>
+
     <select id="getMessageDetail" resultType="messageDTO">
         SELECT
             msg.*,
@@ -102,5 +129,35 @@
     <update id="updateMessageIsRead">
         UPDATE MSG SET is_read = 'Y' WHERE message_no = #{messageNo}
     </update>
+
+    <select id="getIsBlocked" parameterType="messageDTO" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM MSG_BLOCK
+        WHERE blocker_no = #{receiverNo}
+        AND blocked_no = #{senderNo}
+    </select>
+
+    <select id="isAdmin" resultType="string">
+        SELECT authority FROM member WHERE member_no = #{blocked_no}
+    </select>
+
+    <select id="getBlockList" parameterType="pageDTO" resultType="messageBlockDTO">
+        SELECT
+            sub.blocked_no,
+            m.nickname AS blocked_nickname,
+            sub.created_at,
+            sub.total_count
+        FROM (
+            SELECT
+                mb.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY mb.created_at DESC) AS rownum
+            FROM MSG_BLOCK mb
+            WHERE mb.blocker_no = #{memberNo}
+        ) sub
+        JOIN MEMBER m ON sub.blocked_no = m.member_no
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
+        ORDER BY sub.created_at DESC
+    </select>
 
 </mapper>
