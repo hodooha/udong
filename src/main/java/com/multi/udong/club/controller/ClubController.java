@@ -181,7 +181,7 @@ public class ClubController {
         System.out.println("###### insert할 모임 데이터: " + clubDTO);
 
         // 저장 경로 설정
-        String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+        String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
         String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
         System.out.println("###### 파일 저장 경로: " + filePath);
 
@@ -750,9 +750,8 @@ public class ClubController {
             clubDTO.setCategory(categoryDTO);
 
             // 저장 경로 설정
-            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
             String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
-
             System.out.println("###### 파일 저장 경로: " + filePath);
 
             // 이미지 이름 변경 처리
@@ -991,9 +990,8 @@ public class ClubController {
             logDTO.setWriter(writer);
 
             // 저장 경로 설정
-            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
             String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
-
             System.out.println("###### 파일 저장 경로: " + filePath);
 
             System.out.println("###### img 개수 >>>>> " + imgList.length);
@@ -1431,7 +1429,7 @@ public class ClubController {
                     System.out.println("###### status 배열: " + Arrays.toString(status));
 
                     // 저장 경로 설정
-                    String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                    String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
                     String filePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
                     System.out.println("###### 파일 저장 경로: " + filePath);
 
