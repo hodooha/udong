@@ -1965,7 +1965,7 @@ public class ClubController {
         // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
         String joinStatus = checkJoinStatus(memberNo, clubNo);
 
-        // 모임 가입자나 관리자일 때만 기록 상세 조회 메소드 호출
+        // 모임 가입자나 관리자일 때만 일정 상세 조회 메소드 호출
         if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
             try {
@@ -2016,6 +2016,152 @@ public class ClubController {
                 model.addAttribute("msg", "모임 일정 상세 조회 과정에서 문제가 발생했습니다.");
 
                 return "common/errorPage";
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubSchedule/joinSchedule")
+    public String joinSchedule(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+        int scheduleNo = requestDTO.getScheduleNo();
+
+        // 해체된 모임인지, 삭제된 일정인지 검증
+        if(!checkIsScheduleDeleted(c, clubNo, scheduleNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 서버단에서 일정에 가입되지 않은 상태인지 한 번 더 검증
+        boolean scheduleJoinStatus = checkScheduleJoinStatus(memberNo, scheduleNo);
+
+        try {
+
+            // 서버단에서 현재 인원이 최대 인원보다 적은지 한 번 더 검증
+            ScheduleDTO personnel = clubService.checkSchedulePersonnel(scheduleNo);
+            int currentPersonnel = personnel.getCurrentPersonnel();
+            int maxPersonnel = personnel.getMaxPersonnel();
+            System.out.println("###### 현재 일정 인원: " + currentPersonnel + " / " + maxPersonnel);
+
+            // 모임 가입자이고 정원이 다 차지 않았고 일정에 참여하지 않은 상태일 때만 일정 참여 메소드 호출
+            if (joinStatus.equals("Y") && currentPersonnel < maxPersonnel && scheduleJoinStatus == false) {
+
+                clubService.joinSchedule(requestDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "참여가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
+
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "모임 일정 참여 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubSchedule/cancelJoinSchedule")
+    public String cancelJoinSchedule(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+        int scheduleNo = requestDTO.getScheduleNo();
+
+        // 해체된 모임인지, 삭제된 일정인지 검증
+        if(!checkIsScheduleDeleted(c, clubNo, scheduleNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 서버단에서 일정에 가입된 상태인지 한 번 더 검증
+        boolean scheduleJoinStatus = checkScheduleJoinStatus(memberNo, scheduleNo);
+
+        // 모임 가입자이고 일정에 참여한 상태일 때만 일정 참여 취소 메소드 호출
+        if(joinStatus.equals("Y") && scheduleJoinStatus == true) {
+
+            try {
+
+                clubService.cancelJoinSchedule(requestDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "참여 취소가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 일정 참여 취소 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/clubSchedule/deleteSchedule")
+    public String deleteSchedule(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+        int scheduleNo = requestDTO.getScheduleNo();
+
+        // 해체된 모임인지, 삭제된 일정인지 검증
+        if(!checkIsScheduleDeleted(c, clubNo, scheduleNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 일정 생성자인지 한 번 더 검증
+        boolean isMaker = checkScheduleMaker(memberNo, scheduleNo);
+
+        if(isMaker == true || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                clubService.deleteSchedule(requestDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "일정 삭제가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubSchedule/scheduleMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 일정 삭제 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
             }
 
         }
@@ -2193,6 +2339,54 @@ public class ClubController {
                 return false;
 
             }
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+    public boolean checkScheduleJoinStatus(int memberNo, int scheduleNo) {
+
+        RequestDTO requestDTO = new RequestDTO();
+        requestDTO.setMemberNo(memberNo);
+        requestDTO.setScheduleNo(scheduleNo);
+
+        boolean joinStatus = false;
+
+        try {
+
+            int join = clubService.checkScheduleJoinStatus(requestDTO);
+
+            if(join == 1) {
+                joinStatus = true;
+            }
+
+            return joinStatus;
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+    public boolean checkScheduleMaker(int memberNo, int scheduleNo) {
+
+        boolean isMaker = false;
+
+        try {
+
+            int makerNo = clubService.checkScheduleMaker(scheduleNo);
+
+            if(makerNo == memberNo) {
+                isMaker = true;
+            }
+
+            return isMaker;
 
         } catch (Exception e) {
 

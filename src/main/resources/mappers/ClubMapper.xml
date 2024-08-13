@@ -738,4 +738,52 @@
         csp.schedule_no = #{ scheduleNo }
     </select>
 
+    <select id="checkSchedulePersonnel" parameterType="Integer" resultMap="scheduleResultMap">
+        SELECT
+        A.max_personnel,
+        (SELECT COUNT(*) FROM CL_SCHEDULE_PARTICIPANT B WHERE B.schedule_no = A.schedule_no) AS current_personnel
+        FROM CL_SCHEDULE A
+        WHERE schedule_no = #{ scheduleNo }
+    </select>
+
+    <insert id="joinSchedule" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        INSERT INTO CL_SCHEDULE_PARTICIPANT
+            (schedule_no, member_no)
+        VALUES
+            (
+            #{ scheduleNo },
+            #{ memberNo }
+            )
+    </insert>
+
+    <select id="checkScheduleJoinStatus" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultType="Integer">
+        SELECT COUNT(*)
+        FROM CL_SCHEDULE_PARTICIPANT
+        WHERE schedule_no = #{ scheduleNo } AND member_no = #{ memberNo }
+    </select>
+
+    <delete id="cancelJoinSchedule" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        DELETE FROM CL_SCHEDULE_PARTICIPANT
+        WHERE schedule_no = #{ scheduleNo } AND member_no = #{ memberNo }
+    </delete>
+
+    <select id="checkScheduleMaker" parameterType="Integer" resultType="Integer">
+        SELECT maker
+        FROM CL_SCHEDULE
+        WHERE schedule_no = #{ scheduleNo }
+    </select>
+
+    <update id="deleteSchedule" parameterType="com.multi.udong.club.model.dto.RequestDTO">
+        UPDATE CL_SCHEDULE
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
+        WHERE club_no = #{ clubNo } AND schedule_no = #{ scheduleNo }
+    </update>
+
+    <delete id="deleteScheduleParticipants" parameterType="Integer">
+        DELETE FROM CL_SCHEDULE_PARTICIPANT
+        WHERE schedule_no = #{ scheduleNo }
+    </delete>
+
 </mapper>

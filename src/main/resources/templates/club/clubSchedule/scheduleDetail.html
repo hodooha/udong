@@ -44,6 +44,7 @@
         .schedule-etc {
             font-size: 11px;
             color: #6F6F6F;
+            margin-bottom: 20px;
         }
         .btn-right-area {
             vertical-align: top;
@@ -64,7 +65,6 @@
             font-family: 'Freesentation-5Medium';
             font-size: 12px;
             padding: 2px;
-            margin-top: 20px;
         }
         .status-open {
             width: 60px;
@@ -75,7 +75,6 @@
             font-family: 'Freesentation-5Medium';
             font-size: 12px;
             padding: 2px;
-            margin-top: 20px;
         }
         .schedule-title {
             font-family: 'Freesentation-7Bold';
@@ -211,11 +210,13 @@
             </tr>
         </table>
 
-        <th:block th:if="${scheduleDetail.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or scheduleDetail.gatheringAt.isEqual(T(java.time.LocalDateTime).now()) or scheduleDetail.currentPersonnel >= scheduleDetail.maxPersonnel}">
-            <p class="p-tag status-close">마감</p>
-        </th:block>
-        <th:block th:if="${scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel < scheduleDetail.maxPersonnel}">
-            <p class="p-tag status-open">모집 중</p>
+        <th:block th:if="${scheduleDetail.isDeleted == 'N'}">
+            <th:block th:if="${scheduleDetail.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or scheduleDetail.gatheringAt.isEqual(T(java.time.LocalDateTime).now()) or scheduleDetail.currentPersonnel >= scheduleDetail.maxPersonnel}">
+                <p class="p-tag status-close">마감</p>
+            </th:block>
+            <th:block th:if="${scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel < scheduleDetail.maxPersonnel}">
+                <p class="p-tag status-open">모집 중</p>
+            </th:block>
         </th:block>
 
         <p th:text="${scheduleDetail.title}" class="p-tag schedule-title"></p>
@@ -260,7 +261,7 @@
             <button th:if="${#lists.size(scheduleDetail.participants) >= 5}" type="button" class="btn btn-udh-silver btn-all-participants">전체 보기</button>
         </div>
 
-        <th:block th:if="${scheduleDetail.viewerJoin == 0 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel < scheduleDetail.maxPersonnel}">
+        <th:block th:if="${scheduleDetail.viewerJoin == 0 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel < scheduleDetail.maxPersonnel and scheduleDetail.isDeleted == 'N'}">
             <form th:action="@{/club/clubSchedule/joinSchedule}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <input type="hidden" name="clubNo" th:value="${scheduleDetail.clubNo}" />
@@ -270,13 +271,13 @@
                 </button>
             </form>
         </th:block>
-        <th:block th:if="${scheduleDetail.viewerJoin == 0 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel >= scheduleDetail.maxPersonnel}">
+        <th:block th:if="${scheduleDetail.viewerJoin == 0 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.currentPersonnel >= scheduleDetail.maxPersonnel and scheduleDetail.isDeleted == 'N'}">
             <button type="button" class="btn btn-udh-blue btn-join" disabled>
                 일정 참여
             </button>
             <span style="color: #CB3333">&#128683; 일정 정원이 가득 찼습니다.</span>
         </th:block>
-        <th:block th:if="${scheduleDetail.viewerJoin == 1 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now())}">
+        <th:block th:if="${scheduleDetail.viewerJoin == 1 and scheduleDetail.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and scheduleDetail.isDeleted == 'N'}">
             <form th:action="@{/club/clubSchedule/cancelJoinSchedule}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <input type="hidden" name="clubNo" th:value="${scheduleDetail.clubNo}" />
