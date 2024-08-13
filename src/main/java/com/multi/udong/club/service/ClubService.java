@@ -96,4 +96,8 @@ public interface ClubService {
     int selectScheduleCount(FilterDTO filterDTO) throws Exception;
 
     int insertSchedule(ScheduleDTO scheduleDTO) throws Exception;
+
+    String checkIsScheduleDeleted(int scheduleNo) throws Exception;
+
+    ScheduleDTO selectScheduleDetail(RequestDTO requestDTO) throws Exception;
 }

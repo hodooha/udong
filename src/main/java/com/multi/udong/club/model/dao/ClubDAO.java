@@ -497,4 +497,22 @@ public class ClubDAO {
         return sqlSession.insert("clubMapper.insertScheduleParticipant", scheduleDTO);
 
     }
+
+    public String checkIsScheduleDeleted(SqlSessionTemplate sqlSession, int scheduleNo) {
+
+        return sqlSession.selectOne("clubMapper.checkIsScheduleDeleted", scheduleNo);
+
+    }
+
+    public ScheduleDTO selectScheduleDetail(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectScheduleDetail", requestDTO);
+
+    }
+
+    public List<ClubMemberDTO> selectScheduleParticipants(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectList("clubMapper.selectScheduleParticipants", requestDTO);
+
+    }
 }

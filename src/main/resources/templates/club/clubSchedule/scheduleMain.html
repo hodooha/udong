@@ -166,14 +166,14 @@
                     <p class="no-data-p">❌ 조회할 일정이 없습니다.</p>
                 </div>
             </th:block>
-            <div th:each="one : ${scheduleList}" class="schedule-one" th:data-gathering-at="${one.gatheringAt}">
+            <div th:each="one : ${scheduleList}" class="schedule-one" th:data-gathering-at="${one.gatheringAt}" th:data-current-personnel="${one.currentPersonnel}" th:data-max-personnel="${one.maxPersonnel}">
                 <table style="width: 100%">
                     <tr class="schedule-one-line">
                         <td>
-                            <th:block th:if="${one.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or one.gatheringAt.isEqual(T(java.time.LocalDateTime).now())}">
+                            <th:block th:if="${one.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or one.gatheringAt.isEqual(T(java.time.LocalDateTime).now()) or one.currentPersonnel >= one.maxPersonnel}">
                                 <p class="p-tag status-close">마감</p>
                             </th:block>
-                            <th:block th:if="${one.gatheringAt.isAfter(T(java.time.LocalDateTime).now())}">
+                            <th:block th:if="${one.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and one.currentPersonnel < one.maxPersonnel}">
                                 <p class="p-tag status-open">모집 중</p>
                             </th:block>
                             <input type="hidden" th:value="${one.scheduleNo}">
@@ -217,16 +217,18 @@
     });
 
     $(document).ready(function() {
-
         $('.sort-recruiting').on('change', function() {
             var isChecked = $(this).is(':checked');
             var currentTime = new Date(); // 현재 시간
 
             $('.schedule-one').each(function() {
                 var gatheringAt = new Date($(this).data('gathering-at'));
+                var currentPersonnel = parseInt($(this).data('current-personnel'));
+                var maxPersonnel = parseInt($(this).data('max-personnel'));
 
                 if (isChecked) {
-                    if (gatheringAt > currentTime) {
+                    // 모집 중 조건: 모임 시간이 현재보다 미래이고, 현재 인원수가 최대 인원수보다 적어야 함
+                    if (gatheringAt > currentTime && currentPersonnel < maxPersonnel) {
                         $(this).show();
                     } else {
                         $(this).hide();
