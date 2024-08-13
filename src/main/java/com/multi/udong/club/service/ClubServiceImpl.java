@@ -510,6 +510,25 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public String checkIsScheduleDeleted(int scheduleNo) throws Exception {
+
+        return clubDAO.checkIsScheduleDeleted(sqlSession, scheduleNo);
+
+    }
+
+    @Override
+    public ScheduleDTO selectScheduleDetail(RequestDTO requestDTO) throws Exception {
+
+        ScheduleDTO scheduleDetail = clubDAO.selectScheduleDetail(sqlSession, requestDTO);
+        List<ClubMemberDTO> participants = clubDAO.selectScheduleParticipants(sqlSession, requestDTO);
+
+        scheduleDetail.setParticipants(participants);
+
+        return scheduleDetail;
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

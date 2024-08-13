@@ -146,7 +146,7 @@
 
         <id property="scheduleNo" column="schedule_no"/>
 
-        <result property="clubNo" column="clubNo"/>
+        <result property="clubNo" column="club_no"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="currentPersonnel" column="current_personnel"/>
@@ -155,6 +155,7 @@
         <result property="createdAt" column="created_at"/>
         <result property="isDeleted" column="is_deleted"/>
         <result property="deletedAt" column="deleted_at"/>
+        <result property="viewerJoin" column="viewer_join"/>
         
         <association property="maker" resultMap="scheduleMakerResultMap"/>
         
@@ -674,5 +675,67 @@
             #{ maker.memberNo }
             )
     </insert>
+
+    <select id="checkIsScheduleDeleted" parameterType="Integer" resultType="String">
+        SELECT is_deleted
+        FROM CL_SCHEDULE
+        WHERE schedule_no = #{ scheduleNo }
+    </select>
+
+    <select id="selectScheduleDetail" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="scheduleResultMap">
+        SELECT
+        cs.schedule_no,
+        cs.club_no,
+        cs.title,
+        cs.content,
+        cs.gathering_at,
+        cs.created_at,
+        cs.max_personnel,
+        cs.deleted_at,
+        cs.is_deleted,
+        m.member_no AS maker,
+        m.nickname AS maker_nickname,
+        a.saved_name AS maker_profile_saved_name,
+        COUNT(csp.member_no) AS current_personnel,
+        (SELECT COUNT(*) FROM CL_SCHEDULE_PARTICIPANT csp WHERE csp.schedule_no = cs.schedule_no AND csp.member_no = #{ memberNo }) AS viewer_join
+        FROM
+        CL_SCHEDULE cs
+        JOIN
+        MEMBER m ON cs.maker = m.member_no
+        LEFT JOIN
+        ATTACHMENT a ON m.member_no = a.target_no AND a.type_code = 'MEM'
+        LEFT JOIN
+        CL_SCHEDULE_PARTICIPANT csp ON cs.schedule_no = csp.schedule_no
+        WHERE
+        cs.schedule_no = #{ scheduleNo } AND cs.club_no = #{ clubNo }
+        GROUP BY
+        cs.schedule_no,
+        cs.club_no,
+        cs.title,
+        cs.content,
+        cs.gathering_at,
+        cs.created_at,
+        cs.max_personnel,
+        cs.deleted_at,
+        cs.is_deleted,
+        m.member_no,
+        m.nickname,
+        a.saved_name
+    </select>
+
+    <select id="selectScheduleParticipants" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="scheduleParticipantResultMap">
+        SELECT
+        m.member_no AS participant,
+        m.nickname AS participant_nickname,
+        a.saved_name AS participant_profile_saved_name
+        FROM
+        CL_SCHEDULE_PARTICIPANT csp
+        JOIN
+        MEMBER m ON csp.member_no = m.member_no
+        LEFT JOIN
+        ATTACHMENT a ON m.member_no = a.target_no AND a.type_code = 'MEM'
+        WHERE
+        csp.schedule_no = #{ scheduleNo }
+    </select>
 
 </mapper>

@@ -1950,6 +1950,83 @@ public class ClubController {
     }
 
 
+    @RequestMapping("/clubSchedule/scheduleDetail")
+    public String scheduleDetail(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int clubNo = requestDTO.getClubNo();
+        int scheduleNo = requestDTO.getScheduleNo();
+
+        // 해체된 모임인지, 삭제된 일정인지 검증
+        if(!checkIsScheduleDeleted(c, clubNo, scheduleNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 모임에 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 모임 가입자나 관리자일 때만 기록 상세 조회 메소드 호출
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                ScheduleDTO scheduleDetail = clubService.selectScheduleDetail(requestDTO);
+
+                System.out.println("###### 가져온 일정 상세 >>>>> " + scheduleDetail);
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일 - H시 mm분");
+                String gatheringAtStr = scheduleDetail.getGatheringAt().format(formatter);
+                scheduleDetail.setGatheringAtStr(gatheringAtStr);
+
+                ClubMemberDTO clubMemberDTO = scheduleDetail.getMaker();
+                String profileSavedName = clubMemberDTO.getProfileSavedName();
+
+                // 생성자의 프로필 사진이 없거나 디폴트라면 기본 이미지 이름으로 savedName을 set
+                if (profileSavedName == null || profileSavedName.equals("") || profileSavedName.equals("defaultProfile.png")) {
+
+                    clubMemberDTO.setProfileSavedName("defaultProfile.png");
+                    scheduleDetail.setMaker(clubMemberDTO);
+
+                }
+
+                List<ClubMemberDTO> participants = scheduleDetail.getParticipants();
+
+                for(ClubMemberDTO p : participants) {
+
+                    String pProfileSavedName = p.getProfileSavedName();
+
+                    if(pProfileSavedName == null || pProfileSavedName.equals("") || pProfileSavedName.equals("defaultProfile.png")) {
+
+                        p.setProfileSavedName("defaultProfile.png");
+
+                    }
+
+                }
+
+                scheduleDetail.setParticipants(participants);
+
+                model.addAttribute("scheduleDetail", scheduleDetail);
+
+                return "club/clubSchedule/scheduleDetail";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                model.addAttribute("msg", "모임 일정 상세 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
 
 
     // ================= 공통 사용 메소드 =================
@@ -2072,6 +2149,43 @@ public class ClubController {
             }
 
             if(isLogDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+
+            }
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+    public boolean checkIsScheduleDeleted(@AuthenticationPrincipal CustomUserDetails c, int clubNo, int scheduleNo) {
+
+        if(!checkIsClubDeleted(c, clubNo)) {
+
+            return false;
+
+        }
+
+        try {
+
+            String isScheduleDeleted = clubService.checkIsScheduleDeleted(scheduleNo);
+
+            if(isScheduleDeleted == null || isScheduleDeleted.equals("")) {
+
+                return false;
+
+            }
+
+            if(isScheduleDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
 
                 return true;
 

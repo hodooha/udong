@@ -21,5 +21,6 @@ public class ScheduleDTO {
     private String isDeleted;
     private LocalDateTime deletedAt;
     private List<ClubMemberDTO> participants;
+    private int viewerJoin;
 
 }

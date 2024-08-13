@@ -15,5 +15,6 @@ public class RequestDTO {
     private int clubNo;
     private int logNo;
     private int replyNo;
+    private int scheduleNo;
 
 }
