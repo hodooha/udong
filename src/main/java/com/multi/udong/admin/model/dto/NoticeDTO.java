@@ -18,6 +18,7 @@ public class NoticeDTO {
     private String imagePath;
     private List<AttachmentDTO> attachments;
     private String img;
+    private String popupString;
 
 
     public Integer getNoticeNo() {
@@ -116,6 +117,14 @@ public class NoticeDTO {
         this.img = img;
     }
 
+    public String getPopupString() {
+        return popupString;
+    }
+
+    public void setPopupString(String popupString) {
+        this.popupString = popupString;
+    }
+
     @Override
     public String toString() {
         return "NoticeDTO{" +
@@ -131,6 +140,7 @@ public class NoticeDTO {
                 ", imagePath='" + imagePath + '\'' +
                 ", attachments=" + attachments +
                 ", img='" + img + '\'' +
+                ", popupString='" + popupString + '\'' +
                 '}';
     }
 }

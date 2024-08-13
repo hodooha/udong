@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,11 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/admin")
@@ -239,14 +243,13 @@ public class AdminController {
     }
 
     @PostMapping("/notice/insert")
-    public String insertNotice(@ModelAttribute NoticeDTO noticeDTO,
-                               @RequestParam("imageFile") MultipartFile imageFile,
-                               @AuthenticationPrincipal CustomUserDetails member,
-                               RedirectAttributes redirectAttributes) {
-
-        noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
-
+    @ResponseBody
+    public ResponseEntity<?> insertNotice(@ModelAttribute NoticeDTO noticeDTO,
+                                          @RequestParam("imageFile") MultipartFile imageFile,
+                                          @AuthenticationPrincipal CustomUserDetails member) {
         try {
+            noticeDTO.setWriter(member.getMemberDTO().getMemberNo());
+
             AttachmentDTO attachmentDTO = null;
 
             if (!imageFile.isEmpty()) {
@@ -275,18 +278,24 @@ public class AdminController {
             System.out.println("Saved notice no: " + noticeNo);
             System.out.println("Saved image path: " + noticeDTO.getImagePath());
 
+            return ResponseEntity.ok().body(Map.of(
+                    "success", true,
+                    "message", "공지사항이 성공적으로 등록되었습니다.",
+                    "noticeNo", noticeNo
+            ));
         } catch (IOException e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("message", "파일 업로드 중 오류가 발생했습니다.");
-            return "redirect:/admin/noticeInsertForm";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "파일 업로드 중 오류가 발생했습니다."
+            ));
         } catch (Exception e) {
             e.printStackTrace();
-            redirectAttributes.addFlashAttribute("message", "알 수 없는 오류가 발생했습니다.");
-            return "redirect:/admin/noticeInsertForm";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "알 수 없는 오류가 발생했습니다."
+            ));
         }
-
-        redirectAttributes.addFlashAttribute("message", "공지사항이 성공적으로 등록되었습니다.");
-        return "redirect:/admin/notice";
     }
 
 
@@ -321,16 +330,61 @@ public class AdminController {
     @PostMapping("/notice/update")
     @ResponseBody
     public ResponseEntity<?> updateNotice(@ModelAttribute NoticeDTO notice,
-                                          @RequestParam(value = "file", required = false) MultipartFile file) {
+                                          @RequestParam(value = "file", required = false) MultipartFile file,
+                                          @RequestParam(value = "deleteImage", required = false) Boolean deleteImage) {
         try {
-            noticeService.updateNotice(notice, file);
-            // 수정 후 리다이렉트 URL을 포함한 JSON 반환
+            // 현재 시간 가져오기
+            LocalDateTime now = LocalDateTime.now();
+
+            // 날짜 유효성 검사
+            if (notice.getStartedAt().isBefore(now)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "시작일은 현재 시간 이후여야 합니다."
+                ));
+            }
+            if (notice.getEndedAt().isBefore(notice.getStartedAt())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "error", "종료일은 시작일 이후여야 합니다."
+                ));
+            }
+
+            AttachmentDTO attachmentDTO = null;
+
+            if (deleteImage != null && deleteImage) {
+                // 기존 이미지 삭제 로직
+                notice.setImagePath(null);
+            } else if (file != null && !file.isEmpty()) {
+                // 새 이미지 업로드 로직
+                String imgPath = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                String originalFileName = file.getOriginalFilename();
+                String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
+
+                attachmentDTO = new AttachmentDTO();
+                attachmentDTO.setOriginalName(originalFileName);
+                attachmentDTO.setSavedName(savedName);
+                attachmentDTO.setTypeCode("NOTI");
+                attachmentDTO.setFileUrl("/uploadFiles/" + savedName);
+
+                file.transferTo(new File(imgPath + File.separator + savedName));
+                notice.setImagePath("/uploadFiles/" + savedName);
+            }
+
+            noticeService.updateNotice(notice, attachmentDTO);
+
             return ResponseEntity.ok().body(Map.of(
+                    "success", true,
                     "message", "공지사항이 성공적으로 수정되었습니다.",
-                    "redirectUrl", "/admin/notice/detail/" + notice.getNoticeNo()
+                    "noticeNo", notice.getNoticeNo()
             ));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("공지사항 수정 중 오류가 발생했습니다: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "success", false,
+                    "error", "공지사항 수정 중 오류가 발생했습니다: " + e.getMessage()
+            ));
         }
     }
 

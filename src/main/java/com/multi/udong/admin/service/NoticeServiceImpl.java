@@ -35,6 +35,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public int saveNoticeWithAttachment(NoticeDTO noticeDTO, AttachmentDTO attachmentDTO) {
+
         System.out.println("Saving notice: " + noticeDTO);
         int result = noticeDAO.insertNotice(noticeDTO);
         System.out.println("Insert result: " + result);
@@ -66,7 +67,18 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public List<NoticeDTO> findAll() {
-        return noticeDAO.findAllNotices();
+        List<NoticeDTO> notices = noticeDAO.findAllNotices();
+        for (NoticeDTO notice : notices) {
+            if (notice.getPopup() != null) {
+                notice.setPopupString(notice.getPopup() ? "Y" : "N");
+            } else {
+                notice.setPopupString("N");
+            }
+
+            // 디버깅 로그 추가
+            System.out.println("Notice ID: " + notice.getNoticeNo() + ", Popup: " + notice.getPopup() + ", PopupString: " + notice.getPopupString());
+        }
+        return notices;
     }
 
     @Override
@@ -84,19 +96,25 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     @Transactional
-    public void updateNotice(NoticeDTO notice, MultipartFile file) {
-        noticeDAO.updateNotice(notice);
-
-        if (file != null && !file.isEmpty()) {
+    public void updateNotice(NoticeDTO notice, AttachmentDTO attachmentDTO) {
+        if (attachmentDTO != null) {
+            // 기존 첨부파일 삭제
             noticeDAO.deleteAttachmentsByNoticeNo(notice.getNoticeNo());
 
-            AttachmentDTO attachment = new AttachmentDTO();
-            attachment.setTypeCode("NOTI");
-            attachment.setTargetNo(notice.getNoticeNo());
-            attachment.setOriginalName(file.getOriginalFilename());
-            attachment.setSavedName(saveFile(file));
-            noticeDAO.insertAttachment(attachment);
+            // 새 첨부파일 추가
+            attachmentDTO.setTypeCode("NOTI");
+            attachmentDTO.setTargetNo(notice.getNoticeNo());
+            noticeDAO.insertAttachment(attachmentDTO);
+
+            // 공지사항의 이미지 경로 업데이트
+            notice.setImagePath("/uploadFiles/" + attachmentDTO.getSavedName());
+        } else if (notice.getImagePath() == null) {
+            // 이미지를 삭제하는 경우
+            noticeDAO.deleteAttachmentsByNoticeNo(notice.getNoticeNo());
         }
+
+        // 공지사항 업데이트 (이미지 경로 포함)
+        noticeDAO.updateNotice(notice);
     }
 
     @Override

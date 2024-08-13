@@ -128,6 +128,28 @@
             background-color: #142657;
             color: #FFFFFF;
         }
+        .error-message {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: none;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
     </style>
 </head>
 <body>
@@ -144,7 +166,9 @@
                 <div class="form-group-inline">
                     <label for="startedAt">게시기간</label>
                     <input type="datetime-local" id="startedAt" th:field="*{startedAt}" th:value="${notice.startedAt}" required>
+                    <span id="startedAtError" class="error-message"></span>
                     <input type="datetime-local" id="endedAt" th:field="*{endedAt}" th:value="${notice.endedAt}" required>
+                    <span id="endedAtError" class="error-message"></span>
                     <div class="checkbox-group">
                         <input type="checkbox" id="popup" th:field="*{popup}" th:checked="${notice.popup}">
                         <label for="popup">메인팝업여부</label>
@@ -175,56 +199,114 @@
 </div>
 
 <script th:inline="javascript">
-    function showPreview(event) {
-        var files = event.target.files;
-        var container = document.getElementById('image-preview-container');
-        container.innerHTML = ""; // 기존 이미지 초기화
-        for (var i = 0; i < files.length; i++) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(files[i]);
-        }
-    }
+    $(document).ready(function() {
+        var form = $('#noticeForm');
+        var startedAt = $('#startedAt');
+        var endedAt = $('#endedAt');
+        var startedAtError = $('#startedAtError');
+        var endedAtError = $('#endedAtError');
+        var submitButton = $('.btn-submit');
+        var fileInput = $('#file');
+        var deleteImageCheckbox = $('#deleteImage');
+        var imagePreviewContainer = $('#image-preview-container');
 
-    document.getElementById('file').addEventListener('change', showPreview);
+        function validateDates() {
+            var now = new Date();
+            var startDate = new Date(startedAt.val());
+            var endDate = new Date(endedAt.val());
+            var isValid = true;
 
-    // 날짜 형식을 datetime-local 입력에 맞게 변환
-    document.addEventListener('DOMContentLoaded', function() {
-        var startedAt = document.getElementById('startedAt');
-        var endedAt = document.getElementById('endedAt');
+            if (startDate < now) {
+                startedAtError.text('시작일은 현재 시간 이후여야 합니다.').show();
+                isValid = false;
+            } else {
+                startedAtError.hide();
+            }
 
-        if(startedAt && startedAt.value) {
-            startedAt.value = new Date(startedAt.value).toISOString().slice(0, 16);
+            if (endDate <= startDate) {
+                endedAtError.text('종료일은 시작일 이후여야 합니다.').show();
+                isValid = false;
+            } else {
+                endedAtError.hide();
+            }
+
+            submitButton.prop('disabled', !isValid);
+            return isValid;
         }
-        if(endedAt && endedAt.value) {
-            endedAt.value = new Date(endedAt.value).toISOString().slice(0, 16);
+
+        // 실시간 유효성 검사
+        startedAt.on('input', validateDates);
+        endedAt.on('input', validateDates);
+
+        function showPreview(event) {
+            var files = event.target.files;
+            imagePreviewContainer.empty();
+            if (files.length > 0) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('<img>').attr('src', e.target.result).appendTo(imagePreviewContainer);
+                };
+                reader.readAsDataURL(files[0]);
+                deleteImageCheckbox.prop('checked', false);
+            } else {
+                restoreOriginalImage();
+            }
         }
+
+        function restoreOriginalImage() {
+            var originalImageSrc = /*[[${notice.imagePath}]]*/ null;
+            if (originalImageSrc) {
+                imagePreviewContainer.html('<img src="' + originalImageSrc + '" alt="Current Image">');
+            } else {
+                imagePreviewContainer.empty();
+            }
+        }
+
+        fileInput.on('change', showPreview);
+
+        deleteImageCheckbox.on('change', function() {
+            if (this.checked) {
+                imagePreviewContainer.empty();
+                fileInput.val('');
+            } else {
+                restoreOriginalImage();
+            }
+        });
+
+        form.submit(function(e) {
+            e.preventDefault();
+            if (validateDates()) {
+                var formData = new FormData(this);
+                if (deleteImageCheckbox.is(':checked')) {
+                    formData.append('deleteImage', 'true');
+                }
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            alert("수정이 완료되었습니다.");
+                            loadNoticeDetail(formData.get('noticeNo'));
+                        } else {
+                            alert(response.error || "수정 중 오류가 발생했습니다.");
+                        }
+                    },
+                    error: function(xhr) {
+                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "서버 오류가 발생했습니다.";
+                        alert(errorMessage);
+                    }
+                });
+            } else {
+                alert('입력한 날짜를 확인해주세요.');
+            }
+        });
+
+        // 초기 유효성 검사 실행
+        validateDates();
     });
-
-    $('#noticeForm').submit(function(e) {
-    e.preventDefault();
-    var formData = new FormData(this);
-
-    $.ajax({
-        url: '/admin/notice/update',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            alert("수정이 완료되었습니다.");
-            loadNoticeDetail(formData.get('noticeNo'));  // 수정된 공지사항의 세부사항을 로드
-        },
-        error: function(xhr) {
-            alert(xhr.responseText);
-        }
-    });
-});
-
 </script>
 </body>
 </html>
