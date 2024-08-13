@@ -85,6 +85,14 @@
             min-height: 50px;
             white-space: nowrap;
         }
+        #signup {
+            cursor: pointer;
+            background-color: white;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
         .social-login {
             display: flex;
             justify-content: center;
@@ -139,7 +147,7 @@
                 <label for="remember-me">자동 로그인 (1일)</label>
             </div>
         </form>
-        <button class="btn btn-udh-blue" onclick="location.href='/selectRole'">회원가입</button>
+        <span id="signup" onclick="location.href='/selectRole'" style="color: blue;">회원가입</span>
         <h5>소셜 로그인</h5>
         <div class="social-login">
             <button class="btn-social" id="googleLogin">

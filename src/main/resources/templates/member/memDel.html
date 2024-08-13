@@ -78,9 +78,18 @@
 <script>
     const checkbox = document.getElementById('agreement-checkbox');
     const deleteButton = document.getElementById('delete-button');
+    const form = document.querySelector('.member-delete form');
 
     checkbox.addEventListener('change', function() {
         deleteButton.disabled = !this.checked;
+    });
+
+    deleteButton.addEventListener('click', async function(e) {
+        e.preventDefault();
+
+        if (await showConfirmAlert("정말로 탈퇴하시겠습니까?")) {
+            form.submit();
+        }
     });
 </script> <!--회원 탈퇴 버튼 활성화-->
 </html>

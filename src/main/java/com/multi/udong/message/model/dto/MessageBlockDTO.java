@@ -17,4 +17,7 @@ public class MessageBlockDTO {
     private Integer blockerNo;
     private Integer blockedNo;
     private String createdAt;
+
+    private String blockedNickname;
+    private Integer totalCount;
 }

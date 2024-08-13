@@ -2,6 +2,7 @@ package com.multi.udong.message.service;
 
 import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.message.model.dao.MessageMapper;
+import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -65,12 +66,28 @@ public class MessageServiceImpl implements MessageService{
      * Send message.
      *
      * @param messageDTO the message dto
+     * @return boolean boolean
      * @since 2024 -08-07
      */
     @Override
-    public void sendMessage(MessageDTO messageDTO) {
+    public boolean sendMessage(MessageDTO messageDTO) {
 
-        messageMapper.sendMessage(messageDTO);
+        Integer result = messageMapper.getMemberNoByNickname(messageDTO.getReceiverNickname());
+
+        if (result != null) {
+            messageDTO.setReceiverNo(result);
+
+            boolean blocked = messageMapper.getIsBlocked(messageDTO);
+
+            if (!blocked) {
+                messageMapper.sendMessage(messageDTO);
+            }
+
+            return true;
+
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -86,6 +103,51 @@ public class MessageServiceImpl implements MessageService{
         return messageMapper.deleteMessages(messageNos) > 0;
     }
 
+
+    /**
+     * Block messages boolean.
+     *
+     * @param blockerNo  the blocker no
+     * @param blockedNos the blocked nos
+     * @return the boolean
+     * @since 2024 -08-10
+     */
+    @Override
+    public Boolean blockMessages(int blockerNo, List<Integer> blockedNos) {
+
+        int result = 0;
+
+        for (int blockedNo : blockedNos) {
+            if (messageMapper.blockMessages(blockerNo, blockedNo) > 0) {
+                result++;
+            }
+        }
+
+        return result > 0;
+    }
+
+    /**
+     * Unblock messages boolean.
+     *
+     * @param blockerNo  the blocker no
+     * @param blockedNos the blocked nos
+     * @return the boolean
+     * @since 2024 -08-10
+     */
+    @Override
+    public boolean unblockMessages(int blockerNo, List<Integer> blockedNos) {
+
+        int result = 0;
+
+        for (int blockedNo : blockedNos) {
+            if (messageMapper.unblockMessages(blockerNo, blockedNo) > 0) {
+                result++;
+            }
+        }
+
+        return result > 0;
+    }
+
     /**
      * Get message detail message dto.
      *
@@ -94,10 +156,52 @@ public class MessageServiceImpl implements MessageService{
      * @since 2024 -08-08
      */
     @Override
-    public MessageDTO getMessageDetail(Integer messageNo) {
+    public MessageDTO getReceivedMessageDetail(Integer messageNo) {
 
         messageMapper.updateMessageIsRead(messageNo);
 
         return messageMapper.getMessageDetail(messageNo);
+    }
+
+    /**
+     * Get sent message detail message dto.
+     *
+     * @param messageNo the message no
+     * @return the message dto
+     * @since 2024 -08-10
+     */
+    @Override
+    public MessageDTO getSentMessageDetail(Integer messageNo) {
+
+        return messageMapper.getMessageDetail(messageNo);
+    }
+
+    /**
+     * Is blocked boolean.
+     *
+     * @param messageNo the message no
+     * @return the boolean
+     * @since 2024 -08-10
+     */
+    @Override
+    public boolean getIsBlocked(MessageDTO messageNo) {
+        return messageMapper.getIsBlocked(messageNo);
+    }
+
+    @Override
+    public List<MessageBlockDTO> getBlockList(PageDTO pageDTO) {
+        return messageMapper.getBlockList(pageDTO);
+    }
+
+    /**
+     * Is admin int.
+     *
+     * @param blockedNo the blocker no
+     * @return the int
+     * @since 2024 -08-10
+     */
+    @Override
+    public String isAdmin(int blockedNo) {
+        return messageMapper.isAdmin(blockedNo);
     }
 }

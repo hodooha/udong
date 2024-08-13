@@ -184,7 +184,7 @@ public class MemberController {
             case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장", "생성일");
             case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성일", "조회수");
             case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자", "일시");
-            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명", "마감일", "상태");
+            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명" , "상태");
             case "saleBoard" -> Arrays.asList("동네", "물품명", "정상가", "할인가", "작성일", "시작시간", "종료시간");
             default -> new ArrayList<>();
         };
@@ -382,7 +382,8 @@ public class MemberController {
     public String deleteMember(@AuthenticationPrincipal CustomUserDetails c,
                                HttpServletRequest request,
                                HttpServletResponse response,
-                               Model model) {
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
@@ -412,8 +413,9 @@ public class MemberController {
                     session.invalidate();
                 }
 
-                model.addAttribute("msg", "회원 탈퇴가 완료되었습니다.");
-                return "index";
+                redirectAttributes.addFlashAttribute("alert", "회원 탈퇴가 완료되었습니다. 우동행을 이용해 주셔서 감사합니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+                return "redirect:/";
 
             default:
                 model.addAttribute("msg", "회원 탈퇴에 실패하였습니다.");
@@ -436,8 +438,11 @@ public class MemberController {
         String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
 
         // 저장 경로 설정
-        String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+        String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
         String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
+
+        System.out.println("path : " + path);
+        System.out.println("savePath : " + savePath);
 
         // 저장될 폴더 설정
         File mkdir = new File(savePath);
@@ -462,51 +467,4 @@ public class MemberController {
 
         return attachmentDTO;
     }
-
-//    public AttachmentDTO settingFile(MultipartFile file) {
-//        // 네이버 클라우드 플랫폼 인증 정보
-//        String accessKey = "ncp_iam_BPASKR17s4RXeNdQ7EQ3";
-//        String secretKey = "ncp_iam_BPKSKRRBMniwe9pYJ8YH3Zi9xakWIiL1aE";
-//        String endPoint = "https://kr.object.ncloudstorage.com";
-//        String regionName = "kr-standard";
-//
-//        // S3 클라이언트 생성
-//        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-//                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(endPoint, regionName))
-//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
-//                .build();
-//
-//        // 버킷 이름 설정
-//        String bucketName = "team-1";
-//
-//        // 파일명 랜덤 저장
-//        String originalName = file.getOriginalFilename();
-//        String ext = originalName.substring(originalName.lastIndexOf("."));
-//        String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
-//
-//        // ObjectMetadata 설정
-//        ObjectMetadata metadata = new ObjectMetadata();
-//        metadata.setContentType(file.getContentType());
-//        metadata.setContentLength(file.getSize());
-//
-//        // 파일 업로드
-//        try {
-//            PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, savedName, file.getInputStream(), metadata)
-//                    .withCannedAcl(CannedAccessControlList.PublicRead);
-//            s3.putObject(putObjectRequest);
-//        } catch (IOException e) {
-//            throw new RuntimeException("파일 업로드 실패", e);
-//        }
-//
-//        // 반환 정보 저장
-//        AttachmentDTO attachmentDTO = new AttachmentDTO();
-//        attachmentDTO.setSavedName(savedName);
-//        attachmentDTO.setOriginalName(originalName);
-//
-//        // 파일의 공개 URL 설정 (버킷이 공개 접근 가능한 경우)
-////        attachmentDTO.setFileUrl(s3.getUrl(bucketName, savedName).toString());
-//        attachmentDTO.setFileUrl("https://kr.object.ncloudstorage.com/team-1/" + savedName);
-//
-//        return attachmentDTO;
-//    }
 }

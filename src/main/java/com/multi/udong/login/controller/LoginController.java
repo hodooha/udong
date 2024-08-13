@@ -8,6 +8,7 @@ import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
 import com.multi.udong.login.openFeign.NTSAPI;
 import com.multi.udong.member.service.NaverOcr;
+import com.multi.udong.notification.controller.NotiController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -44,6 +46,7 @@ public class LoginController {
     private final MemberController memberController;
     private final CustomUserDetailsService customUserDetailsService;
     private final NaverOcr naverOcr;
+    private final NotiController notiController;
 
     /**
      * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
@@ -107,10 +110,11 @@ public class LoginController {
     /**
      * 입력한 사용자 정보로 회원가입
      *
-     * @param memberDTO the memberDTO
-     * @param request   the request
-     * @param file      the file
-     * @param model     the model
+     * @param memberDTO          the memberDTO
+     * @param request            the request
+     * @param file               the file
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-23
      */
@@ -118,7 +122,8 @@ public class LoginController {
     public String signup(MemberDTO memberDTO,
                          HttpServletRequest request,
                          @RequestParam(value = "file", required = false) MultipartFile file,
-                         Model model) {
+                         Model model,
+                         RedirectAttributes redirectAttributes) {
 
         // 초기가입시 닉네임을 랜덤하게 저장
         Random random = new Random();
@@ -188,31 +193,31 @@ public class LoginController {
                     }
 
                     authenticateUserAndSetSession(memberDTO, request);
-                    model.addAttribute("alert", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 통보됩니다.");
-                    model.addAttribute("alertType", "success");
-                    return "/index";
+                    redirectAttributes.addFlashAttribute("alert", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 전달됩니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "success");
+                    return "redirect:/index";
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
-                    model.addAttribute("alert", "유효하지 않은 사업자등록증입니다");
-                    model.addAttribute("alertType", "error");
-                    return "member/signup";
+                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다");
+                    redirectAttributes.addFlashAttribute("alertType", "error");
+                    return "redirect:/member/signup";
                 }
                 
             } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
-                model.addAttribute("alert", "유효하지 않은 이미지입니다");
-                model.addAttribute("alertType", "error");
-                return "member/signup";
+                redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다");
+                redirectAttributes.addFlashAttribute("alertType", "error");
+                return "redirect:/member/signup";
             }
         }
 
         try {
             memberService.signup(memberDTO);
             authenticateUserAndSetSession(memberDTO, request);
-            model.addAttribute("alert","회원가입이 완료되었습니다.");
-            model.addAttribute("alertType", "success");
-            return "/index";
+            redirectAttributes.addFlashAttribute("alert","회원가입이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
+            return "redirect:/";
             
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
