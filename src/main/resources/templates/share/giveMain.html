@@ -99,7 +99,7 @@
     <div class="headBar">
         <div th:replace="~{/share/rentMain :: #catSelect}"></div>
         <div class="form-check checkbox">
-            <input class="form-check-input" type="checkbox" value="GIV" id="availableCheck" onchange="search()" checked>
+            <input class="form-check-input" type="checkbox" value="GIV" id="availableCheck" onchange="search()">
             <label class="form-check-label" for="availableCheck">
                 나눔가능물품만 보기
             </label>
@@ -109,12 +109,12 @@
             <button class="btn btn-udh-blue searchBtn" type="button" onclick="search()">검색</button>
         </div>
     </div>
-    <div th:replace="~{/share/rentMain :: #spinner}"></div>
 
     <div th:replace="~{/share/rentMain :: #itemList}">
 
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>

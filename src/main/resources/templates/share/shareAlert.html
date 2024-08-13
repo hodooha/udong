@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div th:fragment="error" id="error" hidden>
+    <input id="alertType" th:value="${type}" hidden>
+    <input id="alert" th:value="${msg}" hidden>
+</div>
+</body>
+</html>

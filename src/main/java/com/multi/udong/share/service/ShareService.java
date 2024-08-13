@@ -29,7 +29,7 @@ public interface ShareService {
 
     void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception;
 
-    void updateShaLike(ShaLikeDTO likeDTO) throws Exception;
+    ShaItemDTO updateShaLike(ShaLikeDTO likeDTO, CustomUserDetails c) throws Exception;
 
     ShaDreamResultDTO getLendList(ShaDreamCriteriaDTO criteriaDTO) throws Exception;
 

@@ -12,7 +12,9 @@
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
     <style>
-
+        html {
+          scrollbar-gutter: stable;
+        }
 
         .dream .row > div{
             height: 150px;
@@ -254,8 +256,6 @@
 
     </div>
 
-    <div th:replace="~{/share/rentMain :: #spinner}"></div>
-
     <div th:fragment="reqDreams" id="reqDreams">
         <th:block th:if="${#lists.isEmpty(borrowList)}">
             <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
@@ -264,79 +264,95 @@
         </th:block>
         <th:block th:unless="${#lists.isEmpty(borrowList)}">
             <div th:each="req : ${borrowList}" class=" mb-3 dream">
-                <div class="row g-0">
-                    <div th:classappend="${req.itemDTO.itemGroup == 'rent' ? 'rentGroup' : 'giveGroup'}" class="col-1">
-                        [[${req.itemDTO.itemGroup == 'rent' ? '대여' : '나눔'}]]
-                    </div>
-                    <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
-                         class="col-2 img-area" th:classappend="${req.itemDTO.statusCode != 'AVL' && req.itemDTO.statusCode != 'GIV'? ' div-blur' : ''}">
-                        <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + req.itemDTO.img}"
-                             class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;" th:classappend="${req.itemDTO.statusCode != 'AVL'  && req.itemDTO.statusCode != 'GIV' ? ' img-blur' : ''}">
-                    </div>
-                    <div class="col-4 item-info-area "
-                         th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
-                         style="cursor:pointer;">
-                        <div class="card-body p-3">
-                            <span class="badge text-bg-secondary mb-1" style="width:max-content">[[${req.itemDTO.itemCatName}]]</span>
-                            <h4 class="mb-3">[[${req.itemDTO.title}]]</h4>
-                            <p><span>💛   [[${req.itemDTO.likeCnt}]]</span> <span>👀   [[${req.itemDTO.viewCnt}]]</span>
-                                <span>🙋‍♀️   [[${req.itemDTO.reqCnt}]]</span></p>
-                            <p style="margin-bottom: 0">
-                                <span>[[${req.itemDTO.locName}]]</span> <span id="modifiedAt">[[${req.itemDTO.displayDate}]]</span>
-                            </p>
+                <div th:data-dream-id="dream+${req.reqNo}" id="dream">
+                    <div class="row g-0">
+                        <div th:classappend="${req.itemDTO.itemGroup == 'rent' ? 'rentGroup' : 'giveGroup'}"
+                             class="col-1">
+                            [[${req.itemDTO.itemGroup == 'rent' ? '대여' : '나눔'}]]
                         </div>
-                    </div>
-                    <div class="col-3 status-area">
-                        <h5 th:if="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0;color:#CB3333; font-weight: bolder;">&#127882;[[${req.statusName}]]&#127882;</h5>
-                        <h5 th:unless="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0; ">[[${req.statusName}]]</h5>
-                        <div class="align-middle" style="margin:0; font-size:0.8em;">[[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd
-                            HH:mm')}]]
+                        <div th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
+                             class="col-2 img-area"
+                             th:classappend="${req.itemDTO.statusCode != 'AVL' && req.itemDTO.statusCode != 'GIV'? ' div-blur' : ''}">
+                            <img th:src="${req.itemDTO.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + req.itemDTO.img}"
+                                 class="img-fluid " alt="물건이미지" style="height:140px; cursor:pointer;"
+                                 th:classappend="${req.itemDTO.statusCode != 'AVL'  && req.itemDTO.statusCode != 'GIV' ? ' img-blur' : ''}">
                         </div>
-                        <div th:if="${req.statusCode == 'RQD' && req.returnDate != null}">반납희망일: [[${req.returnDate}]]
-                        </div>
-                        <div th:if="${req.statusCode == 'RNT'}">반납예정일: [[${req.returnDate}]]</div>
-                    </div>
-                    <div class="col-2 btn-area container">
-
-                        <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
-                            <div class="mb-3 btns-1">
-                                <button th:onclick="toggleCancelModal([[${req}]])"
-                                        class="btn btn-udh-silver col-12" style="width:max-content">신청취소
-                                </button>
-
-                            </div>
-                            <div class="btns-2 ">
-                                <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
+                        <div class="col-4 item-info-area "
+                             th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${req.itemDTO.itemNo}, itemGroup=${req.itemDTO.itemGroup})}'|"
+                             style="cursor:pointer;">
+                            <div class="card-body p-3">
+                                <span class="badge text-bg-secondary mb-1" style="width:max-content">[[${req.itemDTO.itemCatName}]]</span>
+                                <h4 class="mb-3">[[${req.itemDTO.title}]]</h4>
+                                <p><span>💛   [[${req.itemDTO.likeCnt}]]</span>
+                                    <span>👀   [[${req.itemDTO.viewCnt}]]</span>
+                                    <span>🙋‍♀️   [[${req.itemDTO.reqCnt}]]</span></p>
+                                <p style="margin-bottom: 0">
+                                    <span>[[${req.itemDTO.locName}]]</span> <span id="modifiedAt">[[${req.itemDTO.displayDate}]]</span>
+                                </p>
                             </div>
                         </div>
-
-                        <div th:if="${req.statusCode == 'RNT'}" class="btn-group">
-                            <div class="mb-3 btns-1">
-                                <button th:onclick="toggleReportModalBorrow([[${req}]])" class="btn btn-udh-red col-12" style="width:max-content">물건신고
-                                </button>
+                        <div class="col-3 status-area">
+                            <h5 th:if="${req.statusCode == 'WIN'}" class="align-middle"
+                                style="margin:0;color:#CB3333; font-weight: bolder;">&#127882;[[${req.statusName}]]&#127882;</h5>
+                            <h5 th:unless="${req.statusCode == 'WIN'}" class="align-middle" style="margin:0; ">
+                                [[${req.statusName}]]</h5>
+                            <div class="align-middle" style="margin:0; font-size:0.8em;">
+                                [[${#temporals.format(req.modifiedAt, 'yyyy.MM.dd
+                                HH:mm')}]]
                             </div>
-                            <div class="btns-2">
-                                <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기</button>
+                            <div th:if="${req.statusCode == 'RQD' && req.returnDate != null}">반납희망일:
+                                [[${req.returnDate}]]
                             </div>
+                            <div th:if="${req.statusCode == 'RNT'}">반납예정일: [[${req.returnDate}]]</div>
                         </div>
+                        <div class="col-2 btn-area container">
 
-                        <div th:if="${req.statusCode == 'RTR'}" class="btn-group">
-                            <div class="btns-1">
-                                <button th:onclick="toggleEvalModal([[${req}]])"
-                                        class="btn btn-udh-silver col-12" style="width:max-content">평가하기
-                                </button>
+                            <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
+                                <div class="mb-3 btns-1">
+                                    <button th:onclick="toggleCancelModal([[${req}]])"
+                                            class="btn btn-udh-silver col-12" style="width:max-content">신청취소
+                                    </button>
 
+                                </div>
+                                <div class="btns-2 ">
+                                    <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
+                                    </button>
+                                </div>
                             </div>
 
-                        </div>
-                        <div th:if="${req.statusCode == 'WIN'}" class="btn-group">
-                            <div class="btns-1">
-                                <button
-                                        th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])" class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
-                                </button>
-
+                            <div th:if="${req.statusCode == 'RNT'}" class="btn-group">
+                                <div class="mb-3 btns-1">
+                                    <button th:onclick="toggleReportModalBorrow([[${req}]])"
+                                            class="btn btn-udh-red col-12" style="width:max-content">물건신고
+                                    </button>
+                                </div>
+                                <div class="btns-2">
+                                    <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
+                                    </button>
+                                </div>
                             </div>
 
+                            <div th:if="${req.statusCode == 'RTR'}" class="btn-group">
+                                <div class="btns-1">
+                                    <button th:onclick="toggleEvalModal([[${req}]])"
+                                            class="btn btn-udh-silver col-12" style="width:max-content">평가하기
+                                    </button>
+
+                                </div>
+
+                            </div>
+                            <div th:if="${req.statusCode == 'WIN'}" class="btn-group">
+                                <div class="btns-1">
+                                    <button
+                                            th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
+                                    </button>
+
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -345,8 +361,9 @@
             <nav class="row mt-3" th:if="${pageInfo} != null">
                 <ul th:if="${pageInfo.totalCounts > 0}" class="pagination pagination-sm justify-content-center ">
                     <li class="page-item me-1" th:style="${pageInfo.currentPage == 1 ? 'visibility:hidden' : ''}">
-                        <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])" class="page-link btn-udh-blue "
-                                aria-label="Previous">
+                        <button th:onclick="getBorrowList([[${pageInfo.currentPage-1}]])"
+                                class="page-link btn-udh-blue "
+                                aria-label="Previous" style="caret-color: transparent;">
                             <span>&laquo;</span>
                         </button>
                     </li>
@@ -354,12 +371,14 @@
                         class="page-item active me-1" aria-current="page">
                         <button th:text="${page}" class="page-link btn-udh-blue"
                                 th:onclick="getBorrowList([[${page}]])"
-                                th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"></button>
+                                th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"
+                                style="caret-color: transparent;"></button>
                     </li>
                     <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
                         class="page-item me-1">
                         <button class="page-link btn-udh-blue " aria-label="Previous"
-                                th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])">
+                                th:onclick="getBorrowList([[${pageInfo.currentPage+1}]])"
+                                style="caret-color: transparent;">
                             <span>&raquo;</span>
                         </button>
                     </li>
@@ -400,7 +419,7 @@
                     <div class="modal-body text-center">
                         <span id="lenderName"></span>님의 매너를 평가해 주세요.
                         <div class="star_rating mt-3">
-                            <input type="hidden" id="score">
+                            <input type="hidden" id="score" value="5">
                             <span class="star on" data-value="1"> </span>
                             <span class="star on" data-value="2"> </span>
                             <span class="star on" data-value="3"> </span>
@@ -417,13 +436,13 @@
         </div>
 
 
-
         <div class="modal fade" id="reportModal" tabindex="-1"
              aria-labelledby="reportModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header " style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
+                    <div class="modal-header "
+                         style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
                         <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -453,7 +472,7 @@
                                 <div class="col-sm-10">
                                     <input type="text" class="form-control-plaintext"
                                            id="reportedMember"
-                                           readonly >
+                                           readonly>
                                     <input type="hidden" name="reportedMember">
                                 </div>
                             </div>
@@ -490,7 +509,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
-                        <button type="button" class="btn btn-udh-red" id="reportBtn">신고</button>
+                        <button type="button" class="btn btn-udh-red" id="reportBtn" onclick="postReport()">신고</button>
                     </div>
                 </div>
             </div>
@@ -500,6 +519,7 @@
 
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>

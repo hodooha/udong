@@ -22,6 +22,7 @@ public class ShaCriteriaDTO {
     private int page;
     private int start;
     private int end;
+    private int memberNo;
 
     public void setPageRange(int page){
         this.start = ShaPageDTO.ITEM_COUNTS_FOR_PAGE * (page - 1) + 1;

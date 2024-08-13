@@ -107,6 +107,10 @@
                             <h3>대여중</h3>
                             <p>반납예정일: [[${item.returnDate}]]</p>
                         </div>
+                        <div th:if="${item.statusCode == 'GVD'}" class="blur-info">
+                            <h3>나눔완료</h3>
+                            <p>당첨자: [[${item.mRqstNickname}]]</p>
+                        </div>
                     </div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample"
                             data-bs-slide="prev">
@@ -223,7 +227,7 @@
 
 
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
