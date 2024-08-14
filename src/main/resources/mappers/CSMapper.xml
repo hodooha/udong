@@ -131,5 +131,11 @@
         DELETE FROM CS_QUESTION
         WHERE cs_no = #{csNo}
     </delete>
+
+    <select id="getMemberNoByCsNo">
+        SELECT writer_no
+        FROM CS_QUESTION
+        WHERE cs_no = #{csNo}
+    </select>
     
 </mapper>

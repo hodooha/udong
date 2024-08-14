@@ -6,6 +6,8 @@ import com.multi.udong.cs.model.dao.CSMapper;
 import com.multi.udong.cs.model.dto.CSAnswerDTO;
 import com.multi.udong.cs.model.dto.CSQuestionDTO;
 import com.multi.udong.member.model.dto.PageDTO;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import java.util.*;
 public class CSServiceImpl implements CSService{
 
     private final CSMapper csMapper;
+    private final NotiServiceImpl notiService;
 
     /**
      * Select que list.
@@ -158,11 +161,28 @@ public class CSServiceImpl implements CSService{
 
         if (authority.equals("ROLE_ADMIN")) {
             csMapper.updateQueIsAnswered(csAnswerDTO.getCsNo());
+
+            Map<String, String> params = new HashMap<>();
+            List<Integer> list = new ArrayList<>();
+            notiService.createNoti(
+                    NotiSetCodeENUM.CS_ANSWER,
+                    csMapper.getMemberNoByCsNo(csAnswerDTO.getCsNo()),
+                    list,
+                    csAnswerDTO.getCsNo(),
+                    params
+            );
         }
 
         return createdAt;
     }
 
+    /**
+     * Delete que string.
+     *
+     * @param csNo the cs no
+     * @return the string
+     * @since 2024 -08-13
+     */
     @Override
     public String deleteQue(int csNo) {
 
@@ -174,5 +194,11 @@ public class CSServiceImpl implements CSService{
 
         csMapper.deleteQue(csNo);
         return "notAnswered";
+
+
+
     }
+
+
+
 }

@@ -41,4 +41,12 @@ public interface MessageMapper {
     String isAdmin(int blockedNo);
 
     List<MessageBlockDTO> getBlockList(PageDTO pageDTO);
+
+    List<MessageDTO> getMessage(int receiverNo);
+
+    int getUnreadMessageCount(int receiverNo);
+
+    int markAllAsReadMessage(int receiverNo);
+
+    MessageDTO getInsertedMessage(MessageDTO messageDTO);
 }

@@ -73,10 +73,11 @@
             white-space: nowrap;
             font-size: 18px;
             font-family: Freesentation-5Medium;
-            transition: background-color 0.3s ease;
-        }
-        .location-btn:hover {
-            background-color: #FFA11E;
+            transition: all 0.3s ease;
+
+            &:hover {
+                background-color: #FFA11E;
+            }
         }
         .location-btn svg {
             width: 25px;
@@ -127,10 +128,12 @@
         <th:block th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
             <button type="button" class="noti-btn">
                 <i class="fi fi-rs-bell"></i>
+                <span class="unread-noti-count"></span>
             </button>
 
             <button type="button" class="message-btn">
                 <i class="fi fi-rs-envelope"></i>
+                <span class="unread-message-count"></span>
             </button>
 
             <button class="location-btn" onclick="location.href='/member/address'">

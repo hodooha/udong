@@ -2,15 +2,28 @@ package com.multi.udong.notification.model.dao;
 
 import com.multi.udong.notification.model.dto.NotiDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+/**
+ * The interface Noti mapper.
+ *
+ * @author 김재식
+ * @since 2024 -08-13
+ */
 @Mapper
 public interface NotiMapper {
 
-    void insertNoti(NotiDTO notiDTO);
+    void insertNoti(List<NotiDTO> notiDTO);
 
-    List<NotiDTO> getUnreadNoti(Integer receiverNo);
+    List<NotiDTO> getNoti(Integer receiverNo);
 
-    void markAsRead(Integer notiNo);
+    int markAsRead(@Param("receiverNo") Integer receiverNo, @Param("notiNo") Integer notiNo);
+
+    int markAllAsRead(Integer receiverNo);
+
+    int deleteAllReadNoti(Integer receiverNo);
+
+    int getUnreadNotiCount(int receiverNo);
 }

@@ -5,7 +5,6 @@ import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 import com.multi.udong.message.service.MessageService;
-import com.multi.udong.notification.controller.NotiController;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +30,7 @@ import java.util.Map;
 public class MessageController {
 
     private final MessageService messageService;
-    private final NotiController notiController;
+
 
     /**
      * Message main string.
@@ -235,13 +234,14 @@ public class MessageController {
         int memberNo = c.getMemberDTO().getMemberNo();
         messageDTO.setSenderNo(memberNo);
 
+
         if (messageService.sendMessage(messageDTO)) {
-            notiController.newMessageNoti(messageDTO);
             return ResponseEntity.ok("쪽지를 보냈습니다.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 회원입니다.");
         }
     }
+
 
     /**
      * Delete messages map.
@@ -317,5 +317,47 @@ public class MessageController {
         }
 
         return result;
+    }
+
+    /**
+     * Get message response entity.
+     *
+     * @param c the c
+     * @return the response entity
+     * @since 2024 -08-13
+     */
+    // 웹소켓
+    @GetMapping("/getMessage")
+    public ResponseEntity<List<MessageDTO>> getMessage(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        return ResponseEntity.ok(messageService.getMessage(receiverNo));
+    }
+
+    /**
+     * Get unread noti count response entity.
+     *
+     * @param c the c
+     * @return the response entity
+     * @since 2024 -08-13
+     */
+    @GetMapping("/getUnreadMessageCount")
+    public ResponseEntity<Map<String, Integer>> getUnreadMessageCount(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        int count = messageService.getUnreadMessageCount(receiverNo);
+        return ResponseEntity.ok(Map.of("count", count));
+    }
+
+    /**
+     * Mark all as read message response entity.
+     *
+     * @param c the c
+     * @return the response entity
+     * @since 2024 -08-13
+     */
+    @PostMapping("/markAllAsReadMessage")
+    public ResponseEntity<Map<String, Boolean>> markAllAsReadMessage(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        boolean success = messageService.markAllAsReadMessage(receiverNo);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 }

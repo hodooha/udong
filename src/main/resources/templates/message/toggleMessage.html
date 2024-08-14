@@ -3,15 +3,29 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
         .message-btn {
+            position: relative;
             border: none;
             background-color: transparent;
             padding: 0;
             margin-right: 15px;
             display: flex;
             align-items: center;
+        }
+        .unread-message-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            display: none;
         }
         .message-btn i {
             font-size: 30px;
@@ -44,37 +58,179 @@
                 transform: translateY(0);
             }
         }
+        .message-header {
+            background-color: #ebf5e0;
+            padding: 10px;
+            font-size: 18px;
+        }
         .message-body {
+            flex: 1;
+            flex-direction: column;
+            overflow-y: auto;
             padding: 10px;
         }
+        .message-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background-color: #e9ecef;
+            }
+
+            &.unread {
+                background-color: #ebf5e0;
+
+                &:hover {
+                    background-color: #bdd7a0;
+                }
+            }
+
+            &.removing {
+                max-height: 0;
+                opacity: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                transform: translateX(50);
+            }
+        }
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .message-content {
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #adb5bd;
+            text-align: right;
+        }
         .message-footer {
-            padding: 5px;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+
+            & .btn {
+                width: 100%;
+                flex: 1;
+            }
+        }
+        .no-message {
+            text-align: center;
+            color: #6c757d;
+            padding: 20px;
         }
     </style>
 </head>
 <body>
     <div class="message-window">
-        <div class="message-body">
-            <table>
-                <tbody id="result-table">
-                <tr th:each="data : ${tableData}"
-                    th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
-                    th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|"
-                    th:class="${data.isRead == 'N' ? 'clickable-row unread-message' : 'clickable-row'}">
-                    <td th:text="${data.senderNickname}">
-                        <span th:if="${data.isRead == 'N'}" class="new">new</span>
-                    </td>
-                    <td th:text="${data.createdAt}"></td>
-                    <td th:text="${data.content}"></td>
-                </tr>
-                </tbody>
-            </table>
+        <div class="message-header">
+            쪽지
         </div>
+        <div class="message-body"></div>
         <div class="message-footer">
-            <a th:href="@{/message/receivedMessage(page=1)}">모든 쪽지 보기</a>
+            <button class="btn btn-udh-yellow" onclick="markAllAsReadMessage()">모두 읽음 표시</button>
+            <button class="btn btn-udh-blue" onclick="location.href='/message/receivedMessage?page=1'">모든 쪽지 보기</button>
         </div>
     </div>
 </body>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/message/getMessage')
+            .then(response => response.json())
+            .then(messages => {
+                const messageBody = document.querySelector('.message-body');
+                if (messages.length === 0) {
+                    messageBody.innerHTML = '<div class="no-message">새로운 쪽지가 없습니다.</div>';
+                } else {
+                    messages.forEach(showMessage);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+        updateUnreadMessageCount();
+    });
+
+    // 알림 개수 표시
+    let unreadMessageCount = 0;
+    function updateUnreadMessageCount() {
+        fetch('/message/getUnreadMessageCount')
+            .then(response => response.json())
+            .then(data => {
+                unreadMessageCount = data.count;
+                const unreadMessageCountElement = document.querySelector('.unread-message-count');
+                if (unreadMessageCount > 0) {
+                    unreadMessageCountElement.textContent = unreadMessageCount;
+                    unreadMessageCountElement.style.display = 'block';
+                } else {
+                    unreadMessageCountElement.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    // 알림 출력
+    function showMessage(message) {
+        const messageBody = document.querySelector('.message-body');
+        const messageItem = document.createElement('div');
+        messageItem.className = 'message-item ' + (message.isRead == 'Y'? 'read' : 'unread');
+        messageItem.innerHTML = `
+            <div class="message-sender">${message.senderNickname}</div>
+            <div class="message-content">${message.content}</div>
+            <div class="message-time">${message.createdAt}</div>
+        `;
+
+        if (message.isRead !== 'Y') {
+            unreadMessageCount++;
+            updateUnreadMessageCount();
+        }
+
+        messageItem.addEventListener('click', function() {
+            window.location.href = `/message/receivedMessage?messageNo=${message.messageNo}`;
+        });
+
+        messageBody.insertBefore(messageItem, messageBody.firstChild);
+
+        const noMessage = document.querySelector('.no-message');
+
+        if (noMessage) {
+            noMessage.remove();
+        }
+    }
+
+    // 모두 읽음 처리
+    function markAllAsReadMessage() {
+        fetch('/message/markAllAsReadMessage', {
+            method: 'POST',
+            headers: {
+                [header]: token,
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let unreadItems = document.querySelectorAll('.message-item.unread');
+                unreadItems.forEach(item => item.classList.remove('unread'));
+                unreadMessageCount = 0;
+                updateUnreadMessageCount();
+            }
+        });
+    }
+</script> <!--쪽지-->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
 

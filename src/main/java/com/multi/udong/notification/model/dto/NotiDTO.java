@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * The type Noti dto.
  *
@@ -16,9 +18,11 @@ import lombok.NoArgsConstructor;
 public class NotiDTO {
     public Integer notiNo;
     public Integer receiverNo;
-    public Integer targetNo;
-    public String notiType;
+    public String targetHref;
+    public String notiSetCode;
     public String content;
-    public String createdAt;
+    public LocalDateTime createdAt;
     public Character isRead;
+
+    public String formatCreateAt;
 }

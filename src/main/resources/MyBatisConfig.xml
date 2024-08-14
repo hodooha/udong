@@ -40,6 +40,11 @@
         <typeAlias type="com.multi.udong.sale.model.dto.SaleDTO" alias="saleDTO"/>
 
     </typeAliases>
+
+    <typeHandlers>
+        <typeHandler handler="org.apache.ibatis.type.LocalDateTimeTypeHandler"/>
+    </typeHandlers>
+
     <mappers>
         <!-- 성현 -->
         <mapper resource="mappers/ClubMapper.xml"/>

@@ -8,14 +8,6 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .btn {
-            min-width: 120px;
-            width: 120px;
-            border: none;
-            border-radius: 5px;
-            padding: 0px;
-            transition: background-color 0.3s ease;
-        }
         .profile-update, .contact-update, .password-update {
             flex: 1;
             min-width: 700px;
@@ -56,6 +48,11 @@
             gap: 1rem;
             margin-top: 10px;
             justify-content: flex-end;
+
+            & .btn {
+                min-width: 120px;
+                width: 120px;
+            }
         }
         .input-wrapper {
             position: relative;

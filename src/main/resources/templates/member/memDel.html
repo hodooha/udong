@@ -6,14 +6,6 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .btn {
-            min-width: 120px;
-            width: 120px;
-            border: none;
-            border-radius: 5px;
-            padding: 0px;
-            transition: background-color 0.3s ease;
-        }
         .member-delete form {
             flex: 1;
             min-width: 700px;
@@ -28,6 +20,11 @@
         .input-group {
             flex-direction: column;
             gap: 20px;
+
+            & .btn {
+                min-width: 120px;
+                width: 120px;
+            }
         }
         .warning {
             background-color: #F5DA81;

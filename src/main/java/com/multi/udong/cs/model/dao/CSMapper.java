@@ -45,4 +45,6 @@ public interface CSMapper {
     String isQueAnswered(int csNo);
 
     void deleteQue(int csNo);
+
+    Integer getMemberNoByCsNo(Integer csNo);
 }

@@ -2,20 +2,45 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.multi.udong.notification.model.dao.NotiMapper">
 
-    <insert id="insertNoti" parameterType="notiDTO">
-        INSERT INTO NOTI (receiver_no, noti_type, content, target_no)
-        VALUES (#{receiverNo}, #{notiType}, #{content}, #{targetNo})
+    <insert id="insertNoti" parameterType="java.util.List">
+        INSERT INTO NOTI (receiver_no, target_href, noti_set_code, content, created_at)
+        VALUES
+        <foreach collection="list" item="noti" separator=",">
+            (#{noti.receiverNo}, #{noti.targetHref}, #{noti.notiSetCode}, #{noti.content}, #{noti.createdAt})
+        </foreach>
     </insert>
 
-    <select id="getUnreadNoti" resultType="notiDTO">
+    <select id="getNoti" resultType="notiDTO">
         SELECT * FROM NOTI
-        WHERE receiver_no = #{receiverNo} AND is_read = FALSE
-        ORDER BY created_at DESC
+        WHERE receiver_no = #{receiverNo}
+        ORDER BY is_read DESC, created_at DESC
     </select>
 
     <update id="markAsRead">
-        UPDATE NOTI SET is_read = TRUE
+        UPDATE NOTI
+        SET is_read = 'Y'
         WHERE noti_no = #{notiNo}
+        AND receiver_no = #{receiverNo}
     </update>
+
+    <update id="markAllAsRead">
+        UPDATE NOTI
+        SET is_read = 'Y'
+        WHERE receiver_no = #{receiverNo}
+        AND is_read = 'N'
+    </update>
+
+    <delete id="deleteAllReadNoti">
+        DELETE FROM NOTI
+        WHERE receiver_no = #{receiverNo}
+        AND is_read = 'Y'
+    </delete>
+
+    <select id="getUnreadNotiCount" resultType="int">
+        SELECT COUNT(*)
+        FROM NOTI
+        WHERE receiver_no = #{receiverNo}
+        AND is_read = 'N'
+    </select>
 
 </mapper>

@@ -36,4 +36,10 @@ public interface MessageService {
     boolean getIsBlocked(MessageDTO messageNo);
 
     List<MessageBlockDTO> getBlockList(PageDTO pageDTO);
+
+    List<MessageDTO> getMessage(int receiverNo);
+
+    int getUnreadMessageCount(int receiverNo);
+
+    boolean markAllAsReadMessage(int receiverNo);
 }

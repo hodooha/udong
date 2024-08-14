@@ -5,6 +5,7 @@ import com.multi.udong.message.model.dao.MessageMapper;
 import com.multi.udong.message.model.dto.MessageBlockDTO;
 import com.multi.udong.message.model.dto.MessageDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class MessageServiceImpl implements MessageService{
 
     private final MessageMapper messageMapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * Select received messages list.
@@ -81,6 +83,8 @@ public class MessageServiceImpl implements MessageService{
 
             if (!blocked) {
                 messageMapper.sendMessage(messageDTO);
+                MessageDTO insertedMessage = messageMapper.getInsertedMessage(messageDTO);
+                createMessageNoti(insertedMessage);
             }
 
             return true;
@@ -88,6 +92,10 @@ public class MessageServiceImpl implements MessageService{
         } else {
             return false;
         }
+    }
+
+    private void createMessageNoti(MessageDTO messageDTO) {
+        simpMessagingTemplate.convertAndSend("/topic/message/" + messageDTO.getReceiverNo(), messageDTO);
     }
 
     /**
@@ -188,9 +196,52 @@ public class MessageServiceImpl implements MessageService{
         return messageMapper.getIsBlocked(messageNo);
     }
 
+    /**
+     * Get block list list.
+     *
+     * @param pageDTO the page dto
+     * @return the list
+     * @since 2024 -08-13
+     */
     @Override
     public List<MessageBlockDTO> getBlockList(PageDTO pageDTO) {
         return messageMapper.getBlockList(pageDTO);
+    }
+
+    /**
+     * Get message list.
+     *
+     * @param receiverNo the receiver no
+     * @return the list
+     * @since 2024 -08-13
+     */
+    @Override
+    public List<MessageDTO> getMessage(int receiverNo) {
+        return messageMapper.getMessage(receiverNo);
+    }
+
+    /**
+     * Get unread message count int.
+     *
+     * @param receiverNo the receiver no
+     * @return the int
+     * @since 2024 -08-13
+     */
+    @Override
+    public int getUnreadMessageCount(int receiverNo) {
+        return messageMapper.getUnreadMessageCount(receiverNo);
+    }
+
+    /**
+     * Mark all as read message boolean.
+     *
+     * @param receiverNo the receiver no
+     * @return the boolean
+     * @since 2024 -08-13
+     */
+    @Override
+    public boolean markAllAsReadMessage(int receiverNo) {
+        return messageMapper.markAllAsReadMessage(receiverNo) > 0;
     }
 
     /**

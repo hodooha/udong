@@ -95,6 +95,12 @@
         #{content}
     </insert>
 
+    <select id="getInsertedMessage" resultType="messageDTO">
+        SELECT * FROM MSG
+        WHERE sender_no = #{senderNo} AND receiver_no = #{receiverNo}
+        ORDER BY created_at DESC LIMIT 1
+    </select>
+
     <delete id="deleteMessages" parameterType="list">
         DELETE FROM MSG WHERE message_no In
         <foreach item="messageNo" collection="list" open="(" separator="," close=")">
@@ -159,5 +165,29 @@
         WHERE sub.rownum BETWEEN #{start} AND #{end}
         ORDER BY sub.created_at DESC
     </select>
+
+    <select id="getMessage" resultType="messageDTO">
+        SELECT
+            msg.*,
+            m.nickname AS sender_nickname
+        FROM MSG msg
+        LEFT JOIN MEMBER m ON msg.sender_no = m.member_no
+        WHERE msg.receiver_no = #{receiverNo}
+        ORDER BY msg.is_read DESC, msg.created_at DESC
+    </select>
+
+    <select id="getUnreadMessageCount" resultType="int">
+        SELECT COUNT(*)
+        FROM MSG
+        WHERE receiver_no = #{receiverNo}
+        AND is_read = 'N'
+    </select>
+
+    <update id="markAllAsReadMessage">
+        UPDATE MSG
+        SET is_read = 'Y'
+        WHERE receiver_no = #{receiverNo}
+        AND is_read = 'N'
+    </update>
 
 </mapper>

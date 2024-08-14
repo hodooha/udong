@@ -8,14 +8,6 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .btn {
-            min-width: 120px;
-            width: 120px;
-            border: none;
-            border-radius: 5px;
-            padding: 0px;
-            transition: background-color 0.3s ease;
-        }
         .message {
             min-width: 800px;
             text-align: center;
@@ -77,6 +69,15 @@
             justify-content: end;
             margin: 10px 0;
             gap: 10px;
+
+            & .btn {
+                min-width: 120px;
+                width: 120px;
+            }
+        }
+        .search form button {
+            min-width: 120px;
+            width: 120px;
         }
     </style>
 </head>

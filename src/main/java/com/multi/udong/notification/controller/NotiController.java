@@ -1,12 +1,10 @@
 package com.multi.udong.notification.controller;
 
 import com.multi.udong.login.service.CustomUserDetails;
-import com.multi.udong.message.model.dto.MessageDTO;
 import com.multi.udong.notification.model.dto.NotiDTO;
 import com.multi.udong.notification.service.NotiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +22,6 @@ import java.util.Map;
 @RequestMapping("/api/noti")
 public class NotiController {
     private final NotiService notiService;
-    private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
      * Get unread noti response entity.
@@ -33,61 +30,67 @@ public class NotiController {
      * @return the response entity
      * @since 2024 -08-13
      */
-    @GetMapping("/unread")
-    public ResponseEntity<List<NotiDTO>> getUnreadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+    @GetMapping("/getNoti")
+    public ResponseEntity<List<NotiDTO>> getNoti(@AuthenticationPrincipal CustomUserDetails c) {
         int memberNo = c.getMemberDTO().getMemberNo();
-        return ResponseEntity.ok(notiService.getUnreadNoti(memberNo));
+        return ResponseEntity.ok(notiService.getNoti(memberNo));
+    }
+
+    /**
+     * Get unread noti count response entity.
+     *
+     * @param c the c
+     * @return the response entity
+     * @since 2024 -08-13
+     */
+    @GetMapping("/getUnreadNotiCount")
+    public ResponseEntity<Map<String, Integer>> getUnreadNotiCount(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        int count = notiService.getUnreadNotiCount(receiverNo);
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     /**
      * Mark as read response entity.
      *
+     * @param c      the c
      * @param notiNo the noti no
      * @return the response entity
      * @since 2024 -08-13
      */
-    @PostMapping("/mark-read")
-    public ResponseEntity<?> markAsRead(@RequestParam Integer notiNo) {
-        notiService.markAsRead(notiNo);
-        return ResponseEntity.ok().build();
+    @PostMapping("/markAsRead")
+    public ResponseEntity<Map<String, Boolean>> markAsRead(@AuthenticationPrincipal CustomUserDetails c,
+                                                           @RequestParam("notiNo") Integer notiNo) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        boolean success = notiService.markAsRead(receiverNo, notiNo);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 
     /**
      * Mark all as read response entity.
      *
-     * @param receiverNo the receiver no
+     * @param c the c
      * @return the response entity
      * @since 2024 -08-13
      */
-    @PostMapping("/mark-all-read")
-    public ResponseEntity<Map<String, Boolean>> markAllAsRead(@RequestParam Integer receiverNo) {
+    @PostMapping("/markAllAsReadNoti")
+    public ResponseEntity<Map<String, Boolean>> markAllAsReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
         boolean success = notiService.markAllAsRead(receiverNo);
         return ResponseEntity.ok(Map.of("success", success));
     }
 
     /**
-     * Send noti.
+     * Delete all read noti response entity.
      *
+     * @param c the c
+     * @return the response entity
      * @since 2024 -08-13
      */
-    public void SendNoti() {
-        NotiDTO notiDTO = new NotiDTO();
-        notiService.createNoti(notiDTO);
-        simpMessagingTemplate.convertAndSend("/topic/noti/" + notiDTO.getReceiverNo(), notiDTO);
-    }
-
-    /**
-     * New message noti.
-     *
-     * @param messageDTO the message dto
-     * @since 2024 -08-13
-     */
-    public void newMessageNoti(MessageDTO messageDTO) {
-        NotiDTO notiDTO = new NotiDTO();
-        notiDTO.setReceiverNo(messageDTO.getReceiverNo());
-        notiDTO.setNotiType("MEM");
-        notiDTO.setContent("새 쪽지가 도착했습니다.");
-        notiService.createNoti(notiDTO);
-        simpMessagingTemplate.convertAndSend("/topic/noti/" + notiDTO.getReceiverNo(), notiDTO);
+    @PostMapping("/deleteAllReadNoti")
+    public ResponseEntity<Map<String, Boolean>> deleteAllReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        boolean success = notiService.deleteAllReadNoti(receiverNo);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 }

@@ -4,12 +4,20 @@ import com.multi.udong.notification.model.dto.NotiDTO;
 
 import java.util.List;
 
+/**
+ * The interface Noti service.
+ *
+ * @author 김재식
+ * @since 2024 -08-13
+ */
 public interface NotiService {
-    void createNoti(NotiDTO notiDTO);
+    List<NotiDTO> getNoti(Integer receiverNo);
 
-    List<NotiDTO> getUnreadNoti(Integer receiverNo);
-
-    void markAsRead(Integer notiNo);
+    boolean markAsRead(Integer receiverNo, Integer notiNo);
 
     boolean markAllAsRead(Integer receiverNo);
+
+    boolean deleteAllReadNoti(int receiverNo);
+
+    int getUnreadNotiCount(int receiverNo);
 }
