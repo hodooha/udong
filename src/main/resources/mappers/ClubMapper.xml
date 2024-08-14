@@ -791,7 +791,7 @@
         FROM ATTACHMENT ATM
         LEFT JOIN CL_LOG CLL ON CLL.log_no = ATM.target_no
         WHERE CLL.club_no = #{ clubNo } AND CLL.is_deleted = 'N' AND ATM.type_code = 'CL-LOG'
-        ORDER BY file_no DESC
+        ORDER BY CLL.log_no DESC
         LIMIT #{ startIndex }, #{ albumPageCount }
     </select>
 
