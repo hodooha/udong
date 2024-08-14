@@ -184,7 +184,9 @@
                 <div>
                     <label for="file">이미지 첨부</label>
                     <input type="file" id="file" name="imageFile" accept="image/*">
-                    <div id="image-preview-container"></div>
+                    <div id="image-preview-container">
+                        <img id="image-preview" style="max-width: 200px; max-height: 200px; display: none;" alt="이미지 미리보기">
+                    </div>
                 </div>
                 <div class="form-group-textarea">
                     <label for="content">내용</label>
@@ -286,15 +288,16 @@
             var file = event.target.files[0];
             var reader = new FileReader();
             reader.onload = function(e) {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                var container = document.getElementById('image-preview-container');
-                container.innerHTML = '';
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(file);
-        });
-    });
+        var imgElement = document.getElementById('image-preview');
+        if (imgElement) {  // imgElement가 null이 아닌지 확인
+            imgElement.src = e.target.result;
+            imgElement.style.display = 'block'; // 이미지가 선택되면 보여줌
+        } else {
+            console.error('미리보기 요소를 찾을 수 없습니다.');
+        }
+    };
+    reader.readAsDataURL(file);
+});
 </script>
 </body>
 </html>
