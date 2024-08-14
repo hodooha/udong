@@ -145,7 +145,7 @@
                             class="badge text-bg-danger rounded-0 py-2 px-4">마감일: [[${item.expiryDate}]]</span></h5>
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow me-2" th:onclick="shaRequest([[${item}]])">응모하기</button>
+                    <button th:disabled="${item.statusCode == 'GVD'} ? 'disabled'"  class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])" >응모하기</button>
                     <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"

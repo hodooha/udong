@@ -546,8 +546,7 @@ function selectReq(itemNo){
 function getRequesters(itemNo){
     let reqUrl = "/share/dream/requesters";
     let data = {
-        reqItem: itemNo,
-        statusCode: "RQD"
+        reqItem: itemNo
     }
 
 
@@ -557,10 +556,10 @@ function getRequesters(itemNo){
         showAlerts();
         $('#selectRqst').modal('toggle');
 
-        const pop = document.querySelector('[data-bs-toggle="popover"]');
-        const popover = new bootstrap.Popover(pop);
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
-        console.log(pop.getAttribute("data-bs-title"));
+
     })
 
 }
@@ -736,11 +735,21 @@ function deleteItemAtDream(item) {
 }
 
 function toggleCancelModal(req){
-    $('#cancelModal').modal("toggle", true);
 
-    $('#cancelReqBtn').on("click", function(){
-        cancelReq(req);
-    })
+    Swal.fire({
+         title: "정말 신청을 취소할까요?",
+         text: "신청을 취소하면 해당 물건의 대여 및 나눔을 받을 수 없습니다.",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "신청취소",
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "이전",
+         reverseButtons: true
+        }).then((result) => {
+         if (result.isConfirmed) {
+            cancelReq(req);
+         }
+    });
 
 }
 
@@ -753,7 +762,6 @@ function cancelReq(req){
     ajax_get(reqUrl, data).done(async function(result){
         let type = result.type;
         let msg = result.msg;
-        $('#cancelModal').modal("toggle", true);
         if(await showAlerts(msg, type)){
             location.reload();
         }

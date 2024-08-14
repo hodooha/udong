@@ -123,8 +123,8 @@ public class ShareDAO {
         return sqlSession.selectList("ShareMapper.getReqList", criteriaDTO);
     }
 
-    public List<ShaReqDTO> getRequesters(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
-        return sqlSession.selectList("ShareMapper.getRequesters", reqDTO);
+    public List<ShaRqstDTO> getRequesters(SqlSessionTemplate sqlSession, int reqItem) {
+        return sqlSession.selectList("ShareMapper.getRequesters", reqItem);
     }
 
     public int getReqCounts(SqlSessionTemplate sqlSession, ShaDreamCriteriaDTO criteriaDTO) {
@@ -163,7 +163,7 @@ public class ShareDAO {
         return sqlSession.selectList("ShareMapper.getRaffleItem");
     }
 
-    public int updateReqAfterRaffle(SqlSessionTemplate sqlSession, ShaReqDTO winner) {
+    public int updateReqAfterRaffle(SqlSessionTemplate sqlSession, ShaRqstDTO winner) {
         return sqlSession.update("ShareMapper.updateReqAfterRaffle", winner);
     }
 
@@ -197,5 +197,9 @@ public class ShareDAO {
 
     public List<ShaItemDTO> getItemListByItemNums(SqlSessionTemplate sqlSession, List<Integer> recomItemNums) {
         return sqlSession.selectList("ShareMapper.getItemListByItemNums", recomItemNums);
+    }
+
+    public ShaItemDTO getItemDetailForCheck(SqlSessionTemplate sqlSession, int itemNo) {
+        return sqlSession.selectOne("ShareMapper.getItemDetailForCheck", itemNo);
     }
 }

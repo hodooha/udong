@@ -185,6 +185,12 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("이미 신청하셨습니다.");
         }
 
+        ShaItemDTO target = shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem());
+        if(!target.getStatusCode().equals("GIV")){
+            throw new Exception("이미 나눔이 완료되었습니다.");
+        }
+
+
         // 요청 db에 저장
         if (shareDAO.insertRequest(sqlSession, reqDTO) < 1) {
             throw new Exception("신청을 실패했습니다.");
@@ -267,15 +273,15 @@ public class ShareServiceImpl implements ShareService {
     public void deleteItem(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         // 삭제할 물건 정보 가져오기
-        itemDTO = getItemDetail(itemDTO, c);
+        ShaItemDTO target = shareDAO.getItemDetailForCheck(sqlSession, itemDTO.getItemNo());
 
         // 삭제하려는 유저와 물건 소유자가 같은지 확인
-        if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+        if (target.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("삭제 권한이 없습니다.");
         }
 
         // 현재 대여중인 물건인지 내역 확인
-        if (itemDTO.getStatusCode().equals("RNT")) {
+        if (target.getStatusCode().equals("RNT")) {
             throw new Exception("현재 대여중인 물건입니다. '반납완료' 처리 후 삭제가 가능합니다.");
         }
 
@@ -301,7 +307,7 @@ public class ShareServiceImpl implements ShareService {
     public void updateItStat(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         // 변경하려는 물건 정보 가져오기
-        ShaItemDTO target = getItemDetail(itemDTO, c);
+        ShaItemDTO target = shareDAO.getItemDetailForCheck(sqlSession, itemDTO.getItemNo());
 
         // 변경하려는 유저와 물건 소유자가 같은지 확인
         if (target.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
@@ -400,12 +406,12 @@ public class ShareServiceImpl implements ShareService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public List<ShaReqDTO> getRequesters(ShaReqDTO reqDTO) throws Exception {
+    public List<ShaRqstDTO> getRequesters(int reqDTO) throws Exception {
 
         // 해당 물건의 거래 희망자 목록 조회
-        List<ShaReqDTO> requesters = shareDAO.getRequesters(sqlSession, reqDTO);
+        List<ShaRqstDTO> rqstList = shareDAO.getRequesters(sqlSession, reqDTO);
 
-        return requesters;
+        return rqstList;
     }
 
 
@@ -602,9 +608,18 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public void evalWithEndReq(ShaEvalDTO evalDTO, CustomUserDetails c) throws Exception {
 
+
+        // 요청 정보 db에서 가져오기
+        ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, evalDTO.getReqNo());
+
         // 로그인한 유저가 차용인과 동일인인지 확인
-        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+        if (c.getMemberDTO().getMemberNo() != evalDTO.getEvrNo() && c.getMemberDTO().getMemberNo() != target.getRqstNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("권한이 없습니다.");
+        }
+
+        // 대여인과 평가 대상 일치 여부 확인
+        if(target.getOwnerNo() != evalDTO.getEveNo()){
+            throw new Exception("평가 대상이 대여인과 일치하지 않습니다.");
         }
 
         // 차용인의 대여인 평가 등록
@@ -767,7 +782,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 27 14 * * ?")
+    @Scheduled(cron = "0 51 0 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -789,12 +804,10 @@ public class ShareServiceImpl implements ShareService {
 
         for (ShaItemDTO i : itemList) {
             // 해당 물건을 나눔 요청한 요청자 목록 조회
-            ShaReqDTO reqDTO = new ShaReqDTO();
-            reqDTO.setReqItem(i.getItemNo());
-            reqDTO.setStatusCode("RQD");
-            List<ShaReqDTO> reqList = shareDAO.getRequesters(sqlSession, reqDTO);
 
-            if (reqList.isEmpty()) {
+            List<ShaRqstDTO> rqstList = shareDAO.getRequesters(sqlSession, i.getItemNo());
+
+            if (rqstList.isEmpty()) {
                 if (shareDAO.postponeExpiry(sqlSession, i) < 1) {
                     throw new Exception("마감일 연기를 실패했습니다.");
                 }
@@ -804,11 +817,11 @@ public class ShareServiceImpl implements ShareService {
             } else {
 
                 System.out.println("===== 나눔 물건의 요청자 목록 =====");
-                System.out.println(reqList);
+                System.out.println(rqstList);
 
                 // 당첨자 추첨
-                int luckyNum = (int) (Math.random() * reqList.size());
-                ShaReqDTO winner = reqList.get(luckyNum);
+                int luckyNum = (int) (Math.random() * rqstList.size());
+                ShaRqstDTO winner = rqstList.get(luckyNum);
 
                 System.out.println("===== 럭키넘버!!! =====");
                 System.out.println(luckyNum);
