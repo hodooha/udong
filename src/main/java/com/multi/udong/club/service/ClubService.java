@@ -100,4 +100,16 @@ public interface ClubService {
     String checkIsScheduleDeleted(int scheduleNo) throws Exception;
 
     ScheduleDTO selectScheduleDetail(RequestDTO requestDTO) throws Exception;
+
+    ScheduleDTO checkSchedulePersonnel(int scheduleNo) throws Exception;
+
+    int joinSchedule(RequestDTO requestDTO) throws Exception;
+
+    int checkScheduleJoinStatus(RequestDTO requestDTO) throws Exception;
+
+    int cancelJoinSchedule(RequestDTO requestDTO) throws Exception;
+
+    int checkScheduleMaker(int scheduleNo) throws Exception;
+
+    int deleteSchedule(RequestDTO requestDTO) throws Exception;
 }

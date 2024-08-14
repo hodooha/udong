@@ -515,4 +515,46 @@ public class ClubDAO {
         return sqlSession.selectList("clubMapper.selectScheduleParticipants", requestDTO);
 
     }
+
+    public ScheduleDTO checkSchedulePersonnel(SqlSessionTemplate sqlSession, int scheduleNo) {
+
+        return sqlSession.selectOne("clubMapper.checkSchedulePersonnel", scheduleNo);
+
+    }
+
+    public int joinSchedule(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.insert("clubMapper.joinSchedule", requestDTO);
+
+    }
+
+    public int checkScheduleJoinStatus(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectOne("clubMapper.checkScheduleJoinStatus", requestDTO);
+
+    }
+
+    public int cancelJoinSchedule(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.delete("clubMapper.cancelJoinSchedule", requestDTO);
+
+    }
+
+    public int checkScheduleMaker(SqlSessionTemplate sqlSession, int scheduleNo) {
+
+        return sqlSession.selectOne("clubMapper.checkScheduleMaker", scheduleNo);
+
+    }
+
+    public int deleteSchedule(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.update("clubMapper.deleteSchedule", requestDTO);
+
+    }
+
+    public int deleteScheduleParticipants(SqlSessionTemplate sqlSession, int scheduleNo) {
+
+        return sqlSession.delete("clubMapper.deleteScheduleParticipants", scheduleNo);
+
+    }
 }
