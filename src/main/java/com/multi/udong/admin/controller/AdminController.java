@@ -10,7 +10,6 @@ import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -47,9 +46,6 @@ public class AdminController {
 
     @Autowired
     private NoticeService noticeService;
-
-    @Value("${file.upload-dir:${user.dir}/src/main/resources/static/uploadFiles}")
-    private String uploadDir;
 
     @Autowired
     public AdminController(AdminService adminService) {
@@ -112,7 +108,8 @@ public class AdminController {
 
         System.out.println("Image file name: " + report.getImageFileName());
 
-        Path filePath = Paths.get(uploadDir).resolve(report.getImageFileName());
+
+        Path filePath = Paths.get(System.getProperty("user.home"), "udongUploads").resolve(report.getImageFileName());
         System.out.println("Full file path: " + filePath.toString());
 
         Resource resource;
@@ -184,7 +181,8 @@ public class AdminController {
 
         System.out.println("File name: " + attachment.getSavedName());
 
-        Path filePath = Paths.get(uploadDir).resolve(attachment.getSavedName());
+
+        Path filePath = Paths.get(System.getProperty("user.home"), "udongUploads").resolve(attachment.getSavedName());
         System.out.println("Full file path: " + filePath.toString());
 
         Resource resource;
@@ -253,8 +251,11 @@ public class AdminController {
             AttachmentDTO attachmentDTO = null;
 
             if (!imageFile.isEmpty()) {
-                String imgPath = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
-                File mkdir = new File(imgPath);
+
+                String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
+                String savePath = path + File.separator;
+
+                File mkdir = new File(savePath);
                 if (!mkdir.exists()) {
                     mkdir.mkdirs();
                 }
@@ -267,11 +268,11 @@ public class AdminController {
                 attachmentDTO.setOriginalName(originalFileName);
                 attachmentDTO.setSavedName(savedName);
                 attachmentDTO.setTypeCode("NOTI");
-                attachmentDTO.setFileUrl("/uploadFiles/" + savedName);
+                attachmentDTO.setFileUrl("/udongUploads/" + savedName); // URL 경로도 변경
 
-                imageFile.transferTo(new File(imgPath + File.separator + savedName));
+                imageFile.transferTo(new File(savePath + savedName));
 
-                noticeDTO.setImagePath("/uploadFiles/" + savedName);
+                noticeDTO.setImagePath("/udongUploads/" + savedName); // 이미지 경로 설정
             }
 
             int noticeNo = noticeService.saveNoticeWithAttachment(noticeDTO, attachmentDTO);
@@ -357,7 +358,15 @@ public class AdminController {
                 notice.setImagePath(null);
             } else if (file != null && !file.isEmpty()) {
                 // 새 이미지 업로드 로직
-                String imgPath = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+
+                String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
+                String savePath = path + File.separator;
+
+                File mkdir = new File(savePath);
+                if (!mkdir.exists()) {
+                    mkdir.mkdirs();
+                }
+
                 String originalFileName = file.getOriginalFilename();
                 String ext = originalFileName.substring(originalFileName.lastIndexOf("."));
                 String savedName = UUID.randomUUID().toString().replace("-", "") + ext;
@@ -366,10 +375,10 @@ public class AdminController {
                 attachmentDTO.setOriginalName(originalFileName);
                 attachmentDTO.setSavedName(savedName);
                 attachmentDTO.setTypeCode("NOTI");
-                attachmentDTO.setFileUrl("/uploadFiles/" + savedName);
+                attachmentDTO.setFileUrl("/udongUploads/" + savedName);
 
-                file.transferTo(new File(imgPath + File.separator + savedName));
-                notice.setImagePath("/uploadFiles/" + savedName);
+                file.transferTo(new File(savePath + savedName));
+                notice.setImagePath("/udongUploads/" + savedName);
             }
 
             noticeService.updateNotice(notice, attachmentDTO);

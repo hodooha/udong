@@ -98,7 +98,7 @@ public class SaleController {
 
         try {
             List<AttachmentDTO> imgList = new ArrayList<>();
-            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
             String savePath = path + File.separator;
 
             if (!imageFiles.isEmpty()) {
@@ -120,7 +120,7 @@ public class SaleController {
                     f.transferTo(new File(savePath + savedName));
 
                     if (saleDTO.getImagePath() == null) {
-                        saleDTO.setImagePath("/uploadFiles/" + savedName);
+                        saleDTO.setImagePath("/udongUploads/" + savedName);
                     }
                 }
             }
@@ -198,7 +198,7 @@ public class SaleController {
             report.setStatus("W");
 
             if (!file.isEmpty()) {
-                String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+                String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
                 String savePath = path + File.separator;
 
                 File mkdir = new File(savePath);
