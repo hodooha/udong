@@ -1,4 +1,5 @@
 $(function(){
+
     url = new URL(location.href);
     urlSearch = url.searchParams;
     path = url.pathname;
@@ -437,20 +438,6 @@ function getLendItem(itemNo){
     })
 }
 
-//function getBorrowItem(reqNo){
-//    let reqUrl = "/share/dream/borrowItem"
-//    let data = {
-//        reqNo: reqNo
-//    };
-//
-//    ajax_get(reqUrl, data).done(function(result){
-//        let itemRow = $(`div[data-dream-id='dream${reqNo}']`);
-//        console.log(itemRow);
-//        console.log(result);
-//        itemRow.replaceWith(result);
-//    })
-//}
-
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
     $("input[name='group']").val(params.group);
@@ -483,24 +470,12 @@ function updateItemDetail(){
     });
 }
 
-function deleteItem(item){
-    if(item.statusCode == 'RNT'){
-        showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
-        $('#deleteModal').modal("hide", true);
-        return;
-    }
-
-    let reqUrl = `/share/delete?itemNo=${item.itemNo}&itemGroup=${item.itemGroup}`;
-
-    location.href = reqUrl;
-}
-
 function shaRequest(item) {
     let returnDate = $('#datePicker').val();
 
     if(item.itemGroup == 'rent'){
         if(returnDate == ''){
-            showConfirmAlert("반납희망일을 설정해주세요.");
+            showAlert("반납희망일을 설정해주세요.");
             return;
         }
     }
@@ -560,6 +535,9 @@ function updateItStat(item){
 }
 
 
+
+
+
 function selectReq(itemNo){
     console.log(itemNo);
     getRequesters(itemNo);
@@ -571,14 +549,22 @@ function getRequesters(itemNo){
         reqItem: itemNo,
         statusCode: "RQD"
     }
+
+
     ajax_get(reqUrl, data).done(function(result){
 
         $('#dreamModals').replaceWith(result);
         showAlerts();
         $('#selectRqst').modal('toggle');
+
+        const pop = document.querySelector('[data-bs-toggle="popover"]');
+        const popover = new bootstrap.Popover(pop);
+
+        console.log(pop.getAttribute("data-bs-title"));
     })
 
 }
+
 
 function checkReturnDate(requesters){
     let selectedRqst = $('input[name="requesters"]:checked').val();
@@ -692,10 +678,44 @@ function postScore(req){
 }
 
 function toggleDeleteModal(item){
-    $('#deleteModal').modal("toggle", true);
+    if(item.statusCode == 'RNT'){
+        showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
+        $('#deleteModal').modal("hide", true);
+        return;
+    }
 
-    $('#deleteBtn').on("click", function(){
+   Swal.fire({
+     title: "정말 삭제할까요?",
+     text: "대여 및 신청 내역이 있는 게시글을 삭제하면 이웃이 당황할 수 있어요.",
+     icon: "warning",
+     showCancelButton: true,
+     confirmButtonText: "삭제",
+     confirmButtonColor: "#CB3333",
+     cancelButtonText: "취소",
+     reverseButtons: true
+   }).then((result) => {
+     if (result.isConfirmed) {
+     if(path.includes("dream")){
         deleteItemAtDream(item);
+     } else{
+        deleteItemAtDetail(item)
+     }
+     }
+    });
+}
+
+function deleteItemAtDetail(item){
+    let reqUrl = "/share/delete";
+    let data = {
+        itemNo: item.itemNo,
+        itemGroup: item.itemGroup
+    }
+    ajax_get(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)) {
+            location.href=`/share/${item.itemGroup}`;
+        }
     })
 }
 
@@ -706,11 +726,13 @@ function deleteItemAtDream(item) {
         itemGroup: item.itemGroup
     }
 
-    ajax_get(reqUrl, data).done(function(){
-        $('#deleteModal').modal("toggle", true);
-        location.reload();
+    ajax_get(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)) {
+            location.reload();
+        }
     })
-
 }
 
 function toggleCancelModal(req){
@@ -832,6 +854,7 @@ function getRecItems(){
         showAlerts();
     })
 }
+
 
 
 

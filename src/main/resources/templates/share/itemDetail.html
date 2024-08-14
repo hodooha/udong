@@ -130,11 +130,7 @@
                       style="width:max-content; font-size: 0.9em;">[[${item.itemCatName}]]</span>
                 <h2>[[${item.title}]]</h2>
                 <p class="owner">
-                    <img style="width:25px; height:25px; margin-right:7px" th:src="${#authentication.principal.memberDTO.savedName == null
-                   || #authentication.principal.memberDTO.savedName == ''
-                   || #authentication.principal.memberDTO.savedName == 'defaultProfile.png'
-                      ? '/img/defaultProfile.png'
-                      : '/uploadFiles/' + #authentication.principal.memberDTO.savedName}"
+                    <img style="width:25px; height:25px; margin-right:7px" th:src="${item.ownerImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
                          class="user-icon">[[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
                 <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt"
                                                                                  th:text="${item.viewCnt}"></span>🙋‍♀️
@@ -188,7 +184,7 @@
                             class="btn btn-udh-silver"
                             th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
+                    <button class="btn btn-udh-red" th:onclick="toggleDeleteModal([[${item}]])" >삭제</button>
                 </span>
                 </th:block>
 
@@ -200,27 +196,6 @@
                           th:text="${item.content}"></textarea>
                 </div>
 
-            </div>
-            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
-                 aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">정말 삭제할까요?</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>대여 내역이 있는 게시글을 삭제하면 대여했던 이웃이 당황할 수 있어요.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
-                            <button type="button" class="btn btn-udh-red"
-                                  th:onclick="deleteItem([[${item}]])"  >
-                                삭제
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
         </th:block>
     </div>
