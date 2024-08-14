@@ -269,14 +269,6 @@ public class ShareServiceImpl implements ShareService {
         // 삭제할 물건 정보 가져오기
         itemDTO = getItemDetail(itemDTO, c);
 
-//        // 삭제할 사진 목록 가져오기 (삭제 성공 시 로컬폴더에서도 삭제하기 위해)
-//        List<AttachmentDTO> delImgs = itemDTO.getImgList();
-//
-//        // 삭제할 첨부 사진 dto 설정
-//        AttachmentDTO imgDTO = new AttachmentDTO();
-//        imgDTO.setTargetNo(itemDTO.getItemNo());
-//        imgDTO.setTypeCode(itemDTO.getItemGroup());
-
         // 삭제하려는 유저와 물건 소유자가 같은지 확인
         if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
             throw new Exception("삭제 권한이 없습니다.");
@@ -291,12 +283,6 @@ public class ShareServiceImpl implements ShareService {
         if (shareDAO.deleteItem(sqlSession, itemDTO) < 1) {
             throw new Exception("물건 삭제를 실패했습니다.");
         }
-        ;
-
-//        // 물건 첨부사진 삭제 (attachment 테이블)
-//        if (shareDAO.deleteImgByTarget(sqlSession, imgDTO) < 0) {
-//            throw new Exception("물건의 첨부사진 삭제에 실패했습니다.");
-//        }
         ;
 
     }
@@ -418,7 +404,6 @@ public class ShareServiceImpl implements ShareService {
 
         // 해당 물건의 거래 희망자 목록 조회
         List<ShaReqDTO> requesters = shareDAO.getRequesters(sqlSession, reqDTO);
-
 
         return requesters;
     }
@@ -701,71 +686,77 @@ public class ShareServiceImpl implements ShareService {
     @Override
     public List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception {
 
-        // db에서 찜 내역, 대여 요청 내역 조회
-        List<MemberItemPreferenceDTO> preferences = shareDAO.getMemberItemPreferences(sqlSession, c.getMemberDTO().getMemAddressDTO().getLocationCode());
+        List<ShaItemDTO> result = null;
 
-        if(preferences.isEmpty()){
-            throw new Exception("데이터 베이스 조회를 실패했습니다.");
+        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
+        criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
+        criteriaDTO.setGroup("rent");
+        if (shareDAO.getItemCounts(sqlSession, criteriaDTO) < 12) {
+            return null;
         }
 
-        Map<Integer, Map<Integer, Double>> itemMemberPreferences = new HashMap<>();
+            // db에서 찜 내역, 대여 요청 내역 조회
+            List<MemberItemPreferenceDTO> preferences = shareDAO.getMemberItemPreferences(sqlSession, c.getMemberDTO().getMemAddressDTO().getLocationCode());
 
-        // 물건 - 사용자 선호도 맵 생성
-        for (MemberItemPreferenceDTO p : preferences) {
-            itemMemberPreferences.putIfAbsent(p.getItemNo(), new HashMap<>());
-            itemMemberPreferences.get(p.getItemNo()).put(p.getMemberNo(), p.getPreference());
-        }
+            Map<Integer, Map<Integer, Double>> itemMemberPreferences = new HashMap<>();
 
-        // 로그인한 유저의 평가 데이터 생성
-        Map<Integer, Double> memberRatings = new HashMap<>();
-        for (MemberItemPreferenceDTO p : preferences) {
-            if (p.getMemberNo() == c.getMemberDTO().getMemberNo()) {
-                memberRatings.put(p.getItemNo(), p.getPreference());
+            // 물건 - 사용자 선호도 맵 생성
+            for (MemberItemPreferenceDTO p : preferences) {
+                itemMemberPreferences.putIfAbsent(p.getItemNo(), new HashMap<>());
+                itemMemberPreferences.get(p.getItemNo()).put(p.getMemberNo(), p.getPreference());
             }
-        }
 
-        // 로그인한 유저의 평가 데이터가 없을 경우 (찜, 대여 요청 없을 경우)
-        // 조회수/좋아요/신청자수 기반 랜덤 추천 물건
-        if(memberRatings.isEmpty()){
-            List<Integer> hotItemNums = shareDAO.getAddRecomItems(sqlSession, new ArrayList<>(), 12, c.getMemberDTO().getMemAddressDTO().getLocationCode());
-            List<ShaItemDTO> result = shareDAO.getItemListByItemNums(sqlSession, hotItemNums);
-            for(ShaItemDTO i : result){
-                i.convertLocaldatetimeToTime();
+            // 로그인한 유저의 평가 데이터 생성
+            Map<Integer, Double> memberRatings = new HashMap<>();
+            for (MemberItemPreferenceDTO p : preferences) {
+                if (p.getMemberNo() == c.getMemberDTO().getMemberNo()) {
+                    memberRatings.put(p.getItemNo(), p.getPreference());
+                }
             }
+
+            // 로그인한 유저의 평가 데이터가 없을 경우 (찜, 대여 요청 없을 경우)
+            // 조회수/좋아요/신청자수 기반 랜덤 추천 물건
+            if (memberRatings.isEmpty()) {
+                List<Integer> hotItemNums = shareDAO.getAddRecomItems(sqlSession, new ArrayList<>(), 12, c.getMemberDTO().getMemAddressDTO().getLocationCode());
+                result = shareDAO.getItemListByItemNums(sqlSession, hotItemNums);
+                for (ShaItemDTO i : result) {
+                    i.convertLocaldatetimeToTime();
+                }
+            } else {
+
+                // 아이템 기반 협업 필터링 알고리즘 실행
+                ItemBaseCollaborativeFiltering recommender = new ItemBaseCollaborativeFiltering(itemMemberPreferences);
+
+                Map<Integer, Double> recommendations = recommender.recommend(memberRatings);
+                System.out.println("알고리즘 실행 결과");
+                System.out.println(recommendations);
+
+
+                // 유사도 높은 상위 12개 물건 번호 list
+                List<Integer> recomItemNums = recommendations.entrySet().stream()
+                        .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
+                        .limit(12)
+                        .map(Map.Entry::getKey)
+                        .toList();
+
+                // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
+                if (recomItemNums.size() < 12) {
+                    List<Integer> addItemNums = shareDAO.getAddRecomItems(sqlSession, recomItemNums, 12 - recomItemNums.size(), c.getMemberDTO().getMemAddressDTO().getLocationCode());
+                    recomItemNums.addAll(addItemNums);
+                }
+
+                // 12개의 물건 번호로 물건 정보 가져오기
+                result = shareDAO.getItemListByItemNums(sqlSession, recomItemNums);
+                if (result.isEmpty()) {
+                    throw new Exception("추천 물건 정보 조회를 실패했습니다.");
+                }
+                for (ShaItemDTO i : result) {
+                    i.convertLocaldatetimeToTime();
+                }
+            }
+
             return result;
-        }
 
-        // 아이템 기반 협업 필터링 알고리즘 실행
-        ItemBaseCollaborativeFiltering recommender = new ItemBaseCollaborativeFiltering(itemMemberPreferences);
-
-        Map<Integer, Double> recommendations = recommender.recommend(memberRatings);
-        System.out.println("알고리즘 실행 결과");
-        System.out.println(recommendations);
-
-
-        // 유사도 높은 상위 12개 물건 번호 list
-        List<Integer> recomItemNums = recommendations.entrySet().stream()
-                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
-                .limit(12)
-                .map(Map.Entry::getKey)
-                .toList();
-
-        // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
-        if(recomItemNums.size() < 12){
-            List<Integer> addItemNums = shareDAO.getAddRecomItems(sqlSession, recomItemNums, 12-recomItemNums.size(), c.getMemberDTO().getMemAddressDTO().getLocationCode());
-            recomItemNums.addAll(addItemNums);
-        }
-
-        // 12개의 물건 번호로 물건 정보 가져오기
-        List<ShaItemDTO> result = shareDAO.getItemListByItemNums(sqlSession, recomItemNums);
-        if(result.isEmpty()){
-            throw new Exception("추천 물건 정보 조회를 실패했습니다.");
-        }
-        for(ShaItemDTO i : result){
-            i.convertLocaldatetimeToTime();
-        }
-
-        return result;
     }
 
 

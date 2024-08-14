@@ -10,6 +10,7 @@
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="ownerNo" column="owner_no"/>
+        <result property="ownerImg" column="owner_img"/>
         <result property="nickName" column="nickname"/>
         <result property="level" column="level"/>
         <result property="locCode" column="loc_code"/>
@@ -35,6 +36,8 @@
         <result property="ownerNickname" column="owner_nickname"/>
         <result property="rqstNo" column="rqst_no"/>
         <result property="rqstNickname" column="nickname"/>
+        <result property="rqstImg" column="rqst_img"/>
+        <result property="rqstLevel" column="rqst_level"/>
         <result property="createdAt" column="req_created_at"/>
         <result property="modifiedAt" column="req_modified_at"/>
         <result property="returnDate" column="return_date"/>
@@ -80,11 +83,18 @@
     </insert>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.level, c.eup_myeon_dong_name, d.*, e.cat_name, f.saved_name, g.status_name
+        select a.*, b.nickname, b.is_deleted, b.level, c.eup_myeon_dong_name, d.*, e.cat_name, f.saved_name, g.status_name, h.owner_img
         from sha_items a
-        inner join
+        left join
         member b
         on a.owner_no = b.member_no
+        left join
+        (
+        select target_no, saved_name as owner_img
+        from attachment
+        where type_code = 'MEM'
+        ) h
+        on h.target_no = a.owner_no
         inner join
         location c
         on a.loc_code = c.location_code
@@ -118,6 +128,7 @@
         sha_status g
         on a.status_code = g.status_code
         where a.item_no = #{itemNo}
+        and b.is_deleted = 'N'
     </select>
 
     <select id="getItemImgs" resultType="attachmentDTO">
@@ -376,6 +387,7 @@
         sha_cat g
         on b.item_cat_code = g.cat_code
         where b.deleted_at is null
+        and d.is_deleted = 'N'
         <if test="ownerNo != null and ownerNo != 0">and b.owner_no = #{ownerNo}</if>
         <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and b.item_group = #{group}</if>
@@ -406,13 +418,16 @@
 
     <select id="getLendCounts" resultType="Integer">
         select count(*)
-        from sha_items
-        where deleted_at is null
-        <if test="ownerNo != null and ownerNo != 0">and owner_no = #{ownerNo}</if>
-        <if test="catCode != null and catCode != ''">and item_cat_code = #{catCode}</if>
-        <if test="group != null and group != ''">and item_group = #{group}</if>
-        <if test="statusCode != null and statusCode != ''">and status_code = #{statusCode}</if>
-        <if test="keyword != null and keyword != ''">and (title like concat('%', #{keyword}, '%') or content like
+        from sha_items a
+        join member b
+        on a.owner_no = b.member_no
+        where a.deleted_at is null
+        and b.is_deleted = 'N'
+        <if test="ownerNo != null and ownerNo != 0">and a.owner_no = #{ownerNo}</if>
+        <if test="catCode != null and catCode != ''">and a.item_cat_code = #{catCode}</if>
+        <if test="group != null and group != ''">and a.item_group = #{group}</if>
+        <if test="statusCode != null and statusCode != ''">and a.status_code = #{statusCode}</if>
+        <if test="keyword != null and keyword != ''">and (a.title like concat('%', #{keyword}, '%') or a.content like
             concat('%', #{keyword}, '%'))
         </if>
     </select>
@@ -420,11 +435,14 @@
     <select id="getReqCounts" resultType="Integer">
         select count(*)
         from sha_req a
-        left join
+        join
         sha_items b
-        on
-        a.req_item = b.item_no
-        where 1=1
+        on a.req_item = b.item_no
+        left join
+        member c
+        on b.owner_no = c.member_no
+        where b.deleted_at is null
+        and c.is_deleted = 'N'
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and b.item_group = #{group}</if>
@@ -450,7 +468,7 @@
         left join
         (
         select
-        b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname, j.eup_myeon_dong_name
+        b.*, c.saved_name, f.cat_name, h.nickname as owner_nickname, h.is_deleted, j.eup_myeon_dong_name
         from
         sha_items b
         left join
@@ -476,7 +494,9 @@
         on b.loc_code = j.location_code
         ) d
         on g.req_item = d.item_no
-        where 1=1
+        where
+        d.deleted_at is null
+        and d.is_deleted = 'N'
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and d.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and d.item_group = #{group}</if>
@@ -495,13 +515,20 @@
 
     <select id="getRequesters" resultType="shaReqDTO">
         select
-        a.*, b.nickname as rqst_nickname, c.item_group as req_group
+        a.*, b.nickname as rqst_nickname, b.level as rqst_level, c.item_group as req_group, d.rqst_img
         from sha_req a
         left join
         member b
         on a.rqst_no = b.member_no
         left join sha_items c
         on a.req_item = c.item_no
+        left join
+        (
+        select target_no, saved_name as rqst_img
+        from attachment
+        where type_code = 'MEM'
+        ) d
+        on a.rqst_no = target_no
         where a.req_item = #{reqItem}
         and a.status_code = #{statusCode}
     </select>
@@ -605,22 +632,32 @@
     </update>
 
     <select id="getMemberItemPreferences" resultType="com.multi.udong.share.model.dto.MemberItemPreferenceDTO">
-        select member_no, a.item_no, 1.0 as preference
+        select a.member_no, a.item_no, 1.0 as preference
         from sha_like a
-        left join
+        join
         sha_items b
         on a.item_no = b.item_no
+        join
+        member d
+        on b.owner_no = d.member_no
         where b.item_group = 'rent'
+        and b.deleted_at is null
+        and d.is_deleted = 'N'
         <if test="locationCode != null and locationCode != 0">
             and b.loc_code = #{locationCode}
         </if>
         union all
         select rqst_no as member_no, req_item as item_no, 2.0 as preference
         from sha_req c
-        left join
+        join
         sha_items b
         on c.req_item = b.item_no
+        join
+        member d
+        on b.owner_no = d.member_no
         where b.item_group = 'rent'
+        and b.deleted_at is null
+        and d.is_deleted = 'N'
         <if test="locationCode != null and locationCode != 0">
             and b.loc_code = #{locationCode}
         </if>
