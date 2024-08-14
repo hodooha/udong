@@ -557,4 +557,16 @@ public class ClubDAO {
         return sqlSession.delete("clubMapper.deleteScheduleParticipants", scheduleNo);
 
     }
+
+    public List<AttachmentDTO> selectAlbumList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("clubMapper.selectAlbumList", filterDTO);
+
+    }
+
+    public int selectAlbumCount(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectAlbumCount", filterDTO);
+
+    }
 }

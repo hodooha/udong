@@ -588,6 +588,20 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public List<AttachmentDTO> selectAlbumList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectAlbumList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectAlbumCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectAlbumCount(sqlSession, filterDTO);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

@@ -112,4 +112,8 @@ public interface ClubService {
     int checkScheduleMaker(int scheduleNo) throws Exception;
 
     int deleteSchedule(RequestDTO requestDTO) throws Exception;
+
+    List<AttachmentDTO> selectAlbumList(FilterDTO filterDTO) throws Exception;
+
+    int selectAlbumCount(FilterDTO filterDTO) throws Exception;
 }

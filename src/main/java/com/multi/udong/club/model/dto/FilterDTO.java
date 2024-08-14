@@ -14,6 +14,7 @@ public class FilterDTO {
     private int page = 1;
     private int start;
     private int pageCount = 5; // 5개씩
+    private int albumPageCount = 10; // 앨범은 10개씩
     private int startIndex;
     private long locationCode;
     private String categoryCode;
@@ -34,6 +35,18 @@ public class FilterDTO {
         startIndex = start - 1;
         // 1page: startIndex 0
         // 2page: startIndex 5
+
+    }
+
+    public void setAlbumStartAndStartIndex(int page) {
+
+        start = 1 + (page - 1) * albumPageCount;
+        // 1page: 1 + 0 * 10 => start 1
+        // 2page: 1 + 1 * 10 => start 11
+
+        startIndex = start - 1;
+        // 1page: startIndex 0
+        // 2page: startIndex 10
 
     }
 

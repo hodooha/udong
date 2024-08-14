@@ -2171,6 +2171,77 @@ public class ClubController {
     }
 
 
+    // ================= 모임 앨범 =================
+
+    @RequestMapping("/clubAlbum/albumMain")
+    public String albumMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = filterDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태 또는 관리자일 때만 앨범 페이지로 이동
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                // 받아온 page로 시작 및 시작 index를 설정
+                filterDTO.setAlbumStartAndStartIndex(filterDTO.getPage());
+
+                // 이미지 리스트 select 메소드 호출
+                List<AttachmentDTO> albumList = clubService.selectAlbumList(filterDTO);
+                System.out.println("###### 가져온 앨범 리스트: " + albumList);
+                model.addAttribute("albumList", albumList);
+
+                // 앨범 개수 받아와 페이지 수 계산
+                int albumCount = clubService.selectAlbumCount(filterDTO);
+                System.out.println("###### 앨범 총 개수: " + albumCount);
+
+                int pages = 0;
+
+                if (albumCount != 0) {
+
+                    pages = albumCount / 10;
+
+                    if (albumCount % 10 != 0) {
+                        pages += 1;
+                    }
+
+                }
+
+                System.out.println("###### 페이지 개수: " + pages);
+
+                model.addAttribute("pages", pages);
+                model.addAttribute("clubNo", clubNo);
+
+                return "/club/clubAlbum/albumMain";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 앨범 리스트 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 미가입인 상태일 때는 모임 홈으로 이동
+        redirectAttributes.addFlashAttribute("alert", "모임 앨범은 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "warning");
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
 
 
     // ================= 공통 사용 메소드 =================
