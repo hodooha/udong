@@ -843,6 +843,138 @@ public class ClubController {
 
     }
 
+    @RequestMapping("/joinRequestControl")
+    public String joinRequestControl(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 모임장일 때만 신청자 관리 페이지로 이동
+        if(isMaster.equals("Y")) {
+
+            try {
+
+                List<ClubMemberDTO> joinRequestList = clubService.selectClubJoinRequestList(clubNo);
+                System.out.println("###### 가져온 신청자 리스트: " + joinRequestList);
+                model.addAttribute("joinRequestList", joinRequestList);
+
+                ClubDTO personnel = clubService.checkPersonnel(clubNo);
+                model.addAttribute("personnel", personnel);
+
+                return "club/joinRequestControl";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 가입 신청자 관리 페이지 이동 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/approveJoinRequest")
+    public String approveJoinRequest(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        try {
+
+            // 서버단에서 현재 인원이 최대 인원보다 적은지 한 번 더 검증
+            ClubDTO personnel = clubService.checkPersonnel(clubNo);
+            int currentPersonnel = personnel.getCurrentPersonnel();
+            int maxPersonnel = personnel.getMaxPersonnel();
+            System.out.println("###### 현재 모임 인원: " + currentPersonnel + " / " + maxPersonnel);
+
+            // 모임장이고, 정원 가득 차지 않았을 때만 가입 신청 메소드 호출
+            if(isMaster.equals("Y") && currentPersonnel < maxPersonnel) {
+
+                clubService.approveJoinRequest(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "가입 신청 승인이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/joinRequestControl?clubNo=" + clubNo;
+
+            }
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "모임 가입 신청자 승인 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/rejectJoinRequest")
+    public String rejectJoinRequest(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        if(isMaster.equals("Y")) {
+
+            try {
+
+                clubService.rejectJoinRequest(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "가입 신청 거절이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/joinRequestControl?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 가입 신청자 거절 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
 
     @RequestMapping("/clubLog/logMain")
     public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {

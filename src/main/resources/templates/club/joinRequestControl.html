@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .profile-img {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            margin: 0px 10px 0px 0px;
+        }
+        .nickname {
+            font-family: 'Freesentation-5Medium';
+        }
+        .applied-at {
+            font-size: 11px;
+            color: #6F6F6F;
+        }
+        .btn-approve {
+            margin-left: 8px;
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 13px !important;
+            padding: 3px 6px 3px 6px !important;
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .join-request-list {
+            white-space: nowrap;
+        }
+        .no-data-div {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .no-data-p {
+            background-color: #E5E5E5;
+            padding: 20px 30px 20px 30px;
+            margin-top: 180px;
+            width: 220px;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
+
+<div class="content" style="padding: 40px; height: 670px;">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <p class="menu">&#128682; 모임 가입 신청자 관리</p>
+        <th:block th:if="${personnel.currentPersonnel >= personnel.maxPersonnel}">
+            <span style="color: #CB3333">&#128683; 모임 정원이 가득 찼습니다.</span>
+        </th:block>
+
+        <div class="join-request-list">
+            <hr>
+            <th:block th:if="${#lists.isEmpty(joinRequestList)}">
+                <div class="no-data-div">
+                    <p class="no-data-p">❌ 가입 신청자가 없습니다.</p>
+                </div>
+            </th:block>
+            <div th:each="one, iterStat : ${joinRequestList}">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="display: flex; align-items: center;">
+                            <th:block th:if="${one.profileSavedName == 'defaultProfile.png'}">
+                                <img th:src="@{'/img/' + ${one.profileSavedName}}" class="profile-img">
+                            </th:block>
+                            <th:block th:if="${one.profileSavedName != 'defaultProfile.png'}">
+                                <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="profile-img">
+                            </th:block>
+                            <span th:text="${one.nickname}" class="nickname"></span>
+
+                            <span class="applied-at" style="margin: 0px 7px 0px auto;">신청일 : </span>
+                            <span th:text="${one.appliedAt}" class="applied-at" style="margin-right: 20px"></span>
+                            <form th:action="@{/club/approveJoinRequest}" method="post" style="display: inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="clubNo" th:value="${one.clubNo}">
+                                <input type="hidden" name="memberNo" th:value="${one.memberNo}">
+                                <th:block th:if="${personnel.currentPersonnel < personnel.maxPersonnel}">
+                                    <button type="submit" class="btn btn-udh-blue btn-approve">
+                                        승인
+                                    </button>
+                                </th:block>
+                                <th:block th:if="${personnel.currentPersonnel >= personnel.maxPersonnel}">
+                                    <button type="submit" class="btn btn-udh-blue btn-approve" disabled>
+                                        승인
+                                    </button>
+                                </th:block>
+                            </form>
+                            <form th:action="@{/club/rejectJoinRequest}" method="post" th:id="'rejectJoinRequestForm' + ${iterStat.index + 1}" style="display: inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                <input type="hidden" name="clubNo" th:value="${one.clubNo}">
+                                <input type="hidden" name="memberNo" th:value="${one.memberNo}">
+                                <button type="button" class="btn btn-udh-red btn-approve" th:onclick="'confirmRejectJoinRequest(' + ${iterStat.index + 1} + ')'">
+                                    거절
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+                <hr>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    async function confirmRejectJoinRequest(num) {
+        const result = await Swal.fire({
+            title: "가입 신청을 거절하시겠습니까?",
+            icon: "warning",
+            confirmButtonColor: "#CB3333",
+            confirmButtonText: "거절",
+            showCancelButton: true,
+            cancelButtonColor: "#979797",
+            cancelButtonText: "취소"
+        });
+
+        if (result.isConfirmed) {
+            document.getElementById('rejectJoinRequestForm' + num).submit();
+        }
+    }
+
+</script>
+</body>
+</html>

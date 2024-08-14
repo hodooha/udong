@@ -2,6 +2,8 @@ package com.multi.udong.club.model.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 /**
  * 모임 멤버 DTO
  *
@@ -15,5 +17,7 @@ public class ClubMemberDTO {
     private int memberNo;
     private String nickname;
     private String profileSavedName;
+    private LocalDateTime appliedAt;
+    private LocalDateTime approvedAt;
 
 }

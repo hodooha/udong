@@ -116,4 +116,10 @@ public interface ClubService {
     List<AttachmentDTO> selectAlbumList(FilterDTO filterDTO) throws Exception;
 
     int selectAlbumCount(FilterDTO filterDTO) throws Exception;
+
+    List<ClubMemberDTO> selectClubJoinRequestList(int clubNo) throws Exception;
+
+    int approveJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception;
+
+    int rejectJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception;
 }

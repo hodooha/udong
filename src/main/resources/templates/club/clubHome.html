@@ -132,9 +132,11 @@
                             </form>
                         </th:block>
                         <th:block th:if="${clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
-                            <button class="btn btn-udh-blue btn-join">
-                                가입 신청자 관리
-                            </button>
+                            <a th:href="@{/club/joinRequestControl(clubNo=${clubHome.clubNo})}">
+                                <button class="btn btn-udh-blue btn-join">
+                                    가입 신청자 관리
+                                </button>
+                            </a>
                         </th:block>
                     </th:block>
                 </td>

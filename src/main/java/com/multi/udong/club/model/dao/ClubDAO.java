@@ -569,4 +569,22 @@ public class ClubDAO {
         return sqlSession.selectOne("clubMapper.selectAlbumCount", filterDTO);
 
     }
+
+    public List<ClubMemberDTO> selectClubJoinRequestList(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.selectList("clubMapper.selectClubJoinRequestList", clubNo);
+
+    }
+
+    public int approveJoinRequest(SqlSessionTemplate sqlSession, ClubMemberDTO clubMemberDTO) {
+
+        return sqlSession.update("clubMapper.approveJoinRequest", clubMemberDTO);
+
+    }
+
+    public int rejectJoinRequest(SqlSessionTemplate sqlSession, ClubMemberDTO clubMemberDTO) {
+
+        return sqlSession.delete("clubMapper.rejectJoinRequest", clubMemberDTO);
+
+    }
 }
