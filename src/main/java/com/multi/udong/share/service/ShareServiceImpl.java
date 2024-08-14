@@ -2,6 +2,7 @@ package com.multi.udong.share.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.service.CustomUserDetails;
+import com.multi.udong.share.algorithm.ItemBaseCollaborativeFiltering;
 import com.multi.udong.share.model.dao.ShareDAO;
 import com.multi.udong.share.model.dto.*;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -108,7 +112,7 @@ public class ShareServiceImpl implements ShareService {
     public ShaItemDTO getItemDetail(ShaItemDTO itemDTO, CustomUserDetails c) throws Exception {
 
         ShaItemDTO item = shareDAO.getItemDetail(sqlSession, itemDTO);
-        if(item == null){
+        if (item == null) {
             throw new Exception("존재하지 않는 물건입니다.");
         }
         item.convertLocaldatetimeToTime();
@@ -686,56 +690,82 @@ public class ShareServiceImpl implements ShareService {
     }
 
     /**
-     * 추천 물건 조회
+     * 아이템 기반 협업 필터링 알고리즘 이용한 물건 추천
      *
      * @param c the c
      * @return the list
      * @throws Exception the exception
-     * @since 2024 -08-11
+     * @since 2024 -08-13
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception {
 
-        List<ShaItemDTO> itemList = null;
-        List<ShaCatDTO> catsInMemReq = shareDAO.getCatsInMemReq(sqlSession, c.getMemberDTO().getMemberNo());
+        // db에서 찜 내역, 대여 요청 내역 조회
+        List<MemberItemPreferenceDTO> preferences = shareDAO.getMemberItemPreferences(sqlSession, c.getMemberDTO().getMemAddressDTO().getLocationCode());
 
-        System.out.println("===== 유저가 대여 및 나눔 요청한 물건 카테고리 =====");
-        System.out.println(catsInMemReq);
-
-        ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
-        criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
-        criteriaDTO.setGroup("rent");
-        criteriaDTO.setStart(1);
-        criteriaDTO.setEnd(12);
-
-        if (catsInMemReq.isEmpty()) {
-            itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
-            for(ShaItemDTO i : itemList){
-                i.convertLocaldatetimeToTime();
-                i.maskNickname();
-            }
-            System.out.println("===== 요청했던 물건이 없을때의 추천리스트!! =====");
-            System.out.println(itemList);
-        } else {
-            criteriaDTO.setCatList(catsInMemReq);
-            criteriaDTO.setMemberNo(c.getMemberDTO().getMemberNo());
-            itemList = shareDAO.getHotItems(sqlSession, criteriaDTO);
-            if (itemList.size() < 12) {
-                int i = 12 - itemList.size();
-                criteriaDTO.setEnd(i);
-                criteriaDTO.setCatList(null);
-                List<ShaItemDTO> fillItems = shareDAO.getHotItems(sqlSession, criteriaDTO);
-                itemList.addAll(fillItems);
-            }
-            for(ShaItemDTO i : itemList){
-                i.convertLocaldatetimeToTime();
-                i.maskNickname();
-            }
-            System.out.println("===== 요청했던 물건이 있을때 추천리스트!! =====");
-            System.out.println(itemList);
+        if(preferences.isEmpty()){
+            throw new Exception("데이터 베이스 조회를 실패했습니다.");
         }
 
-        return itemList;
+        Map<Integer, Map<Integer, Double>> itemMemberPreferences = new HashMap<>();
+
+        // 물건 - 사용자 선호도 맵 생성
+        for (MemberItemPreferenceDTO p : preferences) {
+            itemMemberPreferences.putIfAbsent(p.getItemNo(), new HashMap<>());
+            itemMemberPreferences.get(p.getItemNo()).put(p.getMemberNo(), p.getPreference());
+        }
+
+        // 로그인한 유저의 평가 데이터 생성
+        Map<Integer, Double> memberRatings = new HashMap<>();
+        for (MemberItemPreferenceDTO p : preferences) {
+            if (p.getMemberNo() == c.getMemberDTO().getMemberNo()) {
+                memberRatings.put(p.getItemNo(), p.getPreference());
+            }
+        }
+
+        // 로그인한 유저의 평가 데이터가 없을 경우 (찜, 대여 요청 없을 경우)
+        // 조회수/좋아요/신청자수 기반 랜덤 추천 물건
+        if(memberRatings.isEmpty()){
+            List<Integer> hotItemNums = shareDAO.getAddRecomItems(sqlSession, new ArrayList<>(), 12, c.getMemberDTO().getMemAddressDTO().getLocationCode());
+            List<ShaItemDTO> result = shareDAO.getItemListByItemNums(sqlSession, hotItemNums);
+            for(ShaItemDTO i : result){
+                i.convertLocaldatetimeToTime();
+            }
+            return result;
+        }
+
+        // 아이템 기반 협업 필터링 알고리즘 실행
+        ItemBaseCollaborativeFiltering recommender = new ItemBaseCollaborativeFiltering(itemMemberPreferences);
+
+        Map<Integer, Double> recommendations = recommender.recommend(memberRatings);
+        System.out.println("알고리즘 실행 결과");
+        System.out.println(recommendations);
+
+
+        // 유사도 높은 상위 12개 물건 번호 list
+        List<Integer> recomItemNums = recommendations.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
+                .limit(12)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
+        if(recomItemNums.size() < 12){
+            List<Integer> addItemNums = shareDAO.getAddRecomItems(sqlSession, recomItemNums, 12-recomItemNums.size(), c.getMemberDTO().getMemAddressDTO().getLocationCode());
+            recomItemNums.addAll(addItemNums);
+        }
+
+        // 12개의 물건 번호로 물건 정보 가져오기
+        List<ShaItemDTO> result = shareDAO.getItemListByItemNums(sqlSession, recomItemNums);
+        if(result.isEmpty()){
+            throw new Exception("추천 물건 정보 조회를 실패했습니다.");
+        }
+        for(ShaItemDTO i : result){
+            i.convertLocaldatetimeToTime();
+        }
+
+        return result;
     }
 
 
@@ -745,7 +775,7 @@ public class ShareServiceImpl implements ShareService {
      * @throws Exception the exception
      * @since 2024 -08-08
      */
-// 매일 오후 12시에 나눔 품목들의 마감일 확인
+    // 매일 오후 12시에 나눔 품목들의 마감일 확인
     @Scheduled(cron = "0 27 14 * * ?")
     public void raffleGiveItem() throws Exception {
 
@@ -823,9 +853,6 @@ public class ShareServiceImpl implements ShareService {
         }
 
     }
-
-
-
 
 
 }

@@ -581,78 +581,6 @@
         where rqst_no = #{memberNo}
     </select>
 
-    <select id="getHotItems" resultMap="shaItemMap">
-        select a.*, c.saved_name
-        from
-        (
-        select b.*, e.*, f.eup_myeon_dong_name, g.cat_name,
-        row_number() over
-        (
-        order by
-        ((b.like_cnt * 0.3) +
-        (b.req_cnt * 0.3) +
-        (b.deal_cnt * 0.1) +
-        (b.view_cnt * 0.1) +
-        (datediff(now(), b.created_at) * -0.1) +
-        rand() * 0.1) desc
-        ) as rn
-        from sha_items b
-        inner join
-        location f
-        on b.loc_code = f.location_code
-        left join
-        member d
-        on b.owner_no = d.member_no
-        left join
-        (
-        select req_item, return_date
-        from sha_req
-        where status_code = 'RNT'
-        ) e
-        on b.item_no = e.req_item
-        left join
-        sha_cat g
-        on b.item_cat_code = g.cat_code
-        where
-        b.deleted_at is null
-        and d.is_deleted = 'N'
-        <if test="memberNo != null and memberNo != 0">
-            and b.item_no not in
-            (
-            select req_item
-            from sha_req
-            where rqst_no = #{memberNo} and status_code in ('RNT', 'REV', 'RTR')
-            )
-        </if>
-        <if test="locCode != null and locCode != ''">and b.loc_code = #{locCode}</if>
-        <if test="group != null and group != ''">and b.item_group = #{group}</if>
-        <if test="catList != null">
-            and b.item_cat_code in
-            (
-            <foreach collection="catList" item="cat" separator=",">
-                #{cat.catCode}
-            </foreach>
-            )
-        </if>
-        <if test="statusCode != null and statusCode != ''">and b.status_code = #{statusCode}</if>
-        ) a
-        left join
-        (
-        select target_no, saved_name, type_code
-        from
-        (
-        select *,
-        row_number() over (partition by target_no order by file_no) as rn
-        from attachment
-        ) sub
-        where rn = 1
-        ) c
-        on a.item_no = c.target_no
-        and a.item_group = c.type_code
-        where a.rn between #{start} and #{end}
-        order by a.rn
-    </select>
-
     <update id="updateScore">
         update
         member
@@ -675,5 +603,97 @@
         set a.level = b.level_no
         where a.member_no = #{eveNo}
     </update>
+
+    <select id="getMemberItemPreferences" resultType="com.multi.udong.share.model.dto.MemberItemPreferenceDTO">
+        select member_no, a.item_no, 1.0 as preference
+        from sha_like a
+        left join
+        sha_items b
+        on a.item_no = b.item_no
+        where b.item_group = 'rent'
+        <if test="locationCode != null and locationCode != 0">
+            and b.loc_code = #{locationCode}
+        </if>
+        union all
+        select rqst_no as member_no, req_item as item_no, 2.0 as preference
+        from sha_req c
+        left join
+        sha_items b
+        on c.req_item = b.item_no
+        where b.item_group = 'rent'
+        <if test="locationCode != null and locationCode != 0">
+            and b.loc_code = #{locationCode}
+        </if>
+    </select>
+
+    <select id="getAddRecomItems" resultType="int">
+        select item_no
+        from sha_items a
+        left join
+        member b
+        on a.owner_no = b.member_no
+        where
+        a.deleted_at is null
+        and b.is_deleted = 'N'
+        and a.item_group = 'rent'
+        and a.loc_code = #{locationCode}
+        <if test="excludedItems != null and excludedItems.size() > 0">
+        and a.item_no not in
+            <foreach collection="excludedItems" item="itemNo" open="(" separator="," close=")">
+                #{itemNo}
+            </foreach>
+        </if>
+        order by
+            (a.like_cnt * 0.3) +
+            (a.req_cnt * 0.3) +
+            (a.deal_cnt * 0.1) +
+            (a.view_cnt * 0.1) +
+            (datediff(now(), a.created_at) * -0.1) +
+            (rand() * 0.1) desc
+        limit #{limit}
+    </select>
+
+    <select id="getItemListByItemNums" resultMap="shaItemMap">
+        select a.*, b.cat_name as item_cat_name, c.nickname, d.eup_myeon_dong_name,
+        e.*, f.saved_name
+        from sha_items a
+        left join
+        sha_cat b
+        on a.item_cat_code = b.cat_code
+        left join
+        member c
+        on a.owner_no = c.member_no
+        left join
+        location d
+        on a.loc_code = d.location_code
+        left join
+        (
+        select req_item, return_date, rqst_no, nickname as rqst_nickname
+        from sha_req
+        left join
+        member
+        on rqst_no = member_no
+        where status_code = 'RNT'
+        ) e
+        on a.item_no = e.req_item
+        left join
+        (
+        select target_no, type_code, saved_name
+        from
+        (
+        select *,
+        row_number() over (partition by target_no order by file_no) as rn
+        from attachment
+        ) sub
+        where rn = 1
+        ) f
+        on a.item_no = f.target_no and a.item_group = f.type_code
+        where item_no in
+        <foreach collection="list" item="itemNo" open="(" separator="," close=")">
+            #{itemNo}
+        </foreach>
+        and a.deleted_at is null
+        and c.is_deleted = 'N'
+    </select>
 
 </mapper>
