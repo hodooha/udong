@@ -144,7 +144,6 @@ public class MemberController {
         int pages = 1;
 
         List<List<String>> data = memberService.selectAllAct(table, pageDTO);
-        List<String> clubNo = new ArrayList<>();
 
         if (!data.isEmpty()) {
             count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
@@ -152,27 +151,23 @@ public class MemberController {
 
             for (List<String> list : data) {
                 list.remove(list.size() - 1);
-                if (table.equals("clubLog")) {
-                    clubNo.add(list.get(1));
-                    list.remove(1);
-                }
             }
         }
 
         List<String> headers = getHeaders(table);
         List<String> searchCategories = getSearchCategories(table);
+        int searchCategoryIndex = headers.indexOf(searchCategory);
 
         model.addAttribute("tableHeaders", headers);
         model.addAttribute("tableData", data);
-        if (table.equals("clubLog")) {
-            model.addAttribute("clubNo", clubNo);
-        }
+
         model.addAttribute("page", pageDTO.getPage());
         model.addAttribute("table", table);
         model.addAttribute("pages", pages);
 
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
     }
 
@@ -196,7 +191,7 @@ public class MemberController {
             case "newsLike" -> Arrays.asList("주제", "동네", "제목", "내용", "작성자");
             case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글내용");
             case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장");
-            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "내용");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목");
             case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자");
             case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명");
             case "saleBoard" -> Arrays.asList("동네", "물품명");
@@ -234,15 +229,17 @@ public class MemberController {
     /**
      * 입력한 주소를 등록하거나 수정함
      *
-     * @param c             the c
-     * @param memAddressDTO the mem address dto
-     * @param model         the model
+     * @param c                  the c
+     * @param memAddressDTO      the mem address dto
+     * @param redirectAttributes the redirect attributes
+     * @param model              the model
      * @return the string
      * @since 2024 -07-25
      */
     @PostMapping("/insertAddress")
     public String insertAddress(@AuthenticationPrincipal CustomUserDetails c,
                                 MemAddressDTO memAddressDTO,
+                                RedirectAttributes redirectAttributes,
                                 Model model) {
         
         // 등록된 주소의 주소코드를 받아옴
@@ -265,7 +262,8 @@ public class MemberController {
             
             // 등록 후 사용자 세션 최신화
             memberService.updateMemberSession();
-            model.addAttribute("msg", "주소 등록이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "주소 등록이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
         } else { // 등록된 주소가 있다면
 
@@ -280,11 +278,12 @@ public class MemberController {
 
             // 수정 후 사용자 세션 최신화
             memberService.updateMemberSession();
-            model.addAttribute("msg", "주소 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "주소 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
         }
 
-        return "member/dashBoard";
+        return "redirect:/member/address";
     }
 
     /**
@@ -371,10 +370,11 @@ public class MemberController {
     /**
      * Delete member string.
      *
-     * @param c        the c
-     * @param request  the request
-     * @param response the response
-     * @param model    the model
+     * @param c                  the c
+     * @param request            the request
+     * @param response           the response
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-30
      */

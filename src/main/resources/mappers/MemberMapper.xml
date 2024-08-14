@@ -67,9 +67,22 @@
         (#{memberId}, #{memberPw}, #{nickname}, #{phone}, #{email})
     </insert>
 
+    <select id="getMemberNoByMemberId">
+        SELECT member_no
+        FROM MEMBER
+        WHERE member_id = #{memberId}
+        AND is_deleted = 'N'
+    </select>
+
     <insert id="insertProfileImg">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
-        ('defaultProfile.png', 'defaultProfile.png', 'MEM', LAST_INSERT_ID())
+        ('defaultProfile.png', 'defaultProfile.png', 'MEM', #{memberNo})
+    </insert>
+
+    <insert id="insertNotiSet">
+        INSERT INTO NOTI_SET (member_no, noti_set_code)
+        SELECT #{memberNo}, noti_set_code
+        FROM NOTI_SET_CODE
     </insert>
 
     <insert id="insertBusReg" parameterType="memBusDTO">
@@ -162,7 +175,7 @@
             nc.category_name,
             l.eup_myeon_dong_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.views,
             sub.total_count
         FROM (
@@ -200,7 +213,7 @@
             nc.category_name,
             l.eup_myeon_dong_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             m.nickname,
             sub.views,
             sub.total_count
@@ -245,7 +258,7 @@
             l.eup_myeon_dong_name,
             np.title,
             sub.content,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.total_count
         FROM (
             SELECT
@@ -284,7 +297,7 @@
             l.eup_myeon_dong_name,
             sub.club_name,
             m.nickname,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.total_count
         FROM (
             SELECT
@@ -325,7 +338,7 @@
             l.eup_myeon_dong_name,
             c.club_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.views,
             sub.total_count
         FROM (
@@ -371,7 +384,7 @@
             c.club_name,
             sub.title,
             m.nickname,
-            sub.gathering_at,
+            DATE_FORMAT(sub.gathering_at, '%Y-%m-%d %H:%i:%s') AS gathering_at,
             sub.total_count
         FROM (
             SELECT
@@ -415,7 +428,7 @@
         sc.cat_name,
         l.eup_myeon_dong_name,
         sub.title,
-        sub.expiry_date,
+        DATE_FORMAT(sub.expiry_date, '%Y-%m-%d %H:%i:%s') AS expiry_date,
         ss.status_name,
         sub.total_count
     FROM (
@@ -454,9 +467,9 @@
             sub.title,
             sub.original_price,
             sub.sale_price,
-            sub.created_at,
-            sub.started_at,
-            sub.ended_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+            DATE_FORMAT(sub.started_at, '%Y-%m-%d %H:%i:%s') AS started_at,
+            DATE_FORMAT(sub.ended_at, '%Y-%m-%d %H:%i:%s') AS ended_at,
             sub.total_count
         FROM (
             SELECT

@@ -38,9 +38,9 @@ public class CSServiceImpl implements CSService{
     @Override
     public List<List<String>> selectQue(PageDTO pageDTO) {
 
-        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
+        List<LinkedHashMap<String, Object>> map = csMapper.selectQue(pageDTO);
 
-        map = csMapper.selectQue(pageDTO);
+        System.out.println("##map : " + map);
 
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {
@@ -50,6 +50,8 @@ public class CSServiceImpl implements CSService{
             }
             result.add(list);
         }
+
+        System.out.println("##result : " + result);
 
         return result;
     }
@@ -63,9 +65,7 @@ public class CSServiceImpl implements CSService{
      */
     @Override
     public List<List<String>> selectAllQue(PageDTO pageDTO) {
-        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
-
-        map = csMapper.selectAllQue(pageDTO);
+        List<LinkedHashMap<String, Object>> map = csMapper.selectAllQue(pageDTO);
 
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {

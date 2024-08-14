@@ -96,6 +96,8 @@ public class CSController {
             }
         }
 
+        System.out.println("문의데이터 " + data);
+
         List<String> headers = Arrays.asList("문의유형", "제목", "작성일자", "답변여부");
 
         model.addAttribute("tableHeaders", headers);
@@ -156,7 +158,9 @@ public class CSController {
     /**
      * Insert que form.
      *
+     * @param c     the c
      * @param model the model
+     * @return the string
      * @since 2024 -08-01
      */
     @GetMapping("/insertQueForm")
@@ -196,12 +200,16 @@ public class CSController {
         CSQuestionDTO csQuestionDTO = (CSQuestionDTO) map.get("csQuestionDTO");
 
         if (memberNo != csQuestionDTO.getWriterNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
-            model.addAttribute("msg", "권한이 부족합니다.");
+            model.addAttribute("alert", "권한이 부족합니다.");
+            model.addAttribute("alertType", "error");
             return "cs/csMain";
         }
 
         List<AttachmentDTO> attachments = (List<AttachmentDTO>) map.get("attachments");
         List<CSAnswerDTO> answers = (List<CSAnswerDTO>) map.get("answers");
+
+        System.out.println("문의 : " + csQuestionDTO);
+        System.out.println("답변 : " + answers);
 
         model.addAttribute("que", csQuestionDTO);
         model.addAttribute("attachments", attachments);
@@ -277,6 +285,14 @@ public class CSController {
         }
     }
 
+    /**
+     * Delete que string.
+     *
+     * @param csNo  the cs no
+     * @param model the model
+     * @return the string
+     * @since 2024 -08-14
+     */
     @PostMapping("/deleteQue")
     public String deleteQue(@RequestParam("csNo") int csNo, Model model) {
 

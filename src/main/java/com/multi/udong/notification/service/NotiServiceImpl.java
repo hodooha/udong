@@ -3,6 +3,7 @@ package com.multi.udong.notification.service;
 import com.multi.udong.notification.model.dao.NotiMapper;
 import com.multi.udong.notification.model.dto.NotiDTO;
 import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.model.dto.NotiSetDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -73,6 +74,7 @@ public class NotiServiceImpl implements NotiService{
 
             // 각 수신자에게 웹소켓으로 알림 전송
             for (NotiDTO notiDTO : notiDTOs) {
+                notiDTO.setNotiNo(notiMapper.getNotiNoByReceiverNo(notiDTO));
                 notiDTO.setFormatCreateAt(formattedDateTime);
                 simpMessagingTemplate.convertAndSend("/topic/noti/" + notiDTO.getReceiverNo(), notiDTO);
             }
@@ -149,5 +151,17 @@ public class NotiServiceImpl implements NotiService{
     @Override
     public int getUnreadNotiCount(int receiverNo) {
         return notiMapper.getUnreadNotiCount(receiverNo);
+    }
+
+    /**
+     * Get noti set by member no list.
+     *
+     * @param memberNo the member no
+     * @return the list
+     * @since 2024 -08-14
+     */
+    @Override
+    public List<NotiSetDTO> getNotiSetByMemberNo(int memberNo) {
+        return notiMapper.getNotiSetByMemberNo(memberNo);
     }
 }

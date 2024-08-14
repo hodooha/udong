@@ -18,4 +18,3 @@ public class ChatbotRequest {
 
     private String message;
 }
-

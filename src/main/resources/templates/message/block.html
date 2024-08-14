@@ -24,16 +24,24 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #D4D4D4;
         }
         input[type="checkbox"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-        .clickable-row:hover, .clickable-row.active {
-            background-color: #f2f2f2;
+        .clickable-row {
+            border-bottom: 1px solid #D4D4D4;
             cursor: pointer;
+
+            &:hover {
+                background-color: #D4D4D4;
+            }
+
+            &.active {
+                background-color: #D4D4D4;
+            }
         }
         #no-result {
             margin: 20px;

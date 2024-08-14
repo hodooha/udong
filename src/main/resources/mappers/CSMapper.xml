@@ -7,7 +7,7 @@
             sub.cs_no,
             t.type_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.is_answered,
             sub.total_count
         FROM (
@@ -34,7 +34,7 @@
             t.type_name,
             sub.title,
             m.nickname,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.is_answered,
             sub.total_count
         FROM (

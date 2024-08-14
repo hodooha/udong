@@ -49,12 +49,12 @@ public class MemberServiceImpl implements MemberService {
         try {
 
             int result = memberMapper.signup(memberDTO);
-            int result2 = memberMapper.insertProfileImg();
+            int memberNo = memberMapper.getMemberNoByMemberId(memberDTO);
+            int result2 = memberMapper.insertProfileImg(memberNo);
+            int result3 = memberMapper.insertNotiSet(memberNo);
 
-            if (result != 1 && result2 != 1) {
-
+            if (result != 1 && result2 != 1 && result3 != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
-
             }
 
         } catch (Exception e) {

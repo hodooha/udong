@@ -27,16 +27,24 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #D4D4D4;
         }
         input[type="checkbox"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-        .clickable-row:hover, .clickable-row.active{
-            background-color: #f2f2f2;
+        .clickable-row {
+            border-bottom: 1px solid #D4D4D4;
             cursor: pointer;
+
+            &:hover {
+                background-color: #D4D4D4;
+            }
+
+            &.active {
+                background-color: #D4D4D4;
+            }
         }
         #no-result {
             margin: 20px;
@@ -78,6 +86,10 @@
         .search form button {
             min-width: 120px;
             width: 120px;
+        }
+        .highlight {
+            color: blue;
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -287,4 +299,28 @@
         }, false);
     });
 </script> <!--체크박스, 버튼 할당-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchWord = /*[[${searchWord}]]*/ '';
+        const searchCategoryIndex = /*[[${searchCategoryIndex}]]*/ -1;
+
+        if (searchWord && searchCategoryIndex !== -1) {
+            const table = document.getElementById('result-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const cell = row.cells[searchCategoryIndex];
+
+                if (cell) {
+                    const cellText = cell.textContent;
+
+                    if (cellText.includes(searchWord)) {
+                        const regex = new RegExp(searchWord, 'gi'); // g: 전역 검색, i: 대/소문자 구분 안함
+                        cell.innerHTML = cellText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    }
+                }
+            }
+        }
+    });
+</script> <!--검색어 하이라이팅-->
 </html>

@@ -82,6 +82,7 @@ public class MessageController {
         }
 
         List<String> searchCategories = Arrays.asList("보낸 사람", "내용");
+        int searchCategoryIndex = header.indexOf(searchCategory) + 1;
 
         // 테이블
         model.addAttribute("tableHeader", header);
@@ -94,6 +95,7 @@ public class MessageController {
         // 검색 결과
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
     }
 
@@ -147,6 +149,7 @@ public class MessageController {
         }
 
         List<String> searchCategories = Arrays.asList("받은 사람", "내용");
+        int searchCategoryIndex = header.indexOf(searchCategory) + 1;
 
         // 테이블
         model.addAttribute("tableHeader", header);
@@ -159,6 +162,7 @@ public class MessageController {
         // 검색 결과
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
     }
 

@@ -1,6 +1,7 @@
 package com.multi.udong.notification.model.dao;
 
 import com.multi.udong.notification.model.dto.NotiDTO;
+import com.multi.udong.notification.model.dto.NotiSetDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -26,4 +27,8 @@ public interface NotiMapper {
     int deleteAllReadNoti(Integer receiverNo);
 
     int getUnreadNotiCount(int receiverNo);
+
+    List<NotiSetDTO> getNotiSetByMemberNo(int memberNo);
+
+    Integer getNotiNoByReceiverNo(NotiDTO notiDTO);
 }

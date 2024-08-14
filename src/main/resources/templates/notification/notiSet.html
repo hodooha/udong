@@ -6,13 +6,20 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .btn {
-            min-width: 120px;
-            width: 120px;
-            border: none;
+        .noti-setting {
+            min-width: 800px;
+            text-align: center;
+            border: 1px solid #000000;
             border-radius: 5px;
-            padding: 0px;
-            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: end;
+            margin: 10px 0;
+            gap: 10px;
         }
     </style>
 </head>
@@ -21,7 +28,24 @@
 <div th:replace="~{/member/alert}"></div>
 <main>
     <div th:replace="~{/member/sidebar}"></div>
-    <div class="content-area"></div>
+    <div class="content-area">
+        <div class="noti-setting">
+            <h2>알림 설정</h2>
+            <form action="/noti/notiSet" method="post">
+                <ul>
+                    <li th:each="notiSet : ${notiSets}">
+                        <input type="checkbox"
+                               th:name="${'notiSet_' + notiSet.notiSetCode}"
+                               th:checked="${notiSet.isReceived == 'Y'}">
+                        <span th:text="${notiSet.notiSetName}"></span>
+                    </li>
+                </ul>
+                <div class="button-group">
+                    <button class="btn btn-udh-blue" id="setting">설정 저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 </body>
 </html>

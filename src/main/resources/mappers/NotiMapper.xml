@@ -11,9 +11,17 @@
     </insert>
 
     <select id="getNoti" resultType="notiDTO">
-        SELECT * FROM NOTI
+        SELECT
+            noti_no AS notiNo,
+            receiver_no AS receiverNo,
+            target_href AS targetHref,
+            noti_set_code AS notiSetCode,
+            content,
+            created_at AS formatCreateAt,
+            is_read AS isRead
+        FROM NOTI
         WHERE receiver_no = #{receiverNo}
-        ORDER BY is_read DESC, created_at DESC
+        ORDER BY is_read DESC, created_at ASC
     </select>
 
     <update id="markAsRead">
@@ -42,5 +50,30 @@
         WHERE receiver_no = #{receiverNo}
         AND is_read = 'N'
     </select>
+
+    <select id="getNotiSetByMemberNo" resultType="notiSetDTO">
+        SELECT
+            ns.member_no,
+            ns.noti_set_code,
+            ns.is_received,
+            nsc.noti_set_name
+        FROM NOTI_SET ns
+        JOIN noti_set_code nsc ON ns.noti_set_code = nsc.noti_set_code
+        WHERE ns.member_no = #{memberNo}
+    </select>
+
+    <select id="getNotiNoByReceiverNo">
+        SELECT noti_no
+        FROM NOTI WHERE
+        receiver_no = #{receiverNo}
+        LIMIT 1
+    </select>
+
+    <update id="updateNotiSet">
+        UPDATE noti_set
+        SET is_received = #{isReceived}
+        WHERE member_no = #{memberNo}
+        AND noti_set_code = #{notiSetCode}
+    </update>
 
 </mapper>

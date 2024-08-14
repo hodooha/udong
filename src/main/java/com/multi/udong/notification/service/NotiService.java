@@ -1,6 +1,7 @@
 package com.multi.udong.notification.service;
 
 import com.multi.udong.notification.model.dto.NotiDTO;
+import com.multi.udong.notification.model.dto.NotiSetDTO;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface NotiService {
     boolean deleteAllReadNoti(int receiverNo);
 
     int getUnreadNotiCount(int receiverNo);
+
+    List<NotiSetDTO> getNotiSetByMemberNo(int memberNo);
 }

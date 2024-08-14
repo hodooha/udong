@@ -56,7 +56,6 @@
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <label>문의유형
                     <select name="csType">
-                        <option value="">== 문의유형 선택 ==</option>
                         <option th:each="type : ${csTypes}"
                                 th:value="${type.typeCode}"
                                 th:text="${type.typeName}"
