@@ -517,20 +517,47 @@ function updateShaLike(itemNo){
 }
 
 function updateItStat(item){
+    let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`;
 
     if(item.statusCode == "RNT"){
         showAlert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         return;
     }
-    let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
 
-    ajax_get(reqUrl).done(function(data){
-        if(path.includes("/share/dream")){
-            getLendItem(item.itemNo);
-        } else{
-            updateItemDetail();
-        }
-    })
+    if(item.statusCode == "UNAV"){
+        title = "대여 중단을 해제하시겠어요?";
+        text = null;
+        confirmButtonText = "중단해제";
+    } else{
+        title = "잠시 대여를 중단하시겠어요?";
+        text = "대여 중단 중인 물건은 이웃들이 대여 신청을 할 수 없습니다.";
+        confirmButtonText = "일시중단";
+    }
+
+    Swal.fire({
+         title: title,
+         text: text,
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: confirmButtonText,
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "취소",
+         reverseButtons: true
+       }).then((result) => {
+         if (result.isConfirmed) {
+            ajax_get(reqUrl).done(async function(result){
+                let type = result.type;
+                let msg = result.msg;
+                if(await showAlerts(msg, type)){
+                    if(path.includes("/share/dream")){
+                        getLendItem(item.itemNo);
+                    } else{
+                    updateItemDetail();
+                    }
+                }
+            })
+         }
+        });
 
 }
 

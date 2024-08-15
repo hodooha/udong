@@ -242,7 +242,6 @@ public class ShaDreamController {
      * 물건의 대여 요청자 조회
      *
      * @param reqDTO the req dto
-     * @param c      the c
      * @param model  the model
      * @return the requesters
      */

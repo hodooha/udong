@@ -101,7 +101,7 @@
 
                         </div>
                         <div th:if="${item.statusCode == 'UNAV'}" class="blur-info">
-                            <h3>대여불가</h3>
+                            <h3>일시대여불가</h3>
                         </div>
                         <div th:if="${item.statusCode == 'RNT'}" class="blur-info">
                             <h3>대여중</h3>
@@ -170,7 +170,7 @@
                     </div>
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
+                    <button th:disabled="${item.statusCode == 'UNAV'} ? disabled" class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
                     <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
                                                             th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
                                                             style="height:1em" alt="좋아요"

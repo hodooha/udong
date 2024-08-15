@@ -186,10 +186,13 @@ public class ShareServiceImpl implements ShareService {
         }
 
         ShaItemDTO target = shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem());
-        if(!target.getStatusCode().equals("GIV")){
+        if(target.getStatusCode().equals("GVD")){
             throw new Exception("이미 나눔이 완료되었습니다.");
         }
 
+        if(target.getStatusCode().equals("UNAV")){
+            throw new Exception("현재 대여 중단중인 물건으로 대여 신청이 불가합니다.");
+        }
 
         // 요청 db에 저장
         if (shareDAO.insertRequest(sqlSession, reqDTO) < 1) {

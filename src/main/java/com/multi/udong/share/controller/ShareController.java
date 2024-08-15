@@ -364,7 +364,6 @@ public class ShareController {
         // 결과 메세지 설정
         Map<String, Object> result = new HashMap<>();
         String reqGroup = reqDTO.getReqGroup().equals("rent") ? "대여" : "나눔";
-        String msg = reqGroup + "신청이 완료되었습니다.";
 
         try {
             checkBeforehand(c);
@@ -381,13 +380,12 @@ public class ShareController {
             shareService.insertRequest(reqDTO);
 
             result.put("type", "success");
-            result.put("msg", msg);
+            result.put("msg", reqGroup + "신청이 완료되었습니다.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            msg = e.getMessage();
             result.put("type", "error");
-            result.put("msg", msg);
+            result.put("msg", e.getMessage());
         }
 
         return ResponseEntity.ok().body(result);
@@ -582,12 +580,13 @@ public class ShareController {
         try {
             // 물건 상태 업데이트
             shareService.updateItStat(itemDTO, c);
+            result.put("type", "success");
+            result.put("msg", "상태 변경이 완료되었습니다.");
 
         } catch (Exception e) {
             e.printStackTrace();
             result.put("type", "error");
             result.put("msg", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
         }
 
         return ResponseEntity.ok().body(result);
@@ -604,7 +603,7 @@ public class ShareController {
     @GetMapping("/like")
     @ResponseBody
     public ResponseEntity<?> updateShaLike(ShaLikeDTO likeDTO, @AuthenticationPrincipal CustomUserDetails c) {
-        // 결과 메세지 설정
+
 
         Map<String, Object> result = new HashMap<>();
 
@@ -621,7 +620,6 @@ public class ShareController {
             e.printStackTrace();
             result.put("type", "error");
             result.put("msg", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
         }
 
         return ResponseEntity.ok().body(result);
