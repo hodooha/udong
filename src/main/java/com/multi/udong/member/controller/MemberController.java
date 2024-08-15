@@ -56,12 +56,14 @@ public class MemberController {
 
         Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
 
-        model.addAttribute("dataNews", map.get("dataNews"));
-        model.addAttribute("dataLend", map.get("dataLend"));
-        model.addAttribute("dataRent", map.get("dataRent"));
-        model.addAttribute("dataGive", map.get("dataGive"));
-        model.addAttribute("dataClub", map.get("dataClub"));
-        model.addAttribute("dataSchedule", map.get("dataSchedule"));
+        System.out.println("##### map : " + map);
+
+        model.addAttribute("newsData", map.get("newsData"));
+        model.addAttribute("lendData", map.get("lendData"));
+        model.addAttribute("rentData", map.get("rentData"));
+        model.addAttribute("giveData", map.get("giveData"));
+        model.addAttribute("clubData", map.get("clubData"));
+        model.addAttribute("scheduleData", map.get("scheduleData"));
     }
 
     /**

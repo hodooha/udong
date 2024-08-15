@@ -7,7 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .dashBoard {
-            min-width: 300px;
+            width: calc((100% - 260px) / 2);
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -39,50 +39,50 @@
             <div class="summary">회원 레벨</div>
         </div>
         <div class="dashBoard">
-            <h2>나의 우동 소식</h2>
+            <h2 th:onclick="|location.href='@{/member/act?table=newsBoard&page=1}'|">나의 우동 소식</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataNews}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${newsData}">
+                    <td th:text="${data.title}"></td>
                 </tr>
             </table>
         </div>
         <div class="dashBoard">
-            <h2>올린 대여글</h2>
+            <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 대여글</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataLend}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${lendData}">
+                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|"></td>
                 </tr>
             </table>
         </div>
         <div class="dashBoard">
-            <h2>대여한 물건</h2>
+            <h2 th:onclick="|location.href='@{/share/dream/borrow}'|">대여한 물건</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataRent}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${rentData}">
+                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|"></td>
                 </tr>
             </table>
         </div>
         <div class="dashBoard">
-            <h2>올린 나눔글</h2>
+            <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 나눔글</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataGive}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${giveData}">
+                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/give/detail(itemNo=${data.item_no})}'|"></td>
                 </tr>
             </table>
         </div>
         <div class="dashBoard">
-            <h2>가입한 모임</h2>
+            <h2 th:onclick="|location.href='@{/member/act?table=club&page=1}'|">가입한 모임</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataClub}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${clubData}">
+                    <td th:text="${data.club_name}" th:onclick="|location.href='@{/club/clubHome(clubNo=${data.club_no})}'|"></td>
                 </tr>
             </table>
         </div>
         <div class="dashBoard">
-            <h2>다가오는 일정</h2>
+            <h2 th:onclick="|location.href='@{/member/act?table=clubSchedule&page=1}'|">다가오는 일정</h2>
             <table class="recent-board">
-                <tr th:each="data : ${dataSchedule}">
-                    <td th:each="element : ${data}" th:text="${element}"></td>
+                <tr th:each="data : ${scheduleData}">
+                    <td th:text="${data.title}" th:onclick="|location.href='@{/club/clubSchedule/scheduleDetail(clubNo=${data.club_no},scheduleNo=${data.schedule_no})}'|"></td>
                 </tr>
             </table>
         </div>
