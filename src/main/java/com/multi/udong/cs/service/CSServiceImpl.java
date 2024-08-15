@@ -40,8 +40,6 @@ public class CSServiceImpl implements CSService{
 
         List<LinkedHashMap<String, Object>> map = csMapper.selectQue(pageDTO);
 
-        System.out.println("##map : " + map);
-
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {
             List<String> list = new ArrayList<>();
@@ -50,8 +48,6 @@ public class CSServiceImpl implements CSService{
             }
             result.add(list);
         }
-
-        System.out.println("##result : " + result);
 
         return result;
     }
@@ -164,7 +160,7 @@ public class CSServiceImpl implements CSService{
 
             Map<String, String> params = new HashMap<>();
             List<Integer> list = new ArrayList<>();
-            notiService.createNoti(
+            notiService.sendNoti(
                     NotiSetCodeENUM.CS_ANSWER,
                     csMapper.getMemberNoByCsNo(csAnswerDTO.getCsNo()),
                     list,

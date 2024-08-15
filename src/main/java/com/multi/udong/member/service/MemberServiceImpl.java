@@ -58,7 +58,6 @@ public class MemberServiceImpl implements MemberService {
             }
 
         } catch (Exception e) {
-            System.out.println("회원가입 예외 발생: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }

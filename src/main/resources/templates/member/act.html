@@ -124,8 +124,6 @@
         const resultTable = document.getElementById('result-table');
         const data = /*[[${tableData}]]*/ [];
 
-        console.log('data: ', data);
-
         if (data.length === 0) {
             noResult.hidden = false;
             resultTable.hidden = true;
@@ -207,7 +205,6 @@
                         url = `/sale/detail/${no}`;
                         break;
                 }
-                console.log('url:', url);
                 window.location.href = url;
             });
         });

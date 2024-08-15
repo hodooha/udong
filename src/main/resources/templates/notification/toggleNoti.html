@@ -216,7 +216,7 @@
         notiItem.className = 'noti-item ' + (noti.isRead == 'Y'? 'read' : 'unread');
         notiItem.innerHTML = `
             <div class="noti-content">${noti.content}</div>
-            <div class="noti-time">${noti.formatCreateAt}</div>
+            <div class="noti-time">${noti.formatCreatedAt}</div>
         `;
 
         if (noti.isRead !== 'Y') {

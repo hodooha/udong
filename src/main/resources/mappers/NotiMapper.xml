@@ -4,11 +4,28 @@
 
     <insert id="insertNoti" parameterType="java.util.List">
         INSERT INTO NOTI (receiver_no, target_href, noti_set_code, content, created_at)
-        VALUES
-        <foreach collection="list" item="noti" separator=",">
-            (#{noti.receiverNo}, #{noti.targetHref}, #{noti.notiSetCode}, #{noti.content}, #{noti.createdAt})
-        </foreach>
+        SELECT n.receiver_no, n.target_href, n.noti_set_code, n.content, n.created_at
+        FROM (
+            <foreach collection="list" item="noti" separator="UNION ALL">
+                SELECT #{noti.receiverNo} as receiver_no,
+                #{noti.targetHref} as target_href,
+                #{noti.notiSetCode} as noti_set_code,
+                #{noti.content} as content,
+                #{noti.createdAt} as created_at
+            </foreach>
+        ) n
+        INNER JOIN NOTI_SET ns ON n.receiver_no = ns.member_no AND n.noti_set_code = ns.noti_set_code
+        WHERE ns.is_received = 'Y'
     </insert>
+
+    <select id="getInsertedNotis" parameterType="java.util.List" resultType="notiDTO">
+        SELECT n.noti_no, n.receiver_no, n.target_href, n.noti_set_code, n.content, n.created_at
+        FROM NOTI n
+        WHERE (n.receiver_no, n.noti_set_code, n.created_at) IN
+        <foreach item="noti" collection="list" open="(" separator="," close=")">
+            (#{noti.receiverNo}, #{noti.notiSetCode}, #{noti.formatCreatedAt})
+        </foreach>
+    </select>
 
     <select id="getNoti" resultType="notiDTO">
         SELECT
@@ -62,18 +79,20 @@
         WHERE ns.member_no = #{memberNo}
     </select>
 
-    <select id="getNotiNoByReceiverNo">
-        SELECT noti_no
-        FROM NOTI WHERE
-        receiver_no = #{receiverNo}
-        LIMIT 1
-    </select>
-
-    <update id="updateNotiSet">
-        UPDATE noti_set
-        SET is_received = #{isReceived}
+    <update id="updateNotiSet" parameterType="map">
+        UPDATE NOTI_SET
+        SET is_received =
+            CASE noti_set_code
+                <foreach index="key" item="value" collection="params">
+                    WHEN #{key} THEN #{value}
+                </foreach>
+                ELSE is_received
+            END
         WHERE member_no = #{memberNo}
-        AND noti_set_code = #{notiSetCode}
+            AND noti_set_code IN
+                <foreach item="key" collection="params.keySet()" open="(" separator="," close=")">
+                    #{key}
+                </foreach>
     </update>
 
 </mapper>

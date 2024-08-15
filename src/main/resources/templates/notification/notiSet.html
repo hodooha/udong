@@ -1,20 +1,79 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .noti-setting {
-            min-width: 800px;
+            min-width: 400px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
+        .noti-category {
+            margin-bottom: 20px;
+        }
+        .noti-category h3 {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .noti-set-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #e3e3e3;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: all 0.4s;
+            border-radius: 34px;
 
+            &::before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: all 0.4s;
+                border-radius: 50%;
+            }
+        }
+        input:checked + .slider {
+            background-color: #007bff;
+
+            &::before {
+                transform: translateX(26px);
+            }
+        }
         .button-group {
             display: flex;
             justify-content: end;
@@ -31,15 +90,65 @@
     <div class="content-area">
         <div class="noti-setting">
             <h2>알림 설정</h2>
-            <form action="/noti/notiSet" method="post">
-                <ul>
-                    <li th:each="notiSet : ${notiSets}">
-                        <input type="checkbox"
-                               th:name="${'notiSet_' + notiSet.notiSetCode}"
-                               th:checked="${notiSet.isReceived == 'Y'}">
+            <form id="noti-set-form" action="/noti/notiSet" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="noti-category" sec:authorize="hasRole('ROLE_ADMIN')">
+                    <h3>관리자 알림</h3>
+                    <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('ADMIN_')}">
                         <span th:text="${notiSet.notiSetName}"></span>
-                    </li>
-                </ul>
+                        <label class="switch">
+                            <!--https://ccusean.tistory.com/entry/CSS-아이폰-스위치-버튼체크박스-->
+                            <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="noti-category">
+                    <h3>우동 모임 관련 알림</h3>
+                    <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('CL_')}">
+                        <span th:text="${notiSet.notiSetName}"></span>
+                        <label class="switch">
+                            <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="noti-category">
+                    <h3>대여 / 나눔 관련 알림</h3>
+                    <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('GIVE_') || notiSet.notiSetCode.startsWith('RENT_') || notiSet.notiSetCode == 'ITEM_AVAILABLE'}">
+                        <span th:text="${notiSet.notiSetName}"></span>
+                        <label class="switch">
+                            <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="noti-category">
+                    <h3>우동 소식 관련 알림</h3>
+                    <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode == 'NEWS_COMMENT'}">
+                        <span th:text="${notiSet.notiSetName}"></span>
+                        <label class="switch">
+                            <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="noti-category">
+                    <h3>회원 관련 알림</h3>
+                    <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode == 'MEMBER_LEVEL_UP' || notiSet.notiSetCode == 'CS_ANSWER'}">
+                        <span th:text="${notiSet.notiSetName}"></span>
+                        <label class="switch">
+                            <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="button-group">
                     <button class="btn btn-udh-blue" id="setting">설정 저장하기</button>
                 </div>
@@ -48,4 +157,21 @@
     </div>
 </main>
 </body>
+<script>
+    const notiSetForm = document.querySelector('#noti-set-form');
+    notiSetForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(function(checkbox) {
+            if (!checkbox.checked) {
+                let hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = checkbox.name;
+                hiddenInput.value = 'N';
+                notiSetForm.appendChild(hiddenInput);
+            }
+        });
+        this.submit();
+    });
+</script> <!--체크박스 N값 전송-->
 </html>

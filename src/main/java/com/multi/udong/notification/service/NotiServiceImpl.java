@@ -20,7 +20,7 @@ import java.util.Map;
  * The type Noti service.
  *
  * @author 김재식
- * @since 2024 -08-13
+ * @since 2024 -08-15
  */
 @Service
 @RequiredArgsConstructor
@@ -30,22 +30,26 @@ public class NotiServiceImpl implements NotiService{
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
-     * Create noti.
+     * 알림 전송
      *
      * @param type        the type
      * @param receiverNo  the receiver no
      * @param receiverNos the receiver nos
      * @param targetNo    the target no
      * @param params      the params
-     * @since 2024 -08-13
+     * @since 2024 -08-15
      */
-    public void createNoti(NotiSetCodeENUM type,
-                           @RequestParam("receiverNo") Integer receiverNo,
-                           List<Integer> receiverNos,
-                           @RequestParam(value = "targetNo", required = false) Integer targetNo,
-                           Map<String, String> params) {
+    public void sendNoti(NotiSetCodeENUM type,
+                         @RequestParam("receiverNo") Integer receiverNo,
+                         List<Integer> receiverNos,
+                         @RequestParam(value = "targetNo", required = false) Integer targetNo,
+                         Map<String, String> params) {
 
-        String content = formatMessage(type.getMessageTemplate(), params);
+        // 알림 내용 전처리
+        String content = null;
+        for (String key : params.keySet()) {
+            content = type.getMessageTemplate().replace("{" + key + "}", params.get(key));
+        }
 
         // 웹소켓과 DB의 시간차이를 없애기 위해 서버에서 시간을 직접 입력
         LocalDateTime now = LocalDateTime.now();
@@ -53,7 +57,6 @@ public class NotiServiceImpl implements NotiService{
         // 여러 개의 NotiDTO를 담을 리스트 생성
         List<NotiDTO> notiDTOs = new ArrayList<>();
         receiverNos.add(receiverNo);
-
         for (Integer receiver : receiverNos) {
             NotiDTO notiDTO = new NotiDTO();
             notiDTO.setReceiverNo(receiver);
@@ -65,103 +68,62 @@ public class NotiServiceImpl implements NotiService{
         }
 
         try {
-            // 여러 개의 알림을 한 번에 삽입
+            // 여러 개의 알림을 한 번에 insert
             notiMapper.insertNoti(notiDTOs);
 
-            // String으로 포매팅
+            // 날짜를 LocalDateTime 에서  String 으로 포매팅
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String formattedDateTime = now.format(formatter);
-
-            // 각 수신자에게 웹소켓으로 알림 전송
             for (NotiDTO notiDTO : notiDTOs) {
-                notiDTO.setNotiNo(notiMapper.getNotiNoByReceiverNo(notiDTO));
-                notiDTO.setFormatCreateAt(formattedDateTime);
+                notiDTO.setFormatCreatedAt(formattedDateTime);
+            }
+
+            // 실제로 insert 된 알림만 가져오기
+            List<NotiDTO> insertedNotis = notiMapper.getInsertedNotis(notiDTOs);
+
+            // 수신자들에게 웹소켓으로 알림 전송
+            for (NotiDTO notiDTO : insertedNotis) {
+                notiDTO.setFormatCreatedAt(formattedDateTime);
                 simpMessagingTemplate.convertAndSend("/topic/noti/" + notiDTO.getReceiverNo(), notiDTO);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String formatMessage(String template, Map<String, String> params) {
-
-        for (String key : params.keySet()) {
-            template = template.replace("{" + key + "}", params.get(key));
-        }
-
-        return template;
-    }
-
-    /**
-     * Get unread noti list.
-     *
-     * @param receiverNo the receiver no
-     * @return the list
-     * @since 2024 -08-13
-     */
     @Override
     public List<NotiDTO> getNoti(Integer receiverNo) {
         return notiMapper.getNoti(receiverNo);
     }
 
-    /**
-     * Mark as read.
-     *
-     * @param receiverNo the receiver no
-     * @param notiNo     the noti no
-     * @return the boolean
-     * @since 2024 -08-13
-     */
     @Override
     public boolean markAsRead(Integer receiverNo, Integer notiNo) {
         return notiMapper.markAsRead(receiverNo, notiNo) > 0;
     }
 
-    /**
-     * Mark all as read boolean.
-     *
-     * @param receiverNo the receiver no
-     * @return the boolean
-     * @since 2024 -08-13
-     */
     @Override
     public boolean markAllAsRead(Integer receiverNo) {
         return notiMapper.markAllAsRead(receiverNo) > 0;
     }
 
-    /**
-     * Delete all read noti boolean.
-     *
-     * @param receiverNo the receiver no
-     * @return the boolean
-     * @since 2024 -08-13
-     */
     @Override
     public boolean deleteAllReadNoti(int receiverNo) {
         return notiMapper.deleteAllReadNoti(receiverNo) > 0;
     }
 
-    /**
-     * Get unread noti count int.
-     *
-     * @param receiverNo the receiver no
-     * @return the int
-     * @since 2024 -08-13
-     */
     @Override
     public int getUnreadNotiCount(int receiverNo) {
         return notiMapper.getUnreadNotiCount(receiverNo);
     }
 
-    /**
-     * Get noti set by member no list.
-     *
-     * @param memberNo the member no
-     * @return the list
-     * @since 2024 -08-14
-     */
     @Override
     public List<NotiSetDTO> getNotiSetByMemberNo(int memberNo) {
         return notiMapper.getNotiSetByMemberNo(memberNo);
+    }
+
+    @Override
+    public boolean updateNotiSet(int memberNo, Map<String, String> params) {
+        return notiMapper.updateNotiSet(memberNo, params) > 0;
     }
 }

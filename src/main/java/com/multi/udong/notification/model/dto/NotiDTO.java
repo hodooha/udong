@@ -24,5 +24,5 @@ public class NotiDTO {
     public LocalDateTime createdAt;
     public Character isRead;
 
-    public String formatCreateAt;
+    public String formatCreatedAt;
 }

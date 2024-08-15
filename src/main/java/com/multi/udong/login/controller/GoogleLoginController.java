@@ -77,8 +77,6 @@ public class GoogleLoginController {
             String googleEmail = googleUserInfo.getEmail();
             String googleNickname = googleUserInfo.getName();
 
-            System.out.println("googleMemberPw : " + googleMemberPw);
-
             // 전처리 정보를 memberDTO에 저장
             MemberDTO memberDTO = new MemberDTO();
             memberDTO.setMemberId(googleMemberId);
@@ -113,8 +111,6 @@ public class GoogleLoginController {
         body.add("client_secret", clientSecret);
         body.add("redirect_uri", redirectUri);
         body.add("grant_type", "authorization_code");
-
-        System.out.println("body : " + body);
 
         return googleAuthClient.getAccessToken(body);
     }

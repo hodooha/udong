@@ -9,8 +9,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Noti controller.
@@ -22,10 +24,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/noti")
 public class NotiController {
+
     private final NotiService notiService;
 
     /**
-     * Get unread noti response entity.
+     * 알림 가져오기
      *
      * @param c the c
      * @return the response entity
@@ -34,12 +37,13 @@ public class NotiController {
     @GetMapping("/getNoti")
     @ResponseBody
     public List<NotiDTO> getNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
         int memberNo = c.getMemberDTO().getMemberNo();
         return notiService.getNoti(memberNo);
     }
 
     /**
-     * Get unread noti count response entity.
+     * 안읽은 알림 개수 가져오기
      *
      * @param c the c
      * @return the response entity
@@ -48,15 +52,17 @@ public class NotiController {
     @GetMapping("/getUnreadNotiCount")
     @ResponseBody
     public int getUnreadNotiCount(@AuthenticationPrincipal CustomUserDetails c) {
+
         int receiverNo = c.getMemberDTO().getMemberNo();
         return notiService.getUnreadNotiCount(receiverNo);
     }
 
     /**
-     * Noti set.
+     * 알림 설정 페이지
      *
      * @param c     the c
      * @param model the model
+     * @return the string
      * @since 2024 -08-14
      */
     @GetMapping("/notiSet")
@@ -65,24 +71,36 @@ public class NotiController {
         int memberNo = c.getMemberDTO().getMemberNo();
         List<NotiSetDTO> notiSets = notiService.getNotiSetByMemberNo(memberNo);
         model.addAttribute("notiSets", notiSets);
-        return "noti/notiSet";
+        return "notification/notiSet";
     }
 
     /**
-     * Noti set.
+     * 알림 설정 업데이트
      *
-     * @param c           the c
-     * @param notiSetCode the noti set code
-     * @param isReceived  the is received
-     * @param model       the model
-     * @since 2024 -08-14
+     * @param c                  the c
+     * @param params             the params
+     * @param redirectAttributes the redirect attributes
+     * @return the string
+     * @since 2024 -08-15
      */
     @PostMapping("/notiSet")
-    public void notiSet(@AuthenticationPrincipal CustomUserDetails c,
-                        @RequestParam String notiSetCode,
-                        @RequestParam String isReceived,
-                        Model model) {
+    public String updateNotiSet(@AuthenticationPrincipal CustomUserDetails c,
+                              @RequestParam Map<String, String> params,
+                              RedirectAttributes redirectAttributes) {
 
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        params.remove("_csrf");
+
+        if (notiService.updateNotiSet(memberNo, params)) {
+            redirectAttributes.addFlashAttribute("alert", "알림 설정이 변경되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
+        } else {
+            redirectAttributes.addFlashAttribute("alert", "알림 설정 변경에 실패했습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+        }
+
+        return "redirect:/noti/notiSet";
     }
 
     /**
@@ -95,6 +113,7 @@ public class NotiController {
     @PostMapping("/markAllAsReadNoti")
     @ResponseBody
     public boolean markAllAsReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
         int receiverNo = c.getMemberDTO().getMemberNo();
         return notiService.markAllAsRead(receiverNo);
     }
@@ -110,13 +129,13 @@ public class NotiController {
     @PostMapping("/markAsRead")
     @ResponseBody
     public boolean markAsRead(@AuthenticationPrincipal CustomUserDetails c,
-                                                           @RequestParam("notiNo") Integer notiNo) {
+                              @RequestParam("notiNo") Integer notiNo) {
         int receiverNo = c.getMemberDTO().getMemberNo();
         return notiService.markAsRead(receiverNo, notiNo);
     }
 
     /**
-     * Delete all read noti response entity.
+     * 읽은 알림 모두 삭제
      *
      * @param c the c
      * @return the response entity
@@ -125,6 +144,7 @@ public class NotiController {
     @PostMapping("/deleteAllReadNoti")
     @ResponseBody
     public boolean deleteAllReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
         int receiverNo = c.getMemberDTO().getMemberNo();
         return notiService.deleteAllReadNoti(receiverNo);
     }

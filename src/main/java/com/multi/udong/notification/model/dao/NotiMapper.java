@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface Noti mapper.
@@ -17,6 +18,8 @@ import java.util.List;
 public interface NotiMapper {
 
     void insertNoti(List<NotiDTO> notiDTO);
+
+    List<NotiDTO> getInsertedNotis(List<NotiDTO> notiDTOs);
 
     List<NotiDTO> getNoti(Integer receiverNo);
 
@@ -30,5 +33,5 @@ public interface NotiMapper {
 
     List<NotiSetDTO> getNotiSetByMemberNo(int memberNo);
 
-    Integer getNotiNoByReceiverNo(NotiDTO notiDTO);
+    int updateNotiSet(@Param("memberNo") int memberNo, @Param("params") Map<String, String> params);
 }

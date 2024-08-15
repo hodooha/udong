@@ -125,7 +125,7 @@
     </div>
     <div class="right-section">
 
-        <th:block th:if="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+        <th:block sec:authorize="isAuthenticated()">
             <button type="button" class="noti-btn">
                 <i class="fi fi-rs-bell"></i>
                 <span class="unread-noti-count"></span>
@@ -156,7 +156,6 @@
             </div>
 
             <div class="auth-links">
-
                 <a th:href="${#authorization.expression('hasRole(''ROLE_ADMIN'')')} ? @{/admin/adminMain} : @{/member/dashBoard}">
                     <span sec:authentication="principal.memberDTO.nickname"></span>
                 </a>
@@ -168,7 +167,7 @@
             </div>
         </th:block>
 
-        <th:block th:unless="${#authentication != null and #authentication.principal != 'anonymousUser'}">
+        <th:block sec:authorize="isAnonymous()">
             <div class="auth-links">
                 <a href="/login">로그인</a>
                 <span>|</span>

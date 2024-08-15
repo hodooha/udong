@@ -96,8 +96,6 @@ public class CSController {
             }
         }
 
-        System.out.println("문의데이터 " + data);
-
         List<String> headers = Arrays.asList("문의유형", "제목", "작성일자", "답변여부");
 
         model.addAttribute("tableHeaders", headers);
@@ -207,9 +205,6 @@ public class CSController {
 
         List<AttachmentDTO> attachments = (List<AttachmentDTO>) map.get("attachments");
         List<CSAnswerDTO> answers = (List<CSAnswerDTO>) map.get("answers");
-
-        System.out.println("문의 : " + csQuestionDTO);
-        System.out.println("답변 : " + answers);
 
         model.addAttribute("que", csQuestionDTO);
         model.addAttribute("attachments", attachments);

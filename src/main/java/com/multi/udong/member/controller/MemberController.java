@@ -325,7 +325,6 @@ public class MemberController {
 
             // 비밀번호를 수정할 때
             if (currentPw != null && memberDTO.getMemberPw() != null) {
-                System.out.println("memberDTO : " + memberDTO);
                 BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
                 // '입력한 현재 비밀번호' 와 '현재 사용자의 비밀번호' 가 일치하지 않으면
@@ -440,9 +439,6 @@ public class MemberController {
         // 저장 경로 설정
         String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
         String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
-
-        System.out.println("path : " + path);
-        System.out.println("savePath : " + savePath);
 
         // 저장될 폴더 설정
         File mkdir = new File(savePath);
