@@ -7,15 +7,6 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
-        .noti-btn {
-            position: relative;
-            border: none;
-            background-color: transparent;
-            padding: 0;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-        }
         .unread-noti-count {
             position: absolute;
             top: -5px;
@@ -333,7 +324,7 @@
             event.stopPropagation();
         });
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function() {
             if (notiWindow.classList.contains('show')) {
                 notiWindow.classList.remove('show');
             }

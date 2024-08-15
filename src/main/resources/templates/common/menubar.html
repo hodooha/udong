@@ -73,7 +73,6 @@
             white-space: nowrap;
             font-size: 18px;
             font-family: Freesentation-5Medium;
-            transition: all 0.3s ease;
 
             &:hover {
                 background-color: #FFA11E;
@@ -105,12 +104,142 @@
             margin: 0 5px;
             color: #000;
         }
+        .noti-btn {
+            position: relative;
+            border: none;
+            background-color: transparent;
+            padding: 0;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .message-btn {
+            position: relative;
+            border: none;
+            background-color: transparent;
+            padding: 0;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+            padding-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            &.open {
+                left: 0;
+            }
+
+            & .nav-menu {
+                flex-direction: column;
+                width: 100%;
+
+                & li {
+                    display: flex;
+                    margin: 10px 0;
+                    text-align: center;
+
+                    & a {
+                        flex: 1;
+                    }
+                }
+            }
+        }
+        .user-side-nav {
+            position: fixed;
+            top: 0;
+            right: -200px;
+            width: 200px;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            z-index: 1000;
+            overflow-y: auto;
+            padding-top: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            &.open {
+                right: 0;
+            }
+
+            & .nav-menu {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+
+                & .user-icon {
+                    margin: 0 0 10px 0;
+                    cursor: pointer;
+                }
+
+                & span {
+                    font-size: 20px;
+                    white-space: nowrap;
+                    margin-bottom: 10px;
+                    font-family: Freesentation-7Bold;
+                }
+
+                & li {
+                    display: flex;
+                    margin: 10px 0;
+                    text-align: center;
+
+                    & a {
+                        flex: 1;
+                    }
+                }
+            }
+        }
+        @media (max-width: 1024px) {
+            .logo {
+                position: absolute;
+                top: 22px;
+                left: 43.7%;
+                margin: 0;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .nav-menu {
+                display: none;
+            }
+            .noti-btn, .message-btn, .location-btn, .auth-links {
+                display: none;
+            }
+            .side-nav .nav-menu, .user-side-nav .nav-menu, .anonymous {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
 <div id="menubar">
 <header class="header">
     <div class="left-section">
+        <button class="menu-toggle">☰</button>
         <a href="/"><img th:src="@{/img/logo.png}" alt="우동행 로고" class="logo"></a>
         <nav>
             <ul class="nav-menu">
@@ -143,7 +272,6 @@
                 <span sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></span>
             </button>
 
-
             <div>
                 <a th:href="${#authorization.expression('hasRole(''ROLE_ADMIN'')')} ? @{/admin/adminMain} : @{/member/dashBoard}">
                 <img th:src="${#authentication.principal.memberDTO.savedName == null
@@ -168,7 +296,7 @@
         </th:block>
 
         <th:block sec:authorize="isAnonymous()">
-            <div class="auth-links">
+            <div class="auth-links anonymous">
                 <a href="/login">로그인</a>
                 <span>|</span>
                 <a href="/selectRole">회원가입</a>
@@ -178,6 +306,38 @@
     </div>
 </header>
 </div>
+
+<!--왼쪽 메뉴 내비게이션-->
+<nav class="side-nav">
+    <button class="menu-toggle">☰</button>
+    <ul class="nav-menu">
+        <li><a th:href="@{/share/rent}">대여 / 나눔</a></li>
+        <li><a th:href="@{/sale/saleMain}">땡처리</a></li>
+        <li><a href="#">우동 소식</a></li>
+        <li><a th:href="@{/club/clubMain(page=1)}">우동 모임</a></li>
+        <li><a href="#">우동 추천</a></li>
+        <li><a th:href="@{/cs/csMain(page=1)}">고객센터</a></li>
+    </ul>
+</nav>
+
+<!--오른쪽 회원 내비게이션-->
+<nav class="user-side-nav">
+    <ul class="nav-menu">
+        <th:block sec:authorize="isAuthenticated()">
+            <img th:src="${#authentication.principal.memberDTO.savedName == 'defaultProfile.png'
+                      ? '/img/defaultProfile.png'
+                      : '/uploadFiles/' + #authentication.principal.memberDTO.savedName}" class="user-icon">
+            <span sec:authentication="principal.memberDTO.nickname"></span>
+            <li><a th:href="${#authorization.expression('hasRole(''ROLE_ADMIN'')')} ? @{/admin/adminMain} : @{/member/dashBoard}">마이페이지</a></li>
+            <li><a href="#" onclick="document.getElementById('logoutForm').submit();">로그아웃</a></li>
+        </th:block>
+        <th:block sec:authorize="isAnonymous()">
+            <li><a href="/login">로그인</a></li>
+            <li><a href="/selectRole">회원가입</a></li>
+        </th:block>
+    </ul>
+</nav>
+
 <div th:replace="~{/message/toggleMessage}"></div>
 <div th:replace="~{/notification/toggleNoti}"></div>
 <div th:replace="~{/cs/chatbot}"></div>
@@ -196,6 +356,42 @@
             }
         });
     });
-</script>
+</script> <!--현재 메뉴 active-->
+<script>
+    const menuToggle = document.querySelectorAll('.menu-toggle');
+    const sideNav = document.querySelector('.side-nav');
+    const userToggle = document.querySelectorAll('.user-icon');
+    const userSideNav = document.querySelector('.user-side-nav');
+
+    menuToggle.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation();
+            sideNav.classList.toggle('open');
+            userSideNav.classList.remove('open');
+        });
+    });
+
+    userToggle.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            userSideNav.classList.toggle('open');
+            sideNav.classList.remove('open');
+        });
+    });
+
+    sideNav.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+
+    userSideNav.addEventListener('click', function(event) {
+        event.stopPropagation();
+    });
+
+    document.addEventListener('click', function() {
+        sideNav.classList.remove('open');
+        userSideNav.classList.remove('open');
+    });
+</script> <!--사이드 내비 토글-->
 </body>
 </html>

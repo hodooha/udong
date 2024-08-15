@@ -50,23 +50,24 @@
             display: flex;
             justify-content: start;
             margin-top: 20px;
-        }
-        .pagination a {
-            display: inline-block;
-            padding: 5px 10px;
-            margin: 0 2px;
-            border: 1px solid #ddd;
-            color: white;
-            background-color: #3B5C9A;
-            text-decoration: none;
-            border-radius: 5px;
 
-            &.active {
-                background-color: #0B1D40;
-            }
+            & a {
+                display: inline-block;
+                padding: 5px 10px;
+                margin: 0 2px;
+                border: 1px solid #ddd;
+                color: white;
+                background-color: #3B5C9A;
+                text-decoration: none;
+                border-radius: 5px;
 
-            &:hover:not(.active) {
-                background-color: #ddd;
+                &.active {
+                    background-color: #0B1D40;
+                }
+
+                &:hover:not(.active) {
+                    background-color: #ddd;
+                }
             }
         }
         .button-group {

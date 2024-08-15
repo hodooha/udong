@@ -42,34 +42,37 @@
         }
         .que-info {
             display: flex;
-        }
-        .que-info span {
-            border: 1px solid #000000;
-            border-radius: 5px;
-            padding: 0.5rem;
-            min-width: 200px;
-            margin: 0 20px;
-            display: block;
+
+            & span {
+                border: 1px solid #000000;
+                border-radius: 5px;
+                padding: 0.5rem;
+                min-width: 200px;
+                margin: 0 20px;
+                display: block;
+            }
         }
         .attachment-box ul {
             display: flex;
             list-style: none;
             gap: 10px;
-        }
-        .attachment-box ul li {
-            background-color: #3B5C9A;
-            border-radius: 20px;
-            padding: 5px 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
 
-            &:hover {
-                background-color: #0B1D40;
+            & li {
+                background-color: #3B5C9A;
+                border-radius: 20px;
+                padding: 5px 10px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #0B1D40;
+                }
+
+                & a {
+                    text-decoration: none;
+                    color: #FFFFFF;
+                }
             }
-        }
-        .attachment-box ul li a {
-            text-decoration: none;
-            color: #FFFFFF;
         }
         .answers-container {
             display: flex;
