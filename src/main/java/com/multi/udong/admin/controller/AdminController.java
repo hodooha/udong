@@ -251,7 +251,6 @@ public class AdminController {
             AttachmentDTO attachmentDTO = null;
 
             if (!imageFile.isEmpty()) {
-
                 String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
                 String savePath = path + File.separator;
 
@@ -268,11 +267,11 @@ public class AdminController {
                 attachmentDTO.setOriginalName(originalFileName);
                 attachmentDTO.setSavedName(savedName);
                 attachmentDTO.setTypeCode("NOTI");
-                attachmentDTO.setFileUrl("/udongUploads/" + savedName); // URL 경로도 변경
+                attachmentDTO.setFileUrl("/udongUploads/" + savedName);
 
                 imageFile.transferTo(new File(savePath + savedName));
 
-                noticeDTO.setImagePath("/udongUploads/" + savedName); // 이미지 경로 설정
+                noticeDTO.setImagePath("/udongUploads/" + savedName);
             }
 
             int noticeNo = noticeService.saveNoticeWithAttachment(noticeDTO, attachmentDTO);
@@ -281,6 +280,7 @@ public class AdminController {
 
             return ResponseEntity.ok().body(Map.of(
                     "success", true,
+                    "type", "success",
                     "message", "공지사항이 성공적으로 등록되었습니다.",
                     "noticeNo", noticeNo
             ));
@@ -288,13 +288,15 @@ public class AdminController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "success", false,
-                    "error", "파일 업로드 중 오류가 발생했습니다."
+                    "type", "error",
+                    "message", "파일 업로드 중 오류가 발생했습니다."
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "success", false,
-                    "error", "알 수 없는 오류가 발생했습니다."
+                    "type", "error",
+                    "message", "알 수 없는 오류가 발생했습니다."
             ));
         }
     }

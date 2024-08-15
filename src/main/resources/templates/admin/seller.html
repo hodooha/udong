@@ -6,6 +6,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .admin-content {
             padding: 20px;
@@ -130,32 +131,46 @@
 <script type="text/javascript" th:inline="javascript">
     let sortDirection = true;
 
-    // 함수들을 window 객체에 할당하여 전역에서 접근 가능하게 설정
     window.updateStatus = function(memberNo, status) {
         var token = $("meta[name='_csrf']").attr("content");
         var header = $("meta[name='_csrf_header']").attr("content");
 
-        $.ajax({
-            type: "POST",
-            url: "/admin/updateSellerStatus",
-            contentType: "application/json",
-            data: JSON.stringify({ memberNo: memberNo, status: status }),
-            beforeSend: function(xhr) {
-                if (token && header) {
-                    xhr.setRequestHeader(header, token);
-                }
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert("상태가 성공적으로 업데이트되었습니다.");
-                    updateSellerRow(memberNo, status, response.approvedAt);
-                } else {
-                    alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
-                }
-            },
-            error: function(xhr, status, error) {
-                alert("상태 업데이트에 실패했습니다. 다시 시도해주세요.");
-                console.error("Error details:", xhr.responseText);
+        var actionText = status === 'Y' ? '승인' : '취소';
+
+        Swal.fire({
+            title: '확인',
+            text: `정말로 이 판매자의 권한을 ${actionText}하시겠습니까?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3B5C9A',
+            cancelButtonColor: '#CB3333',
+            confirmButtonText: '확인',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/updateSellerStatus",
+                    contentType: "application/json",
+                    data: JSON.stringify({ memberNo: memberNo, status: status }),
+                    beforeSend: function(xhr) {
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('성공', `상태가 성공적으로 ${actionText}되었습니다.`, 'success');
+                            updateSellerRow(memberNo, status, response.approvedAt);
+                        } else {
+                            Swal.fire('오류', `상태 ${actionText}에 실패했습니다. 다시 시도해주세요.`, 'error');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire('오류', `상태 ${actionText}에 실패했습니다. 다시 시도해주세요.`, 'error');
+                        console.error("Error details:", xhr.responseText);
+                    }
+                });
             }
         });
     }
@@ -191,7 +206,6 @@
     }
 
     $(document).ready(function() {
-        // 초기 로드 시 모든 셀러의 승인 상태를 검사하고, 버튼을 설정
         $('tr[data-seller-no]').each(function() {
             var row = $(this);
             var memberNo = row.data('seller-no');
@@ -211,7 +225,6 @@
                     break;
             }
 
-            // 기존 버튼을 제거하고 새로운 버튼을 추가
             row.find('td:nth-child(5) button').remove();
             row.find('td:nth-child(5)').append(buttonHtml);
         });

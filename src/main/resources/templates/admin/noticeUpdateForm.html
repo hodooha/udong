@@ -6,6 +6,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             margin: 0;
@@ -276,31 +277,61 @@
         form.submit(function(e) {
             e.preventDefault();
             if (validateDates()) {
-                var formData = new FormData(this);
-                if (deleteImageCheckbox.is(':checked')) {
-                    formData.append('deleteImage', 'true');
-                }
-                $.ajax({
-                    url: $(this).attr('action'),
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(response) {
-                        if (response.success) {
-                            alert("수정이 완료되었습니다.");
-                            loadNoticeDetail(formData.get('noticeNo'));
-                        } else {
-                            alert(response.error || "수정 중 오류가 발생했습니다.");
+                Swal.fire({
+                    title: '공지사항 수정',
+                    text: "공지사항을 수정하시겠습니까?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3B5C9A',
+                    cancelButtonColor: '#CB3333',
+                    confirmButtonText: '예',
+                    cancelButtonText: '아니오'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var formData = new FormData(this);
+                        if (deleteImageCheckbox.is(':checked')) {
+                            formData.append('deleteImage', 'true');
                         }
-                    },
-                    error: function(xhr) {
-                        var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "서버 오류가 발생했습니다.";
-                        alert(errorMessage);
+                        $.ajax({
+                            url: $(this).attr('action'),
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire(
+                                        '수정 완료',
+                                        '공지사항이 성공적으로 수정되었습니다.',
+                                        'success'
+                                    ).then(() => {
+                                        loadNoticeDetail(formData.get('noticeNo'));
+                                    });
+                                } else {
+                                    Swal.fire(
+                                        '오류',
+                                        response.error || "수정 중 오류가 발생했습니다.",
+                                        'error'
+                                    );
+                                }
+                            },
+                            error: function(xhr) {
+                                var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : "서버 오류가 발생했습니다.";
+                                Swal.fire(
+                                    '오류',
+                                    errorMessage,
+                                    'error'
+                                );
+                            }
+                        });
                     }
                 });
             } else {
-                alert('입력한 날짜를 확인해주세요.');
+                Swal.fire(
+                    '입력 오류',
+                    '입력한 날짜를 확인해주세요.',
+                    'warning'
+                );
             }
         });
 

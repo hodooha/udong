@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .notice-header {
             text-align: center;
@@ -88,61 +89,66 @@
 </div>
 <script>
     function loadNoticeUpdateForm(noticeNo) {
-    $.ajax({
-        url: '/admin/noticeUpdate',
-        method: 'GET',
-        data: { noticeNo: noticeNo },
-        success: function(response) {
-            $('#contentContainer').html(response);
-            // 기존 내용 숨기기
-            $('.admin-content > h5').hide();
-            $('.btn-container').hide();
-            $('#noticeContainer').hide();
-            $('.pagination').hide();
-            // 수정 폼 표시
-            $('#contentContainer').show();
-        },
-        error: function() {
-            alert('수정 폼을 불러오는데 실패했습니다.');
-        }
-    });
-}
-
-function submitUpdateNoticeForm(form) {
-    var formData = new FormData(form);
-    $.ajax({
-        url: $(form).attr('action'),
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            alert('공지사항이 성공적으로 수정되었습니다.');
-            loadNoticeList();
-        },
-        error: function() {
-            alert('공지사항 수정에 실패했습니다.');
-        }
-    });
-}
-
-    function deleteNotice(noticeNo) {
-    if (confirm('정말로 삭제하시겠습니까?')) {
         $.ajax({
-            url: '/admin/deleteNotice',
-            method: 'POST',
+            url: '/admin/noticeUpdate',
+            method: 'GET',
             data: { noticeNo: noticeNo },
             success: function(response) {
-                alert('공지사항이 삭제되었습니다.');
-                loadNoticeList();
+                $('#contentContainer').html(response);
+                // 기존 내용 숨기기
+                $('.admin-content > h5').hide();
+                $('.btn-container').hide();
+                $('#noticeContainer').hide();
+                $('.pagination').hide();
+                // 수정 폼 표시
+                $('#contentContainer').show();
             },
             error: function() {
-                alert('공지사항 삭제에 실패했습니다.');
+                Swal.fire({
+                    icon: 'error',
+                    title: '오류',
+                    text: '수정 폼을 불러오는데 실패했습니다.'
+                });
             }
         });
     }
 
-}
+    function deleteNotice(noticeNo) {
+        Swal.fire({
+            title: '공지사항 삭제',
+            text: "정말로 이 공지사항을 삭제하시겠습니까?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#CB3333',
+            cancelButtonColor: '#3B5C9A',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/admin/deleteNotice',
+                    method: 'POST',
+                    data: { noticeNo: noticeNo },
+                    success: function(response) {
+                        Swal.fire(
+                            '삭제 완료',
+                            '공지사항이 삭제되었습니다.',
+                            'success'
+                        ).then(() => {
+                            loadNoticeList();
+                        });
+                    },
+                    error: function() {
+                        Swal.fire(
+                            '오류',
+                            '공지사항 삭제에 실패했습니다.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    }
 </script>
 </body>
 </html>
