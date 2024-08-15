@@ -48,7 +48,7 @@
 
         <id property="memberNo" column="master"/>
         <result property="nickname" column="master_nickname"/>
-        <result property="profileSavedName" column="profile_saved_name"/>
+        <result property="profileSavedName" column="master_profile_saved_name"/>
 
     </resultMap>
 
@@ -825,5 +825,29 @@
         DELETE FROM CL_MEMBER
         WHERE club_no = #{ clubNo } AND member_no = #{ memberNo }
     </delete>
+
+    <select id="selectClubMemberList" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultMap="clubResultMap">
+        SELECT C.club_no, C.master, CM.member_no, CM.applied_at, CM.approved_at, M.nickname, ATM.saved_name AS profile_saved_name
+        FROM CL C
+        LEFT JOIN CL_MEMBER CM ON CM.club_no = C.club_no
+        LEFT JOIN MEMBER M ON M.member_no = CM.member_no
+        LEFT JOIN ATTACHMENT ATM ON ATM.target_no = CM.member_no
+        WHERE CM.club_no = #{ clubNo } AND CM.join_status = 'Y' AND ATM.type_code = 'MEM'
+        <if test="searchWord != null and searchWord != ''">
+            AND M.nickname LIKE CONCAT('%', #{ searchWord }, '%')
+        </if>
+        ORDER BY CM.approved_at
+        LIMIT #{ startIndex }, #{ memberPageCount }
+    </select>
+
+    <select id="selectClubMemberCount" parameterType="com.multi.udong.club.model.dto.FilterDTO" resultType="Integer">
+        SELECT COUNT(*)
+        FROM CL_MEMBER CM
+        LEFT JOIN MEMBER M ON M.member_no = CM.member_no
+        WHERE CM.join_status = 'Y' AND CM.club_no = #{ clubNo }
+        <if test="searchWord != null and searchWord != ''">
+            AND M.nickname LIKE CONCAT('%', #{ searchWord }, '%')
+        </if>
+    </select>
 
 </mapper>

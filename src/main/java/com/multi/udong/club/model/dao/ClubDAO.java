@@ -587,4 +587,16 @@ public class ClubDAO {
         return sqlSession.delete("clubMapper.rejectJoinRequest", clubMemberDTO);
 
     }
+
+    public ClubDTO selectClubMemberList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectClubMemberList", filterDTO);
+
+    }
+
+    public int selectClubMemberCount(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectOne("clubMapper.selectClubMemberCount", filterDTO);
+
+    }
 }

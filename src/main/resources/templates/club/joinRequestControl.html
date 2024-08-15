@@ -22,6 +22,9 @@
             padding-left: 30px;
             box-sizing: border-box;
         }
+        .hr {
+            margin: 6px 0px 6px 0px;
+        }
         .profile-img {
             width: 35px;
             height: 35px;
@@ -80,7 +83,7 @@
         </th:block>
 
         <div class="join-request-list">
-            <hr>
+            <hr class="hr">
             <th:block th:if="${#lists.isEmpty(joinRequestList)}">
                 <div class="no-data-div">
                     <p class="no-data-p">❌ 가입 신청자가 없습니다.</p>
@@ -126,7 +129,7 @@
                         </td>
                     </tr>
                 </table>
-                <hr>
+                <hr class="hr">
             </div>
         </div>
     </div>

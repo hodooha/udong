@@ -88,6 +88,9 @@
 
     <div class="right-area">
         <p class="menu">&#127902; 모임 앨범</p>
+        <th:block th:if="${isClubDeleted == 'Y'}">
+            <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px;">❕ 해체된 모임입니다.</span>
+        </th:block>
 
         <div class="album-list">
             <hr>

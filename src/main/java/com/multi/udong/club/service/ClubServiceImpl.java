@@ -623,6 +623,20 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public ClubDTO selectClubMemberList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubMemberList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectClubMemberCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubMemberCount(sqlSession, filterDTO);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

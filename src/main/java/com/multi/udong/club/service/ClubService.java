@@ -122,4 +122,8 @@ public interface ClubService {
     int approveJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception;
 
     int rejectJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception;
+
+    ClubDTO selectClubMemberList(FilterDTO filterDTO) throws Exception;
+
+    int selectClubMemberCount(FilterDTO filterDTO) throws Exception;
 }
