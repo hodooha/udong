@@ -9,6 +9,7 @@ import com.multi.udong.sale.model.dto.SaleDTO;
 import com.multi.udong.sale.service.SaleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -63,6 +64,7 @@ public class SaleController {
             return "common/errorPage";
         }
     }
+
     @PreAuthorize("hasRole('ROLE_SELLER')")
     @GetMapping("/saleInsertForm")
     public String saleInsertForm() { //땡처리 작성 폼 페이지 반환
@@ -151,17 +153,21 @@ public class SaleController {
         model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
         return "sale/saleDetail";
     }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/deleteSale")
     public String deleteSale(@RequestParam("saleNo") int saleNo, RedirectAttributes redirectAttributes) {
         try {
             saleService.deleteSale(saleNo);
-            redirectAttributes.addFlashAttribute("message", "성공적으로 삭제되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
+            redirectAttributes.addFlashAttribute("alertMessage", "성공적으로 삭제되었습니다.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "삭제 중 오류가 발생했습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            redirectAttributes.addFlashAttribute("alertMessage", "삭제 중 오류가 발생했습니다.");
         }
         return "redirect:/sale/saleMain";
     }
+
     @PreAuthorize("hasRole('ROLE_MEMBER')")
     @GetMapping("/saleReport")
     public String showSaleReportForm(@RequestParam("saleNo") int saleNo,
@@ -222,15 +228,31 @@ public class SaleController {
             return "redirect:/common/errorPage?message=UnexpectedError";
         }
     }
+
     @PreAuthorize("hasRole('ROLE_SELLER')")
     @PostMapping("/updateStatus/{saleNo}")
-    public ResponseEntity<Map<String, String>> updateSaleStatus(@PathVariable("saleNo") int saleNo, @RequestBody Map<String, String> body) {
-        String status = body.get("status");
-        saleService.updateSaleStatus(saleNo, status);
+    public ResponseEntity<?> updateSaleStatus(@PathVariable("saleNo") int saleNo,
+                                              @RequestBody Map<String, String> body,
+                                              @AuthenticationPrincipal CustomUserDetails currentUser) {
+        try {
+            SaleDTO sale = saleService.getSaleById(saleNo);
 
-        Map<String, String> response = new HashMap<>();
-        response.put("status", status);
+            if (sale.getWriter() != currentUser.getMemberDTO().getMemberNo()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "권한 없음",
+                                "message", "이 판매글을 수정할 권한이 없습니다."));
+            }
 
-        return ResponseEntity.ok(response);
+            String status = body.get("status");
+            saleService.updateSaleStatus(saleNo, status);
+
+            return ResponseEntity.ok()
+                    .body(Map.of("status", status,
+                            "message", "판매 상태가 성공적으로 업데이트되었습니다."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "서버 오류",
+                            "message", "판매 상태 업데이트 중 오류가 발생했습니다."));
+        }
     }
 }

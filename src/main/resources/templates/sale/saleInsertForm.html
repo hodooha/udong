@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .form-container {
             width: 80%;
@@ -177,8 +178,16 @@
                 const currentDateTime = new Date();
 
                 if (selectedDateTime < currentDateTime) {
-                    alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
-                    this.value = ""; // 유효하지 않은 시간을 초기화
+                    Swal.fire({
+                        title: '시간 오류',
+                        text: "시작 시간은 현재 시간 이후로 설정해야 합니다.",
+                        icon: 'error',
+                        confirmButtonText: '확인'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.value = ""; // 유효하지 않은 시간을 초기화
+                        }
+                    });
                 }
             });
 
@@ -192,7 +201,12 @@
             var endedAtDate = document.getElementById("ended_at_date").value;
 
             if (!startedAtTime) {
-                alert("시작 시간을 입력해 주세요.");
+                Swal.fire({
+                    title: '입력 오류',
+                    text: "시작 시간을 입력해 주세요.",
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
                 event.preventDefault();
                 return false;
             }
@@ -205,19 +219,34 @@
             var salePrice = document.getElementById("sale_price").value.replace(/,/g, '');
 
             if (parseInt(salePrice) > parseInt(originalPrice)) {
-                alert("할인가격은 정상가격보다 높을 수 없습니다.");
+                Swal.fire({
+                    title: '가격 오류',
+                    text: "할인가격은 정상가격보다 높을 수 없습니다.",
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
                 event.preventDefault();
                 return false;
             }
 
             if (startTime < now) {
-                alert("시작 시간은 현재 시간 이후로 설정해야 합니다.");
+                Swal.fire({
+                    title: '시간 오류',
+                    text: "시작 시간은 현재 시간 이후로 설정해야 합니다.",
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
                 event.preventDefault();
                 return false;
             }
 
             if (startTime >= endTime) {
-                alert("시작 시간은 종료 시간보다 이전이어야 합니다.");
+                Swal.fire({
+                    title: '시간 오류',
+                    text: "시작 시간은 종료 시간보다 이전이어야 합니다.",
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
                 event.preventDefault();
                 return false;
             }

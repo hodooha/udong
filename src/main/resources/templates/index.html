@@ -113,7 +113,7 @@
             <h2 style="text-align:center">&#128226; 공지사항</h2>
             <div id="popup-title" th:text="${popupNotice.title}"></div>
         </div>
-        <div id="popup-body" th:utext="${#strings.replace(#strings.escapeXml(popupNotice.content), '&#10;', '<br/>')}"></div>
+        <div id="popup-body" th:text="${popupNotice.content}"></div>
         <img id="popup-image" th:if="${popupNotice.imagePath != null}" th:src="@{${popupNotice.imagePath}}" alt="공지사항 이미지">
         <div id="popup-footer">
             <label>
@@ -130,10 +130,13 @@
         var popupOverlay = document.getElementById('popup-overlay');
         var popupClose = document.getElementById('popup-close');
         var popupNoShow = document.getElementById('popup-no-show');
+        var popupBody = document.getElementById('popup-body');
 
         function showPopup() {
             if (popupNotice && !isPopupClosed(popupNotice.noticeNo)) {
                 popupOverlay.style.display = 'block';
+                // 줄바꿈 처리
+                popupBody.innerHTML = popupBody.innerText.replace(/\n/g, '<br/>');
             }
         }
 

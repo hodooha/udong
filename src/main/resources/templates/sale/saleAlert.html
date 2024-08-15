@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Common Alert Component</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div th:fragment="alert" id="alert-component" hidden>
+    <input id="alertType" th:value="${type}" hidden>
+    <input id="alertMessage" th:value="${msg}" hidden>
+</div>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const alertType = document.getElementById('alertType').value;
+        const alertMessage = document.getElementById('alertMessage').value;
+
+        if (alertType && alertMessage) {
+            showAlert(alertType, alertMessage);
+        }
+    });
+
+    function showAlert(type, message) {
+        switch(type) {
+            case 'info':
+                Swal.fire({
+                    title: message,
+                    icon: 'info',
+                    confirmButtonText: '확인'
+                });
+                break;
+            case 'success':
+                Swal.fire({
+                    title: message,
+                    icon: 'success',
+                    confirmButtonText: '확인'
+                });
+                break;
+            case 'warning':
+                Swal.fire({
+                    title: message,
+                    icon: 'warning',
+                    confirmButtonText: '확인'
+                });
+                break;
+            case 'error':
+                Swal.fire({
+                    title: message,
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
+                break;
+            case 'confirm':
+                Swal.fire({
+                    title: message,
+                    text: '이 작업을 진행하시겠습니까?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '확인',
+                    cancelButtonText: '취소'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // 확인 버튼을 눌렀을 때의 동작
+                        console.log('사용자가 확인을 선택했습니다.');
+                    } else {
+                        // 취소 버튼을 눌렀을 때의 동작
+                        console.log('사용자가 취소를 선택했습니다.');
+                    }
+                });
+                break;
+            default:
+                Swal.fire({
+                    title: message,
+                    confirmButtonText: '확인'
+                });
+        }
+    }
+
+    // 다른 스크립트에서 사용할 수 있는 전역 함수
+    window.showCommonAlert = showAlert;
+</script>
+</body>
+</html>
