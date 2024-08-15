@@ -130,8 +130,10 @@
                       style="width:max-content; font-size: 0.9em;">[[${item.itemCatName}]]</span>
                 <h2>[[${item.title}]]</h2>
                 <p class="owner">
-                    <img style="width:25px; height:25px; margin-right:7px" th:src="${item.ownerImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
-                         class="user-icon">[[${item.nickName}]]<img class="level" th:src="@{'/img/'+${item.level}+'.png'}"></p>
+                    <img style="width:25px; height:25px; margin-right:7px"
+                         th:src="${item.ownerImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
+                         class="user-icon">[[${item.nickName}]]<img class="level"
+                                                                    th:src="@{'/img/'+${item.level}+'.png'}"></p>
                 <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt"
                                                                                  th:text="${item.viewCnt}"></span>🙋‍♀️
                     <span
@@ -145,11 +147,23 @@
                             class="badge text-bg-danger rounded-0 py-2 px-4">마감일: [[${item.expiryDate}]]</span></h5>
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button th:disabled="${item.statusCode == 'GVD'} ? 'disabled'"  class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])" >응모하기</button>
-                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
-                                                            th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
-                                                            style="height:1em" alt="좋아요"
-                                                            ></button>
+                    <button th:disabled="${item.statusCode == 'GVD'} ? 'disabled'" class="btn btn-udh-yellow"
+                            th:onclick="shaRequest([[${item}]])">응모하기</button>
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img
+                            class="likeImg"
+                            th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
+                            style="height:1em" alt="좋아요"
+                    ></button>
+                        <span class="dropdown">
+                      <button class="btn btn-udh-yellow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        &#8285;
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><button class="dropdown-item" type="button">&#128279;공유</button></li>
+                        <li><button class="dropdown-item" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#reportModal">&#128680;신고</button></li>
+                      </ul>
+                    </span>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -170,11 +184,23 @@
                     </div>
 
                     <span th:if="${item.ownerNo} != ${#authentication.principal.memberDTO.memberNo}">
-                    <button th:disabled="${item.statusCode == 'UNAV'} ? disabled" class="btn btn-udh-yellow" th:onclick="shaRequest([[${item}]])">대여신청</button>
-                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img class="likeImg"
-                                                            th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
-                                                            style="height:1em" alt="좋아요"
-                                                            ></button>
+                    <button th:disabled="${item.statusCode == 'UNAV'} ? disabled" class="btn btn-udh-yellow"
+                            th:onclick="shaRequest([[${item}]])">대여신청</button>
+                    <button class="btn btn-udh-yellow" th:onclick="updateShaLike([[${item.itemNo}]])"><img
+                            class="likeImg"
+                            th:src="@{${item.liked} ? '/img/like.png' : '/img/notlike.png'}"
+                            style="height:1em" alt="좋아요"
+                    ></button>
+                     <span class="dropdown">
+                      <button class="btn btn-udh-yellow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        &#8285;
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><button class="dropdown-item" type="button">&#128279;공유</button></li>
+                        <li><button class="dropdown-item" type="button" data-bs-toggle="modal"
+                                    data-bs-target="#reportModal">&#128680;신고</button></li>
+                      </ul>
+                    </span>
                 </span>
 
                     <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
@@ -184,7 +210,7 @@
                             class="btn btn-udh-silver"
                             th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red" th:onclick="toggleDeleteModal([[${item}]])" >삭제</button>
+                    <button class="btn btn-udh-red" th:onclick="toggleDeleteModal([[${item}]])">삭제</button>
                 </span>
                 </th:block>
 
@@ -197,7 +223,95 @@
                 </div>
 
             </div>
+
+            <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header "
+                             style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
+                            <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <th:block th:if="${item != null}">
+                                <form id="reportForm">
+                                    <div class="mb-3 row">
+                                        <label for="itemTitle" class="col-sm-2 col-form-label">물건:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext" id="itemTitle"
+                                                   th:value="${item.title}">
+                                            <input type="hidden" name="reportedNo" th:value="${item.itemNo}">
+                                            <input type="hidden" name="typeCode" th:value="${item.itemGroup}">
+                                            <input type="hidden" name="itemNo" th:value="${item.itemNo}">
+                                        </div>
+
+
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="reporterMember" class="col-sm-2 col-form-label">신고인:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" readonly class="form-control-plaintext"
+                                                   id="reporterMember"
+                                                   th:value="${#authentication.principal.memberDTO.nickname}">
+                                            <input type="hidden" name="reporterMember"
+                                                   th:value="${#authentication.principal.memberDTO.memberNo}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="reportedMember" class="col-sm-2 col-form-label">신고대상:</label>
+                                        <div class="col-sm-10">
+                                            <input type="text" class="form-control-plaintext"
+                                                   id="reportedMember"
+                                                   readonly th:value="${item.nickName}">
+                                            <input type="hidden" name="reportedMember" th:value="${item.ownerNo}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 row">
+                                        <label for="reasonDetail" class="col-sm-2 col-form-label">신고내용:</label>
+                                        <div class="col-sm-10 p-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="reasonType"
+                                                       id="exampleRadios1" value="물건부적절" checked>
+                                                <label class="form-check-label" for="exampleRadios1">
+                                                    대여(나눔)에 부적절한 물건이에요.
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="reasonType"
+                                                       id="exampleRadios2" value="대여인문제">
+                                                <label class="form-check-label" for="exampleRadios2">
+                                                    대여(나눔)인의 매너가 부적절해요.
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="reasonType"
+                                                       id="exampleRadios3" value="기타">
+                                                <label class="form-check-label" for="exampleRadios3">
+                                                    기타
+                                                </label>
+                                            </div>
+                                            <textarea name="reasonDetail" class="form-control" id="reasonDetail"
+                                                      rows="3"
+                                                      placeholder="이웃과 나눈 쪽지 내용이나 물건의 상태 등을 적어주세요."></textarea>
+                                        </div>
+
+                                    </div>
+                                </form>
+                            </th:block>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                            <button type="button" class="btn btn-udh-red" id="reportBtn" onclick="postReport()">신고
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </th:block>
+
+
     </div>
 
 

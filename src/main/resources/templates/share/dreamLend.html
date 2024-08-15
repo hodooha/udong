@@ -470,12 +470,12 @@
                     </div>
                     <div class="modal-footer">
                         <th:block th:if="${#lists.isEmpty(requesters)}">
-                            <button class="btn btn-udh-blue" data-bs-target="#selectRqst" data-bs-toggle="modal">
+                            <button class="btn btn-udh-blue" data-bs-target="#selectRqst" data-bs-dismiss="modal">
                                 확인
                             </button>
                         </th:block>
                         <th:block th:unless="${#lists.isEmpty(requesters)}">
-                            <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-toggle="modal">
+                            <button class="btn btn-udh-silver" data-bs-target="#selectRqst" data-bs-dismiss="modal">
                                 취소
                             </button>
                             <button class="btn btn-udh-blue" th:onclick="checkReturnDate([[${requesters}]])"
