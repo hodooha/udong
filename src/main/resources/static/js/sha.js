@@ -166,7 +166,7 @@ function datePickerActive(){
     $('#datePicker').datepicker({
         format: 'yyyy-mm-dd',
         todayHighlight: true,
-        startDate: '+1d',
+        startDate: '+2d',
         autoclose : true,
         endDate: '+1m'
     })
@@ -178,7 +178,7 @@ function dateRefresh() {
     $('#datePicker').datepicker({
     format: 'yyyy-mm-dd',
     todayHighlight: true,
-    startDate: '+1d',
+    startDate: '+2d',
     autoclose : true,
     endDate: '+1m'
     });

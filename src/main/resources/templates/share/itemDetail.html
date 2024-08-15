@@ -8,10 +8,6 @@
     <title>Title</title>
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
-
     <style>
 
 
@@ -176,10 +172,9 @@
                     </span>
                 </span>
 
-                    <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
-                    <button class="btn btn-udh-yellow"
-                            th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|">수정하기</button>
-
+                <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
+                <button class="btn btn-udh-yellow"
+                        th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" th:disabled="${item.statusCode == 'GVD'} ? 'disabled'">수정하기</button>
                 </span>
                 </th:block>
 
@@ -328,9 +323,7 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
 <script type="text/javascript" th:src="@{/js/sha.js}"></script>
 </body>
 </html>
