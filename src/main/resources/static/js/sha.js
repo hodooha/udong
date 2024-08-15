@@ -75,6 +75,8 @@ $(function(){
              restoreDreamFormState(savedState);
              updateLendList(savedState);
         }
+
+
     }
 
     if(bodyId == "dreamBorrow"){
@@ -92,8 +94,6 @@ $(function(){
              updateBorrowList(savedState);
         }
     }
-
-
 
 });
 
@@ -886,6 +886,11 @@ function getRecItems(){
         $('#recItem').replaceWith(result);
         showAlerts();
     })
+}
+
+async function clipUrl(){
+    await navigator.clipboard.writeText(url);
+    showSuccessAlert("링크가 복사되었습니다.");
 }
 
 

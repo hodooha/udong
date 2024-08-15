@@ -71,6 +71,16 @@
 
         }
 
+        .dropdown-menu{
+            --bs-dropdown-min-width: 5rem !important;
+        }
+
+        .dropdown-item.active,
+        .dropdown-item:active{
+            background-color: #FF9909 !important;
+
+        }
+
     </style>
 </head>
 <body id="itemDetail">
@@ -193,10 +203,10 @@
                     ></button>
                      <span class="dropdown">
                       <button class="btn btn-udh-yellow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        &#8285;
+                        &#8230;
                       </button>
                       <ul class="dropdown-menu">
-                        <li><button class="dropdown-item" type="button">&#128279;공유</button></li>
+                        <li><button class="dropdown-item" type="button" onclick="clipUrl()">&#128279;링크복사</button></li>
                         <li><button class="dropdown-item" type="button" data-bs-toggle="modal"
                                     data-bs-target="#reportModal">&#128680;신고</button></li>
                       </ul>
@@ -316,6 +326,7 @@
 
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
