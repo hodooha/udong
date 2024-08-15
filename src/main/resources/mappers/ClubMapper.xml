@@ -850,4 +850,15 @@
         </if>
     </select>
 
+    <update id="delegateMaster" parameterType="com.multi.udong.club.model.dto.ClubMemberDTO">
+        UPDATE CL
+        SET master = #{ memberNo }
+        WHERE club_no = #{ clubNo }
+    </update>
+
+    <delete id="kickMember" parameterType="com.multi.udong.club.model.dto.ClubMemberDTO">
+        DELETE FROM CL_MEMBER
+        WHERE club_no = #{ clubNo } AND member_no = #{ memberNo }
+    </delete>
+
 </mapper>

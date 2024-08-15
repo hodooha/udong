@@ -637,6 +637,20 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public int delegateMaster(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.delegateMaster(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
+    public int kickMember(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.kickMember(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

@@ -599,4 +599,16 @@ public class ClubDAO {
         return sqlSession.selectOne("clubMapper.selectClubMemberCount", filterDTO);
 
     }
+
+    public int delegateMaster(SqlSessionTemplate sqlSession, ClubMemberDTO clubMemberDTO) {
+
+        return sqlSession.update("clubMapper.delegateMaster", clubMemberDTO);
+
+    }
+
+    public int kickMember(SqlSessionTemplate sqlSession, ClubMemberDTO clubMemberDTO) {
+
+        return sqlSession.delete("clubMapper.kickMember", clubMemberDTO);
+
+    }
 }

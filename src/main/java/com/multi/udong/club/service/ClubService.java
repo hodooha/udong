@@ -126,4 +126,8 @@ public interface ClubService {
     ClubDTO selectClubMemberList(FilterDTO filterDTO) throws Exception;
 
     int selectClubMemberCount(FilterDTO filterDTO) throws Exception;
+
+    int delegateMaster(ClubMemberDTO clubMemberDTO) throws Exception;
+
+    int kickMember(ClubMemberDTO clubMemberDTO) throws Exception;
 }

@@ -2432,6 +2432,9 @@ public class ClubController {
                 model.addAttribute("pages", pages);
                 model.addAttribute("filter", filterDTO);
 
+                ClubDTO personnel = clubService.checkPersonnel(clubNo);
+                model.addAttribute("personnel", personnel);
+
                 String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
                 model.addAttribute("isClubDeleted", isClubDeleted);
 
@@ -2456,6 +2459,94 @@ public class ClubController {
 
     }
 
+    @PostMapping("/clubMember/delegateMaster")
+    public String delegateMaster(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 서버단에서 위임할 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(clubMemberDTO.getMemberNo(), clubNo);
+
+        // 모임장이고 위임할 유저가 가입돼 있을 때만 위임
+        if(isMaster.equals("Y") && joinStatus.equals("Y")) {
+
+            try {
+
+                clubService.delegateMaster(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "모임장 위임이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubMember/memberMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임장 위임 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+    @PostMapping("/clubMember/kickMember")
+    public String kickMember(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 서버단에서 강퇴할 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(clubMemberDTO.getMemberNo(), clubNo);
+
+        // 모임장이고 강퇴할 유저가 가입돼 있을 때만 위임
+        if(isMaster.equals("Y") && joinStatus.equals("Y")) {
+
+            try {
+
+                clubService.kickMember(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "멤버 강퇴가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubMember/memberMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "멤버 강퇴 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
 
 
     // ================= 공통 사용 메소드 =================
