@@ -814,6 +814,28 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    @Override
+    public void hideReqFromDream(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception {
+
+        // 기존 요청 정보 가져오기
+        ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, reqDTO.getReqNo());
+
+        // 요청 신청자와 로그인한 유저가 다를 경우 예외 발생
+        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+            throw new Exception("권한이 없습니다.");
+        }
+
+        // 요청 상태가 '평가완료', '낙첨', '당첨'이 아닐 경우 예외 발생
+        if(!(target.getStatusCode().equals("REV") || target.getStatusCode().equals("LST") || target.getStatusCode().equals("WIN"))){
+            throw new Exception("완료된 내역만 삭제가 가능합니다.");
+        }
+
+        if(shareDAO.hideReqFromDream(sqlSession, reqDTO) < 1){
+            throw new Exception("내역 삭제를 실패했습니다.");
+        };
+
+    }
+
 
     /**
      * 나눔 물건 중 오늘자 마감 조회, 있으면 래플 실행

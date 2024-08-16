@@ -50,4 +50,6 @@ public interface ShareService {
     List<ShaItemDTO> recommendItem(CustomUserDetails c) throws Exception;
 
     void updateReqReturnDate(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception;
+
+    void hideReqFromDream(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception;
 }

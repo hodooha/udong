@@ -503,6 +503,7 @@
         where
         d.deleted_at is null
         and d.is_deleted = 'N'
+        and g.deleted_at is null
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and d.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and d.item_group = #{group}</if>
@@ -760,6 +761,13 @@
         update
         sha_req
         set return_date = #{returnDate}
+        where req_no = #{reqNo}
+    </update>
+
+    <update id="hideReqFromDream">
+        update
+        sha_req
+        set deleted_at = now()
         where req_no = #{reqNo}
     </update>
 

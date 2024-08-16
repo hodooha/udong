@@ -215,7 +215,7 @@
                             class="btn btn-udh-silver"
                             th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red" th:onclick="toggleDeleteModal([[${item}]])">삭제</button>
+                    <button class="btn btn-udh-red" th:onclick="toggleDeleteItemModal([[${item}]])">삭제</button>
                 </span>
                 </th:block>
 

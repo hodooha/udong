@@ -206,4 +206,8 @@ public class ShareDAO {
     public int updateReqReturnDate(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
         return sqlSession.update("ShareMapper.updateReqReturnDate", reqDTO);
     }
+
+    public int hideReqFromDream(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
+        return sqlSession.update("ShareMapper.hideReqFromDream", reqDTO);
+    }
 }

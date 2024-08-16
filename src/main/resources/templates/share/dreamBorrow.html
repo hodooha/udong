@@ -348,14 +348,14 @@
                                                     class="btn btn-udh-red dropdown-item">신고하기
                                             </button>
                                         </li>
-                                        <li th:if="req.itemDTO.itemGroup != 'give'">
+                                        <li th:if="${req.itemDTO.itemGroup != 'give'}">
                                             <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
                                                     class="btn btn-udh-yellow dropdown-item">쪽지하기
                                             </button>
                                         </li>
                                         <li th:if="${req.statusCode != 'RTR'}">
-                                            <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
-                                                    class="btn btn-udh-silver dropdown-item">지우기
+                                            <button th:onclick="toggleDeleteReq([[${req}]])"
+                                                    class="btn btn-udh-silver dropdown-item">삭제하기
                                             </button>
                                         </li>
                                     </ul>

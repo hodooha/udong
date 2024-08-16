@@ -458,6 +458,24 @@ public class ShaDreamController {
         return ResponseEntity.ok().body(result);
     }
 
+    @PostMapping("/hideReq")
+    public ResponseEntity<?> hideReqFromDream(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c){
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            shareService.hideReqFromDream(reqDTO, c);
+            result.put("type", "success");
+            result.put("msg", "내역 삭제가 완료되었습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("type", "error");
+            result.put("msg", e.getMessage());
+        }
+
+        return ResponseEntity.ok().body(result);
+    }
+
 
 
 }

@@ -701,7 +701,7 @@ function postScore(req){
     })
 }
 
-function toggleDeleteModal(item){
+function toggleDeleteItemModal(item){
     if(item.statusCode == 'RNT'){
         showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
         $('#deleteModal').modal("hide", true);
@@ -941,6 +941,42 @@ function changeDate(req){
 
 }
 
+function toggleDeleteReq(req){
+
+    Swal.fire({
+         title: "나의 드림 목록에서 지우시겠어요?",
+         text: `${req.itemDTO.title} 거래 내역을 삭제할까요?`,
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "삭제",
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "취소",
+         reverseButtons: true
+        }).then((result) => {
+         if (result.isConfirmed) {
+            deleteReq(req);
+         }
+    });
+
+}
+
+function deleteReq(req){
+    let reqUrl = "/share/dream/hideReq"
+    let data = {
+        reqNo: req.reqNo
+    }
+
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            getBorrowList();
+        };
+
+
+    })
+
+}
 
 
 
