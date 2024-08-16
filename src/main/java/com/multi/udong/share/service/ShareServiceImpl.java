@@ -2,11 +2,16 @@ package com.multi.udong.share.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.service.CustomUserDetails;
+import com.multi.udong.message.model.dao.MessageMapper;
+import com.multi.udong.message.model.dto.MessageDTO;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import com.multi.udong.share.algorithm.ItemBaseCollaborativeFiltering;
 import com.multi.udong.share.model.dao.ShareDAO;
 import com.multi.udong.share.model.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +35,10 @@ public class ShareServiceImpl implements ShareService {
 
     private final SqlSessionTemplate sqlSession;
     private final ShareDAO shareDAO;
+    private final NotiServiceImpl notiService;
+    private final MessageMapper messageMapper;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+
 
     /**
      * 물건 카테고리 조회
@@ -208,6 +217,15 @@ public class ShareServiceImpl implements ShareService {
         // 물건 신청자수 증가
         if (shareDAO.plusReqCnt(sqlSession, reqDTO.getReqItem()) < 1) {
             throw new Exception("신청자수 변경을 실패했습니다.");
+        }
+
+        if (reqDTO.getReqGroup().equals("rent")) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.RENT_NEW_REQ,
+                    List.of(reqDTO.getOwnerNo()),
+                    null,
+                    Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem()).getTitle())
+            );
         }
 
     }
@@ -457,6 +475,12 @@ public class ShareServiceImpl implements ShareService {
         }
         ;
 
+        notiService.sendNoti(
+                NotiSetCodeENUM.RENT_CONFIRM,
+                List.of(reqDTO.getRqstNo()),
+                reqDTO.getItemDTO().getItemNo(),
+                Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem()).getTitle())
+        );
 
     }
 
@@ -533,6 +557,21 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("거래횟수 변경을 실패했습니다.");
         }
         ;
+
+        // 물건 찜한 유저에게 대여 가능 알림 전송
+        notiService.sendNoti(
+                NotiSetCodeENUM.ITEM_AVAILABLE,
+                shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()),
+                evalDTO.getReqItem(),
+                Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, evalDTO.getReqItem()).getTitle())
+        );
+
+        notiService.sendNoti(
+                NotiSetCodeENUM.ITEM_AVAILABLE,
+                shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()),
+                evalDTO.getReqItem(),
+                Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, evalDTO.getReqItem()).getTitle())
+        );
 
     }
 
@@ -844,7 +883,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 51 0 * * ?")
+    @Scheduled(cron = "0 30 0 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -862,7 +901,7 @@ public class ShareServiceImpl implements ShareService {
 
     // 나눔 물건 당첨자 선정 및 req, item 상태 변경
     @Transactional(rollbackFor = Exception.class)
-    private void letsRaffle(List<ShaItemDTO> itemList) throws Exception {
+    public void letsRaffle(List<ShaItemDTO> itemList) throws Exception {
 
         for (ShaItemDTO i : itemList) {
             // 해당 물건을 나눔 요청한 요청자 목록 조회
@@ -915,6 +954,29 @@ public class ShareServiceImpl implements ShareService {
                     throw new Exception("나눔 제공인 레벨 업데이트를 실패했습니다.");
                 }
                 ;
+
+                // 당첨자 & 물건 나눔인에게 쪽지 및 알림 전송
+                MessageDTO messageDTO1 = new MessageDTO();
+                messageDTO1.setReceiverNo(winner.getRqstNo());
+                messageDTO1.setSenderNo(36);
+                messageDTO1.setReceiverNickname(winner.getRqstNickname());
+                messageDTO1.setContent("축하드립니다! 신청하신 "+i.getTitle()+ " 나눔에 당첨되셨습니다! 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 나눔해주신 이웃분과 쪽지를 통해 약속을 잡아주세요.");
+
+                messageMapper.sendMessage(messageDTO1);
+                MessageDTO insertedMessage1 = messageMapper.getInsertedMessage(messageDTO1);
+                simpMessagingTemplate.convertAndSend("/topic/message/" + insertedMessage1.getReceiverNo(), insertedMessage1);
+
+                MessageDTO messageDTO2 = new MessageDTO();
+                messageDTO2.setReceiverNo(i.getOwnerNo());
+                messageDTO2.setSenderNo(36);
+                messageDTO2.setReceiverNickname(i.getNickName());
+                messageDTO2.setContent("나눔해주신 "+i.getTitle()+ "의 당첨자가 발표되었습니다. 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 당첨자분과 쪽지를 통해 약속을 잡아주세요.");
+
+                messageMapper.sendMessage(messageDTO2);
+                MessageDTO insertedMessage2 = messageMapper.getInsertedMessage(messageDTO2);
+                simpMessagingTemplate.convertAndSend("/topic/message/" + insertedMessage2.getReceiverNo(), insertedMessage2);
+
+
             }
         }
 

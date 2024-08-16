@@ -550,9 +550,13 @@ function updateItStat(item){
                 let msg = result.msg;
                 if(await showAlerts(msg, type)){
                     if(path.includes("/share/dream")){
-                        getLendItem(item.itemNo);
+                        if(urlSearch.get("statusCode") != ''){
+                            location.reload();
+                        } else{
+                            getLendItem(item.itemNo);
+                        }
                     } else{
-                    updateItemDetail();
+                        updateItemDetail();
                     }
                 }
             })
