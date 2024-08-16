@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .form-container {
             width: 80%;
@@ -149,7 +150,7 @@
         </div>
         <div class="btn-submit-container">
             <button type="button" class="btn-submit" onclick="history.back()">뒤로가기</button>
-            <button type="submit" class="btn-submit1">신고글작성</button>
+            <button type="button" class="btn-submit1" onclick="confirmSubmit()">신고글작성</button>
         </div>
         <input type="hidden" name="saleNo" th:value="${sale.saleNo}">
     </form>
@@ -167,16 +168,35 @@
     }
 
     function confirmSubmit() {
-    var title = document.getElementById('title').value.trim();
-    var reason = document.getElementById('reason').value.trim();
+        var title = document.getElementById('title').value.trim();
+        var reason = document.getElementById('reason').value.trim();
 
-    if (title === "" || reason === "") {
-        alert("제목과 신고 사유를 모두 입력해주세요.");
-        return false;
+        if (title === "" || reason === "") {
+            Swal.fire({
+                icon: 'error',
+                title: '입력 오류',
+                text: '제목과 신고 사유를 모두 입력해주세요.',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+            return;
+        }
+
+        Swal.fire({
+            icon: 'warning',
+            title: '신고글 제출',
+            text: '정말로 신고글을 제출하시겠습니까?',
+            showCancelButton: true,
+            confirmButtonColor: '#3B5C9A',
+            cancelButtonColor: '#CB3333',
+            confirmButtonText: '확인',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('reportForm').submit();
+            }
+        });
     }
-
-    return confirm("정말로 신고글을 제출하시겠습니까?");
-}
 </script>
 
 </body>

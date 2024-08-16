@@ -13,4 +13,5 @@ public interface NoticeService {
     NoticeDTO getNoticeWithAttachments(int noticeNo);
     void updateNotice(NoticeDTO notice, AttachmentDTO attachmentDTO);
     int saveNoticeWithAttachment(NoticeDTO noticeDTO, AttachmentDTO attachmentDTO);
+    NoticeDTO getActivePopupNoticeWithAttachment();
 }

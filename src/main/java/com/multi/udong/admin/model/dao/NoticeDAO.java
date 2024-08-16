@@ -5,6 +5,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Mapper
@@ -39,4 +40,8 @@ public interface NoticeDAO {
     // 첨부파일 조회
     List<AttachmentDTO> getAttachmentsByNoticeNo(@Param("noticeNo") int noticeNo);
     void updateNoticeImagePath(NoticeDTO notice);
+
+    //팝업공지사항
+    NoticeDTO getActivePopupNotice(@Param("currentTime") LocalDateTime currentTime);
+    AttachmentDTO getAttachmentByNoticeNo(int noticeNo);
 }

@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -88,7 +89,7 @@ public class NoticeServiceImpl implements NoticeService {
             List<AttachmentDTO> attachments = noticeDAO.getAttachmentsByNoticeNo(noticeNo);
             if (!attachments.isEmpty()) {
                 // 첫 번째 첨부 파일의 경로를 사용
-                notice.setImagePath("/uploadFiles/" + attachments.get(0).getSavedName());
+                notice.setImagePath("/udongUploads/" + attachments.get(0).getSavedName());
             }
         }
         return notice;
@@ -107,7 +108,7 @@ public class NoticeServiceImpl implements NoticeService {
             noticeDAO.insertAttachment(attachmentDTO);
 
             // 공지사항의 이미지 경로 업데이트
-            notice.setImagePath("/uploadFiles/" + attachmentDTO.getSavedName());
+            notice.setImagePath("/udongUploads/" + attachmentDTO.getSavedName());
         } else if (notice.getImagePath() == null) {
             // 이미지를 삭제하는 경우
             noticeDAO.deleteAttachmentsByNoticeNo(notice.getNoticeNo());
@@ -136,7 +137,7 @@ public class NoticeServiceImpl implements NoticeService {
     public String saveFile(MultipartFile file) {
         try {
             // 저장 경로 설정
-            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
             String savePath = path + File.separator;
 
             // 디렉토리 생성
@@ -157,5 +158,17 @@ public class NoticeServiceImpl implements NoticeService {
         } catch (IOException e) {
             throw new RuntimeException("파일 저장에 실패했습니다. 파일명: " + file.getOriginalFilename(), e);
         }
+    }
+    @Override
+    public NoticeDTO getActivePopupNoticeWithAttachment() {
+        LocalDateTime now = LocalDateTime.now();
+        NoticeDTO notice = noticeDAO.getActivePopupNotice(now);
+        if (notice != null) {
+            AttachmentDTO attachment = noticeDAO.getAttachmentByNoticeNo(notice.getNoticeNo());
+            if (attachment != null) {
+                notice.setImagePath("/udongUploads/" + attachment.getSavedName());
+            }
+        }
+        return notice;
     }
 }

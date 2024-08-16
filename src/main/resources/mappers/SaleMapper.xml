@@ -54,7 +54,10 @@
         SELECT s.*, a.*
         FROM SAL s
         LEFT JOIN ATTACHMENT a ON s.sale_no = a.target_no AND a.type_code = 'SAL'
-        WHERE (s.title LIKE CONCAT('%', #{keyword}, '%') OR s.content LIKE CONCAT('%', #{keyword}, '%'))
+        WHERE (
+        REPLACE(s.title, ' ', '') LIKE CONCAT('%', REPLACE(#{keyword}, ' ', ''), '%')
+        OR REPLACE(s.content, ' ', '') LIKE CONCAT('%', REPLACE(#{keyword}, ' ', ''), '%')
+        )
         <if test="excludeExpired != null and excludeExpired">
             AND s.ended_at > NOW()
         </if>

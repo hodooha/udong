@@ -5,6 +5,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .admin-content {
             padding: 20px;
@@ -149,7 +150,6 @@
     <div class="pagination"></div>
     <div id="contentContainer" class="content-container"></div>
 </div>
-
 <script th:inline="javascript">
     $(document).ready(function() {
          var token = $("meta[name='_csrf']").attr("content");
@@ -160,261 +160,280 @@
          loadNoticeList();
      });
 
-   function loadNoticeInsertForm() {
-    $.ajax({
-        url: '/admin/noticeInsertForm',
-        method: 'GET',
-        success: function(response) {
-            $('.admin-content > h5').hide();
-            $('.btn-container').hide();
-            $('#noticeContainer').hide();
-            $('.pagination').hide();
-            $('#contentContainer').html(response).show();
-
-            // 폼 제출 이벤트 핸들러 추가
-            $('#noticeForm').off('submit').on('submit', function(e) {
-                e.preventDefault();
-                submitNoticeForm(this);
-            });
-
-            // 날짜 입력 필드에 이벤트 리스너 추가
-            var startedAtInput = document.getElementById('startedAt');
-            var endedAtInput = document.getElementById('endedAt');
-            startedAtInput.addEventListener('input', validateDates);
-            endedAtInput.addEventListener('input', validateDates);
-
-            // 초기 날짜 설정 및 주기적 갱신
-            setMinDate();
-            setInterval(setMinDate, 60000); // 1분마다 최소 날짜 갱신
-
-            // 이미지 미리보기 이벤트 리스너 추가
-            $('#file').on('change', previewImage);
-        },
-        error: function() {
-            alert('폼을 불러오는 데 실패했습니다.');
-        }
-    });
-}
-
-function setMinDate() {
-    var now = new Date();
-    var formattedDateTime = now.toISOString().slice(0, 16);
-    $('#startedAt, #endedAt').attr('min', formattedDateTime);
-}
-
-function validateDates() {
-    var now = new Date();
-    var startDate = new Date($('#startedAt').val());
-    var endDate = new Date($('#endedAt').val());
-    var isValid = true;
-
-    if (startDate < now) {
-        $('#startedAtError').text('시작일은 현재 시간 이후여야 합니다.').show();
-        isValid = false;
-    } else {
-        $('#startedAtError').hide();
-    }
-
-    if (endDate <= startDate) {
-        $('#endedAtError').text('종료일은 시작일 이후여야 합니다.').show();
-        isValid = false;
-    } else {
-        $('#endedAtError').hide();
-    }
-
-    $('.btn-submit').prop('disabled', !isValid);
-    return isValid;
-}
-
-function previewImage(event) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var img = $('<img>').attr('src', e.target.result);
-        $('#image-preview-container').empty().append(img);
-    };
-    reader.readAsDataURL(event.target.files[0]);
-}
-
-function submitNoticeForm(form) {
-    if (validateDates()) {
-        var formData = new FormData(form);
-        $.ajax({
-            url: $(form).attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message || '공지사항이 성공적으로 등록되었습니다.');
-                    loadNoticeList();
-                } else {
-                    alert(response.error || '공지사항 등록에 실패했습니다.');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX 오류:", status, error);
-                var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.';
-                alert(errorMessage);
+    function showAlert(title, text, icon, callback) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: icon,
+            confirmButtonText: '확인'
+        }).then((result) => {
+            if (result.isConfirmed && callback) {
+                callback();
             }
         });
-    } else {
-        alert('입력한 날짜를 확인해주세요.');
     }
-}
 
-      function loadNoticeList() {
-         $.ajax({
-             url: '/admin/notice/list',
-             method: 'GET',
-             dataType: 'json',
-             success: function(response) {
-                 var tbody = $('#noticeTable tbody');
-                 tbody.empty();
-                 response.forEach(function(notice) {
-                     var row = $('<tr>');
-                     row.append('<td>' + notice.noticeNo + '</td>');
-                     row.append('<td>' + notice.title + '</td>');
-                     row.append('<td>' + notice.popupString + '</td>');
-                     row.append('<td>' + notice.createdAt + '</td>');
+    function showConfirm(title, text, callback) {
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '확인',
+            cancelButtonText: '취소'
+        }).then((result) => {
+            if (result.isConfirmed && callback) {
+                callback();
+            }
+        });
+    }
 
-                     // 클릭 이벤트 수정
-                     row.on('click', function() {
-                         loadNoticeDetail(notice.noticeNo);
-                     });
-
-                     tbody.append(row);
-                 });
-                 $('.admin-content > h5').show();
-                 $('.btn-container').show();
-                 $('#noticeContainer').show();
-                 $('.pagination').show();
-                 $('#contentContainer').empty();
-             },
-             error: function(xhr, status, error) {
-                 console.error("AJAX 오류: " + status + " - " + error);
-                 alert('공지사항 목록을 불러오는데 실패했습니다.');
-             }
-         });
-     }
-     function loadNoticeDetail(noticeNo) {
-         $.ajax({
-             url: '/admin/detail/' + noticeNo,
-             method: 'GET',
-             success: function(response) {
-                 // 기존 내용 숨기기
-                 $('.admin-content > h5').hide();
-                 $('.btn-container').hide();
-                 $('#noticeContainer').hide();
-                 $('.pagination').hide();
-
-                 // 상세 내용 표시
-                 $('#contentContainer').html(response).show();
-
-                 // 뒤로가기 버튼에 이벤트 리스너 추가
-                 $('#contentContainer').find('.btn-submit.btn-udh-blue').click(function(e) {
-                     e.preventDefault();
-                     loadNoticeList();
-                 });
-             },
-             error: function() {
-                 alert('공지사항 상세 내용을 불러오는데 실패했습니다.');
-             }
-         });
-     }
-     function loadNoticeUpdateForm(noticeNo) {
-    $.ajax({
-        url: '/admin/noticeUpdate',
-        method: 'GET',
-        data: { noticeNo: noticeNo },
-        success: function(response) {
-            if (response.success) {
+    function loadNoticeInsertForm() {
+        $.ajax({
+            url: '/admin/noticeInsertForm',
+            method: 'GET',
+            success: function(response) {
                 $('.admin-content > h5').hide();
                 $('.btn-container').hide();
                 $('#noticeContainer').hide();
                 $('.pagination').hide();
-                $('#contentContainer').html(response.notice).show();
+                $('#contentContainer').html(response).show();
 
-                // 폼 제출 이벤트 핸들러 추가
                 $('#noticeForm').off('submit').on('submit', function(e) {
                     e.preventDefault();
-                    submitNoticeUpdateForm(this);
+                    submitNoticeForm(this);
                 });
 
-                // 날짜 입력 필드에 이벤트 리스너 추가
                 var startedAtInput = document.getElementById('startedAt');
                 var endedAtInput = document.getElementById('endedAt');
                 startedAtInput.addEventListener('input', validateDates);
                 endedAtInput.addEventListener('input', validateDates);
 
-                // 초기 날짜 설정 및 주기적 갱신
                 setMinDate();
-                setInterval(setMinDate, 60000); // 1분마다 최소 날짜 갱신
+                setInterval(setMinDate, 60000);
 
-                // 이미지 미리보기 이벤트 리스너 추가
                 $('#file').on('change', previewImage);
-            } else {
-                alert(response.error || '공지사항을 불러오는데 실패했습니다.');
+            },
+            error: function() {
+                showAlert('오류', '폼을 불러오는 데 실패했습니다.', 'error');
             }
-        },
-        error: function() {
-            alert('서버 오류가 발생했습니다. 나중에 다시 시도해주세요.');
-        }
-    });
-}
+        });
+    }
 
-function submitNoticeUpdateForm(form) {
-    if (validateDates()) {
-        var formData = new FormData(form);
+    function setMinDate() {
+        var now = new Date();
+        var formattedDateTime = now.toISOString().slice(0, 16);
+        $('#startedAt, #endedAt').attr('min', formattedDateTime);
+    }
+
+    function validateDates() {
+        var now = new Date();
+        var startDate = new Date($('#startedAt').val());
+        var endDate = new Date($('#endedAt').val());
+        var isValid = true;
+
+        if (startDate < now) {
+            $('#startedAtError').text('시작일은 현재 시간 이후여야 합니다.').show();
+            isValid = false;
+        } else {
+            $('#startedAtError').hide();
+        }
+
+        if (endDate <= startDate) {
+            $('#endedAtError').text('종료일은 시작일 이후여야 합니다.').show();
+            isValid = false;
+        } else {
+            $('#endedAtError').hide();
+        }
+
+        $('.btn-submit').prop('disabled', !isValid);
+        return isValid;
+    }
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = $('<img>').attr('src', e.target.result);
+            $('#image-preview-container').empty().append(img);
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function submitNoticeForm(form) {
+        if (validateDates()) {
+            var formData = new FormData(form);
+            $.ajax({
+                url: $(form).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('성공', response.message || '공지사항이 성공적으로 등록되었습니다.', 'success', loadNoticeList);
+                    } else {
+                        showAlert('오류', response.error || '공지사항 등록에 실패했습니다.', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX 오류:", status, error);
+                    var errorMessage = xhr.responseJSON ? xhr.responseJSON.error : '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.';
+                    showAlert('오류', errorMessage, 'error');
+                }
+            });
+        } else {
+            showAlert('입력 오류', '입력한 날짜를 확인해주세요.', 'warning');
+        }
+    }
+
+    function loadNoticeList() {
         $.ajax({
-            url: $(form).attr('action'),
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
+            url: '/admin/notice/list',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                var tbody = $('#noticeTable tbody');
+                tbody.empty();
+                response.forEach(function(notice) {
+                    var row = $('<tr>');
+                    row.append('<td>' + notice.noticeNo + '</td>');
+                    row.append('<td>' + notice.title + '</td>');
+                    row.append('<td>' + notice.popupString + '</td>');
+                    row.append('<td>' + notice.createdAt + '</td>');
+
+                    row.on('click', function() {
+                        loadNoticeDetail(notice.noticeNo);
+                    });
+
+                    tbody.append(row);
+                });
+                $('.admin-content > h5').show();
+                $('.btn-container').show();
+                $('#noticeContainer').show();
+                $('.pagination').show();
+                $('#contentContainer').empty();
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX 오류: " + status + " - " + error);
+                showAlert('오류', '공지사항 목록을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function loadNoticeDetail(noticeNo) {
+        $.ajax({
+            url: '/admin/detail/' + noticeNo,
+            method: 'GET',
+            success: function(response) {
+                $('.admin-content > h5').hide();
+                $('.btn-container').hide();
+                $('#noticeContainer').hide();
+                $('.pagination').hide();
+
+                $('#contentContainer').html(response).show();
+
+                $('#contentContainer').find('.btn-submit.btn-udh-blue').click(function(e) {
+                    e.preventDefault();
+                    loadNoticeList();
+                });
+            },
+            error: function() {
+                showAlert('오류', '공지사항 상세 내용을 불러오는데 실패했습니다.', 'error');
+            }
+        });
+    }
+
+    function loadNoticeUpdateForm(noticeNo) {
+        $.ajax({
+            url: '/admin/noticeUpdate',
+            method: 'GET',
+            data: { noticeNo: noticeNo },
             success: function(response) {
                 if (response.success) {
-                    alert('공지사항이 성공적으로 수정되었습니다.');
-                    loadNoticeList();
+                    $('.admin-content > h5').hide();
+                    $('.btn-container').hide();
+                    $('#noticeContainer').hide();
+                    $('.pagination').hide();
+                    $('#contentContainer').html(response.notice).show();
+
+                    $('#noticeForm').off('submit').on('submit', function(e) {
+                        e.preventDefault();
+                        submitNoticeUpdateForm(this);
+                    });
+
+                    var startedAtInput = document.getElementById('startedAt');
+                    var endedAtInput = document.getElementById('endedAt');
+                    startedAtInput.addEventListener('input', validateDates);
+                    endedAtInput.addEventListener('input', validateDates);
+
+                    setMinDate();
+                    setInterval(setMinDate, 60000);
+
+                    $('#file').on('change', previewImage);
                 } else {
-                    alert(response.error || '공지사항 수정에 실패했습니다.');
+                    showAlert('오류', response.error || '공지사항을 불러오는데 실패했습니다.', 'error');
                 }
             },
             error: function() {
-                alert('서버 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+                showAlert('오류', '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.', 'error');
             }
         });
-    } else {
-        alert('입력한 날짜를 확인해주세요.');
     }
-}
-     function deleteNotice(noticeNo) {
-     if (confirm('정말로 삭제하시겠습니까?')) {
-         $.ajax({
-             url: '/admin/deleteNotice',
-             method: 'POST',
-             data: { noticeNo: noticeNo },
-             success: function(response) {
-                 alert('공지사항이 삭제되었습니다.');
-                 loadNoticeList();
-             },
-             error: function() {
-                 alert('공지사항 삭제에 실패했습니다.');
-             }
-         });
-     }
- }
 
-     function previewImage(event) {
-         var reader = new FileReader();
-         reader.onload = function(){
-             var output = document.getElementById('image-preview');
-             output.src = reader.result;
-             output.style.display = 'block';
-         };
-         reader.readAsDataURL(event.target.files[0]);
-     }
+    function submitNoticeUpdateForm(form) {
+        if (validateDates()) {
+            var formData = new FormData(form);
+            $.ajax({
+                url: $(form).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('성공', '공지사항이 성공적으로 수정되었습니다.', 'success', loadNoticeList);
+                    } else {
+                        showAlert('오류', response.error || '공지사항 수정에 실패했습니다.', 'error');
+                    }
+                },
+                error: function() {
+                    showAlert('오류', '서버 오류가 발생했습니다. 나중에 다시 시도해주세요.', 'error');
+                }
+            });
+        } else {
+            showAlert('입력 오류', '입력한 날짜를 확인해주세요.', 'warning');
+        }
+    }
+
+    function deleteNotice(noticeNo) {
+        showConfirm('삭제 확인', '정말로 삭제하시겠습니까?', function() {
+            $.ajax({
+                url: '/admin/deleteNotice',
+                method: 'POST',
+                data: { noticeNo: noticeNo },
+                success: function(response) {
+                    showAlert('성공', '공지사항이 삭제되었습니다.', 'success', loadNoticeList);
+                },
+                error: function() {
+                    showAlert('오류', '공지사항 삭제에 실패했습니다.', 'error');
+                }
+            });
+        });
+    }
+
+    function previewImage(event) {
+        var reader = new FileReader();
+        reader.onload = function(){
+            var output = document.getElementById('image-preview');
+            output.src = reader.result;
+            output.style.display = 'block';
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
 </script>
+
 
 </body>
 </html>

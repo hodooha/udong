@@ -6,6 +6,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .admin-content {
             padding: 20px;
@@ -137,14 +138,12 @@
         var token = $("meta[name='_csrf']").attr("content");
         var header = $("meta[name='_csrf_header']").attr("content");
 
-        // 모든 AJAX 요청에 CSRF 토큰을 포함시키는 전역 설정
         $.ajaxSetup({
             beforeSend: function(xhr) {
                 xhr.setRequestHeader(header, token);
             }
         });
 
-        // 페이지 로드 시 초기 상태 설정
         $(".status-btn").each(function() {
             var memberNo = $(this).data("member-no");
             var isBlacked = $(this).data("is-blacked");
@@ -164,56 +163,98 @@
     }
 
     function removeFromBlacklist(memberNo) {
-        if (confirm("정말로 블랙리스트에서 해제하시겠습니까?")) {
-            $.ajax({
-                type: "POST",
-                url: "/admin/blacklist/remove",
-                data: { memberNo: memberNo },
-                success: function(response) {
-                    if (response === "success") {
-                        alert("블랙리스트 해제 완료");
-
-                        // 상태를 'R'로 업데이트
-                        updateButtonStatus(memberNo, 'R');
-                        var now = new Date().toLocaleString();
-                        $("#unblackedAt-" + memberNo).text(now);
-                    } else {
-                        alert("오류가 발생했습니다.");
+        Swal.fire({
+            title: '블랙리스트 해제',
+            text: "정말로 블랙리스트에서 해제하시겠습니까?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3B5C9A',
+            cancelButtonColor: '#CB3333',
+            confirmButtonText: '예',
+            cancelButtonText: '아니오'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/blacklist/remove",
+                    data: { memberNo: memberNo },
+                    success: function(response) {
+                        if (response === "success") {
+                            Swal.fire(
+                                '해제 완료',
+                                '블랙리스트 해제가 완료되었습니다.',
+                                'success'
+                            );
+                            updateButtonStatus(memberNo, 'R');
+                            var now = new Date().toLocaleString();
+                            $("#unblackedAt-" + memberNo).text(now);
+                        } else {
+                            Swal.fire(
+                                '오류',
+                                '블랙리스트 해제 중 오류가 발생했습니다.',
+                                'error'
+                            );
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error("Error:", textStatus, errorThrown);
+                        Swal.fire(
+                            '오류',
+                            '서버와의 통신 중 문제가 발생했습니다.',
+                            'error'
+                        );
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("Error:", textStatus, errorThrown);
-                    alert("서버와의 통신 중 문제가 발생했습니다.");
-                }
-            });
-        }
+                });
+            }
+        });
     }
 
     function addToBlacklist(memberNo) {
-        if (confirm("정말로 블랙리스트에 등록하시겠습니까?")) {
-            $.ajax({
-                type: "POST",
-                url: "/admin/blacklist/add",
-                data: { memberNo: memberNo },
-                success: function(response) {
-                    if (response === "success" || response === "already_blacklisted") {
-                        alert(response === "success" ? "블랙리스트 등록 완료" : "이미 블랙리스트에 등록된 회원입니다.");
-
-                        // 상태를 'Y'로 업데이트
-                        updateButtonStatus(memberNo, 'Y');
-                        var now = new Date().toLocaleString();
-                        $("tr:has(button[data-member-no='" + memberNo + "']) td:nth-child(4)").text(now);
-                        $("#unblackedAt-" + memberNo).text("해제된 날짜 없음");
-                    } else {
-                        alert("오류가 발생했습니다.");
+        Swal.fire({
+            title: '블랙리스트 등록',
+            text: "정말로 블랙리스트에 등록하시겠습니까?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3B5C9A',
+            cancelButtonColor: '#CB3333',
+            confirmButtonText: '예',
+            cancelButtonText: '아니오'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/blacklist/add",
+                    data: { memberNo: memberNo },
+                    success: function(response) {
+                        if (response === "success" || response === "already_blacklisted") {
+                            Swal.fire(
+                                '등록 완료',
+                                response === "success" ? '블랙리스트 등록이 완료되었습니다.' : '이미 블랙리스트에 등록된 회원입니다.',
+                                'success'
+                            );
+                            updateButtonStatus(memberNo, 'Y');
+                            var now = new Date().toLocaleString();
+                            $("tr:has(button[data-member-no='" + memberNo + "']) td:nth-child(4)").text(now);
+                            $("#unblackedAt-" + memberNo).text("해제된 날짜 없음");
+                        } else {
+                            Swal.fire(
+                                '오류',
+                                '블랙리스트 등록 중 오류가 발생했습니다.',
+                                'error'
+                            );
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error("Error:", textStatus, errorThrown);
+                        Swal.fire(
+                            '오류',
+                            '서버와의 통신 중 문제가 발생했습니다.',
+                            'error'
+                        );
                     }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error("Error:", textStatus, errorThrown);
-                    alert("서버와의 통신 중 문제가 발생했습니다.");
-                }
-            });
-        }
+                });
+            }
+        });
     }
 
     function updateButtonStatus(memberNo, status) {

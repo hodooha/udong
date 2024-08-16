@@ -77,4 +77,19 @@
         WHERE n.notice_no = #{noticeNo}
     </select>
 
+    <select id="getActivePopupNotice" resultMap="noticeResultMap">
+        SELECT * FROM ADM_NOTICE
+        WHERE is_popup = true
+        AND started_at &lt;= #{currentTime}
+        AND ended_at &gt;= #{currentTime}
+        ORDER BY started_at DESC
+        LIMIT 1
+    </select>
+    <select id="getAttachmentByNoticeNo" resultType="com.multi.udong.common.model.dto.AttachmentDTO">
+        SELECT * FROM ATTACHMENT
+        WHERE type_code = 'NOTI' AND target_no = #{noticeNo}
+        LIMIT 1
+    </select>
+
+
 </mapper>

@@ -5,10 +5,173 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <style>
+        #popup-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        }
+        #popup-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 500px;
+            max-height: 80vh;
+            height: auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #popup-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        #popup-header h2 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #333;
+        }
+        #popup-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+        }
+        #popup-body {
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+        #popup-image {
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto 15px auto;
+            display: block;
+        }
+        #popup-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        #popup-close {
+            padding: 5px 10px;
+            background-color: #FFB83D;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #FFFFFF;
+        }
+        #popup-close:hover{
+        background-color: #FF9909;
+        color: #FFFFFF;
+        }
+
+        @media (max-width: 600px) {
+            #popup-content {
+                width: 90%;
+                height: 70vh;
+            }
+        }
+        #popup-body::-webkit-scrollbar {
+        width: 8px;
+        }
+        #popup-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #popup-body::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        #popup-body::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+
 </head>
 <body>
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{/member/alert}"></div>
 <img th:src="@{/img/coding.gif}" alt="우동행" style="margin: 0 auto; margin-top: 100px; display: block;">
+<div id="popup-overlay" th:if="${popupNotice != null}">
+    <div id="popup-content">
+        <div id="popup-header">
+            <h2 style="text-align:center">&#128226; 공지사항</h2>
+            <div id="popup-title" th:text="${popupNotice.title}"></div>
+        </div>
+        <div id="popup-body" th:text="${popupNotice.content}"></div>
+        <img id="popup-image" th:if="${popupNotice.imagePath != null}" th:src="@{${popupNotice.imagePath}}" alt="공지사항 이미지">
+        <div id="popup-footer">
+            <label>
+                <input type="checkbox" id="popup-no-show"> 오늘 하루 동안 보지 않기
+            </label>
+            <button id="popup-close">닫기</button>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        var popupNotice = /*[[${popupNotice}]]*/ null;
+        var popupOverlay = document.getElementById('popup-overlay');
+        var popupClose = document.getElementById('popup-close');
+        var popupNoShow = document.getElementById('popup-no-show');
+        var popupBody = document.getElementById('popup-body');
+
+        function showPopup() {
+            if (popupNotice && !isPopupClosed(popupNotice.noticeNo)) {
+                popupOverlay.style.display = 'block';
+                // 줄바꿈 처리
+                popupBody.innerHTML = popupBody.innerText.replace(/\n/g, '<br/>');
+            }
+        }
+
+        function closePopup() {
+            popupOverlay.style.display = 'none';
+            if (popupNoShow.checked) {
+                setPopupClosed(popupNotice.noticeNo);
+            }
+        }
+
+        function setPopupClosed(noticeNo) {
+            var date = new Date();
+            date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toUTCString();
+            document.cookie = "popupClosed_" + noticeNo + "=true" + expires + "; path=/";
+        }
+
+        function isPopupClosed(noticeNo) {
+            var nameEQ = "popupClosed_" + noticeNo + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length) === "true";
+            }
+            return false;
+        }
+
+        showPopup();
+        popupClose.addEventListener('click', closePopup);
+    });
+    /*]]>*/
+</script>
+
 </body>
 </html>
