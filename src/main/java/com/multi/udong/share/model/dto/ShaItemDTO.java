@@ -23,6 +23,7 @@ public class ShaItemDTO {
     private String title;
     private String content;
     private int ownerNo;
+    private String ownerImg;
     private String nickName;
     private int level;
     private Long locCode;

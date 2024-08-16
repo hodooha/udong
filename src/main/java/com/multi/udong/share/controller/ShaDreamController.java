@@ -30,6 +30,17 @@ public class ShaDreamController {
     private final ShareService shareService;
     private final MemberService memberService;
 
+    public static void checkBeforehand(CustomUserDetails c) throws Exception {
+        // 로그인 확인
+        if (c == null) {
+            throw new Exception("로그인을 먼저 해주세요.");
+        }
+
+        // 지역 등록 여부 확인
+        if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
+            throw new Exception("지역을 먼저 등록해주세요.");
+        }
+    }
     /**
      * 빌려(나눠)드림 페이지 이동
      *
@@ -45,10 +56,7 @@ public class ShaDreamController {
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
+            checkBeforehand(c);
 
             // 검색 조건 설정
             ShaDreamCriteriaDTO criteriaDTO = new ShaDreamCriteriaDTO();
@@ -96,10 +104,7 @@ public class ShaDreamController {
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
+            checkBeforehand(c);
 
             // 검색 조건 설정
             ShaDreamCriteriaDTO criteriaDTO = new ShaDreamCriteriaDTO();
@@ -237,15 +242,14 @@ public class ShaDreamController {
      * 물건의 대여 요청자 조회
      *
      * @param reqDTO the req dto
-     * @param c      the c
      * @param model  the model
      * @return the requesters
      */
     @GetMapping("/requesters")
-    public String getRequesters(ShaReqDTO reqDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    public String getRequesters(ShaReqDTO reqDTO, Model model) {
 
         try {
-            List<ShaReqDTO> requesters = shareService.getRequesters(reqDTO);
+            List<ShaRqstDTO> requesters = shareService.getRequesters(reqDTO.getReqItem());
             model.addAttribute("requesters", requesters);
             System.out.println(requesters);
         } catch (Exception e) {

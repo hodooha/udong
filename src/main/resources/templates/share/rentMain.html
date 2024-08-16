@@ -93,16 +93,10 @@
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{share/shaMenubar :: #shaMenubar}"></div>
 <div class="container">
-    <div id="recItem" class="mb-5">
-        <h2 class="m-2 all">추천</h2>
-        <th:block th:if="${#lists.isEmpty(groupItems)}">
-            <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
-                등록된 물건이 없습니다.
-            </div>
-        </th:block>
-
+    <div id="recItem">
         <th:block th:unless="${#lists.isEmpty(groupItems)}">
-            <div style="overflow: hidden">
+            <h2 class="m-2 all mt-5">추천</h2>
+            <div style="overflow: hidden" class="mb-5">
                 <div id="carouselExample" class="carousel carousel-dark slide">
                     <div class="carousel-inner">
                         <div th:each="group, groupStat : ${groupItems}"
@@ -117,7 +111,7 @@
                                                  th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                                             <th:block th:switch="${item.statusCode}">
                                                 <div class="blur-info" th:case="UNAV">
-                                                    <h3>대여불가</h3>
+                                                    <h3>일시대여불가</h3>
                                                 </div>
 
                                                 <div class="blur-info" th:case="RNT">
@@ -219,7 +213,7 @@
                                  th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                             <th:block th:switch="${item.statusCode}">
                                 <div class="blur-info" th:case="UNAV">
-                                    <h3>대여불가</h3>
+                                    <h3>일시대여불가</h3>
                                 </div>
 
                                 <div class="blur-info" th:case="RNT">
@@ -284,9 +278,6 @@
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
 <script type="text/javascript" th:src="@{/js/sha.js}"></script>
 </body>
 </html>

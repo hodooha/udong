@@ -1,4 +1,5 @@
 $(function(){
+
     url = new URL(location.href);
     urlSearch = url.searchParams;
     path = url.pathname;
@@ -74,6 +75,8 @@ $(function(){
              restoreDreamFormState(savedState);
              updateLendList(savedState);
         }
+
+
     }
 
     if(bodyId == "dreamBorrow"){
@@ -91,8 +94,6 @@ $(function(){
              updateBorrowList(savedState);
         }
     }
-
-
 
 });
 
@@ -165,7 +166,7 @@ function datePickerActive(){
     $('#datePicker').datepicker({
         format: 'yyyy-mm-dd',
         todayHighlight: true,
-        startDate: '+1d',
+        startDate: '+2d',
         autoclose : true,
         endDate: '+1m'
     })
@@ -177,7 +178,7 @@ function dateRefresh() {
     $('#datePicker').datepicker({
     format: 'yyyy-mm-dd',
     todayHighlight: true,
-    startDate: '+1d',
+    startDate: '+2d',
     autoclose : true,
     endDate: '+1m'
     });
@@ -437,20 +438,6 @@ function getLendItem(itemNo){
     })
 }
 
-//function getBorrowItem(reqNo){
-//    let reqUrl = "/share/dream/borrowItem"
-//    let data = {
-//        reqNo: reqNo
-//    };
-//
-//    ajax_get(reqUrl, data).done(function(result){
-//        let itemRow = $(`div[data-dream-id='dream${reqNo}']`);
-//        console.log(itemRow);
-//        console.log(result);
-//        itemRow.replaceWith(result);
-//    })
-//}
-
 function restoreFormState(params) {
     $('.catSelect').val(params.catCode).prop("selected", true);
     $("input[name='group']").val(params.group);
@@ -483,24 +470,12 @@ function updateItemDetail(){
     });
 }
 
-function deleteItem(item){
-    if(item.statusCode == 'RNT'){
-        showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
-        $('#deleteModal').modal("hide", true);
-        return;
-    }
-
-    let reqUrl = `/share/delete?itemNo=${item.itemNo}&itemGroup=${item.itemGroup}`;
-
-    location.href = reqUrl;
-}
-
 function shaRequest(item) {
     let returnDate = $('#datePicker').val();
 
     if(item.itemGroup == 'rent'){
         if(returnDate == ''){
-            showConfirmAlert("반납희망일을 설정해주세요.");
+            showAlert("반납희망일을 설정해주세요.");
             return;
         }
     }
@@ -542,22 +517,52 @@ function updateShaLike(itemNo){
 }
 
 function updateItStat(item){
+    let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`;
 
     if(item.statusCode == "RNT"){
         showAlert("현재 대여중인 물건입니다. '반납완료' 처리 후 일시중단이 가능합니다.");
         return;
     }
-    let reqUrl = `/share/updateItStat?itemNo=${item.itemNo}`
 
-    ajax_get(reqUrl).done(function(data){
-        if(path.includes("/share/dream")){
-            getLendItem(item.itemNo);
-        } else{
-            updateItemDetail();
-        }
-    })
+    if(item.statusCode == "UNAV"){
+        title = "대여 중단을 해제하시겠어요?";
+        text = null;
+        confirmButtonText = "중단해제";
+    } else{
+        title = "잠시 대여를 중단하시겠어요?";
+        text = "대여 중단 중인 물건은 이웃들이 대여 신청을 할 수 없습니다.";
+        confirmButtonText = "일시중단";
+    }
+
+    Swal.fire({
+         title: title,
+         text: text,
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: confirmButtonText,
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "취소",
+         reverseButtons: true
+       }).then((result) => {
+         if (result.isConfirmed) {
+            ajax_get(reqUrl).done(async function(result){
+                let type = result.type;
+                let msg = result.msg;
+                if(await showAlerts(msg, type)){
+                    if(path.includes("/share/dream")){
+                        getLendItem(item.itemNo);
+                    } else{
+                    updateItemDetail();
+                    }
+                }
+            })
+         }
+        });
 
 }
+
+
+
 
 
 function selectReq(itemNo){
@@ -568,17 +573,22 @@ function selectReq(itemNo){
 function getRequesters(itemNo){
     let reqUrl = "/share/dream/requesters";
     let data = {
-        reqItem: itemNo,
-        statusCode: "RQD"
+        reqItem: itemNo
     }
+
+
     ajax_get(reqUrl, data).done(function(result){
 
         $('#dreamModals').replaceWith(result);
         showAlerts();
         $('#selectRqst').modal('toggle');
+
+        const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+        const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
     })
 
 }
+
 
 function checkReturnDate(requesters){
     let selectedRqst = $('input[name="requesters"]:checked').val();
@@ -692,10 +702,44 @@ function postScore(req){
 }
 
 function toggleDeleteModal(item){
-    $('#deleteModal').modal("toggle", true);
+    if(item.statusCode == 'RNT'){
+        showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
+        $('#deleteModal').modal("hide", true);
+        return;
+    }
 
-    $('#deleteBtn').on("click", function(){
+   Swal.fire({
+     title: "정말 삭제할까요?",
+     text: "대여 및 신청 내역이 있는 게시글을 삭제하면 이웃이 당황할 수 있어요.",
+     icon: "warning",
+     showCancelButton: true,
+     confirmButtonText: "삭제",
+     confirmButtonColor: "#CB3333",
+     cancelButtonText: "취소",
+     reverseButtons: true
+   }).then((result) => {
+     if (result.isConfirmed) {
+     if(path.includes("dream")){
         deleteItemAtDream(item);
+     } else{
+        deleteItemAtDetail(item)
+     }
+     }
+    });
+}
+
+function deleteItemAtDetail(item){
+    let reqUrl = "/share/delete";
+    let data = {
+        itemNo: item.itemNo,
+        itemGroup: item.itemGroup
+    }
+    ajax_get(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)) {
+            location.href=`/share/${item.itemGroup}`;
+        }
     })
 }
 
@@ -706,19 +750,31 @@ function deleteItemAtDream(item) {
         itemGroup: item.itemGroup
     }
 
-    ajax_get(reqUrl, data).done(function(){
-        $('#deleteModal').modal("toggle", true);
-        location.reload();
+    ajax_get(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)) {
+            location.reload();
+        }
     })
-
 }
 
 function toggleCancelModal(req){
-    $('#cancelModal').modal("toggle", true);
 
-    $('#cancelReqBtn').on("click", function(){
-        cancelReq(req);
-    })
+    Swal.fire({
+         title: "정말 신청을 취소할까요?",
+         text: "신청을 취소하면 해당 물건의 대여 및 나눔을 받을 수 없습니다.",
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "신청취소",
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "이전",
+         reverseButtons: true
+        }).then((result) => {
+         if (result.isConfirmed) {
+            cancelReq(req);
+         }
+    });
 
 }
 
@@ -731,7 +787,6 @@ function cancelReq(req){
     ajax_get(reqUrl, data).done(async function(result){
         let type = result.type;
         let msg = result.msg;
-        $('#cancelModal').modal("toggle", true);
         if(await showAlerts(msg, type)){
             location.reload();
         }
@@ -832,6 +887,12 @@ function getRecItems(){
         showAlerts();
     })
 }
+
+async function clipUrl(){
+    await navigator.clipboard.writeText(url);
+    showSuccessAlert("링크가 복사되었습니다.");
+}
+
 
 
 

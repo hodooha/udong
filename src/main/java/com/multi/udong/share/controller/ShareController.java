@@ -36,6 +36,18 @@ public class ShareController {
 // 이미지 저장 경로
     static final String IMAGE_PATH = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString() + File.separator;
 
+    public static void checkBeforehand(CustomUserDetails c) throws Exception {
+        // 로그인 확인
+        if (c == null) {
+            throw new Exception("로그인을 먼저 해주세요.");
+        }
+
+        // 지역 등록 여부 확인
+        if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
+            throw new Exception("지역을 먼저 등록해주세요.");
+        }
+    }
+
     /**
      * 대여 메인페이지 이동
      *
@@ -47,16 +59,7 @@ public class ShareController {
     @GetMapping("/rent")
     public String rentMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
             ShaPageDTO pageInfo = new ShaPageDTO();
@@ -65,7 +68,7 @@ public class ShareController {
             if (c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
                 criteriaDTO.setLocCode(null);
             } else {
-                criteriaDTO.setLocCode(locCode);
+                criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
             }
 
             // 검색 조건 설정
@@ -106,16 +109,7 @@ public class ShareController {
     @GetMapping("/give")
     public String giveMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             ShaCriteriaDTO criteriaDTO = new ShaCriteriaDTO();
             ShaPageDTO pageInfo = new ShaPageDTO();
@@ -124,7 +118,7 @@ public class ShareController {
             if (c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
                 criteriaDTO.setLocCode(null);
             } else {
-                criteriaDTO.setLocCode(locCode);
+                criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
             }
 
             // 검색 조건 설정
@@ -165,16 +159,7 @@ public class ShareController {
     public String register(Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // db에서 카테고리 목록 조회
             List<ShaCatDTO> list = shareService.getShaCat();
@@ -203,16 +188,7 @@ public class ShareController {
     public String itemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
@@ -241,16 +217,7 @@ public class ShareController {
     public String getItemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetail(itemDTO, c);
@@ -287,17 +254,7 @@ public class ShareController {
         System.out.println(fileList);
 
         try {
-
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // 물건 정보 설정
             itemDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
@@ -362,19 +319,10 @@ public class ShareController {
         ShaPageDTO pageInfo = new ShaPageDTO();
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // 검색 조건에 로그인한 유저의 지역 code 설정
-            criteriaDTO.setLocCode(locCode);
+            criteriaDTO.setLocCode(c.getMemberDTO().getMemAddressDTO().getLocationCode());
 
             // 검색 조건에 페이지에 보여지는 물건 번호 범위 설정
             criteriaDTO.setPageRange(criteriaDTO.getPage());
@@ -416,19 +364,9 @@ public class ShareController {
         // 결과 메세지 설정
         Map<String, Object> result = new HashMap<>();
         String reqGroup = reqDTO.getReqGroup().equals("rent") ? "대여" : "나눔";
-        String msg = reqGroup + "신청이 완료되었습니다.";
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // 신청자와 물건의 소유자 동일 여부 확인
             if (c.getMemberDTO().getMemberNo() == reqDTO.getOwnerNo()) {
@@ -442,13 +380,12 @@ public class ShareController {
             shareService.insertRequest(reqDTO);
 
             result.put("type", "success");
-            result.put("msg", msg);
+            result.put("msg", reqGroup + "신청이 완료되었습니다.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            msg = e.getMessage();
             result.put("type", "error");
-            result.put("msg", msg);
+            result.put("msg", e.getMessage());
         }
 
         return ResponseEntity.ok().body(result);
@@ -471,15 +408,7 @@ public class ShareController {
 
         try {
             // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // 물건 정보 불러오기
             ShaItemDTO target = shareService.getItemDetail(itemDTO, c);
@@ -493,7 +422,6 @@ public class ShareController {
             // db에서 카테고리 목록 조회
             List<ShaCatDTO> list = shareService.getShaCat();
             model.addAttribute("catList", list);
-
 
 
         } catch (Exception e) {
@@ -609,30 +537,28 @@ public class ShareController {
      *
      * @param itemDTO the item dto
      * @param c       the c
-     * @param model   the model
      * @return the string
      * @since 2024 -07-31
      */
     @GetMapping("/delete")
-    public String deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, Model model) {
+    public ResponseEntity<?> deleteItem(ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c) {
         System.out.println("삭제할 대상: " + itemDTO);
+
+        Map<String, Object> result = new HashMap<>();
 
         try {
             // 물건 삭제
             shareService.deleteItem(itemDTO, c);
-
-//            // 물건 삭제 성공 시 삭제한 파일 로컬에서 삭제
-//            for (AttachmentDTO img : delImgs) {
-//                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
-//            }
+            result.put("type", "success");
+            result.put("msg", "삭제가 완료되었습니다.");
 
         } catch (Exception e) {
             e.printStackTrace();
-            model.addAttribute("msg", e.getMessage());
-            return "common/errorPage";
+            result.put("type", "error");
+            result.put("msg", e.getMessage());
         }
 
-        return itemDTO.getItemGroup().equals("rent") ? "redirect:/share/rent" : "redirect:/share/give";
+        return ResponseEntity.ok().body(result);
     }
 
 
@@ -654,12 +580,13 @@ public class ShareController {
         try {
             // 물건 상태 업데이트
             shareService.updateItStat(itemDTO, c);
+            result.put("type", "success");
+            result.put("msg", "상태 변경이 완료되었습니다.");
 
         } catch (Exception e) {
             e.printStackTrace();
             result.put("type", "error");
             result.put("msg", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
         }
 
         return ResponseEntity.ok().body(result);
@@ -676,21 +603,12 @@ public class ShareController {
     @GetMapping("/like")
     @ResponseBody
     public ResponseEntity<?> updateShaLike(ShaLikeDTO likeDTO, @AuthenticationPrincipal CustomUserDetails c) {
-        // 결과 메세지 설정
+
 
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // 로그인 확인
-            if (c == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
-            }
-
-            // 지역 등록 여부 확인
-            long locCode = c.getMemberDTO().getMemAddressDTO().getLocationCode() == null? 0 : c.getMemberDTO().getMemAddressDTO().getLocationCode();
-            if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && locCode == 0) {
-                throw new Exception("지역을 먼저 등록해주세요.");
-            }
+            checkBeforehand(c);
 
             // 신청자 no에 로그인한 유저 no 설정
             likeDTO.setMemberNo(c.getMemberDTO().getMemberNo());
@@ -702,7 +620,6 @@ public class ShareController {
             e.printStackTrace();
             result.put("type", "error");
             result.put("msg", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
         }
 
         return ResponseEntity.ok().body(result);
@@ -722,13 +639,14 @@ public class ShareController {
 
         try {
             List<ShaItemDTO> itemList = shareService.recommendItem(c);
-            List<List<ShaItemDTO>> groupItems = new ArrayList<>();
+            if (itemList != null && itemList.size() == 12) {
+                List<List<ShaItemDTO>> groupItems = new ArrayList<>();
 
-            for(int i=0; i<itemList.size(); i += 4){
-                groupItems.add(itemList.subList(i, i+4));
+                for (int i = 0; i < itemList.size(); i += 4) {
+                    groupItems.add(itemList.subList(i, i + 4));
+                }
+                model.addAttribute("groupItems", groupItems);
             }
-
-            model.addAttribute("groupItems", groupItems);
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("type", "error");

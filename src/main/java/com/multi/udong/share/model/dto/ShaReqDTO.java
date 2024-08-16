@@ -22,7 +22,9 @@ public class ShaReqDTO {
     private String ownerNickname;
     private String reqGroup;
     private int rqstNo;
+    private String rqstImg;
     private String rqstNickname;
+    private int rqstLevel;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private LocalDate returnDate;
