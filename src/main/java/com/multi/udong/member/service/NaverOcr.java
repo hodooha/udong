@@ -74,7 +74,6 @@ public class NaverOcr {
             String postParams = json.toString();
             con.connect();
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-            long start = System.currentTimeMillis();
             File file = new File(imageFile);
             writeMultiPart(wr, postParams, file, boundary);
             wr.close();

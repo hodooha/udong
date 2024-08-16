@@ -138,7 +138,7 @@ public class LoginController {
             AttachmentDTO attachmentDTO = memberController.settingFile(file);
             attachmentDTO.setTypeCode("BRG");
 
-            String path = Paths.get("src", "main", "resources", "static", "uploadFiles").toAbsolutePath().normalize().toString();
+            String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
             String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
             String fileName = savePath + attachmentDTO.getSavedName();
 
@@ -195,20 +195,20 @@ public class LoginController {
                     authenticateUserAndSetSession(memberDTO, request);
                     redirectAttributes.addFlashAttribute("alert", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 전달됩니다.");
                     redirectAttributes.addFlashAttribute("alertType", "success");
-                    return "redirect:/index";
+                    return "redirect:/";
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
                     redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다");
                     redirectAttributes.addFlashAttribute("alertType", "error");
-                    return "redirect:/member/signup";
+                    return "redirect:/member/signupSeller";
                 }
                 
             } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
                 redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다");
                 redirectAttributes.addFlashAttribute("alertType", "error");
-                return "redirect:/member/signup";
+                return "redirect:/member/signupSeller";
             }
         }
 
