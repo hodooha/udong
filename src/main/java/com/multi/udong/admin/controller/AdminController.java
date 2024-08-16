@@ -410,4 +410,15 @@ public class AdminController {
         return response;
     }
 
+    @GetMapping("/blacklist/search")
+    public String searchBlacklist(@RequestParam(value = "search", required = false) String search, Model model) {
+        if (search == null || search.trim().isEmpty()) {
+            return "redirect:/admin/blacklist";
+        }
+
+        List<MemberDTO> blacklistedMembers = adminService.searchBlacklistedMembersByIdOrName(search);
+        model.addAttribute("blacklistedMembers", blacklistedMembers);
+        return "admin/blacklist";
+    }
+
 }
