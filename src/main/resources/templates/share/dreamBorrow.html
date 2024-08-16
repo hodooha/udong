@@ -6,11 +6,6 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap-responsive.css">
     <style>
         html {
           scrollbar-gutter: stable;
@@ -24,13 +19,14 @@
             border: none !important;
             width:100%;
             height: 150px;
+            background-color: #F5F5F5;
         }
 
         .rentGroup{
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #3B5C9A;
+            background-color: #3B5C9A !important;
             color: #FFFFFF;
             text-align: center;
             font-size: 20px;
@@ -41,7 +37,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #FFB83D;
+            background-color: #FFB83D !important;
             color: #FFFFFF;
             text-align: center;
             font-size: 20px;
@@ -54,7 +50,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #F5F5F5;
         }
 
         .select-area{
@@ -76,7 +71,6 @@
         }
 
         .status-area{
-            background-color: #F5F5F5;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -89,7 +83,6 @@
             align-items: center;
             justify-content: flex-end;
             font-size: 16px;
-
         }
 
         .catSelect{
@@ -100,15 +93,6 @@
 
         .stat-select{
             width:8em !important;
-
-        }
-
-
-        .btn-area{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #F5F5F5;
 
         }
 
@@ -198,6 +182,25 @@
           font-size: 1.1em;
           text-align: center;
           background:bisque;
+        }
+
+        .dropdown-btns{
+            --bs-dropdown-min-width: 5rem !important;
+            background-color: #979797 !important;
+        }
+
+        .dropdown-item.active,
+        .dropdown-item:active{
+            background-color: #6A6A6A !important;
+        }
+
+        .btn-udh-nocolor,
+        .btn-udh-nocolor:focus,
+        .btn-udh-nocolor:focus-visible,
+        .btn-udh-nocolor:active,
+        .btn.show{
+            background: none;
+            border: none !important;
         }
 
     </style>
@@ -305,54 +308,71 @@
                             </div>
                             <div th:if="${req.statusCode == 'RNT'}">반납예정일: [[${req.returnDate}]]</div>
                         </div>
-                        <div class="col-2 col-sm-3 btn-area container">
 
-                            <div th:if="${req.statusCode == 'RQD'}" class="btn-group">
-                                <div class="mb-3 btns-1">
-                                    <button th:onclick="toggleCancelModal([[${req}]])"
-                                            class="btn btn-udh-silver col-12" style="width:max-content">신청취소
+                        <div class="col-2 col-sm-3 position-relative">
+                            <div th:if="${req.statusCode == 'RQD'}" >
+                                <div class="dropdown dropend position-absolute top-0 end-0">
+                                    <button class="btn btn-udh-nocolor" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false" style="font-weight:bold; font-size:1.5em;">
+                                        &#8230;
                                     </button>
-
-                                </div>
-                                <div class="btns-2 ">
-                                    <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
-                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
-                                    </button>
+                                    <ul class="dropdown-menu dropdown-btns">
+                                        <li>
+                                            <button th:onclick="toggleCancelModal([[${req}]])"
+                                                    class="btn btn-udh-silver dropdown-item">신청취소
+                                            </button>
+                                        </li>
+                                        <li th:if="${req.itemDTO.itemGroup == 'rent'}" >
+                                            <button th:onclick="toggleChangeDateModal([[${req}]])"
+                                                    class="btn btn-udh-silver dropdown-item">신청변경
+                                            </button>
+                                        </li>
+                                        <li th:if="${req.itemDTO.itemGroup != 'give'}">
+                                            <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                                    class="btn btn-udh-yellow dropdown-item">쪽지하기
+                                            </button>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
 
-                            <div th:if="${req.statusCode == 'RNT'}" class="btn-group">
-                                <div class="mb-3 btns-1">
-                                    <button th:onclick="toggleReportModalBorrow([[${req}]])"
-                                            class="btn btn-udh-red col-12" style="width:max-content">물건신고
+                            <div th:unless="${req.statusCode == 'RQD'}">
+                                <div class="dropdown dropend position-absolute top-0 end-0">
+                                    <button class="btn btn-udh-nocolor" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false" style="font-weight:bold; font-size:1.5em;">
+                                        &#8230;
                                     </button>
+                                    <ul class="dropdown-menu dropdown-btns">
+                                        <li th:if="${req.statusCode != 'LST'}">
+                                            <button th:onclick="toggleReportModalBorrow([[${req}]])"
+                                                    class="btn btn-udh-red dropdown-item">신고하기
+                                            </button>
+                                        </li>
+                                        <li th:if="req.itemDTO.itemGroup != 'give'">
+                                            <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                                    class="btn btn-udh-yellow dropdown-item">쪽지하기
+                                            </button>
+                                        </li>
+                                        <li th:if="${req.statusCode != 'RTR'}">
+                                            <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
+                                                    class="btn btn-udh-silver dropdown-item">지우기
+                                            </button>
+                                        </li>
+                                    </ul>
                                 </div>
-                                <div class="btns-2">
-                                    <button th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
-                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div th:if="${req.statusCode == 'RTR'}" class="btn-group">
-                                <div class="btns-1">
+                                <div th:if="${req.statusCode == 'RTR'}" class="position-absolute top-50 start-50 translate-middle-y">
                                     <button th:onclick="toggleEvalModal([[${req}]])"
-                                            class="btn btn-udh-silver col-12" style="width:max-content">평가하기
+                                            class="btn btn-udh-blue">평가하기
                                     </button>
-
                                 </div>
-
-                            </div>
-                            <div th:if="${req.statusCode == 'WIN'}" class="btn-group">
-                                <div class="btns-1">
+                                <div th:if="${req.statusCode == 'WIN'}" class="position-absolute top-50 start-50 translate-middle-y">
                                     <button
                                             th:onclick="sendMsg([[${req.itemDTO.ownerNo}]])"
-                                            class="btn btn-udh-yellow col-12" style="width:max-content">쪽지하기
+                                            class="btn btn-udh-yellow">쪽지하기
                                     </button>
-
                                 </div>
-
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -386,23 +406,26 @@
             </nav>
         </th:block>
 
-        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel"
-             aria-hidden="true">
+        <div class="modal fade" id="changeDateModal" aria-hidden="true" aria-labelledby="changeDateModalLabel" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <div class="modal-header" style="background-color: #979797;
-                    color: #FFFFFF;">
-                        <h5 class="modal-title">정말 신청을 취소할까요?</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
+                    <div class="modal-header" style="background-color: #3B5C9A;
+                         color: #FFFFFF;">
+                        <h1 class="modal-title fs-5" id="changeDateModalLabel">변경할 반납예정일을 선택해주세요.</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="dateRefresh()"></button>
                     </div>
                     <div class="modal-body">
-                        <p>신청을 취소하면 해당 물건의 대여 및 나눔을 받을 수 없습니다.</p>
+                        <label class="form-label">📅반납희망일 확인</label>
+
+                        <div class="input-group input-daterange">
+                            <input type="date" class="form-control" name="return" id="datePicker" readonly>
+                        </div>
+                        <span style="font-size:0.7em">*반납희망일은 다음날부터 한달 이내로만 선택 가능합니다.</span>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">이전</button>
-                        <button type="button" class="btn btn-udh-red" id="cancelReqBtn">신청취소
+                        <button class="btn btn-udh-silver" data-bs-dismiss="modal" onclick="dateRefresh()">취소
                         </button>
+                        <button class="btn btn-udh-blue" id="changeBtn">확정</button>
                     </div>
                 </div>
             </div>
@@ -520,9 +543,9 @@
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.js"></script>
 <script type="text/javascript" th:src="@{/js/sha.js}"></script>
 </body>
 </html>

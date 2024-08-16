@@ -756,6 +756,13 @@
         and c.is_deleted = 'N'
     </select>
 
+    <update id="updateReqReturnDate">
+        update
+        sha_req
+        set return_date = #{returnDate}
+        where req_no = #{reqNo}
+    </update>
+
 
 
 </mapper>

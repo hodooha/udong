@@ -202,4 +202,8 @@ public class ShareDAO {
     public ShaItemDTO getItemDetailForCheck(SqlSessionTemplate sqlSession, int itemNo) {
         return sqlSession.selectOne("ShareMapper.getItemDetailForCheck", itemNo);
     }
+
+    public int updateReqReturnDate(SqlSessionTemplate sqlSession, ShaReqDTO reqDTO) {
+        return sqlSession.update("ShareMapper.updateReqReturnDate", reqDTO);
+    }
 }

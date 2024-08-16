@@ -166,7 +166,7 @@ function datePickerActive(){
     $('#datePicker').datepicker({
         format: 'yyyy-mm-dd',
         todayHighlight: true,
-        startDate: '+2d',
+        startDate: '+1d',
         autoclose : true,
         endDate: '+1m'
     })
@@ -178,7 +178,7 @@ function dateRefresh() {
     $('#datePicker').datepicker({
     format: 'yyyy-mm-dd',
     todayHighlight: true,
-    startDate: '+2d',
+    startDate: '+1d',
     autoclose : true,
     endDate: '+1m'
     });
@@ -891,6 +891,54 @@ function getRecItems(){
 async function clipUrl(){
     await navigator.clipboard.writeText(url);
     showSuccessAlert("링크가 복사되었습니다.");
+}
+
+function toggleChangeDateModal(req){
+    datePickerActive();
+    $('#datePicker').val(req.returnDate);
+
+    $('#changeDateModal').modal("toggle", true);
+
+    $('#changeBtn').on("click", function(){
+        let now = new Date();
+
+        if(req.returnDate == $('#datePicker').val()){
+            showConfirmAlert("기존 반납예정일과 동일합니다.");
+            return;
+        };
+
+        if($('#datePicker').val() == ''){
+            showConfirmAlert("반납예정일을 선택해주세요.");
+            return;
+        };
+        if(new Date($('#datePicker').val()) < now){
+            showConfirmAlert("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
+            return;
+        };
+
+        req.returnDate = $('#datePicker').val();
+        changeDate(req);
+    })
+
+}
+
+function changeDate(req){
+    let reqUrl = "/share/dream/updateReqReturnDate"
+    let data = {
+        reqNo : req.reqNo,
+        returnDate : req.returnDate
+    }
+
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            $('#changeDateModal').modal("toggle", true);
+            getBorrowList();
+        };
+
+    })
+
 }
 
 

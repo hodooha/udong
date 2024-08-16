@@ -194,6 +194,11 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("현재 대여 중단중인 물건으로 대여 신청이 불가합니다.");
         }
 
+        // 날짜가 과거라면 예외 발생
+        if (!reqDTO.getReturnDate().isAfter(LocalDate.now())) {
+            throw new Exception("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
+        }
+
         // 요청 db에 저장
         if (shareDAO.insertRequest(sqlSession, reqDTO) < 1) {
             throw new Exception("신청을 실패했습니다.");
@@ -430,7 +435,7 @@ public class ShareServiceImpl implements ShareService {
     public void approveReq(ShaReqDTO reqDTO) throws Exception {
 
         if (!reqDTO.getReturnDate().isAfter(LocalDate.now())) {
-            throw new Exception("반납예정일은 오늘 날짜부터 선택 가능합니다.");
+            throw new Exception("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
         }
 
         if (shareDAO.updateReqStat(sqlSession, reqDTO) < 1) {
@@ -774,6 +779,38 @@ public class ShareServiceImpl implements ShareService {
             }
 
             return result;
+
+    }
+
+    @Override
+    public void updateReqReturnDate(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception {
+
+        // 기존 요청 정보 가져오기
+        ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, reqDTO.getReqNo());
+
+        // 요청 신청자와 로그인한 유저가 다를 경우 예외 발생
+        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+            throw new Exception("권한이 없습니다.");
+        }
+
+        // 요청 상태가 '신청완료'가 아닐 경우 예외 발생
+        if(!target.getStatusCode().equals("RQD")){
+            throw new Exception("신청완료 상태일 경우에만 반납 예정일 변경이 가능합니다.");
+        }
+
+        // 날짜가 기존과 같으면 예외 발생
+        if (reqDTO.getReturnDate().isEqual(target.getReturnDate())) {
+            throw new Exception("기존 반납예정일과 동일합니다.");
+        }
+
+        // 날짜가 과거라면 예외 발생
+        if (!reqDTO.getReturnDate().isAfter(LocalDate.now())) {
+            throw new Exception("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
+        }
+
+        if(shareDAO.updateReqReturnDate(sqlSession, reqDTO) < 1){
+            throw new Exception("반납 예정일 변경을 실패했습니다.");
+        };
 
     }
 
