@@ -146,7 +146,8 @@
                                 </div>
                             </div>
                         </td>
-                        <td th:each="i : ${#numbers.sequence(logDetail.attachments.size() + 1, 4)}">
+                        <td th:each="i : ${#numbers.sequence(logDetail.attachments.size() + 1, 4)}"
+                            th:if="${logDetail.attachments.size() < 4}">
                             <div th:id="'imgArea' + ${i}" class="img-div">
                                 <img th:id="'img' + ${i}" class="img">
                                 <br>

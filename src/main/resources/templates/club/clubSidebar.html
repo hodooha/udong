@@ -59,10 +59,10 @@
 
             // 메뉴 항목들 가져오기
             const homeMenu = document.querySelector('li[onclick*="/club/clubHome"]');
-            const logMenu = document.querySelector('li[onclick*="/club/clubLog/logMain"]');
+            const logMenu = document.querySelector('li[onclick*="/club/clubLog"]');
             const scheduleMenu = document.querySelector('li[onclick*="/club/clubSchedule"]');
             const albumMenu = document.querySelector('li[onclick*="/club/clubAlbum"]');
-            const MemberMenu = document.querySelector('li[onclick*="/club/clubMember"]');
+            const memberMenu = document.querySelector('li[onclick*="/club/clubMember"]');
 
             // 현재 URL에 따른 active 클래스 추가
             if (currentUrl.includes('/clubHome')) {
@@ -95,7 +95,7 @@
         <hr class="club-side-bar-hr">
         <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubAlbum/albumMain')">모임 앨범</li>
         <hr class="club-side-bar-hr">
-        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubMember')">모임 멤버</li>
+        <li class="club-side-bar-menu" onclick="moveClubPage('/club/clubMember/memberMain')">모임 멤버</li>
     </ul>
 </div>
 <script>

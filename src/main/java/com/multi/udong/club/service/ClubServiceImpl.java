@@ -588,6 +588,69 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public List<AttachmentDTO> selectAlbumList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectAlbumList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectAlbumCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectAlbumCount(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public List<ClubMemberDTO> selectClubJoinRequestList(int clubNo) throws Exception {
+
+        return clubDAO.selectClubJoinRequestList(sqlSession, clubNo);
+
+    }
+
+    @Override
+    public int approveJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.approveJoinRequest(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
+    public int rejectJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.rejectJoinRequest(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
+    public ClubDTO selectClubMemberList(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubMemberList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int selectClubMemberCount(FilterDTO filterDTO) throws Exception {
+
+        return clubDAO.selectClubMemberCount(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int delegateMaster(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.delegateMaster(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
+    public int kickMember(ClubMemberDTO clubMemberDTO) throws Exception {
+
+        return clubDAO.kickMember(sqlSession, clubMemberDTO);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

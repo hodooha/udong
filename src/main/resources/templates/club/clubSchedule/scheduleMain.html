@@ -93,7 +93,7 @@
             font-family: 'Freesentation-5Medium' !important;
             font-size: 12px !important;
             padding: 4px 8px 4px 8px !important;
-            margin: 0px 7px 20px 0px;
+            margin: 10px 7px 20px 0px;
         }
         .no-data-div {
             width: 100%;
@@ -149,7 +149,7 @@
             </div>
             <div style="left-margin: auto;">
                 <th:block th:if="${isClubDeleted == 'Y'}">
-                    <button type="button" class="btn btn-udh-blue btn-create-club-schedule" disabled>일정 생성</button>
+                    <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px; margin-left: 20px;">❕ 해체된 모임입니다.</span>
                 </th:block>
                 <th:block th:if="${isClubDeleted == 'N'}">
                     <a th:href="@{/club/clubSchedule/scheduleInsertForm(clubNo=${clubNo})}">
@@ -166,14 +166,14 @@
                     <p class="no-data-p">❌ 조회할 일정이 없습니다.</p>
                 </div>
             </th:block>
-            <div th:each="one : ${scheduleList}" class="schedule-one" th:data-gathering-at="${one.gatheringAt}" th:data-current-personnel="${one.currentPersonnel}" th:data-max-personnel="${one.maxPersonnel}">
+            <div th:each="one : ${scheduleList}" class="schedule-one" th:data-gathering-at="${one.gatheringAt}" th:data-current-personnel="${one.currentPersonnel}" th:data-max-personnel="${one.maxPersonnel}" th:data-is-club-deleted="${isClubDeleted}">
                 <table style="width: 100%">
                     <tr class="schedule-one-line">
                         <td>
-                            <th:block th:if="${one.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or one.gatheringAt.isEqual(T(java.time.LocalDateTime).now()) or one.currentPersonnel >= one.maxPersonnel}">
+                            <th:block th:if="${one.gatheringAt.isBefore(T(java.time.LocalDateTime).now()) or one.gatheringAt.isEqual(T(java.time.LocalDateTime).now()) or one.currentPersonnel >= one.maxPersonnel or isClubDeleted == 'Y'}">
                                 <p class="p-tag status-close">마감</p>
                             </th:block>
-                            <th:block th:if="${one.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and one.currentPersonnel < one.maxPersonnel}">
+                            <th:block th:if="${one.gatheringAt.isAfter(T(java.time.LocalDateTime).now()) and one.currentPersonnel < one.maxPersonnel and isClubDeleted == 'N'}">
                                 <p class="p-tag status-open">모집 중</p>
                             </th:block>
                             <input type="hidden" th:value="${one.scheduleNo}">
@@ -225,10 +225,11 @@
                 var gatheringAt = new Date($(this).data('gathering-at'));
                 var currentPersonnel = parseInt($(this).data('current-personnel'));
                 var maxPersonnel = parseInt($(this).data('max-personnel'));
+                var isClubDeleted = $(this).data('is-club-deleted');
 
                 if (isChecked) {
-                    // 모집 중 조건: 모임 시간이 현재보다 미래이고, 현재 인원수가 최대 인원수보다 적어야 함
-                    if (gatheringAt > currentTime && currentPersonnel < maxPersonnel) {
+                    // 모집 중 조건: 모임 시간이 현재보다 미래이고, 현재 인원수가 최대 인원수보다 적고, 모임이 해체되지 않아야 함
+                    if (gatheringAt > currentTime && currentPersonnel < maxPersonnel && isClubDeleted == 'N') {
                         $(this).show();
                     } else {
                         $(this).hide();

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .content {
+            display: flex;
+            width: 100%;
+        }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .p-tag {
+            margin: 0px;
+        }
+        .album-list {
+            white-space: nowrap;
+        }
+        .album-img {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            margin: 0px 10px 10px 0px;
+            border: 1px solid #E3E3E3;
+            border-radius: 3px;
+        }
+        .btn-pagination {
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 12px !important;
+            padding: 4px 8px 4px 8px !important;
+            margin: 50px 7px 20px 0px;
+        }
+        .no-data-div {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .no-data-p {
+            background-color: #E5E5E5;
+            padding: 20px 30px 20px 30px;
+            margin-top: 180px;
+            width: 220px;
+            white-space: nowrap;
+        }
+
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            var pages = [[${pages}]];
+            var paginationDiv = $('#pagination');
+            for (var i = 1; i <= pages; i++) {
+
+                var button = $('<button></button>')
+                .text(i)
+                .addClass('btn btn-udh-blue btn-pagination')
+                .attr('onclick', 'selectAlbumList(' + i + ')');
+
+                paginationDiv.append(button);
+            }
+
+        })
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/club/clubAlert}"></div>
+
+<div class="content" style="padding: 40px; height: 670px;">
+
+    <div th:replace="~{/club/clubSidebar}"></div>
+
+    <div class="right-area">
+        <p class="menu">&#127902; 모임 앨범</p>
+        <th:block th:if="${isClubDeleted == 'Y'}">
+            <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px;">❕ 해체된 모임입니다.</span>
+        </th:block>
+
+        <div class="album-list">
+            <hr>
+            <th:block th:if="${#lists.isEmpty(albumList)}">
+                <div class="no-data-div">
+                    <p class="no-data-p">❌ 조회할 이미지가 없습니다.</p>
+                </div>
+            </th:block>
+            <th:block th:each="one, iterStat : ${albumList}">
+                <img th:src="@{'/uploadFiles/' + ${one.savedName}}" class="album-img" th:data-log-no="${one.targetNo}">
+                <!-- 4개의 이미지마다 줄바꿈을 위한 조건 -->
+                <th:block th:if="${iterStat.index % 5 == 4}">
+                    <br>
+                </th:block>
+            </th:block>
+        </div>
+
+        <div class="pagination" id="pagination">
+
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function selectAlbumList(page) {
+
+		window.location.href = "/club/clubAlbum/albumMain?clubNo="+clubNo+"&page="+page;
+	}
+
+    $(document).on('click', '.album-img', function() {
+        var logNo = parseInt($(this).data('log-no'));
+        var url = "/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
+        window.location.href = url;
+    });
+
+</script>
+</body>
+</html>

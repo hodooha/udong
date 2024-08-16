@@ -843,6 +843,138 @@ public class ClubController {
 
     }
 
+    @RequestMapping("/joinRequestControl")
+    public String joinRequestControl(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = requestDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 모임장일 때만 신청자 관리 페이지로 이동
+        if(isMaster.equals("Y")) {
+
+            try {
+
+                List<ClubMemberDTO> joinRequestList = clubService.selectClubJoinRequestList(clubNo);
+                System.out.println("###### 가져온 신청자 리스트: " + joinRequestList);
+                model.addAttribute("joinRequestList", joinRequestList);
+
+                ClubDTO personnel = clubService.checkPersonnel(clubNo);
+                model.addAttribute("personnel", personnel);
+
+                return "club/joinRequestControl";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 가입 신청자 관리 페이지 이동 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+
+    @PostMapping("/approveJoinRequest")
+    public String approveJoinRequest(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        try {
+
+            // 서버단에서 현재 인원이 최대 인원보다 적은지 한 번 더 검증
+            ClubDTO personnel = clubService.checkPersonnel(clubNo);
+            int currentPersonnel = personnel.getCurrentPersonnel();
+            int maxPersonnel = personnel.getMaxPersonnel();
+            System.out.println("###### 현재 모임 인원: " + currentPersonnel + " / " + maxPersonnel);
+
+            // 모임장이고, 정원 가득 차지 않았을 때만 가입 신청 메소드 호출
+            if(isMaster.equals("Y") && currentPersonnel < maxPersonnel) {
+
+                clubService.approveJoinRequest(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "가입 신청 승인이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/joinRequestControl?clubNo=" + clubNo;
+
+            }
+
+            return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "모임 가입 신청자 승인 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/rejectJoinRequest")
+    public String rejectJoinRequest(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        if(isMaster.equals("Y")) {
+
+            try {
+
+                clubService.rejectJoinRequest(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "가입 신청 거절이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/joinRequestControl?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 가입 신청자 거절 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
 
     @RequestMapping("/clubLog/logMain")
     public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
@@ -2007,6 +2139,9 @@ public class ClubController {
 
                 model.addAttribute("scheduleDetail", scheduleDetail);
 
+                String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
+                model.addAttribute("isClubDeleted", isClubDeleted);
+
                 return "club/clubSchedule/scheduleDetail";
 
             } catch (Exception e) {
@@ -2171,6 +2306,247 @@ public class ClubController {
     }
 
 
+    // ================= 모임 앨범 =================
+
+    @RequestMapping("/clubAlbum/albumMain")
+    public String albumMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = filterDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태 또는 관리자일 때만 앨범 페이지로 이동
+        if (joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                // 받아온 page로 시작 및 시작 index를 설정
+                filterDTO.setAlbumStartAndStartIndex(filterDTO.getPage());
+
+                // 이미지 리스트 select 메소드 호출
+                List<AttachmentDTO> albumList = clubService.selectAlbumList(filterDTO);
+                System.out.println("###### 가져온 앨범 리스트: " + albumList);
+                model.addAttribute("albumList", albumList);
+
+                // 앨범 개수 받아와 페이지 수 계산
+                int albumCount = clubService.selectAlbumCount(filterDTO);
+                System.out.println("###### 앨범 총 개수: " + albumCount);
+
+                int pages = 0;
+
+                if (albumCount != 0) {
+
+                    pages = albumCount / 10;
+
+                    if (albumCount % 10 != 0) {
+                        pages += 1;
+                    }
+
+                }
+
+                System.out.println("###### 페이지 개수: " + pages);
+
+                model.addAttribute("pages", pages);
+                model.addAttribute("clubNo", clubNo);
+
+                String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
+                model.addAttribute("isClubDeleted", isClubDeleted);
+
+                return "/club/clubAlbum/albumMain";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 앨범 리스트 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 미가입인 상태일 때는 모임 홈으로 이동
+        redirectAttributes.addFlashAttribute("alert", "모임 앨범은 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "warning");
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+    //
+
+    @RequestMapping("/clubMember/memberMain")
+    public String memberMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = filterDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(memberNo, clubNo);
+
+        // 가입된 상태 또는 관리자일 때만 멤버 페이지로 이동
+        if(joinStatus.equals("Y") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+            try {
+
+                // 받아온 page로 시작 및 시작 index를 설정
+                filterDTO.setMemberStartAndStartIndex(filterDTO.getPage());
+
+                // 검색 조건 확인
+                System.out.println("###### 검색하는 검색어: " + filterDTO.getSearchWord());
+
+                ClubDTO clubMemberList = clubService.selectClubMemberList(filterDTO);
+                System.out.println("###### 가저온 멤버 리스트: " + clubMemberList);
+
+                model.addAttribute("clubMemberList", clubMemberList);
+
+                // 멤버의 총 수를 받아와 생길 page의 총 개수 계산
+                int memberCount = clubService.selectClubMemberCount(filterDTO);
+                System.out.println("###### 총 멤버 수: " + memberCount);
+
+                int pages = 0;
+                if(memberCount != 0) {
+
+                    pages = memberCount / 15;
+
+                    if(memberCount % 15 != 0) {
+                        pages += 1;
+                    }
+
+                }
+                System.out.println("###### 페이지 개수: " + pages);
+
+                model.addAttribute("clubNo", clubNo);
+                model.addAttribute("pages", pages);
+                model.addAttribute("filter", filterDTO);
+
+                ClubDTO personnel = clubService.checkPersonnel(clubNo);
+                model.addAttribute("personnel", personnel);
+
+                String isClubDeleted = clubService.checkIsClubDeleted(clubNo);
+                model.addAttribute("isClubDeleted", isClubDeleted);
+
+                return "club/clubMember/memberMain";
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임 멤버 리스트 조회 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        // 미가입인 상태일 때는 모임 홈으로 이동
+        redirectAttributes.addFlashAttribute("alert", "모임 멤버는 모임 멤버만 조회할 수 있습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "warning");
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+    @PostMapping("/clubMember/delegateMaster")
+    public String delegateMaster(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 서버단에서 위임할 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(clubMemberDTO.getMemberNo(), clubNo);
+
+        // 모임장이고 위임할 유저가 가입돼 있을 때만 위임
+        if(isMaster.equals("Y") && joinStatus.equals("Y")) {
+
+            try {
+
+                clubService.delegateMaster(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "모임장 위임이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubMember/memberMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "모임장 위임 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
+
+    @PostMapping("/clubMember/kickMember")
+    public String kickMember(@AuthenticationPrincipal CustomUserDetails c, ClubMemberDTO clubMemberDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int clubNo = clubMemberDTO.getClubNo();
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, clubNo)) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 로그인된 유저가 모임장인지 한 번 더 검증
+        String isMaster = checkClubMaster(memberNo, clubNo);
+
+        // 서버단에서 강퇴할 유저가 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(clubMemberDTO.getMemberNo(), clubNo);
+
+        // 모임장이고 강퇴할 유저가 가입돼 있을 때만 위임
+        if(isMaster.equals("Y") && joinStatus.equals("Y")) {
+
+            try {
+
+                clubService.kickMember(clubMemberDTO);
+
+                redirectAttributes.addFlashAttribute("alert", "멤버 강퇴가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+                return "redirect:/club/clubMember/memberMain?clubNo=" + clubNo;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                model.addAttribute("msg", "멤버 강퇴 과정에서 문제가 발생했습니다.");
+
+                return "common/errorPage";
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + clubNo;
+
+    }
 
 
     // ================= 공통 사용 메소드 =================
