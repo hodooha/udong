@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .top{
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            white-space: nowrap;
+        }
+        .search-form{
+            flex: 1;
+        }
+        .search-bar{
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: #E5E5E5;
+            border-radius: 0.375rem;
+            padding-left: 15px;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .category-select{
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            height: 25px;
+        }
+        .search-input{
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            width: 55%;
+            height: 25px;
+            border: 1px solid #979797;
+        }
+        .btn-search{
+            margin-left: auto;
+            margin-right: 10px;
+            font-family: 'Freesentation-5Medium';
+            font-size: 15px !important;
+            padding: 1px 15px 1px 15px !important;
+        }
+        .btn-hot-news{
+            margin-right: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        .btn-insert-news{
+            margin-left: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        .news-list{
+            height: 720px;
+        }
+        .news-one{
+            cursor: pointer;
+        }
+        .news-img{
+            width: 120px;
+            height: 120px;
+            border-radius: 3px;
+        }
+        .p-tag{
+            margin: 0px;
+        }
+        .news-category-name{
+            width: 70px;
+            text-align: center;
+            background-color: #E5E5E5;
+            border-radius: 3px;
+            font-size: 12px;
+            padding: 2px;
+            margin-bottom: 7px;
+        }
+        .news-title{
+            font-family: 'Freesentation-7Bold';
+            font-size: 16px;
+        }
+        .news-content{
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .news-reaction {
+            font-size: 12px;
+        }
+        .news-etc{
+            font-size: 11px;
+            color: #6F6F6F;
+        }
+        .btn-pagination{
+            font-family: 'Freesentation-5Medium' !important;
+            font-size: 12px !important;
+            padding: 4px 8px 4px 8px !important;
+            margin-right: 7px;
+        }
+        .no-data-div {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .no-data-p {
+            background-color: #E5E5E5;
+            padding: 20px 30px 20px 30px;
+            margin-top: 180px;
+            width: 220px;
+            white-space: nowrap;
+        }
+
+    </style>
+    <script type="text/javascript">
+
+        var filterCategoryCode = "[[${filter.categoryCode}]]";
+        var filterSearchWord = "[[${filter.searchWord}]]";
+
+        $(document).ready(function() {
+
+            $.ajax({
+                url: "/news/categoryList",
+                success: function(data) {
+                    var categorySelect = $('select[name="categoryCode"]');
+                    data.forEach(function(category) {
+
+                        var option = $('<option></option>')
+                        .attr('value', category.categoryCode)
+                        .text(category.categoryName);
+
+                        if(category.categoryCode === filterCategoryCode) {
+                            option.attr('selected', 'selected');
+                        }
+
+                        categorySelect.append(option);
+
+                    });
+                },
+                error: function() {
+                    alert('소식 주제를 불러오는 데 실패했습니다.');
+                }
+            })
+
+            var pages = [[${pages}]];
+            var paginationDiv = $('#pagination');
+            for (var i = 1; i <= pages; i++) {
+
+                var button = $('<button></button>')
+                .text(i)
+                .addClass('btn btn-udh-blue btn-pagination')
+                .attr('onclick', 'selectNewsList(' + i + ')');
+
+                paginationDiv.append(button);
+            }
+
+        })
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/news/newsAlert}"></div>
+
+<div class="content" style="padding: 40px;">
+    <p class="menu">&#128240; 우동 소식</p>
+    <div class="top">
+        <a th:href="@{/news/newsInsertForm}">
+            <button type="button" class="btn btn-udh-yellow btn-hot-news">&#128293; 인기글</button>
+        </a>
+        <form class="search-form" th:action="@{/news/newsMain}" method="get">
+            <div class="search-bar">
+                <span>주제</span>
+                <select class="category-select" name="categoryCode">
+                    <option value="ALL">전체</option>
+                </select>
+                <span style="margin-left: 50px">소식 검색</span>
+                <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력..." th:value="${filter.searchWord}" maxlength="20">
+                <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
+            </div>
+        </form>
+        <a th:href="@{/news/newsInsertForm}">
+            <button type="button" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
+        </a>
+    </div>
+
+    <div class="news-list">
+        <hr>
+        <th:block th:if="${#lists.isEmpty(newsList)}">
+            <div class="no-data-div">
+                <p class="no-data-p">❌ 조회할 소식이 없습니다.</p>
+            </div>
+        </th:block>
+        <div th:each="one : ${newsList}" class="news-one">
+            <table style="width: 100%;">
+                <tr>
+                    <td>
+                        <input type="hidden" th:value="${one.newsNo}">
+                        <p th:text="${one.category.categoryName}" class="p-tag news-category-name"></p>
+                        <p th:text="${one.title}" class="p-tag news-title"></p>
+                        <p th:text="${one.content}" class="p-tag news-content"></p>
+                        <p class="p-tag news-reaction">
+                            <span>&#128155;</span>
+                            <span th:text="${one.likesCount}"></span>
+                            <span style="margin-left: 15px;">&#128064;</span>
+                            <span th:text="${one.views}"></span>
+                            <span style="margin-left: 15px;">&#128172;</span>
+                            <span th:text="${one.repliesCount}"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#127960;</span>
+                            <span th:text="${one.location.eupMyeonDongName}" style="margin-left: 4px"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#128395;</span>
+                            <span th:text="${one.writer.nickname}" style="margin-left: 4px"></span>
+                            <span style="margin: 0px 6px 0px 6px">|</span>
+                            <span th:text="${one.createdAt}"></span>
+                        </p>
+                    </td>
+                    <td style="width: 120px" th:if="${one.attachments != null and one.attachments.size() > 0}">
+                        <img th:src="@{'/uploadFiles/' + ${one.attachments[0].savedName}}" class="news-img">
+                    </td>
+                </tr>
+            </table>
+            <hr>
+        </div>
+    </div>
+
+    <div class="pagination" id="pagination">
+
+    </div>
+
+</div>
+<script type="text/javascript">
+
+    function selectNewsList(page) {
+
+        var encodedCategoryCode = encodeURIComponent(filterCategoryCode);
+        var encodedSearchWord = encodeURIComponent(filterSearchWord);
+		window.location.href = "/news/newsMain?page="+page+"&categoryCode="+encodedCategoryCode+"&searchWord="+encodedSearchWord;
+	}
+
+    $(document).on('click', '.news-one', function() {
+        var newsNo = $(this).find('input').val();
+        var url = "/news/newsDetail?newsNo=" + newsNo;
+        window.location.href = url;
+    });
+
+</script>
+</body>
+</html>

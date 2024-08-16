@@ -16,8 +16,8 @@ import java.util.List;
  * @author 강성현
  * @since 2024 -07-25
  */
-@Transactional(rollbackFor = {Exception.class})
 @Service
+@Transactional(rollbackFor = {Exception.class})
 public class ClubServiceImpl implements ClubService {
 
     @Autowired

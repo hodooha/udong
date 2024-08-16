@@ -48,6 +48,7 @@
     <mappers>
         <!-- 성현 -->
         <mapper resource="mappers/ClubMapper.xml"/>
+        <mapper resource="mappers/NewsMapper.xml"/>
 
         <mapper resource="mappers/ShareMapper.xml"/>
 
