@@ -105,6 +105,18 @@
 
 
 
+    <select id="checkIsNewsDeleted" parameterType="Integer" resultType="String">
+        SELECT is_deleted
+        FROM NS_POST
+        WHERE news_no = #{ newsNo }
+    </select>
+
+    <select id="checkReplyWriter" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM NS_REPLY
+        WHERE reply_no = #{ replyNo }
+    </select>
+
     <select id="selectNewsList" parameterType="com.multi.udong.news.model.dto.FilterDTO" resultMap="newsResultMap">
         SELECT
             NS.news_no,
@@ -121,7 +133,7 @@
         FROM NS_POST NS
         LEFT JOIN NS_CATEGORY NSC ON NSC.category_code = NS.category_code
         LEFT JOIN LOCATION L ON L.location_code = NS.location_code
-        LEFT JOIN MEMBER M ON NS.writer = M.member_no
+        LEFT JOIN MEMBER M ON M.member_no = NS.writer
         WHERE NS.is_deleted = 'N' AND NS.location_code = #{ locationCode }
         <if test="categoryCode != 'ALL' and categoryCode != null and categoryCode != ''">
             AND NS.category_code = #{ categoryCode }
@@ -165,27 +177,114 @@
 
     <insert id="insertNews" parameterType="com.multi.udong.news.model.dto.NewsDTO" useGeneratedKeys="true" keyProperty="newsNo">
         INSERT INTO NS_POST
-        (category_code, location_code, title, content, writer)
+            (category_code, location_code, title, content, writer)
         VALUES
-        (
-        #{ category.categoryCode },
-        #{ location.locationCode },
-        #{ title },
-        #{ content },
-        #{ writer.memberNo }
-        )
+            (
+            #{ category.categoryCode },
+            #{ location.locationCode },
+            #{ title },
+            #{ content },
+            #{ writer.memberNo }
+            )
     </insert>
 
     <insert id="insertNewsImg" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
         INSERT INTO ATTACHMENT
-        (type_code, target_no, original_name, saved_name)
+            (type_code, target_no, original_name, saved_name)
         VALUES
-        (
-        #{ typeCode },
-        #{ targetNo },
-        #{ originalName },
-        #{ savedName }
-        )
+            (
+            #{ typeCode },
+            #{ targetNo },
+            #{ originalName },
+            #{ savedName }
+            )
     </insert>
+
+    <update id="addNewsViews" parameterType="Integer">
+        UPDATE NS_POST
+        SET views = views + 1
+        WHERE news_no = #{ newsNo }
+    </update>
+
+    <select id="selectNewsDetail" parameterType="com.multi.udong.news.model.dto.RequestDTO" resultMap="newsResultMap">
+        SELECT
+            NS.*,
+            NSC.category_name,
+            L.eup_myeon_dong_name,
+            NS.writer AS news_writer,
+            M.nickname AS news_writer_nickname,
+            (SELECT saved_name FROM ATTACHMENT ATM WHERE ATM.type_code = 'MEM' AND ATM.target_no = NS.writer) AS profile_saved_name,
+            NSR.reply_no,
+            NSR.content AS reply_content,
+            NSR.writer AS reply_writer,
+            (SELECT nickname FROM MEMBER M WHERE M.member_no = NSR.writer) AS reply_writer_nickname,
+            NSR.created_at AS reply_created_at,
+            (SELECT COUNT(*) FROM NS_REPLY_LIKE NSRL WHERE NSRL.reply_no = NSR.reply_no) AS reply_likes_count,
+            (SELECT COUNT(*) FROM NS_REPLY_LIKE NSRL WHERE NSRL.reply_no = NSR.reply_no AND NSRL.member_no = #{ memberNo }) AS viewer_reply_like,
+            ATM.*,
+            (SELECT COUNT(*) FROM NS_LIKE NSL WHERE NSL.news_no = NS.news_no) AS likes_count,
+            (SELECT COUNT(*) FROM NS_REPLY NSR WHERE NSR.news_no = NS.news_no) AS replies_count,
+            (SELECT COUNT(*) FROM NS_LIKE NSL WHERE NSL.news_no = NS.news_no AND NSL.member_no = #{ memberNo }) AS viewer_news_like
+        FROM NS_POST NS
+        LEFT JOIN NS_CATEGORY NSC ON NSC.category_code = NS.category_code
+        LEFT JOIN LOCATION L ON L.location_code = NS.location_code
+        LEFT JOIN MEMBER M ON M.member_no = NS.writer
+        LEFT JOIN NS_REPLY NSR ON NSR.news_no = NS.news_no
+        LEFT JOIN ATTACHMENT ATM ON ATM.type_code = 'NS' AND ATM.target_no = NS.news_no
+        WHERE NS.news_no = #{ newsNo }
+    </select>
+
+    <insert id="insertNewsLike" parameterType="com.multi.udong.news.model.dto.LikeDTO">
+        INSERT INTO NS_LIKE
+            (news_no, member_no)
+        VALUES
+            (
+            #{ newsNo },
+            #{ memberNo }
+            )
+    </insert>
+
+    <delete id="deleteNewsLike" parameterType="com.multi.udong.news.model.dto.LikeDTO">
+        DELETE FROM NS_LIKE
+        WHERE news_no = #{ newsNo } AND member_no = #{ memberNo }
+    </delete>
+
+    <insert id="insertReply" parameterType="com.multi.udong.news.model.dto.ReplyDTO">
+        INSERT INTO NS_REPLY
+            (news_no, content, writer)
+        VALUES
+            (
+            #{ newsNo },
+            #{ content },
+            #{ writer.memberNo }
+            )
+    </insert>
+
+    <update id="updateReply" parameterType="com.multi.udong.news.model.dto.ReplyDTO">
+        UPDATE NS_REPLY
+        SET
+            content = #{ content }
+        WHERE reply_no = #{ replyNo } AND news_no = #{ newsNo } AND writer = #{ writer.memberNo }
+    </update>
+
+    <delete id="deleteReply" parameterType="com.multi.udong.news.model.dto.ReplyDTO">
+        DELETE FROM NS_REPLY
+        WHERE reply_no = #{ replyNo } AND news_no = #{ newsNo } AND writer = #{ writer.memberNo }
+    </delete>
+
+    <insert id="insertReplyLike" parameterType="com.multi.udong.news.model.dto.LikeDTO">
+        INSERT INTO NS_REPLY_LIKE
+            (reply_no, member_no)
+        VALUES
+            (
+            #{ replyNo },
+            #{ memberNo }
+            )
+    </insert>
+
+    <delete id="deleteReplyLike" parameterType="com.multi.udong.news.model.dto.LikeDTO">
+        DELETE FROM NS_REPLY_LIKE
+        WHERE reply_no = #{ replyNo } AND member_no = #{ memberNo }
+    </delete>
 
 </mapper>

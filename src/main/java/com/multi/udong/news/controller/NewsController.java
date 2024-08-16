@@ -3,11 +3,10 @@ package com.multi.udong.news.controller;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.login.service.CustomUserDetails;
-import com.multi.udong.news.model.dto.CategoryDTO;
-import com.multi.udong.news.model.dto.FilterDTO;
-import com.multi.udong.news.model.dto.MemberDTO;
-import com.multi.udong.news.model.dto.NewsDTO;
+import com.multi.udong.news.model.dto.*;
 import com.multi.udong.news.service.NewsService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -201,8 +200,7 @@ public class NewsController {
             newsService.insertNews(newsDTO);
             int newsNo = newsDTO.getNewsNo();
 
-            return "redirect:/news/newsMain";
-            // return "redirect:/news/newsDetail?newsNo=" + newsNo;
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
 
         } catch (Exception e) {
 
@@ -215,12 +213,347 @@ public class NewsController {
 
             }
 
-            model.addAttribute("msg", "우동 소식 작성 과정에서 문제가 발생했습니다.");
+            model.addAttribute("msg", "소식 작성 과정에서 문제가 발생했습니다.");
 
             return "common/errorPage";
 
         }
 
     }
+
+
+    @RequestMapping("/newsDetail")
+    public String newsDetail(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        // 로그인 유저의 no를 requestDTO에 set
+        int memberNo = c.getMemberDTO().getMemberNo();
+        requestDTO.setMemberNo(memberNo);
+
+        int newsNo = requestDTO.getNewsNo();
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, newsNo)) {
+            redirectAttributes.addFlashAttribute("alert", "삭제됐거나 존재하지 않는 소식입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/news/newsMain";
+        }
+
+        try {
+
+            newsService.addNewsViews(newsNo);
+
+            NewsDTO newsDetail = newsService.selectNewsDetail(requestDTO);
+
+            System.out.println("###### 가져온 기록 상세 >>>>> " + newsDetail);
+
+            model.addAttribute("newsDetail", newsDetail);
+
+            return "news/newsDetail";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "소식 상세 조회 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/insertNewsLike")
+    public ResponseEntity<Void> insertNewsLike(@AuthenticationPrincipal CustomUserDetails c, LikeDTO likeDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        likeDTO.setMemberNo(memberNo);
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, likeDTO.getNewsNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+
+            newsService.insertNewsLike(likeDTO);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        }
+
+    }
+
+    @PostMapping("/deleteNewsLike")
+    public ResponseEntity<Void> deleteNewsLike(@AuthenticationPrincipal CustomUserDetails c, LikeDTO likeDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        likeDTO.setMemberNo(memberNo);
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, likeDTO.getNewsNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+
+            newsService.deleteNewsLike(likeDTO);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        }
+
+    }
+
+    @PostMapping("/insertReply")
+    public String insertReply(@AuthenticationPrincipal CustomUserDetails c, ReplyDTO replyDTO, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int newsNo = replyDTO.getNewsNo();
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, newsNo)) {
+            return "redirect:/news/newsMain";
+        }
+
+        MemberDTO writer = new MemberDTO();
+        writer.setMemberNo(memberNo);
+        replyDTO.setWriter(writer);
+
+        try {
+
+            newsService.insertReply(replyDTO);
+
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "댓글 작성 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/updateReply")
+    public String updateReply(@AuthenticationPrincipal CustomUserDetails c, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int newsNo = replyDTO.getNewsNo();
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, newsNo)) {
+            return "redirect:/news/newsMain";
+        }
+
+        // 댓글 작성자인지 검증
+        if(!checkReplyWriter(c, replyDTO.getReplyNo())) {
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
+        }
+
+        MemberDTO writer = new MemberDTO();
+        writer.setMemberNo(memberNo);
+        replyDTO.setWriter(writer);
+
+        try {
+
+            int result = newsService.updateReply(replyDTO);
+
+            if(result == 1) {
+                redirectAttributes.addFlashAttribute("alert", "댓글 수정이 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+            }
+
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "댓글 수정 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/deleteReply")
+    public String deleteReply(@AuthenticationPrincipal CustomUserDetails c, ReplyDTO replyDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        int newsNo = replyDTO.getNewsNo();
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, newsNo)) {
+            return "redirect:/news/newsMain";
+        }
+
+        // 댓글 작성자인지 검증
+        if(!checkReplyWriter(c, replyDTO.getReplyNo())) {
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
+        }
+
+        MemberDTO writer = new MemberDTO();
+        writer.setMemberNo(memberNo);
+        replyDTO.setWriter(writer);
+
+        try {
+
+            int result = newsService.deleteReply(replyDTO);
+
+            if(result == 1) {
+                redirectAttributes.addFlashAttribute("alert", "댓글 삭제가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+            }
+
+            return "redirect:/news/newsDetail?newsNo=" + newsNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "댓글 수정 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/insertReplyLike")
+    public ResponseEntity<Void> insertReplyLike(@AuthenticationPrincipal CustomUserDetails c, LikeDTO likeDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        likeDTO.setMemberNo(memberNo);
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, likeDTO.getNewsNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+
+            newsService.insertReplyLike(likeDTO);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        }
+
+    }
+
+    @PostMapping("/deleteReplyLike")
+    public ResponseEntity<Void> deleteReplyLike(@AuthenticationPrincipal CustomUserDetails c, LikeDTO likeDTO) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        likeDTO.setMemberNo(memberNo);
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, likeDTO.getNewsNo())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        try {
+
+            newsService.deleteReplyLike(likeDTO);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        }
+
+    }
+
+
+    // ================= 공통 사용 메소드 =================
+
+    public boolean checkIsNewsDeleted(@AuthenticationPrincipal CustomUserDetails c, int newsNo) {
+
+        try {
+
+            String isNewsDeleted = newsService.checkIsNewsDeleted(newsNo);
+
+            if(isNewsDeleted == null || isNewsDeleted.equals("")) {
+
+                return false;
+
+            }
+
+            if(isNewsDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+
+            }
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+    public boolean checkReplyWriter(@AuthenticationPrincipal CustomUserDetails c, int replyNo) {
+
+        try {
+
+            int replyWriter = newsService.checkReplyWriter(replyNo);
+
+            if(replyWriter == 0) {
+
+                return false;
+
+            }
+
+            if(replyWriter == c.getMemberDTO().getMemberNo()) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+
+            }
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+
 
 }

@@ -83,10 +83,10 @@
         }
         .schedule-content {
             font-size: 16px;
-            margin-bottom: 8px;
+            margin-bottom: 20px;
         }
         .schedule-info {
-            font-size: 13px;
+            font-size: 14px;
         }
         .participants-div {
             background-color: #E5E5E5;
@@ -224,10 +224,10 @@
 
         <p class="p-tag schedule-info">
             <span>&#128197;</span>
-            <span th:text="${scheduleDetail.gatheringAtStr}"></span>
+            <span th:text="${scheduleDetail.gatheringAtStr}" style="margin-left: 2px;"></span>
             <br>
             <span>&#128100;</span>
-            <span th:text="${scheduleDetail.currentPersonnel}"></span> /
+            <span th:text="${scheduleDetail.currentPersonnel}" style="margin-left: 2px;"></span> /
             <span th:text="${scheduleDetail.maxPersonnel}"></span> 명
         </p>
 

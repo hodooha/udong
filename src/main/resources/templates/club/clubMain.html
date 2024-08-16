@@ -7,6 +7,11 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
         .top{
             display: flex;
             align-items: center;
@@ -49,14 +54,14 @@
             font-family: 'Freesentation-5Medium' !important;
         }
         .club-list{
-            height: 720px;
+            height: 820px;
         }
         .club-one{
             cursor: pointer;
         }
         .club-img{
-            width: 100px;
-            height: 100px;
+            width: 115px;
+            height: 115px;
             margin-right: 15px;
             border-radius: 3px;
         }
@@ -78,7 +83,7 @@
         }
         .club-introduction{
             font-size: 13px;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
         }
         .club-etc{
             font-size: 11px;
@@ -157,6 +162,7 @@
 <div th:replace="~{/club/clubAlert}"></div>
 
 <div class="content" style="padding: 40px;">
+    <p class="menu">🤝 우동 모임</p>
     <div class="top">
         <form class="search-form" th:action="@{/club/clubMain}" method="get">
             <div class="search-bar">
@@ -193,11 +199,13 @@
                         <p th:text="${one.clubName}" class="p-tag club-name"></p>
                         <p th:text="${one.introduction}" class="p-tag club-introduction"></p>
                         <p class="p-tag club-etc">
-                            <span>&#128100;</span>
+                            <span style="margin-right: 4px">&#127960;</span>
+                            <span th:text="${one.location.eupMyeonDongName}"></span>
+                        </p>
+                        <p class="p-tag club-etc">
+                            <span style="margin-right: 4px">&#128100;</span>
                             <span th:text="${one.currentPersonnel}"></span> /
                             <span th:text="${one.maxPersonnel}"></span> 명
-                            <span style="margin-left: 7px">|</span>
-                            <span th:text="${one.location.eupMyeonDongName}" style="margin-left: 7px"></span>
                         </p>
                     </td>
                 </tr>

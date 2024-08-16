@@ -80,12 +80,9 @@
         }
         .schedule-content {
             font-size: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
         }
-        .schedule-gathering {
-            font-size: 12px;
-        }
-        .schedule-personnel {
+        .schedule-etc {
             font-size: 10px;
             color: #6F6F6F;
         }
@@ -179,13 +176,13 @@
                             <input type="hidden" th:value="${one.scheduleNo}">
                             <p th:text="${one.title}" class="p-tag schedule-title"></p>
                             <p th:text="${one.content}" class="p-tag schedule-content"></p>
-                            <p class="p-tag schedule-gathering">
+                            <p class="p-tag schedule-etc">
                                 <span>&#128197;</span>
-                                <span th:text="${one.gatheringAtStr}"></span>
+                                <span th:text="${one.gatheringAtStr}" style="margin-left: 2px;"></span>
                             </p>
-                            <p class="p-tag schedule-personnel">
+                            <p class="p-tag schedule-etc">
                                 <span>&#128100;</span>
-                                <span th:text="${one.currentPersonnel}"></span> /
+                                <span th:text="${one.currentPersonnel}" style="margin-left: 2px;"></span> /
                                 <span th:text="${one.maxPersonnel}"></span> 명
                             </p>
                         </td>

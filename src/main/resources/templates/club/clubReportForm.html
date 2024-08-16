@@ -17,6 +17,11 @@
             padding-left: 30px;
             box-sizing: border-box;
         }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
         .insert-area {
             background-color: #E5E5E5;
             padding: 15px;
@@ -59,6 +64,7 @@
     <div th:replace="~{/club/clubSidebar}"></div>
 
     <div class="right-area">
+        <p class="menu">&#128680; 우동 모임 신고</p>
         <form th:action="@{/club/reportClub}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="insert-area">

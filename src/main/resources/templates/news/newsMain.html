@@ -65,8 +65,8 @@
             cursor: pointer;
         }
         .news-img{
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             border-radius: 3px;
         }
         .p-tag{
@@ -87,10 +87,7 @@
         }
         .news-content{
             font-size: 13px;
-            margin-bottom: 8px;
-        }
-        .news-reaction {
-            font-size: 12px;
+            margin-bottom: 15px;
         }
         .news-etc{
             font-size: 11px;
@@ -171,7 +168,7 @@
 <div class="content" style="padding: 40px;">
     <p class="menu">&#128240; 우동 소식</p>
     <div class="top">
-        <a th:href="@{/news/newsInsertForm}">
+        <a th:href="@{/news/selectHotNewsList}">
             <button type="button" class="btn btn-udh-yellow btn-hot-news">&#128293; 인기글</button>
         </a>
         <form class="search-form" th:action="@{/news/newsMain}" method="get">
@@ -185,9 +182,16 @@
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>
         </form>
-        <a th:href="@{/news/newsInsertForm}">
-            <button type="button" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
-        </a>
+        <th:block th:if="${#authentication.principal.memberDTO.authority == 'ROLE_MEMBER'}">
+            <a th:href="@{/news/newsInsertForm}">
+                <button type="button" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
+            </a>
+        </th:block>
+        <th:block th:if="${#authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+            <a th:href="@{/news/adInsertForm}">
+                <button type="button" class="btn btn-udh-blue btn-insert-news">광고 작성</button>
+            </a>
+        </th:block>
     </div>
 
     <div class="news-list">
@@ -205,7 +209,7 @@
                         <p th:text="${one.category.categoryName}" class="p-tag news-category-name"></p>
                         <p th:text="${one.title}" class="p-tag news-title"></p>
                         <p th:text="${one.content}" class="p-tag news-content"></p>
-                        <p class="p-tag news-reaction">
+                        <p class="p-tag news-etc">
                             <span>&#128155;</span>
                             <span th:text="${one.likesCount}"></span>
                             <span style="margin-left: 15px;">&#128064;</span>

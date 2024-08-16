@@ -2,9 +2,7 @@ package com.multi.udong.news.service;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.news.model.dao.NewsDAO;
-import com.multi.udong.news.model.dto.CategoryDTO;
-import com.multi.udong.news.model.dto.FilterDTO;
-import com.multi.udong.news.model.dto.NewsDTO;
+import com.multi.udong.news.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +23,21 @@ public class NewsServiceImpl implements NewsService {
         this.newsDAO = newsDAO;
     }
 
+
+
+    @Override
+    public String checkIsNewsDeleted(int newsNo) throws Exception {
+
+        return newsDAO.checkIsNewsDeleted(sqlSession, newsNo);
+
+    }
+
+    @Override
+    public int checkReplyWriter(int replyNo) throws Exception {
+
+        return newsDAO.checkReplyWriter(sqlSession, replyNo);
+
+    }
 
     @Override
     public List<NewsDTO> selectNewsList(FilterDTO filterDTO) throws Exception {
@@ -96,5 +109,69 @@ public class NewsServiceImpl implements NewsService {
         return result;
 
     }
+
+    @Override
+    public int addNewsViews(int newsNo) throws Exception {
+
+        return newsDAO.addNewsViews(sqlSession, newsNo);
+
+    }
+
+    @Override
+    public NewsDTO selectNewsDetail(RequestDTO requestDTO) throws Exception {
+
+        return newsDAO.selectNewsDetail(sqlSession, requestDTO);
+
+    }
+
+    @Override
+    public int insertNewsLike(LikeDTO likeDTO) throws Exception {
+
+        return newsDAO.insertNewsLike(sqlSession, likeDTO);
+
+    }
+
+    @Override
+    public int deleteNewsLike(LikeDTO likeDTO) throws Exception {
+
+        return newsDAO.deleteNewsLike(sqlSession, likeDTO);
+
+    }
+
+    @Override
+    public int insertReply(ReplyDTO replyDTO) throws Exception {
+
+        return newsDAO.insertReply(sqlSession, replyDTO);
+
+    }
+
+    @Override
+    public int updateReply(ReplyDTO replyDTO) throws Exception {
+
+        return newsDAO.updateReply(sqlSession, replyDTO);
+
+    }
+
+    @Override
+    public int deleteReply(ReplyDTO replyDTO) throws Exception {
+
+        return newsDAO.deleteReply(sqlSession, replyDTO);
+
+    }
+
+    @Override
+    public int insertReplyLike(LikeDTO likeDTO) throws Exception {
+
+        return newsDAO.insertReplyLike(sqlSession, likeDTO);
+
+    }
+
+    @Override
+    public int deleteReplyLike(LikeDTO likeDTO) throws Exception {
+
+        return newsDAO.deleteReplyLike(sqlSession, likeDTO);
+
+    }
+
 
 }

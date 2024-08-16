@@ -286,7 +286,7 @@ public class ClubController {
 
         // 해체된 모임인지 검증
         if(!checkIsClubDeleted(c, clubNo)) {
-            redirectAttributes.addFlashAttribute("alert", "해체된 모임입니다.");
+            redirectAttributes.addFlashAttribute("alert", "해체됐거나 존재하지 않는 모임입니다.");
             redirectAttributes.addFlashAttribute("alertType", "error");
             return "redirect:/club/clubMain?page=1";
         }
