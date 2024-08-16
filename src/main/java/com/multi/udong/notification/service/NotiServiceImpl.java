@@ -40,7 +40,6 @@ public class NotiServiceImpl implements NotiService{
      * @since 2024 -08-15
      */
     public void sendNoti(NotiSetCodeENUM type,
-                         @RequestParam("receiverNo") Integer receiverNo,
                          List<Integer> receiverNos,
                          @RequestParam(value = "targetNo", required = false) Integer targetNo,
                          Map<String, String> params) {
@@ -56,7 +55,6 @@ public class NotiServiceImpl implements NotiService{
 
         // 여러 개의 NotiDTO를 담을 리스트 생성
         List<NotiDTO> notiDTOs = new ArrayList<>();
-        receiverNos.add(receiverNo);
         for (Integer receiver : receiverNos) {
             NotiDTO notiDTO = new NotiDTO();
             notiDTO.setReceiverNo(receiver);
