@@ -196,10 +196,15 @@ public class MemberServiceImpl implements MemberService {
         memberDTO.setMemberPw(encPw);
         try {
             int result = memberMapper.signup(memberDTO);
+            int memberNo = memberMapper.getMemberNoByMemberId(memberDTO);
+            memBusDTO.setMemberNo(memberNo);
+            attachmentDTO.setTargetNo(memberNo);
             int result2 = memberMapper.insertBusReg(memBusDTO);
             int result3 = memberMapper.insertAttachment(attachmentDTO);
+            int result4 = memberMapper.insertProfileImg(memberNo);
+            int result5 = memberMapper.insertNotiSet(memberNo);
 
-            if (result != 1 && result2 != 1 && result3 != 1) {
+            if (result != 1 && result2 != 1 && result3 != 1 && result4 != 1 && result5 != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
             }
         } catch (Exception e) {

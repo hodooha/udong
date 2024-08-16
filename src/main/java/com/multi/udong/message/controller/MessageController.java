@@ -333,8 +333,13 @@ public class MessageController {
     // 웹소켓
     @GetMapping("/getMessage")
     public ResponseEntity<List<MessageDTO>> getMessage(@AuthenticationPrincipal CustomUserDetails c) {
-        int receiverNo = c.getMemberDTO().getMemberNo();
-        return ResponseEntity.ok(messageService.getMessage(receiverNo));
+
+        if (c != null) {
+            int receiverNo = c.getMemberDTO().getMemberNo();
+            return ResponseEntity.ok(messageService.getMessage(receiverNo));
+        }
+
+        return null;
     }
 
     /**
@@ -346,9 +351,14 @@ public class MessageController {
      */
     @GetMapping("/getUnreadMessageCount")
     public ResponseEntity<Map<String, Integer>> getUnreadMessageCount(@AuthenticationPrincipal CustomUserDetails c) {
-        int receiverNo = c.getMemberDTO().getMemberNo();
-        int count = messageService.getUnreadMessageCount(receiverNo);
-        return ResponseEntity.ok(Map.of("count", count));
+
+        if (c != null) {
+            int receiverNo = c.getMemberDTO().getMemberNo();
+            int count = messageService.getUnreadMessageCount(receiverNo);
+            return ResponseEntity.ok(Map.of("count", count));
+        }
+
+        return null;
     }
 
     /**

@@ -34,7 +34,7 @@
             target_href AS targetHref,
             noti_set_code AS notiSetCode,
             content,
-            created_at AS formatCreateAt,
+            created_at AS formatCreatedAt,
             is_read AS isRead
         FROM NOTI
         WHERE receiver_no = #{receiverNo}

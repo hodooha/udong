@@ -33,7 +33,6 @@ public class NotiServiceImpl implements NotiService{
      * 알림 전송
      *
      * @param type        the type
-     * @param receiverNo  the receiver no
      * @param receiverNos the receiver nos
      * @param targetNo    the target no
      * @param params      the params
@@ -44,10 +43,17 @@ public class NotiServiceImpl implements NotiService{
                          @RequestParam(value = "targetNo", required = false) Integer targetNo,
                          Map<String, String> params) {
 
+        // TargetNo가 2개 필요한 경우
+        String extraTargetNo = null;
+
         // 알림 내용 전처리
-        String content = null;
+        String content = type.getMessageTemplate();
         for (String key : params.keySet()) {
-            content = type.getMessageTemplate().replace("{" + key + "}", params.get(key));
+            content = content.replace("{" + key + "}", params.get(key));
+
+            if (key.equals("extraTargetNo")) {
+                extraTargetNo = "&clubNo=" + params.get(key);
+            }
         }
 
         // 웹소켓과 DB의 시간차이를 없애기 위해 서버에서 시간을 직접 입력
@@ -58,7 +64,7 @@ public class NotiServiceImpl implements NotiService{
         for (Integer receiver : receiverNos) {
             NotiDTO notiDTO = new NotiDTO();
             notiDTO.setReceiverNo(receiver);
-            notiDTO.setTargetHref(type.getHref() + targetNo);
+            notiDTO.setTargetHref(type.getHref() + (targetNo != null ? targetNo : "") + (extraTargetNo != null ? extraTargetNo : ""));
             notiDTO.setNotiSetCode(type.name());
             notiDTO.setContent(content);
             notiDTO.setCreatedAt(now);

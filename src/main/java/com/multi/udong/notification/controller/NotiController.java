@@ -38,8 +38,12 @@ public class NotiController {
     @ResponseBody
     public List<NotiDTO> getNoti(@AuthenticationPrincipal CustomUserDetails c) {
 
-        int memberNo = c.getMemberDTO().getMemberNo();
-        return notiService.getNoti(memberNo);
+        if (c != null) {
+            int memberNo = c.getMemberDTO().getMemberNo();
+            return notiService.getNoti(memberNo);
+        }
+
+        return null;
     }
 
     /**
@@ -53,8 +57,12 @@ public class NotiController {
     @ResponseBody
     public int getUnreadNotiCount(@AuthenticationPrincipal CustomUserDetails c) {
 
-        int receiverNo = c.getMemberDTO().getMemberNo();
-        return notiService.getUnreadNotiCount(receiverNo);
+        if (c != null) {
+            int receiverNo = c.getMemberDTO().getMemberNo();
+            return notiService.getUnreadNotiCount(receiverNo);
+        }
+
+        return 0;
     }
 
     /**

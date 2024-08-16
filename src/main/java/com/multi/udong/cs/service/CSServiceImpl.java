@@ -158,14 +158,11 @@ public class CSServiceImpl implements CSService{
         if (authority.equals("ROLE_ADMIN")) {
             csMapper.updateQueIsAnswered(csAnswerDTO.getCsNo());
 
-            Map<String, String> params = new HashMap<>();
-            List<Integer> list = new ArrayList<>();
-            list.add(csMapper.getMemberNoByCsNo(csAnswerDTO.getCsNo()));
             notiService.sendNoti(
                     NotiSetCodeENUM.CS_ANSWER, // 타입 코드
-                    list, // 알림 받는 사용자의 memberNo
+                    List.of(csMapper.getMemberNoByCsNo(csAnswerDTO.getCsNo())), // 알림 받는 사용자의 memberNo
                     csAnswerDTO.getCsNo(), // targetNo, 상세페이지에 필요한 No(있다면)
-                    params // 추가 파라미터
+                    Map.of() // 추가 파라미터
             );
         }
 

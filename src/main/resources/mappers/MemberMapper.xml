@@ -87,12 +87,12 @@
 
     <insert id="insertBusReg" parameterType="memBusDTO">
         INSERT INTO MEM_BUS (member_no, business_number, representative_name, opening_date) VALUES
-        (LAST_INSERT_ID(), #{businessNumber}, #{representativeName}, #{openingDate})
+        (#{memberNo}, #{businessNumber}, #{representativeName}, #{openingDate})
     </insert>
 
     <insert id="insertAttachment" parameterType="attachmentDTO">
         INSERT INTO ATTACHMENT (type_code, target_no, original_name, saved_name) VALUES
-        (#{typeCode}, LAST_INSERT_ID(), #{originalName}, #{savedName})
+        (#{typeCode}, #{targetNo}, #{originalName}, #{savedName})
     </insert>
 
     <select id="findCodeByAddress" parameterType="memAddressDTO" resultType="long">
