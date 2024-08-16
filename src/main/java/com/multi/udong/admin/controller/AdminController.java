@@ -401,9 +401,13 @@ public class AdminController {
 
     // 삭제 처리
     @PostMapping("/deleteNotice")
-    public String deleteNotice(@RequestParam("noticeNo") int noticeNo) {
+    @ResponseBody
+    public Map<String, Object> deleteNotice(@RequestParam("noticeNo") int noticeNo) {
         noticeService.delete(noticeNo);
-        return "redirect:/admin/notice";
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        return response;
     }
 
 }
