@@ -2,11 +2,14 @@ package com.multi.udong.notification.controller;
 
 import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.notification.model.dto.NotiDTO;
+import com.multi.udong.notification.model.dto.NotiSetDTO;
 import com.multi.udong.notification.service.NotiService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
@@ -17,41 +20,106 @@ import java.util.Map;
  * @author 김재식
  * @since 2024 -08-13
  */
-@RestController
+@Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/noti")
+@RequestMapping("/noti")
 public class NotiController {
+
     private final NotiService notiService;
 
     /**
-     * Get unread noti response entity.
+     * 알림 가져오기
      *
      * @param c the c
      * @return the response entity
      * @since 2024 -08-13
      */
     @GetMapping("/getNoti")
-    public ResponseEntity<List<NotiDTO>> getNoti(@AuthenticationPrincipal CustomUserDetails c) {
+    @ResponseBody
+    public List<NotiDTO> getNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
         int memberNo = c.getMemberDTO().getMemberNo();
-        return ResponseEntity.ok(notiService.getNoti(memberNo));
+        return notiService.getNoti(memberNo);
     }
 
     /**
-     * Get unread noti count response entity.
+     * 안읽은 알림 개수 가져오기
      *
      * @param c the c
      * @return the response entity
      * @since 2024 -08-13
      */
     @GetMapping("/getUnreadNotiCount")
-    public ResponseEntity<Map<String, Integer>> getUnreadNotiCount(@AuthenticationPrincipal CustomUserDetails c) {
+    @ResponseBody
+    public int getUnreadNotiCount(@AuthenticationPrincipal CustomUserDetails c) {
+
         int receiverNo = c.getMemberDTO().getMemberNo();
-        int count = notiService.getUnreadNotiCount(receiverNo);
-        return ResponseEntity.ok(Map.of("count", count));
+        return notiService.getUnreadNotiCount(receiverNo);
     }
 
     /**
-     * Mark as read response entity.
+     * 알림 설정 페이지
+     *
+     * @param c     the c
+     * @param model the model
+     * @return the string
+     * @since 2024 -08-14
+     */
+    @GetMapping("/notiSet")
+    public String notiSet(@AuthenticationPrincipal CustomUserDetails c, Model model) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+        List<NotiSetDTO> notiSets = notiService.getNotiSetByMemberNo(memberNo);
+        model.addAttribute("notiSets", notiSets);
+        return "notification/notiSet";
+    }
+
+    /**
+     * 알림 설정 업데이트
+     *
+     * @param c                  the c
+     * @param params             the params
+     * @param redirectAttributes the redirect attributes
+     * @return the string
+     * @since 2024 -08-15
+     */
+    @PostMapping("/notiSet")
+    public String updateNotiSet(@AuthenticationPrincipal CustomUserDetails c,
+                              @RequestParam Map<String, String> params,
+                              RedirectAttributes redirectAttributes) {
+
+        int memberNo = c.getMemberDTO().getMemberNo();
+
+        params.remove("_csrf");
+
+        if (notiService.updateNotiSet(memberNo, params)) {
+            redirectAttributes.addFlashAttribute("alert", "알림 설정이 변경되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
+        } else {
+            redirectAttributes.addFlashAttribute("alert", "알림 설정 변경에 실패했습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+        }
+
+        return "redirect:/noti/notiSet";
+    }
+
+    /**
+     * 알림 모두 읽음 처리
+     *
+     * @param c the c
+     * @return the response entity
+     * @since 2024 -08-13
+     */
+    @PostMapping("/markAllAsReadNoti")
+    @ResponseBody
+    public boolean markAllAsReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
+        int receiverNo = c.getMemberDTO().getMemberNo();
+        return notiService.markAllAsRead(receiverNo);
+    }
+
+    /**
+     * 개별 알림 읽음 처리
      *
      * @param c      the c
      * @param notiNo the noti no
@@ -59,38 +127,25 @@ public class NotiController {
      * @since 2024 -08-13
      */
     @PostMapping("/markAsRead")
-    public ResponseEntity<Map<String, Boolean>> markAsRead(@AuthenticationPrincipal CustomUserDetails c,
-                                                           @RequestParam("notiNo") Integer notiNo) {
+    @ResponseBody
+    public boolean markAsRead(@AuthenticationPrincipal CustomUserDetails c,
+                              @RequestParam("notiNo") Integer notiNo) {
         int receiverNo = c.getMemberDTO().getMemberNo();
-        boolean success = notiService.markAsRead(receiverNo, notiNo);
-        return ResponseEntity.ok(Map.of("success", success));
+        return notiService.markAsRead(receiverNo, notiNo);
     }
 
     /**
-     * Mark all as read response entity.
-     *
-     * @param c the c
-     * @return the response entity
-     * @since 2024 -08-13
-     */
-    @PostMapping("/markAllAsReadNoti")
-    public ResponseEntity<Map<String, Boolean>> markAllAsReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
-        int receiverNo = c.getMemberDTO().getMemberNo();
-        boolean success = notiService.markAllAsRead(receiverNo);
-        return ResponseEntity.ok(Map.of("success", success));
-    }
-
-    /**
-     * Delete all read noti response entity.
+     * 읽은 알림 모두 삭제
      *
      * @param c the c
      * @return the response entity
      * @since 2024 -08-13
      */
     @PostMapping("/deleteAllReadNoti")
-    public ResponseEntity<Map<String, Boolean>> deleteAllReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+    @ResponseBody
+    public boolean deleteAllReadNoti(@AuthenticationPrincipal CustomUserDetails c) {
+
         int receiverNo = c.getMemberDTO().getMemberNo();
-        boolean success = notiService.deleteAllReadNoti(receiverNo);
-        return ResponseEntity.ok(Map.of("success", success));
+        return notiService.deleteAllReadNoti(receiverNo);
     }
 }

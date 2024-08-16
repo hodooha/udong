@@ -30,11 +30,15 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #D4D4D4;
         }
-        .clickable-row:hover {
-            background-color: #f2f2f2;
+        .clickable-row {
+            border-bottom: 1px solid #D4D4D4;
             cursor: pointer;
+
+            &:hover {
+                background-color: #D4D4D4;
+            }
         }
         .pagination {
             display: flex;
@@ -63,6 +67,10 @@
             min-width: 120px;
             width: 120px;
         }
+        .highlight {
+            color: blue;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -81,9 +89,10 @@
                 </thead>
                 <tbody id="result-table">
                     <tr th:each="data : ${tableData}"
-                        th:attr="data-no=${data[0]},
-                                 data-club-no=${table == 'clubLog'} ? ${clubNo[0]} : ''" class="clickable-row">
-                        <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" th:text="${element}"></td>
+                        th:attr="data-no=${data[0]}, data-club-no=${table == 'clubLog'} ? ${data[1]} : ''" class="clickable-row">
+                        <td th:each="element, elementStat : ${data}"
+                            th:if="${table == 'clubLog'} ? ${elementStat.index > 1} : ${elementStat.index > 0}"
+                            th:text="${element}"></td>
                     </tr>
                 </tbody>
             </table>
@@ -114,8 +123,6 @@
         const noResult = document.getElementById('no-result');
         const resultTable = document.getElementById('result-table');
         const data = /*[[${tableData}]]*/ [];
-
-        console.log('data: ', data);
 
         if (data.length === 0) {
             noResult.hidden = false;
@@ -198,10 +205,33 @@
                         url = `/sale/detail/${no}`;
                         break;
                 }
-                console.log('url:', url);
                 window.location.href = url;
             });
         });
     });
 </script> <!--테이블 row 링크-->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchWord = /*[[${searchWord}]]*/ '';
+        const searchCategoryIndex = /*[[${searchCategoryIndex}]]*/ -1;
+
+        if (searchWord && searchCategoryIndex !== -1) {
+            const table = document.getElementById('result-table');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const cell = row.cells[searchCategoryIndex];
+
+                if (cell) {
+                    const cellText = cell.textContent;
+
+                    if (cellText.includes(searchWord)) {
+                        const regex = new RegExp(searchWord, 'gi'); // g: 전역 검색, i: 대/소문자 구분 안함
+                        cell.innerHTML = cellText.replace(regex, match => `<span class="highlight">${match}</span>`);
+                    }
+                }
+            }
+        }
+    });
+</script> <!--검색어 하이라이팅-->
 </html>

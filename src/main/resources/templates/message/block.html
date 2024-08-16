@@ -24,16 +24,24 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #D4D4D4;
         }
         input[type="checkbox"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-        .clickable-row:hover, .clickable-row.active {
-            background-color: #f2f2f2;
+        .clickable-row {
+            border-bottom: 1px solid #D4D4D4;
             cursor: pointer;
+
+            &:hover {
+                background-color: #D4D4D4;
+            }
+
+            &.active {
+                background-color: #D4D4D4;
+            }
         }
         #no-result {
             margin: 20px;
@@ -42,23 +50,24 @@
             display: flex;
             justify-content: start;
             margin-top: 20px;
-        }
-        .pagination a {
-            display: inline-block;
-            padding: 5px 10px;
-            margin: 0 2px;
-            border: 1px solid #ddd;
-            color: white;
-            background-color: #3B5C9A;
-            text-decoration: none;
-            border-radius: 5px;
 
-            &.active {
-                background-color: #0B1D40;
-            }
+            & a {
+                display: inline-block;
+                padding: 5px 10px;
+                margin: 0 2px;
+                border: 1px solid #ddd;
+                color: white;
+                background-color: #3B5C9A;
+                text-decoration: none;
+                border-radius: 5px;
 
-            &:hover:not(.active) {
-                background-color: #ddd;
+                &.active {
+                    background-color: #0B1D40;
+                }
+
+                &:hover:not(.active) {
+                    background-color: #ddd;
+                }
             }
         }
         .button-group {
@@ -108,8 +117,6 @@
         const noResult = document.getElementById('no-result');
         const resultTable = document.getElementById('result-table');
         const data = /*[[${tableData}]]*/ [];
-
-        console.log('data: ', data);
 
         if (data.length === 0) {
             noResult.hidden = false;

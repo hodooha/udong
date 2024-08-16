@@ -72,8 +72,6 @@ public class NaverOcr {
             json.put("images", images);
 
             String postParams = json.toString();
-            System.out.println(images);
-            System.out.println("json  -----  >" +json);
             con.connect();
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
             long start = System.currentTimeMillis();

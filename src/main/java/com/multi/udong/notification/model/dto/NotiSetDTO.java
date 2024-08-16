@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NotiSetDTO {
     public Integer memberNo;
-    public Integer notiSetCode;
-    public Character isReceived;
+    public String notiSetCode;
+    public String isReceived;
+
+    public String notiSetName;
 }

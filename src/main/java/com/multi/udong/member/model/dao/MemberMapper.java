@@ -20,7 +20,11 @@ public interface MemberMapper {
 
     int signup(MemberDTO memberDTO);
 
-    int insertProfileImg();
+    int getMemberNoByMemberId(MemberDTO memberDTO);
+
+    int insertProfileImg(int memberNo);
+
+    int insertNotiSet(int memberNo);
 
     MemberDTO findMemberById(String memberId);
 
@@ -85,4 +89,5 @@ public interface MemberMapper {
     Long checkMemBus(int memberNo);
 
     void deleteMemBus(int memberNo);
+
 }

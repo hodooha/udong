@@ -7,15 +7,6 @@
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Title</title>
     <style>
-        .noti-btn {
-            position: relative;
-            border: none;
-            background-color: transparent;
-            padding: 0;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-        }
         .unread-noti-count {
             position: absolute;
             top: -5px;
@@ -133,7 +124,9 @@
     <div class="noti-header">
         알림
     </div>
-    <div class="noti-body"></div>
+    <div class="noti-body">
+        <div class="no-noti">새로운 알림이 없습니다.</div>
+    </div>
     <div class="noti-footer">
         <button class="btn btn-udh-yellow" onclick="markAllAsReadNoti()">모두 읽음 표시</button>
         <button class="btn btn-udh-red" onclick="deleteAllReadNoti()">읽은 알림 삭제</button>
@@ -143,15 +136,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script th:inline="javascript">
+    const notiBody = document.querySelector('.noti-body');
+    const noNoti = document.querySelector('.no-noti');
+
     document.addEventListener('DOMContentLoaded', function() {
         connect();
 
-        fetch('/api/noti/getNoti')
+        fetch('/noti/getNoti')
             .then(response => response.json())
             .then(notifications => {
-                const notiBody = document.querySelector('.noti-body');
                 if (notifications.length === 0) {
-                    notiBody.innerHTML = '<div class="no-noti">새로운 알림이 없습니다.</div>';
+                    noNoti.style.display = 'block'
                 } else {
                     notifications.forEach(showNoti);
                 }
@@ -174,7 +169,6 @@
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
-            console.log('Connected: ', frame);
             // 알림 구독
             stompClient.subscribe('/topic/noti/' + memberNo, function (noti) {
                 showNoti(JSON.parse(noti.body));
@@ -190,12 +184,11 @@
 
     // 알림 개수 표시
     let unreadNotiCount = 0;
+    const unreadNotiCountElement = document.querySelector('.unread-noti-count');
     function updateUnreadNotiCount() {
-        fetch('/api/noti/getUnreadNotiCount')
+        fetch('/noti/getUnreadNotiCount')
             .then(response => response.json())
-            .then(data => {
-                unreadNotiCount = data.count;
-                const unreadNotiCountElement = document.querySelector('.unread-noti-count');
+            .then(unreadNotiCount => {
                 if (unreadNotiCount > 0) {
                     unreadNotiCountElement.textContent = unreadNotiCount;
                     unreadNotiCountElement.style.display = 'block';
@@ -210,12 +203,11 @@
 
     // 알림 출력
     function showNoti(noti) {
-        const notiBody = document.querySelector('.noti-body');
         const notiItem = document.createElement('div');
         notiItem.className = 'noti-item ' + (noti.isRead == 'Y'? 'read' : 'unread');
         notiItem.innerHTML = `
             <div class="noti-content">${noti.content}</div>
-            <div class="noti-time">${noti.formatCreateAt || noti.createdAt}</div>
+            <div class="noti-time">${noti.formatCreatedAt}</div>
         `;
 
         if (noti.isRead !== 'Y') {
@@ -235,26 +227,21 @@
 
             // 해당 detail로 이동
             if (noti.targetHref) {
-                console.log('noti.targetHref : ', noti.targetHref);
                 window.location.href = noti.targetHref;
             }
         });
 
         notiBody.insertBefore(notiItem, notiBody.firstChild);
 
-        const noNoti = document.querySelector('.no-noti');
-
-        if (noNoti) {
-            noNoti.remove();
-        }
+        noNoti.style.display = 'none'
     }
 
     const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
     const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-    // 모두 읽음 처리
+    // 모든 알림 읽음 처리
     function markAllAsReadNoti() {
-        fetch('/api/noti/markAllAsReadNoti', {
+        fetch('/noti/markAllAsReadNoti', {
             method: 'POST',
             headers: {
                 [header]: token,
@@ -262,19 +249,19 @@
             },
         })
         .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        .then(success => {
+            if (success) {
                 let unreadItems = document.querySelectorAll('.noti-item.unread');
-                unreadItems.forEach(item => item.classList.remove('unread'));
+                unreadItems.forEach(item => item.classList.replace('unread', 'read'));
                 unreadNotiCount = 0;
                 updateUnreadNotiCount();
             }
         });
     }
 
-    // 알림 읽음 처리
+    // 개별 알림 읽음 처리
     function markAsRead(notiNo, notiItem) {
-        fetch(`/api/noti/markAsRead?notiNo=${notiNo}`, {
+        fetch(`/noti/markAsRead?notiNo=${notiNo}`, {
             method: 'POST',
             headers: {
                 [header]: token,
@@ -282,8 +269,8 @@
             },
         })
         .then(response => response.json())
-        .then(data => {
-            if (data.success) {
+        .then(success => {
+            if (success) {
                 notiItem.classList.remove('unread');
                 notiItem.classList.add('read');
                 unreadNotiCount--;
@@ -297,7 +284,7 @@
 
     // 읽은 알림 삭제
     function deleteAllReadNoti() {
-        fetch('/api/noti/deleteAllReadNoti', {
+        fetch('/noti/deleteAllReadNoti', {
             method: 'POST',
             headers: {
                 [header]: token,
@@ -305,14 +292,19 @@
             },
         })
         .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let readItems = document.querySelectorAll('.noti-item.read');
+        .then(success => {
+            if (success) {
+                const readItems = document.querySelectorAll('.noti-item.read');
                 readItems.forEach(item => {
                     item.classList.add('removing');
                     item.addEventListener('transitionend', function() {
                         item.remove();
-                    }, { once: true });
+
+                        const totalItems = document.querySelectorAll('.noti-item').length;
+                        if (totalItems === 0) {
+                            noNoti.style.display = 'block'
+                        }
+                    });
                 });
             }
         });
@@ -332,7 +324,7 @@
             event.stopPropagation();
         });
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function() {
             if (notiWindow.classList.contains('show')) {
                 notiWindow.classList.remove('show');
             }

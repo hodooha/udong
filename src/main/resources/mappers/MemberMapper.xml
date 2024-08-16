@@ -67,9 +67,22 @@
         (#{memberId}, #{memberPw}, #{nickname}, #{phone}, #{email})
     </insert>
 
+    <select id="getMemberNoByMemberId">
+        SELECT member_no
+        FROM MEMBER
+        WHERE member_id = #{memberId}
+        AND is_deleted = 'N'
+    </select>
+
     <insert id="insertProfileImg">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
-        ('defaultProfile.png', 'defaultProfile.png', 'MEM', LAST_INSERT_ID())
+        ('defaultProfile.png', 'defaultProfile.png', 'MEM', #{memberNo})
+    </insert>
+
+    <insert id="insertNotiSet">
+        INSERT INTO NOTI_SET (member_no, noti_set_code)
+        SELECT #{memberNo}, noti_set_code
+        FROM NOTI_SET_CODE
     </insert>
 
     <insert id="insertBusReg" parameterType="memBusDTO">
@@ -162,7 +175,7 @@
             nc.category_name,
             l.eup_myeon_dong_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.views,
             sub.total_count
         FROM (
@@ -200,7 +213,7 @@
             nc.category_name,
             l.eup_myeon_dong_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             m.nickname,
             sub.views,
             sub.total_count
@@ -245,7 +258,7 @@
             l.eup_myeon_dong_name,
             np.title,
             sub.content,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.total_count
         FROM (
             SELECT
@@ -284,7 +297,7 @@
             l.eup_myeon_dong_name,
             sub.club_name,
             m.nickname,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.total_count
         FROM (
             SELECT
@@ -325,7 +338,7 @@
             l.eup_myeon_dong_name,
             c.club_name,
             sub.title,
-            sub.created_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.views,
             sub.total_count
         FROM (
@@ -371,7 +384,7 @@
             c.club_name,
             sub.title,
             m.nickname,
-            sub.gathering_at,
+            DATE_FORMAT(sub.gathering_at, '%Y-%m-%d %H:%i:%s') AS gathering_at,
             sub.total_count
         FROM (
             SELECT
@@ -411,11 +424,11 @@
 
     <select id="selectShareLike" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
     SELECT
-        sub.like_no,
+        sub.item_no,
         sc.cat_name,
         l.eup_myeon_dong_name,
         sub.title,
-        sub.expiry_date,
+        DATE_FORMAT(sub.expiry_date, '%Y-%m-%d %H:%i:%s') AS expiry_date,
         ss.status_name,
         sub.total_count
     FROM (
@@ -454,9 +467,9 @@
             sub.title,
             sub.original_price,
             sub.sale_price,
-            sub.created_at,
-            sub.started_at,
-            sub.ended_at,
+            DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
+            DATE_FORMAT(sub.started_at, '%Y-%m-%d %H:%i:%s') AS started_at,
+            DATE_FORMAT(sub.ended_at, '%Y-%m-%d %H:%i:%s') AS ended_at,
             sub.total_count
         FROM (
             SELECT
@@ -484,6 +497,7 @@
         SELECT news_no, title, created_at, views
         FROM NS_POST
         WHERE writer = #{memberNo}
+        AND is_deleted = 'N'
         ORDER BY created_at DESC
         LIMIT 3
     </select>
@@ -491,7 +505,9 @@
     <select id="getLendData" resultType="map">
         SELECT item_no, title, expiry_date, status_code
         FROM SHA_ITEMS
-        WHERE owner_no = #{memberNo} AND item_group = 'RENT'
+        WHERE owner_no = #{memberNo}
+        AND item_group = 'RENT'
+        AND deleted_at IS NULL
         ORDER BY created_at DESC
         LIMIT 3
     </select>
@@ -508,7 +524,9 @@
     <select id="getGiveData" resultType="map">
         SELECT item_no, title, created_at, status_code
         FROM SHA_ITEMS
-        WHERE owner_no = #{memberNo} AND item_group = 'GIVE'
+        WHERE owner_no = #{memberNo}
+        AND item_group = 'GIVE'
+        AND deleted_at IS NULL
         ORDER BY created_at DESC
         LIMIT 3
     </select>
@@ -518,16 +536,19 @@
         FROM CL c
         JOIN CL_MEMBER cm ON c.club_no = cm.club_no
         WHERE cm.member_no = #{memberNo}
+        AND c.is_deleted = 'N'
         ORDER BY c.created_at DESC
         LIMIT 3
     </select>
 
     <select id="getScheduleData" resultType="map">
-        SELECT cs.schedule_no, cs.title, cs.gathering_at, c.club_name
+        SELECT cs.schedule_no, cs.club_no, cs.title, cs.gathering_at, c.club_name
         FROM CL_SCHEDULE cs
         JOIN CL_SCHEDULE_PARTICIPANT csp ON cs.schedule_no = csp.schedule_no
         JOIN CL c ON cs.club_no = c.club_no
-        WHERE csp.member_no = #{memberNo} AND cs.gathering_at > NOW()
+        WHERE csp.member_no = #{memberNo}
+        AND cs.gathering_at > NOW()
+        AND cs.is_deleted = 'N'
         ORDER BY cs.gathering_at ASC
         LIMIT 3
     </select>
@@ -555,7 +576,8 @@
                 AND status_code = 'GIV') AS giving_count,
             (SELECT COUNT(*)
                 FROM CL
-                WHERE master = #{memberNo}) AS master_count
+                WHERE master = #{memberNo}
+                AND is_deleted = 'N') AS master_count
     </select>
 
     <select id="checkMemBus" resultType="long">

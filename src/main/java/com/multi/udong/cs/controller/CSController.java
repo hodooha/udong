@@ -156,7 +156,9 @@ public class CSController {
     /**
      * Insert que form.
      *
+     * @param c     the c
      * @param model the model
+     * @return the string
      * @since 2024 -08-01
      */
     @GetMapping("/insertQueForm")
@@ -196,7 +198,8 @@ public class CSController {
         CSQuestionDTO csQuestionDTO = (CSQuestionDTO) map.get("csQuestionDTO");
 
         if (memberNo != csQuestionDTO.getWriterNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
-            model.addAttribute("msg", "권한이 부족합니다.");
+            model.addAttribute("alert", "권한이 부족합니다.");
+            model.addAttribute("alertType", "error");
             return "cs/csMain";
         }
 
@@ -277,6 +280,14 @@ public class CSController {
         }
     }
 
+    /**
+     * Delete que string.
+     *
+     * @param csNo  the cs no
+     * @param model the model
+     * @return the string
+     * @since 2024 -08-14
+     */
     @PostMapping("/deleteQue")
     public String deleteQue(@RequestParam("csNo") int csNo, Model model) {
 

@@ -38,9 +38,7 @@ public class CSServiceImpl implements CSService{
     @Override
     public List<List<String>> selectQue(PageDTO pageDTO) {
 
-        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
-
-        map = csMapper.selectQue(pageDTO);
+        List<LinkedHashMap<String, Object>> map = csMapper.selectQue(pageDTO);
 
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {
@@ -63,9 +61,7 @@ public class CSServiceImpl implements CSService{
      */
     @Override
     public List<List<String>> selectAllQue(PageDTO pageDTO) {
-        List<LinkedHashMap<String, Object>> map = new ArrayList<>();
-
-        map = csMapper.selectAllQue(pageDTO);
+        List<LinkedHashMap<String, Object>> map = csMapper.selectAllQue(pageDTO);
 
         List<List<String>> result = new ArrayList<>();
         for (LinkedHashMap<String, Object> row : map) {
@@ -164,7 +160,7 @@ public class CSServiceImpl implements CSService{
 
             Map<String, String> params = new HashMap<>();
             List<Integer> list = new ArrayList<>();
-            notiService.createNoti(
+            notiService.sendNoti(
                     NotiSetCodeENUM.CS_ANSWER,
                     csMapper.getMemberNoByCsNo(csAnswerDTO.getCsNo()),
                     list,

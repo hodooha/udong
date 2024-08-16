@@ -34,7 +34,7 @@ public class MemberServiceImpl implements MemberService {
     private final CustomUserDetailsService customUserDetailsService;
 
     /**
-     * Signup.
+     * 일반회원 회원가입
      *
      * @param memberDTO the member dto
      * @throws Exception the exception
@@ -49,23 +49,22 @@ public class MemberServiceImpl implements MemberService {
         try {
 
             int result = memberMapper.signup(memberDTO);
-            int result2 = memberMapper.insertProfileImg();
+            int memberNo = memberMapper.getMemberNoByMemberId(memberDTO);
+            int result2 = memberMapper.insertProfileImg(memberNo);
+            int result3 = memberMapper.insertNotiSet(memberNo);
 
-            if (result != 1 && result2 != 1) {
-
+            if (result != 1 && result2 != 1 && result3 != 1) {
                 throw new Exception("회원가입에 실패하였습니다");
-
             }
 
         } catch (Exception e) {
-            System.out.println("회원가입 예외 발생: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
     }
 
     /**
-     * Is id duplicate boolean.
+     * 아이디 중복체크
      *
      * @param memberId the member id
      * @return the boolean
@@ -77,7 +76,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Is nickname duplicate boolean.
+     * 닉네임 중복체크
      *
      * @param nickname the nickname
      * @return the boolean
@@ -89,7 +88,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Select all act list.
+     * 나의 활동 기록 데이터 가져오기
      *
      * @param table   the table
      * @param pageDTO the page dto
@@ -126,7 +125,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Select all dash board map.
+     * 대시보드 데이터 가져오기
      *
      * @param memberNo the member no
      * @return the map
@@ -148,7 +147,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Delete member.
+     * 회원 탈퇴
      *
      * @param memberNo the member no
      * @return boolean string
@@ -183,7 +182,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Signup seller.
+     * 판매자 회원가입
      *
      * @param memberDTO     the member dto
      * @param memBusDTO     the mem bus dto
@@ -210,7 +209,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Insert address.
+     * 주소 등록
      *
      * @param memAddressDTO the mem address dto
      * @throws Exception the exception
@@ -234,7 +233,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Update address.
+     * 주소 업데이트
      *
      * @param memAddressDTO the mem address dto
      * @throws Exception the exception
@@ -258,7 +257,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Update profile.
+     * 프로필 사진, 닉네임 업데이트
      *
      * @param memberDTO     the member dto
      * @param attachmentDTO the attachment dto
@@ -292,7 +291,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * Update member session.
+     * 사용자 세션 갱신
      *
      * @since 2024 -07-25
      */

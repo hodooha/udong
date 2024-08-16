@@ -10,7 +10,6 @@
         /*<![CDATA[*/
         var KakaoApiKey = /*[[${KakaoApiKey}]]*/ 'default';
         /*]]>*/
-        console.log("KakaoApiKey:",KakaoApiKey);
     </script>
     <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoApiKey} + '&libraries=services'}"></script>
     <style>
@@ -113,9 +112,6 @@
     }
 
     function updateFields(data) {
-
-        console.log("searchAddr: ", data);
-
         let roadAddress = data.roadAddress; // 도로명 주소 변수
         let jibunAddress = data.jibunAddress || data.autoJibunAddress; // 지번 주소 변수
 
@@ -174,8 +170,6 @@ function getAddr(lat, lng) {
     let coord = new kakao.maps.LatLng(lat, lng);
     geocoder.coord2Address(coord.getLng(), coord.getLat(), (result, status) => {
         if (status === kakao.maps.services.Status.OK) {
-
-            console.log("currentAddr: ", result);
 
             let currentJibunAddress = result[0].address.address_name;
             let currentJibunAddressParts = currentJibunAddress.split(' ');

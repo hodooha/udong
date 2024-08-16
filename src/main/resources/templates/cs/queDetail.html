@@ -42,34 +42,37 @@
         }
         .que-info {
             display: flex;
-        }
-        .que-info span {
-            border: 1px solid #000000;
-            border-radius: 5px;
-            padding: 0.5rem;
-            min-width: 200px;
-            margin: 0 20px;
-            display: block;
+
+            & span {
+                border: 1px solid #000000;
+                border-radius: 5px;
+                padding: 0.5rem;
+                min-width: 200px;
+                margin: 0 20px;
+                display: block;
+            }
         }
         .attachment-box ul {
             display: flex;
             list-style: none;
             gap: 10px;
-        }
-        .attachment-box ul li {
-            background-color: #3B5C9A;
-            border-radius: 20px;
-            padding: 5px 10px;
-            transition: all 0.3s ease;
-            cursor: pointer;
 
-            &:hover {
-                background-color: #0B1D40;
+            & li {
+                background-color: #3B5C9A;
+                border-radius: 20px;
+                padding: 5px 10px;
+                transition: all 0.3s ease;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #0B1D40;
+                }
+
+                & a {
+                    text-decoration: none;
+                    color: #FFFFFF;
+                }
             }
-        }
-        .attachment-box ul li a {
-            text-decoration: none;
-            color: #FFFFFF;
         }
         .answers-container {
             display: flex;
@@ -203,11 +206,11 @@
             submitAnswer.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                const content = document.querySelector('#answer-content').value;
+                const content = document.querySelector('#answer-content').value.trim();
                 const csNo = document.querySelector('input[name="csNo"]').value;
 
-                if (!content.trim()) {
-                    alert('답변 내용을 입력해주세요.');
+                if (!content) {
+                    showErrorAlert('답변 내용을 입력해주세요.');
                     return;
                 }
 
@@ -222,12 +225,7 @@
                         content: content
                     })
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('서버 응답이 실패했습니다.');
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const newAnswer = document.createElement('div');
                     newAnswer.className = 'answer-box';
@@ -241,14 +239,9 @@
                         </div>
                     `;
 
-                    if (noAnswer) {
-                        noAnswer.remove();
-                    }
-
                     if (!answersContainer) {
                         const newAnswersContainer = document.createElement('div');
                         newAnswersContainer.className = 'answers-container';
-                        newAnswersContainer.innerHTML = '<h2>답변:</h2>';
                         answerForm.parentNode.insertBefore(newAnswersContainer, answerForm);
                         newAnswersContainer.appendChild(newAnswer);
                     } else {
@@ -256,10 +249,14 @@
                     }
 
                     document.querySelector('#answer-content').value = '';
+
+                    if (noAnswer) {
+                        noAnswer.remove();
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('답변 등록 중 오류가 발생했습니다: ' + error.message);
+                    showErrorAlert('답변 등록 중 오류가 발생했습니다');
                 });
             });
         }

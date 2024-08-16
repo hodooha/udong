@@ -56,12 +56,14 @@ public class MemberController {
 
         Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
 
-        model.addAttribute("dataNews", map.get("dataNews"));
-        model.addAttribute("dataLend", map.get("dataLend"));
-        model.addAttribute("dataRent", map.get("dataRent"));
-        model.addAttribute("dataGive", map.get("dataGive"));
-        model.addAttribute("dataClub", map.get("dataClub"));
-        model.addAttribute("dataSchedule", map.get("dataSchedule"));
+        System.out.println("##### map : " + map);
+
+        model.addAttribute("newsData", map.get("newsData"));
+        model.addAttribute("lendData", map.get("lendData"));
+        model.addAttribute("rentData", map.get("rentData"));
+        model.addAttribute("giveData", map.get("giveData"));
+        model.addAttribute("clubData", map.get("clubData"));
+        model.addAttribute("scheduleData", map.get("scheduleData"));
     }
 
     /**
@@ -144,7 +146,6 @@ public class MemberController {
         int pages = 1;
 
         List<List<String>> data = memberService.selectAllAct(table, pageDTO);
-        List<String> clubNo = new ArrayList<>();
 
         if (!data.isEmpty()) {
             count = Integer.parseInt(data.get(0).get(data.get(0).size() - 1));
@@ -152,27 +153,23 @@ public class MemberController {
 
             for (List<String> list : data) {
                 list.remove(list.size() - 1);
-                if (table.equals("clubLog")) {
-                    clubNo.add(list.get(1));
-                    list.remove(1);
-                }
             }
         }
 
         List<String> headers = getHeaders(table);
         List<String> searchCategories = getSearchCategories(table);
+        int searchCategoryIndex = headers.indexOf(searchCategory);
 
         model.addAttribute("tableHeaders", headers);
         model.addAttribute("tableData", data);
-        if (table.equals("clubLog")) {
-            model.addAttribute("clubNo", clubNo);
-        }
+
         model.addAttribute("page", pageDTO.getPage());
         model.addAttribute("table", table);
         model.addAttribute("pages", pages);
 
         model.addAttribute("searchCategories", searchCategories);
         model.addAttribute("searchCategory", searchCategory);
+        model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
     }
 
@@ -196,7 +193,7 @@ public class MemberController {
             case "newsLike" -> Arrays.asList("주제", "동네", "제목", "내용", "작성자");
             case "newsReply" -> Arrays.asList("주제", "동네", "제목", "댓글내용");
             case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장");
-            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "내용");
+            case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목");
             case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자");
             case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명");
             case "saleBoard" -> Arrays.asList("동네", "물품명");
@@ -234,15 +231,17 @@ public class MemberController {
     /**
      * 입력한 주소를 등록하거나 수정함
      *
-     * @param c             the c
-     * @param memAddressDTO the mem address dto
-     * @param model         the model
+     * @param c                  the c
+     * @param memAddressDTO      the mem address dto
+     * @param redirectAttributes the redirect attributes
+     * @param model              the model
      * @return the string
      * @since 2024 -07-25
      */
     @PostMapping("/insertAddress")
     public String insertAddress(@AuthenticationPrincipal CustomUserDetails c,
                                 MemAddressDTO memAddressDTO,
+                                RedirectAttributes redirectAttributes,
                                 Model model) {
         
         // 등록된 주소의 주소코드를 받아옴
@@ -265,7 +264,8 @@ public class MemberController {
             
             // 등록 후 사용자 세션 최신화
             memberService.updateMemberSession();
-            model.addAttribute("msg", "주소 등록이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "주소 등록이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
         } else { // 등록된 주소가 있다면
 
@@ -280,11 +280,12 @@ public class MemberController {
 
             // 수정 후 사용자 세션 최신화
             memberService.updateMemberSession();
-            model.addAttribute("msg", "주소 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "주소 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "success");
 
         }
 
-        return "member/dashBoard";
+        return "redirect:/member/address";
     }
 
     /**
@@ -326,7 +327,6 @@ public class MemberController {
 
             // 비밀번호를 수정할 때
             if (currentPw != null && memberDTO.getMemberPw() != null) {
-                System.out.println("memberDTO : " + memberDTO);
                 BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
                 // '입력한 현재 비밀번호' 와 '현재 사용자의 비밀번호' 가 일치하지 않으면
@@ -371,10 +371,11 @@ public class MemberController {
     /**
      * Delete member string.
      *
-     * @param c        the c
-     * @param request  the request
-     * @param response the response
-     * @param model    the model
+     * @param c                  the c
+     * @param request            the request
+     * @param response           the response
+     * @param model              the model
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -07-30
      */
@@ -440,9 +441,6 @@ public class MemberController {
         // 저장 경로 설정
         String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();
         String savePath = path + File.separator; // 운영 체제에 맞는 구분자 추가
-
-        System.out.println("path : " + path);
-        System.out.println("savePath : " + savePath);
 
         // 저장될 폴더 설정
         File mkdir = new File(savePath);
