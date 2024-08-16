@@ -108,4 +108,8 @@ public class AdminServiceImpl implements AdminService {
         blacklisted.addAll(unblacklisted);
         return blacklisted;
     }
+    @Override
+    public List<MemberDTO> searchBlacklistedMembersByIdOrName(String search) {
+        return adminMapper.searchBlacklistedMembersByIdOrName(search);
+    }
 }

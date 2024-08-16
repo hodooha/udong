@@ -114,41 +114,60 @@
     }
 
     function deleteNotice(noticeNo) {
-        Swal.fire({
-            title: '공지사항 삭제',
-            text: "정말로 이 공지사항을 삭제하시겠습니까?",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#CB3333',
-            cancelButtonColor: '#3B5C9A',
-            confirmButtonText: '삭제',
-            cancelButtonText: '취소'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: '/admin/deleteNotice',
-                    method: 'POST',
-                    data: { noticeNo: noticeNo },
-                    success: function(response) {
+    Swal.fire({
+        title: '공지사항 삭제',
+        text: "정말로 이 공지사항을 삭제하시겠습니까?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#CB3333',
+        cancelButtonColor: '#3B5C9A',
+        confirmButtonText: '삭제',
+        cancelButtonText: '취소'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/admin/deleteNotice',
+                method: 'POST',
+                data: { noticeNo: noticeNo },
+                success: function(response) {
+                    if (response.success) {
                         Swal.fire(
                             '삭제 완료',
                             '공지사항이 삭제되었습니다.',
                             'success'
                         ).then(() => {
-                            loadNoticeList();
+                            loadNoticeList(); // 공지사항 리스트를 다시 로드
                         });
-                    },
-                    error: function() {
-                        Swal.fire(
-                            '오류',
-                            '공지사항 삭제에 실패했습니다.',
-                            'error'
-                        );
                     }
-                });
-            }
-        });
-    }
+                },
+                error: function() {
+                    Swal.fire(
+                        '오류',
+                        '공지사항 삭제에 실패했습니다.',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+
+function loadNoticeList() {
+    $.ajax({
+        url: '/admin/notice', // HTML을 반환하는 경로
+        method: 'GET',
+        success: function(response) {
+            $('#adminContent').html(response); // admin-content 부분만 업데이트
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: '오류',
+                text: '공지사항 리스트를 불러오는데 실패했습니다.'
+            });
+        }
+    });
+}
 </script>
 </body>
 </html>

@@ -401,9 +401,24 @@ public class AdminController {
 
     // 삭제 처리
     @PostMapping("/deleteNotice")
-    public String deleteNotice(@RequestParam("noticeNo") int noticeNo) {
+    @ResponseBody
+    public Map<String, Object> deleteNotice(@RequestParam("noticeNo") int noticeNo) {
         noticeService.delete(noticeNo);
-        return "redirect:/admin/notice";
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        return response;
+    }
+
+    @GetMapping("/blacklist/search")
+    public String searchBlacklist(@RequestParam(value = "search", required = false) String search, Model model) {
+        if (search == null || search.trim().isEmpty()) {
+            return "redirect:/admin/blacklist";
+        }
+
+        List<MemberDTO> blacklistedMembers = adminService.searchBlacklistedMembersByIdOrName(search);
+        model.addAttribute("blacklistedMembers", blacklistedMembers);
+        return "admin/blacklist";
     }
 
 }

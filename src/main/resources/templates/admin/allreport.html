@@ -55,6 +55,7 @@
             color: white;
             text-decoration: none;
             border-radius: 5px;
+            cursor: pointer;
         }
 
         .page-button:hover {
@@ -127,120 +128,148 @@
     </table>
     <div class="pagination"></div>
 </div>
-
 <script th:inline="javascript">
-    let sortDirection = true;
+    (function() {
+        const reports = /*[[${reports}]]*/ [];
+        let currentPage = 1;
+        const itemsPerPage = 6;
+        let sortDirection = true;
 
-    function changeStatus(reportNo, status) {
-        Swal.fire({
-            title: '상태 변경 확인',
-            text: `정말 이 신고를 ${status === 'A' ? '승인' : '반려'} 하시겠습니까?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3B5C9A',
-            cancelButtonColor: '#CB3333',
-            confirmButtonText: '확인',
-            cancelButtonText: '취소'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                var token = $("meta[name='_csrf']").attr("content");
-                var header = $("meta[name='_csrf_header']").attr("content");
+        function changeStatus(reportNo, status) {
+            Swal.fire({
+                title: '상태 변경 확인',
+                text: `정말 이 신고를 ${status === 'A' ? '승인' : '반려'} 하시겠습니까?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3B5C9A',
+                cancelButtonColor: '#CB3333',
+                confirmButtonText: '확인',
+                cancelButtonText: '취소'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var token = $("meta[name='_csrf']").attr("content");
+                    var header = $("meta[name='_csrf_header']").attr("content");
 
-                $.ajax({
-                    type: "POST",
-                    url: "/admin/changeReportStatus",
-                    contentType: "application/json",
-                    data: JSON.stringify({ reportNo: reportNo, status: status }),
-                    beforeSend: function(xhr) {
-                        if (token && header) {
-                            xhr.setRequestHeader(header, token);
-                        }
-                    },
-                    success: function(response) {
-                        if(response.success) {
-                            Swal.fire('성공', '상태가 성공적으로 업데이트되었습니다.', 'success');
-                            updateReportRow(reportNo, status);
-                        } else {
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/changeReportStatus",
+                        contentType: "application/json",
+                        data: JSON.stringify({ reportNo: reportNo, status: status }),
+                        beforeSend: function(xhr) {
+                            if (token && header) {
+                                xhr.setRequestHeader(header, token);
+                            }
+                        },
+                        success: function(response) {
+                            if(response.success) {
+                                Swal.fire('성공', '상태가 성공적으로 업데이트되었습니다.', 'success');
+                                updateReportRow(reportNo, status);
+                                displayReports(currentPage);
+                            } else {
+                                Swal.fire('오류', '상태 업데이트에 실패했습니다. 다시 시도해주세요.', 'error');
+                            }
+                        },
+                        error: function(xhr, status, error) {
                             Swal.fire('오류', '상태 업데이트에 실패했습니다. 다시 시도해주세요.', 'error');
+                            console.error("Error details:", xhr.responseText);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        Swal.fire('오류', '상태 업데이트에 실패했습니다. 다시 시도해주세요.', 'error');
-                        console.error("Error details:", xhr.responseText);
-                    }
-                });
-            }
-        });
-    }
-
-    function updateReportRow(reportNo, newStatus) {
-        var row = $("tr[data-report-no='" + reportNo + "']");
-        var statusCell = row.find("td:last");
-
-        var statusText = newStatus === 'A' ? '승인' : (newStatus === 'R' ? '반려' : '대기');
-        var buttonHtml = '';
-
-        if (newStatus === 'W') {
-            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'A\')" class="btn-udh-yellow status-btn">승인</button> ';
-            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'R\')" class="btn-udh-red status-btn">반려</button>';
-        } else if (newStatus === 'A') {
-            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'R\')" class="btn-udh-red status-btn">반려</button>';
-        } else if (newStatus === 'R') {
-            buttonHtml += '<button onclick="changeStatus(' + reportNo + ', \'A\')" class="btn-udh-yellow status-btn">승인</button>';
-        }
-
-        statusCell.html('<span class="status-text">' + statusText + '</span>' + buttonHtml);
-
-        // Update the data-status attribute to reflect the new status
-        row.attr("data-status", newStatus);
-    }
-
-    $(document).ready(function() {
-        $('.admin-table tbody tr').each(function() {
-            var reportNo = $(this).data('report-no');
-            var currentStatus = $(this).find('td:last span').text().trim();
-            var statusCode = currentStatus === '대기' ? 'W' : (currentStatus === '승인' ? 'A' : 'R');
-            updateReportRow(reportNo, statusCode);
-        });
-
-        // Sorting functionality for the "처리여부" column
-        $('.sortable').click(function() {
-            var rows = $('tbody tr').get();
-
-            rows.sort(function(a, b) {
-                var A = $(a).data('status');
-                var B = $(b).data('status');
-
-                // You can customize the sort order by status here
-                var order = {
-                    'W': 1, // 대기
-                    'A': 2, // 승인
-                    'R': 3  // 반려
-                };
-
-                if (sortDirection) {
-                    return order[A] - order[B];
-                } else {
-                    return order[B] - order[A];
+                    });
                 }
             });
+        }
 
-            $.each(rows, function(index, row) {
-                $('tbody').append(row);
+        function updateReportRow(reportNo, newStatus) {
+            const report = reports.find(r => r.reportNo === reportNo);
+            if (report) {
+                report.status = newStatus;
+            }
+        }
+
+        function getStatusButtons(reportNo, status) {
+            let buttons = '';
+            if (status === 'W' || status === 'R') {
+                buttons += `<button onclick="changeStatus(${reportNo}, 'A')" class="btn-udh-yellow status-btn">승인</button> `;
+            }
+            if (status === 'W' || status === 'A') {
+                buttons += `<button onclick="changeStatus(${reportNo}, 'R')" class="btn-udh-red status-btn">반려</button>`;
+            }
+            return buttons;
+        }
+
+        function displayReports(page) {
+            currentPage = page;
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const reportsToDisplay = reports.slice(startIndex, endIndex);
+
+            const reportsTableBody = $('.admin-table tbody');
+            reportsTableBody.empty();
+
+            reportsToDisplay.forEach((report) => {
+                const row = $('<tr>').attr('data-report-no', report.reportNo).attr('data-status', report.status);
+                row.html(`
+                    <td>${report.typeName}</td>
+                    <td>${report.reportedMemberId}</td>
+                    <td>${report.reporterMemberId}</td>
+                    <td><a href="${report.url}">${report.reason}</a></td>
+                    <td>${report.imageFileName ? `<a href="/admin/downloadReportImage/${report.reportNo}">[다운로드]</a>` : '첨부 파일 없음'}</td>
+                    <td>
+                        <span class="status-text">${report.status === 'W' ? '대기' : (report.status === 'A' ? '승인' : '반려')}</span>
+                        ${getStatusButtons(report.reportNo, report.status)}
+                    </td>
+                `);
+                reportsTableBody.append(row);
             });
 
-            // Toggle sort direction
-            sortDirection = !sortDirection;
+            updatePagination();
+        }
 
-            // Update sort direction indicator
-            var currentText = $(this).text();
-            var newText = currentText.includes('▼') ? currentText.replace('▼', '▲') : currentText.replace('▲', '▼');
-            $(this).text(newText);
+        function updatePagination() {
+            const totalPages = Math.ceil(reports.length / itemsPerPage);
+            const paginationContainer = $('.pagination');
+            paginationContainer.empty();
+
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = $('<a>')
+                    .text(i)
+                    .addClass('page-button')
+                    .toggleClass('active', i === currentPage)
+                    .on('click', function(event) {
+                        event.preventDefault();
+                        displayReports(i);
+                    });
+
+                paginationContainer.append(pageButton);
+            }
+        }
+
+        function sortReports() {
+            reports.sort((a, b) => {
+                const order = { 'W': 1, 'A': 2, 'R': 3 };
+                return sortDirection ? order[a.status] - order[b.status] : order[b.status] - order[a.status];
+            });
+
+            sortDirection = !sortDirection;
+            displayReports(currentPage);
+
+            const headerElement = $('.sortable[data-sort="status"]');
+            headerElement.text(headerElement.text().replace(/[▼▲]/, sortDirection ? '▼' : '▲'));
+        }
+
+        $(document).ready(function() {
+            console.log("Reports:", reports);  // 데이터 확인용 로그
+            displayReports(currentPage);
+
+            $('.sortable').on('click', sortReports);
         });
-    });
-    function goBack() {
-    window.history.back();
-}
+
+        // 전역 함수로 노출
+        window.changeStatus = changeStatus;
+        window.goBack = function() {
+            window.history.back();
+        };
+    })();
 </script>
+
 </body>
 </html>
