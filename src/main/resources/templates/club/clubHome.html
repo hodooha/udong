@@ -144,7 +144,7 @@
                 <td class="btn-right-area">
                     <th:block th:if="${clubHome.isDeleted == 'N'}">
                         <th:block th:if="${clubHome.joinStatus == 'Y'}">
-                            <button class="btn btn-udh-blue btn-right">
+                            <button class="btn btn-udh-blue btn-right" onclick="enterChat()">
                                 채팅 참여
                             </button>
                         </th:block>
@@ -223,6 +223,16 @@
         if (result.isConfirmed) {
             document.getElementById('deleteClubForm').submit();
         }
+    }
+
+    function enterChat() {
+
+        chatPopup = window.open("/club/clubChat?clubNo=" + clubNo, clubNo, "resizeable");
+        chatPopup.resizeTo(500, 800);
+        chatPopup.onresize = (_=>{
+            chatPopup.resizeTo(500, 800);
+        })
+
     }
 
 </script>

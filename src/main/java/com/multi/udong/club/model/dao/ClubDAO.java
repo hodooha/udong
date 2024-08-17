@@ -611,4 +611,10 @@ public class ClubDAO {
         return sqlSession.delete("clubMapper.kickMember", clubMemberDTO);
 
     }
+
+    public String selectMemberProfileImg(SqlSessionTemplate sqlSession, int memberNo) {
+
+        return sqlSession.selectOne("clubMapper.selectMemberProfileImg", memberNo);
+
+    }
 }

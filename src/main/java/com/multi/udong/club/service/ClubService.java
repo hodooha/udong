@@ -130,4 +130,6 @@ public interface ClubService {
     int delegateMaster(ClubMemberDTO clubMemberDTO) throws Exception;
 
     int kickMember(ClubMemberDTO clubMemberDTO) throws Exception;
+
+    String selectMemberProfileImg(int memberNo) throws Exception;
 }

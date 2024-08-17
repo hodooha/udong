@@ -651,6 +651,13 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public String selectMemberProfileImg(int memberNo) throws Exception {
+
+        return clubDAO.selectMemberProfileImg(sqlSession, memberNo);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

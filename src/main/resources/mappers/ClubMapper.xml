@@ -861,4 +861,10 @@
         WHERE club_no = #{ clubNo } AND member_no = #{ memberNo }
     </delete>
 
+    <select id="selectMemberProfileImg" parameterType="Integer" resultType="String">
+        SELECT saved_name
+        FROM ATTACHMENT
+        WHERE type_code = 'MEM' AND target_no = #{ memberNo }
+    </select>
+
 </mapper>

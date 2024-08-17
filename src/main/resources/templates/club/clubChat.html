@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript" th:src="@{'/js/sockjs-0.3.4.js'}"></script>
+    <script type="text/javascript" th:src="@{'/js/stomp.js'}"></script>
+    <script type="text/javascript" th:src="@{'/js/webSocketSendToUserApp.js'}"></script>
+    <title>채팅방</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Freesentation-3Light';
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .chat-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background-color: #3B5C9A;
+            color: #FFFFFF;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .club-img {
+            width: 45px;
+            height: 45px;
+            margin: 5px 15px 5px 5px;
+            border-radius: 7px;
+        }
+        .club-name {
+            font-family: 'Freesentation-5Medium';
+            font-size: 20px;
+        }
+        .club-personnel {
+            font-size: 16px;
+            margin-left: 10px;
+        }
+        .load-more {
+            width: 150px;
+            border: 1px solid #FFFFFF;
+            border-radius: 20px;
+            margin: 10px auto;
+            padding: 5px;
+            background-color: #3B5C9A;
+            color: #FFFFFF;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .load-more:hover {
+            border: 1px solid #FFFFFF;
+            background-color: #0B1D40;
+        }
+        .load-more:active {
+            background-color: #FFFFFF;
+            color: #000000;
+            border: 1px solid #000000;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0px 20px;
+        }
+        .message-sender {
+            font-family: 'Freesentation-3Light';
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        .profile-img {
+            vertical-align: top;
+            width: 35px;
+            height: 35px;
+            margin-right: 5px;
+            border-radius: 10px;
+            border: 0.5px solid #D1D1D1;
+        }
+        .message {
+            margin-bottom: 20px;
+        }
+        .message-content {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+        .other-message .message-content {
+            background-color: #f1f1f1;
+            font-size: 14px;
+        }
+        .my-message {
+            text-align: right;
+        }
+        .my-message .message-content {
+            background-color: #FFB83D;
+            font-size: 14px;
+        }
+        .message-time {
+            font-size: 10px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .system-message {
+            text-align: center;
+            color: #888;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .footer {
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #E2E2E2;
+            display: flex;
+            flex-shrink: 0;
+        }
+        .footer input {
+            flex-grow: 1;
+            padding: 5px;
+            border: 1px solid #E2E2E2;
+        }
+        .footer button {
+            margin-left: 10px;
+            padding: 3px 8px;
+            border: 0px;
+            border-radius: 3px;
+            font-family: 'Freesentation-5Medium';
+        }
+    </style>
+    <script type="text/javascript">
+
+        var stompClient = null;
+        const chatroomCode = "[[${clubDetail.chatroomCode}]]";
+
+        $(document).ready(function() {
+            connect();
+        });
+
+        function connect() {
+
+            var socket = new SockJS('/clubChat')
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function(frame) {
+                stompClient.subscribe('/topic/receiveClubChat/' + chatroomCode, function(outputChatMessage) {
+                    showOutputChatMessage(JSON.parse(outputChatMessage.body));
+                });
+
+                // 입장 메시지 전송
+                var senderNo = document.getElementById('senderNo').value;
+                var sender = document.getElementById('sender').value;
+                var content = sender + '님이 입장하셨습니다.';
+
+                stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                    'senderNo': senderNo,
+                    'sender': sender,
+                    'content': content,
+                    'type': 'system'
+                }));
+            });
+        }
+
+        function disconnect() {
+            if (stompClient != null) {
+                var senderNo = document.getElementById('senderNo').value;
+                var sender = document.getElementById('sender').value;
+                var content = sender + '님이 퇴장하셨습니다.';
+
+                stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                    'senderNo': senderNo,
+                    'sender': sender,
+                    'content': content,
+                    'type': 'system'
+                }));
+
+                stompClient.disconnect();
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.keyCode === 13) {  // 엔터 키 코드 = 13
+                event.preventDefault();
+                var content = document.getElementById('content').value;
+                if (content.trim() !== '') {
+                    sendMessage();
+                } else {
+                    Swal.fire({
+                        title: '입력 오류',
+                        text: '채팅은 공백만 입력할 수 없습니다.',
+                        icon: 'warning',
+                        confirmButtonColor: '#3B5C9A',
+                        confirmButtonText: '확인'
+                    });
+                    document.getElementById('content').value = '';
+                }
+            }
+        }
+
+        function sendMessage() {
+
+            var contentElement = document.getElementById('content');
+            var content = contentElement.value;
+
+            if (content.trim() === '') {
+                Swal.fire({
+                    title: '입력 오류',
+                    text: '채팅은 공백만 입력할 수 없습니다.',
+                    icon: 'warning',
+                    confirmButtonColor: '#3B5C9A',
+                    confirmButtonText: '확인'
+                });
+                document.getElementById('content').value = '';
+                return;
+            }
+
+            var senderNo = document.getElementById('senderNo').value;
+            var sender = document.getElementById('sender').value;
+
+            stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                'senderNo' : senderNo,
+                'sender' : sender,
+                'content' : content
+            }));
+
+            // 메시지 전송 후 입력 필드 비우기
+            contentElement.value = '';
+        }
+
+        function showOutputChatMessage(outputChatMessage) {
+            var chatMessages = document.getElementById('chatMessages');
+            var messageDiv = document.createElement('div');
+
+            if (outputChatMessage.type === 'system') {
+                messageDiv.className = 'system-message';
+                messageDiv.innerHTML = outputChatMessage.content;
+            } else {
+                var senderNo = document.getElementById('senderNo').value;
+
+                if (outputChatMessage.senderNo == senderNo) {
+                    // 내가 보낸 메시지
+                    messageDiv.className = 'message my-message';
+                    messageDiv.innerHTML = `
+                        <div class="message-sender">${outputChatMessage.sender}</div>
+                        <div class="message-content">${outputChatMessage.content}</div>
+                        <div class="message-time">${outputChatMessage.sentAt}</div>
+                    `;
+                } else {
+                    // 다른 사람이 보낸 메시지
+                    var imgPath = "[[@{'/uploadFiles/'}]]";
+                    messageDiv.className = 'message other-message';
+                    messageDiv.innerHTML = `
+                        <img src="${imgPath + outputChatMessage.profileSavedName}" alt="프로필 사진" class="profile-img">
+                        <div style="display: inline-block;">
+                            <div class="message-sender">${outputChatMessage.sender}</div>
+                            <div class="message-content">${outputChatMessage.content}</div>
+                            <div class="message-time">${outputChatMessage.sentAt}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // 페이지 종료 시 disconnect 함수 호출
+        window.onbeforeunload = function() {
+            disconnect();
+        };
+
+    </script>
+</head>
+<body>
+<div class="chat-container">
+    <div class="header">
+        <img th:src="@{'/uploadFiles/' + ${clubDetail.attachment[0].savedName}}" class="club-img">
+        <span th:text="${clubDetail.clubName}" class="club-name"></span>
+        <span th:text="${clubDetail.currentPersonnel}" class="club-personnel"></span>
+    </div>
+    <div class="load-more">이전 대화 내용 보기</div>
+    <div id="chatMessages" class="chat-messages">
+
+    </div>
+    <div class="footer">
+        <input type="text" id="content" class="content-input" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+        <input type="hidden" id="senderNo" th:value="${#authentication.principal.memberDTO.memberNo}">
+        <input type="hidden" id="sender" th:value="${#authentication.principal.memberDTO.nickname}">
+        <button class="btn btn-udh-blue" onclick="sendMessage()">전송</button>
+    </div>
+</div>
+</body>
+</html>

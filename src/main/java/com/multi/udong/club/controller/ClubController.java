@@ -7,6 +7,9 @@ import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.login.service.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -2548,8 +2551,78 @@ public class ClubController {
 
     }
 
+    @RequestMapping("/clubChat")
+    public String enterClubChat(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        requestDTO.setMemberNo(c.getMemberDTO().getMemberNo());
+
+        // 해체된 모임인지 검증
+        if(!checkIsClubDeleted(c, requestDTO.getClubNo())) {
+            return "redirect:/club/clubMain?page=1";
+        }
+
+        // 서버단에서 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(c.getMemberDTO().getMemberNo(), requestDTO.getClubNo());
+
+        if(joinStatus.equals("Y")) {
+
+            try {
+
+                ClubDTO clubDetail = clubService.selectClubHome(requestDTO);
+
+                model.addAttribute("clubDetail", clubDetail);
+
+                return "/club/clubChat";
+
+            } catch (Exception e) {
+
+                throw new RuntimeException(e);
+
+            }
+
+        }
+
+        return "redirect:/club/clubHome?clubNo=" + requestDTO.getClubNo();
+
+    }
+
+
+
+    @MessageMapping("/clubChat/{chatroomCode}") //채팅 내용 받을 때 사용하는 주소
+    @SendTo("/topic/receiveClubChat/{chatroomCode}") //가입주소한 브라우저에 return message를 json으로 변환해서 보내줌.
+    public OutputChatMessage sendClubChat(@DestinationVariable("chatroomCode") String chatroomCode, InputChatMessage inputChatMessage) {
+
+        System.out.println("###### 들어온 메시지 데이터: " +  inputChatMessage);
+        System.out.println("###### chatroomCode: " +  chatroomCode);
+
+        OutputChatMessage outputChatMessage = new OutputChatMessage();
+        outputChatMessage.setSenderNo(inputChatMessage.getSenderNo());
+        outputChatMessage.setSender(inputChatMessage.getSender());
+        outputChatMessage.setContent(inputChatMessage.getContent());
+        outputChatMessage.setType(inputChatMessage.getType());
+
+        LocalDateTime date = LocalDateTime.now();
+        outputChatMessage.setSentAt(date.getYear() + "." + date.getMonthValue() + "." + date.getDayOfMonth() + " - " +  date.getHour() + ":" + date.getMinute());
+
+        try {
+
+            String profileSavedName = clubService.selectMemberProfileImg(inputChatMessage.getSenderNo());
+
+            outputChatMessage.setProfileSavedName(profileSavedName);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+
+        return outputChatMessage;
+
+    }
+
 
     // ================= 공통 사용 메소드 =================
+
 
     /**
      * 유저가 모임에 가입돼 있는지 확인
