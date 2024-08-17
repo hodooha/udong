@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .insert-area {
+            background-color: #E5E5E5;
+            padding: 15px;
+            border-radius: 0.375rem;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .input {
+            font-family: 'Freesentation-3Light';
+            height: 25px;
+            background-color: #FFFFFF;
+            border: 1px solid #979797;
+        }
+        .category-select{
+            font-family: 'Freesentation-3Light';
+            height: 25px;
+            width: 65%;
+        }
+        .title-input {
+            width: 85%;
+        }
+        .writer-input {
+            width: 80%;
+            background-color: #C0C0C0;
+        }
+        .location-input{
+            width: 100%;
+            background-color: #C0C0C0;
+        }
+        .content-input {
+            font-family: 'Freesentation-3Light';
+            width: 100%;
+            resize: none;
+            border: 1px solid #979797;
+            margin-top: 4px;
+            height: 240px;
+        }
+        .img-div {
+            border: 1px solid #979797;
+            background-color: #FFFFFF;
+            width: 210px;
+            height: 210px;
+            margin: 5px 15px 40px 0px;
+        }
+        .img {
+            width: 208px;
+            height: 208px;
+            margin: 0px 15px 5px 0px;
+        }
+        .img-input {
+            font-family: 'Freesentation-3Light';
+        }
+        .insert-news-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-insert-news {
+            margin: 25px 0px 30px 0px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            $.ajax({
+                url: "/news/categoryList",
+                success: function(data) {
+                    var categorySelect = $('select[name="categoryCode"]');
+                    data.forEach(function(category) {
+                        categorySelect.append($('<option></option>').attr('value', category.categoryCode).text(category.categoryName));
+                    });
+                },
+                error: function() {
+                    alert('소식 주제를 불러오는 데 실패했습니다.');
+                }
+            })
+
+        })
+
+    </script>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 670px">
+
+    <p class="menu">&#128240; 우동 소식 작성</p>
+    <form th:action="@{/news/insertNews}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="insert-area">
+            <table style="width: 100%">
+                <tr>
+                    <td style="width: 3%">
+                        <span>주제</span>
+                    </td>
+                    <td style="width: 12%">
+                        <select class="category-select" name="categoryCode">
+                        </select>
+                    </td>
+                    <td style="width: 3%">
+                        <span>제목</span>
+                    </td>
+                    <td style="width: 37%">
+                        <input type="text" id="titleInput" class="input title-input" name="title" maxlength="30" required>
+                    </td>
+                    <td style="width: 4%">
+                        <span>작성자</span>
+                    </td>
+                    <td style="width: 26%">
+                        <input type="text" class="input writer-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
+                    </td>
+                    <td style="width: 3%">
+                        <span>동네</span>
+                    </td>
+                    <td style="width: 12%">
+                        <input type="text" class="input location-input" th:value="${#authentication.principal.memberDTO.memAddressDTO.eupMyeonDongName}" disabled>
+                    </td>
+                </tr>
+            </table>
+            <table style="width: 100%; margin: 30px 0px 30px 0px;">
+                <tr>
+                    <td style="width: 3%; vertical-align: top;">
+                        <span>내용</span>
+                    </td>
+                    <td style="width: 97%">
+                        <textarea id="contentInput" class="content-input" name="content" maxlength="500" required></textarea>
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td colspan="5">
+                        <span>이미지</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="imgArea1" class="img-div">
+                            <img id="img1" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="imgList" onchange="loadImg(this,1)">
+                        </div>
+                    </td>
+                    <td>
+                        <div id="imgArea2" class="img-div">
+                            <img id="img2" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="imgList" onchange="loadImg(this,2)">
+                        </div>
+                    </td>
+                    <td>
+                        <div id="imgArea3" class="img-div">
+                            <img id="img3" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="imgList" onchange="loadImg(this,3)">
+                        </div>
+                    </td>
+                    <td>
+                        <div id="imgArea4" class="img-div">
+                            <img id="img4" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="imgList" onchange="loadImg(this,4)">
+                        </div>
+                    </td>
+                    <td>
+                        <div id="imgArea5" class="img-div">
+                            <img id="img5" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="imgList" onchange="loadImg(this,5)">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="insert-news-btn-container">
+            <button type="submit" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
+            <a th:href="@{/news/newsMain}">
+                <button type="button" class="btn btn-udh-silver btn-insert-news" style="margin-left: 10px">취소</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function loadImg(value, num) {
+		if (value.files && value.files[0]) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+
+				switch(num){
+					case 1:
+						document.getElementById("img1").src = e.target.result;
+						break;
+					case 2:
+						document.getElementById("img2").src = e.target.result;
+						break;
+					case 3:
+						document.getElementById("img3").src = e.target.result;
+						break;
+					case 4:
+						document.getElementById("img4").src = e.target.result;
+						break;
+					case 5:
+						document.getElementById("img5").src = e.target.result;
+						break;
+				}
+			}
+
+			reader.readAsDataURL(value.files[0]);
+
+		}
+	}
+
+    function validateForm() {
+
+        const titleInput = document.getElementById('titleInput').value.trim();
+        const contentInput = document.getElementById('contentInput').value.trim();
+
+        if (titleInput === "" || contentInput === "") {
+            Swal.fire({
+                title: '입력 오류',
+                text: '제목과 내용은 공백만 입력할 수 없습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+
+            return false;
+        }
+
+        return true;
+    }
+
+</script>
+</body>
+</html>

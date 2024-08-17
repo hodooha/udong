@@ -16,6 +16,7 @@
             display: flex;
             align-items: center;
             margin-bottom: 30px;
+            white-space: nowrap;
         }
         .search-form{
             flex: 1;
@@ -38,7 +39,7 @@
         .search-input{
             font-family: 'Freesentation-3Light';
             margin-left: 10px;
-            width: 65%;
+            width: 55%;
             height: 25px;
             border: 1px solid #979797;
         }
@@ -49,26 +50,29 @@
             font-size: 15px !important;
             padding: 1px 15px 1px 15px !important;
         }
-        .btn-create-club{
+        .btn-hot-news{
+            margin-right: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        .btn-insert-news{
             margin-left: 25px;
             font-family: 'Freesentation-5Medium' !important;
         }
-        .club-list{
-            height: 820px;
+        .news-list{
+            height: 720px;
         }
-        .club-one{
+        .news-one{
             cursor: pointer;
         }
-        .club-img{
-            width: 115px;
-            height: 115px;
-            margin-right: 15px;
+        .news-img{
+            width: 130px;
+            height: 130px;
             border-radius: 3px;
         }
         .p-tag{
             margin: 0px;
         }
-        .club-category-name{
+        .news-category-name{
             width: 70px;
             text-align: center;
             background-color: #E5E5E5;
@@ -77,15 +81,15 @@
             padding: 2px;
             margin-bottom: 7px;
         }
-        .club-name{
+        .news-title{
             font-family: 'Freesentation-7Bold';
             font-size: 16px;
         }
-        .club-introduction{
+        .news-content{
             font-size: 13px;
             margin-bottom: 15px;
         }
-        .club-etc{
+        .news-etc{
             font-size: 11px;
             color: #6F6F6F;
         }
@@ -118,7 +122,7 @@
         $(document).ready(function() {
 
             $.ajax({
-                url: "/club/categoryList",
+                url: "/news/categoryList",
                 success: function(data) {
                     var categorySelect = $('select[name="categoryCode"]');
                     data.forEach(function(category) {
@@ -136,7 +140,7 @@
                     });
                 },
                 error: function() {
-                    alert('모임 주제를 불러오는 데 실패했습니다.');
+                    alert('소식 주제를 불러오는 데 실패했습니다.');
                 }
             })
 
@@ -147,7 +151,7 @@
                 var button = $('<button></button>')
                 .text(i)
                 .addClass('btn btn-udh-blue btn-pagination')
-                .attr('onclick', 'selectClubList(' + i + ')');
+                .attr('onclick', 'selectNewsList(' + i + ')');
 
                 paginationDiv.append(button);
             }
@@ -159,54 +163,73 @@
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
-<div th:replace="~{/club/clubAlert}"></div>
+<div th:replace="~{/news/newsAlert}"></div>
 
 <div class="content" style="padding: 40px;">
-    <p class="menu">🤝 우동 모임</p>
+    <p class="menu">&#128240; 우동 소식</p>
     <div class="top">
-        <form class="search-form" th:action="@{/club/clubMain}" method="get">
+        <a th:href="@{/news/selectHotNewsList}">
+            <button type="button" class="btn btn-udh-yellow btn-hot-news">&#128293; 인기글</button>
+        </a>
+        <form class="search-form" th:action="@{/news/newsMain}" method="get">
             <div class="search-bar">
                 <span>주제</span>
                 <select class="category-select" name="categoryCode">
                     <option value="ALL">전체</option>
                 </select>
-                <span style="margin-left: 50px">모임 검색</span>
+                <span style="margin-left: 50px">소식 검색</span>
                 <input type="text" class="search-input" name="searchWord" placeholder=" 검색어 입력..." th:value="${filter.searchWord}" maxlength="20">
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>
         </form>
-        <a th:href="@{/club/clubInsertForm}">
-            <button type="button" class="btn btn-udh-blue btn-create-club">모임 생성</button>
-        </a>
+        <th:block th:if="${#authentication.principal.memberDTO.authority == 'ROLE_MEMBER'}">
+            <a th:href="@{/news/newsInsertForm}">
+                <button type="button" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
+            </a>
+        </th:block>
+        <th:block th:if="${#authentication.principal.memberDTO.authority == 'ROLE_ADMIN'}">
+            <a th:href="@{/news/adInsertForm}">
+                <button type="button" class="btn btn-udh-blue btn-insert-news">광고 작성</button>
+            </a>
+        </th:block>
     </div>
 
-    <div class="club-list">
+    <div class="news-list">
         <hr>
-        <th:block th:if="${#lists.isEmpty(clubList)}">
+        <th:block th:if="${#lists.isEmpty(newsList)}">
             <div class="no-data-div">
-                <p class="no-data-p">❌ 조회할 모임이 없습니다.</p>
+                <p class="no-data-p">❌ 조회할 소식이 없습니다.</p>
             </div>
         </th:block>
-        <div th:each="one : ${clubList}" class="club-one">
-            <table>
-                <tr class="club-one-line">
+        <div th:each="one : ${newsList}" class="news-one">
+            <table style="width: 100%;">
+                <tr>
                     <td>
-                        <img th:src="@{'/uploadFiles/' + ${one.attachment[0].savedName}}" class="club-img">
+                        <input type="hidden" th:value="${one.newsNo}">
+                        <p th:text="${one.category.categoryName}" class="p-tag news-category-name"></p>
+                        <p th:text="${one.title}" class="p-tag news-title"></p>
+                        <p th:text="${one.content}" class="p-tag news-content"></p>
+                        <p class="p-tag news-etc">
+                            <span>&#128155;</span>
+                            <span th:text="${one.likesCount}"></span>
+                            <span style="margin-left: 15px;">&#128064;</span>
+                            <span th:text="${one.views}"></span>
+                            <span style="margin-left: 15px;">&#128172;</span>
+                            <span th:text="${one.repliesCount}"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#127960;</span>
+                            <span th:text="${one.location.eupMyeonDongName}" style="margin-left: 4px"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#128395;</span>
+                            <span th:text="${one.writer.nickname}" style="margin-left: 4px"></span>
+                            <span style="margin: 0px 6px 0px 6px">|</span>
+                            <span th:text="${one.createdAt}"></span>
+                        </p>
                     </td>
-                    <td>
-                        <input type="hidden" th:value="${one.clubNo}">
-                        <p th:text="${one.category.categoryName}" class="p-tag club-category-name"></p>
-                        <p th:text="${one.clubName}" class="p-tag club-name"></p>
-                        <p th:text="${one.introduction}" class="p-tag club-introduction"></p>
-                        <p class="p-tag club-etc">
-                            <span style="margin-right: 4px">&#127960;</span>
-                            <span th:text="${one.location.eupMyeonDongName}"></span>
-                        </p>
-                        <p class="p-tag club-etc">
-                            <span style="margin-right: 4px">&#128100;</span>
-                            <span th:text="${one.currentPersonnel}"></span> /
-                            <span th:text="${one.maxPersonnel}"></span> 명
-                        </p>
+                    <td style="width: 120px" th:if="${one.attachments != null and one.attachments.size() > 0}">
+                        <img th:src="@{'/uploadFiles/' + ${one.attachments[0].savedName}}" class="news-img">
                     </td>
                 </tr>
             </table>
@@ -221,16 +244,16 @@
 </div>
 <script type="text/javascript">
 
-    function selectClubList(page) {
+    function selectNewsList(page) {
 
         var encodedCategoryCode = encodeURIComponent(filterCategoryCode);
         var encodedSearchWord = encodeURIComponent(filterSearchWord);
-		window.location.href = "/club/clubMain?page="+page+"&categoryCode="+encodedCategoryCode+"&searchWord="+encodedSearchWord;
+		window.location.href = "/news/newsMain?page="+page+"&categoryCode="+encodedCategoryCode+"&searchWord="+encodedSearchWord;
 	}
 
-    $(document).on('click', '.club-one', function() {
-        var clubNo = $(this).find('input').val();
-        var url = "/club/clubHome?clubNo=" + clubNo;
+    $(document).on('click', '.news-one', function() {
+        var newsNo = $(this).find('input').val();
+        var url = "/news/newsDetail?newsNo=" + newsNo;
         window.location.href = url;
     });
 

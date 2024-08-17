@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+</body>
+<script th:inline="javascript">
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const alert = [[${alert}]];
+        const alertType = [[${alertType}]];
+
+        if (alert) {
+            showAlert(alert, alertType);
+        }
+
+        async function showAlert(alert, alertType) {
+            await Swal.fire({
+                title: alert,
+                confirmButtonColor: "#3B5C9A",
+                confirmButtonText: "확인",
+                icon: alertType
+            });
+        }
+    });
+</script>
+</html>

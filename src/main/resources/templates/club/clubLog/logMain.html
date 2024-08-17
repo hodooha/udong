@@ -78,10 +78,7 @@
         }
         .log-content {
             font-size: 12px;
-            margin-bottom: 8px;
-        }
-        .log-reaction {
-            font-size: 12px;
+            margin-bottom: 15px;
         }
         .log-etc {
             font-size: 10px;
@@ -174,7 +171,7 @@
                             <input type="hidden" th:value="${one.logNo}">
                             <p th:text="${one.title}" class="p-tag log-title"></p>
                             <p th:text="${one.content}" class="p-tag log-content"></p>
-                            <p class="p-tag log-reaction">
+                            <p class="p-tag log-etc">
                                 <span>&#128155;</span>
                                 <span th:text="${one.likesCount}"></span>
                                 <span style="margin-left: 15px;">&#128064;</span>
@@ -184,8 +181,8 @@
                             </p>
                             <p class="p-tag log-etc">
                                 <span>&#128395;</span>
-                                <span th:text="${one.writer.nickname}"></span>
-                                <span style="margin: 0px 10px 0px 10px">|</span>
+                                <span th:text="${one.writer.nickname}" style="margin-left: 2px"></span>
+                                <span style="margin: 0px 5px 0px 5px">|</span>
                                 <span th:text="${one.createdAt}"></span>
                             </p>
                         </td>

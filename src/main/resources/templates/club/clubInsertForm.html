@@ -9,6 +9,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
         .insert-area{
             background-color: #E5E5E5;
             padding: 15px;
@@ -100,6 +105,7 @@
 <div th:replace="~{/common/menubar}"></div>
 
 <div class="content" style="padding: 40px;">
+    <p class="menu">🤝 우동 모임 생성</p>
     <form th:action="@{/club/insertClub}" method="post" encType="multipart/form-data" onsubmit="return validateForm()">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="insert-area">
