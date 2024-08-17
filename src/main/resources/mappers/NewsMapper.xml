@@ -111,6 +111,12 @@
         WHERE news_no = #{ newsNo }
     </select>
 
+    <select id="checkNewsWriter" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM NS_POST
+        WHERE news_no = #{ newsNo }
+    </select>
+
     <select id="checkReplyWriter" parameterType="Integer" resultType="Integer">
         SELECT writer
         FROM NS_REPLY
@@ -286,5 +292,19 @@
         DELETE FROM NS_REPLY_LIKE
         WHERE reply_no = #{ replyNo } AND member_no = #{ memberNo }
     </delete>
+
+    <insert id="report" parameterType="com.multi.udong.club.model.dto.ReportDTO">
+        INSERT INTO ADM_REPORT
+            (type_code, reported_no, reported_member, reporter_member, reason, url)
+        VALUES
+            (
+            #{ typeCode },
+            #{ reportedNo },
+            #{ reportedMember },
+            #{ reporterMember },
+            #{ reason },
+            #{ url }
+            )
+    </insert>
 
 </mapper>

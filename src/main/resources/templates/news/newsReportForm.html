@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+
+        .right-area {
+            flex-grow: 1;
+            padding-left: 30px;
+            box-sizing: border-box;
+        }
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .insert-area {
+            background-color: #E5E5E5;
+            padding: 15px;
+            border-radius: 0.375rem;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .input {
+            font-family: 'Freesentation-3Light';
+            margin-left: 10px;
+            height: 25px;
+            background-color: #FFFFFF;
+            border: 1px solid #979797;
+        }
+        .reported-title-input {
+            width: 40%;
+        }
+        .radio-label {
+            font-family: 'Freesentation-3Light';
+        }
+        .custom-input {
+            width: 500px;
+        }
+        .report-news-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-report-news {
+            margin-top: 25px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 670px">
+
+    <p class="menu">&#128680; 우동 소식 신고</p>
+    <form th:action="@{/news/reportNews}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="insert-area">
+            <span>신고 대상 기록</span>
+            <input type="hidden" name="reportedNo" th:value="${newsDetail.newsNo}" />
+            <input type="text" class="input reported-title-input" th:value="${newsDetail.title}" disabled>
+            <span style="margin-left: 50px">작성자</span>
+            <input type="text" class="input reported-writer-name-input" th:value="${newsDetail.writer.nickname}" disabled>
+            <span style="margin-left: 50px">신고자</span>
+            <input type="text" class="input reporter-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
+            <br>
+            <br>
+            <span style="margin-top: 30px">신고하는 이유</span>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="욕설 / 혐오 표현이 사용된 글" onclick="toggleInput(false)" checked>
+                욕설 / 혐오 표현이 사용된 글이에요
+            </label>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="광고 / 홍보성 글" onclick="toggleInput(false)">
+                광고 / 홍보성 글이에요
+            </label>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="음란성 / 선정적인 글" onclick="toggleInput(false)">
+                음란성 / 선정적인 글이에요
+            </label>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="중복 / 도배성 글" onclick="toggleInput(false)">
+                중복 / 도배성 글이에요
+            </label>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="부적절한 이미지가 포함된 글" onclick="toggleInput(false)">
+                부적절한 이미지가 포함된 글이에요
+            </label>
+            <br>
+            <label class="radio-label">
+                <input type="radio" name="reason" value="custom" onclick="toggleInput(true)">
+                기타 (직접 입력)
+            </label>
+            <br>
+            <input type="text" id="custom-input" class="input custom-input" name="customReason" placeholder=" 신고 사유 입력..." maxlength="30">
+        </div>
+        <div class="report-news-btn-container">
+            <button type="submit" class="btn btn-udh-blue btn-report-news">소식 신고</button>
+            <a th:href="@{/news/newsDetail(newsNo=${newsDetail.newsNo})}">
+                <button type="button" class="btn btn-udh-red btn-report-news" style="margin-left: 10px">취소</button>
+            </a>
+        </div>
+    </form>
+</div>
+<script type="text/javascript">
+
+    function toggleInput(show) {
+        const input = document.getElementById('custom-input');
+        if (show) {
+          input.style.display = 'block';
+        } else {
+          input.style.display = 'none';
+          input.value = '';
+        }
+      }
+
+    window.onload = function() {
+        const customRadio = document.querySelector('input[name="reason"][value="custom"]');
+        if (!customRadio.checked) {
+            toggleInput(false);
+        }
+    };
+
+</script>
+</body>
+</html>

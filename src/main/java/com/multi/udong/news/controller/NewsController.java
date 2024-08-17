@@ -1,5 +1,6 @@
 package com.multi.udong.news.controller;
 
+import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.login.service.CustomUserDetails;
@@ -489,6 +490,88 @@ public class NewsController {
 
     }
 
+    @RequestMapping("/newsReportForm")
+    public String newsReportForm(@AuthenticationPrincipal CustomUserDetails c, RequestDTO requestDTO, Model model) {
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, requestDTO.getNewsNo())) {
+            return "redirect:/news/newsMain";
+        }
+
+        try {
+
+            NewsDTO newsDetail = newsService.selectNewsDetail(requestDTO);
+
+            model.addAttribute("newsDetail", newsDetail);
+
+            return "/news/newsReportForm";
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("msg", "댓글 수정 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
+    @PostMapping("/reportNews")
+    public String reportNews(@AuthenticationPrincipal CustomUserDetails c, ReportDTO reportDTO, @RequestParam("customReason") String customReason, Model model, RedirectAttributes redirectAttributes) {
+
+        int reportedNo = reportDTO.getReportedNo();
+
+        // 삭제된 소식인지 검증
+        if(!checkIsNewsDeleted(c, reportedNo)) {
+            return "redirect:/news/newsMain";
+        }
+
+        // 로그인 유저의 no를 신고자로 reportDTO에 set
+        reportDTO.setReporterMember(c.getMemberDTO().getMemberNo());
+
+        // 신고 당하는 대상의 타입 코드를 reportDTO에 set
+        reportDTO.setTypeCode("NS");
+
+        // 신고 사유를 확인하여 custom이면 따로 파라미터로 받은 직접 입력 사유를 reportDTO에 set
+        if(reportDTO.getReason().equals("custom")) {
+            reportDTO.setReason(customReason);
+        }
+        System.out.println("###### 신고 사유: " + reportDTO.getReason());
+
+        // 관리자 페이지에서 신고 대상 상세 조회로 갈 때 사용할 url을 reportDTO에 set
+        String url = "/news/newsDetail?newsNo=" + reportedNo;
+        reportDTO.setUrl(url);
+
+        try {
+
+            // 신고 당하는 기록의 작성자를 피신고자로 reportDTO에 set
+            int reportedMemberNo = newsService.checkNewsWriter(reportedNo);
+            reportDTO.setReportedMember(reportedMemberNo);
+
+            int result = newsService.reportNews(reportDTO);
+
+            if(result == 1) {
+
+                redirectAttributes.addFlashAttribute("alert", "소식 신고가 완료되었습니다.");
+                redirectAttributes.addFlashAttribute("alertType", "success");
+
+            }
+
+            return "redirect:/news/newsDetail?newsNo=" + reportedNo;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+            model.addAttribute("msg", "모임 신고 과정에서 문제가 발생했습니다.");
+
+            return "common/errorPage";
+
+        }
+
+    }
+
 
     // ================= 공통 사용 메소드 =================
 
@@ -505,6 +588,37 @@ public class NewsController {
             }
 
             if(isNewsDeleted.equals("N") || c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
+
+                return true;
+
+            }
+            else {
+
+                return false;
+
+            }
+
+        } catch (Exception e) {
+
+            return false;
+
+        }
+
+    }
+
+    public boolean checkNewsWriter(@AuthenticationPrincipal CustomUserDetails c, int newsNo) {
+
+        try {
+
+            int newsWriter = newsService.checkNewsWriter(newsNo);
+
+            if(newsWriter == 0) {
+
+                return false;
+
+            }
+
+            if(newsWriter == c.getMemberDTO().getMemberNo()) {
 
                 return true;
 

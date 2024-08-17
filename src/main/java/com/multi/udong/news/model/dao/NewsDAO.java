@@ -1,5 +1,6 @@
 package com.multi.udong.news.model.dao;
 
+import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.news.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -14,6 +15,12 @@ public class NewsDAO {
     public String checkIsNewsDeleted(SqlSessionTemplate sqlSession, int newsNo) {
 
         return sqlSession.selectOne("newsMapper.checkIsNewsDeleted", newsNo);
+
+    }
+
+    public int checkNewsWriter(SqlSessionTemplate sqlSession, int newsNo) {
+
+        return sqlSession.selectOne("newsMapper.checkNewsWriter", newsNo);
 
     }
 
@@ -104,6 +111,13 @@ public class NewsDAO {
     public int deleteReplyLike(SqlSessionTemplate sqlSession, LikeDTO likeDTO) {
 
         return sqlSession.delete("newsMapper.deleteReplyLike", likeDTO);
+
+    }
+
+
+    public int reportNews(SqlSessionTemplate sqlSession, ReportDTO reportDTO) {
+
+        return sqlSession.insert("newsMapper.report", reportDTO);
 
     }
 }

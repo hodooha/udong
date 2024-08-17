@@ -1,5 +1,6 @@
 package com.multi.udong.news.service;
 
+import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.news.model.dao.NewsDAO;
 import com.multi.udong.news.model.dto.*;
@@ -29,6 +30,13 @@ public class NewsServiceImpl implements NewsService {
     public String checkIsNewsDeleted(int newsNo) throws Exception {
 
         return newsDAO.checkIsNewsDeleted(sqlSession, newsNo);
+
+    }
+
+    @Override
+    public int checkNewsWriter(int newsNo) throws Exception {
+
+        return newsDAO.checkNewsWriter(sqlSession, newsNo);
 
     }
 
@@ -170,6 +178,13 @@ public class NewsServiceImpl implements NewsService {
     public int deleteReplyLike(LikeDTO likeDTO) throws Exception {
 
         return newsDAO.deleteReplyLike(sqlSession, likeDTO);
+
+    }
+
+    @Override
+    public int reportNews(ReportDTO reportDTO) throws Exception {
+
+        return newsDAO.reportNews(sqlSession, reportDTO);
 
     }
 

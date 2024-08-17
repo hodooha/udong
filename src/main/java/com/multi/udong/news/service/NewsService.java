@@ -1,5 +1,6 @@
 package com.multi.udong.news.service;
 
+import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.news.model.dto.*;
 
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public interface NewsService {
 
     String checkIsNewsDeleted(int newsNo) throws Exception;
+
+    int checkNewsWriter(int newsNo) throws Exception;
 
     int checkReplyWriter(int replyNo) throws Exception;
 
@@ -36,4 +39,6 @@ public interface NewsService {
     int insertReplyLike(LikeDTO likeDTO) throws Exception;
 
     int deleteReplyLike(LikeDTO likeDTO) throws Exception;
+
+    int reportNews(ReportDTO reportDTO) throws Exception;
 }
