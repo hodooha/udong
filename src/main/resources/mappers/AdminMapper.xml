@@ -64,4 +64,11 @@
         WHERE mb.member_no = #{memberNo}
     </select>
 
+    <select id="searchBlacklistedMembersByIdOrName" parameterType="string" resultType="memberDTO">
+        SELECT * FROM MEMBER
+        WHERE (is_blacked = 'Y' OR is_blacked = 'R')
+        AND (member_id LIKE CONCAT('%', #{search}, '%')
+        OR nickname LIKE CONCAT('%', #{search}, '%'))
+    </select>
+
 </mapper>
