@@ -262,7 +262,7 @@
     <div th:fragment="reqDreams" id="reqDreams">
         <th:block th:if="${#lists.isEmpty(borrowList)}">
             <div class="alert alert-secondary" role="alert" style="width:100%; text-align:center">
-                등록된 물건이 없습니다.
+                신청한 물건이 없습니다.
             </div>
         </th:block>
         <th:block th:unless="${#lists.isEmpty(borrowList)}">

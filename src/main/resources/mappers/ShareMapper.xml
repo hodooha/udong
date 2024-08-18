@@ -450,6 +450,7 @@
         on b.owner_no = c.member_no
         where b.deleted_at is null
         and c.is_deleted = 'N'
+        and a.deleted_at is null
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and b.item_group = #{group}</if>
