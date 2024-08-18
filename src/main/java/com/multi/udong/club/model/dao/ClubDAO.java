@@ -617,4 +617,22 @@ public class ClubDAO {
         return sqlSession.selectOne("clubMapper.selectMemberProfileImg", memberNo);
 
     }
+
+    public int saveChat(SqlSessionTemplate sqlSession, OutputChatMessage outputChatMessage) {
+
+        return sqlSession.insert("clubMapper.saveChat", outputChatMessage);
+
+    }
+
+    public List<OutputChatMessage> selectInitialChatMessage(SqlSessionTemplate sqlSession, int clubNo) {
+
+        return sqlSession.selectList("clubMapper.selectInitialChatMessage", clubNo);
+
+    }
+
+    public List<OutputChatMessage> selectOldChatMessage(SqlSessionTemplate sqlSession, RequestDTO requestDTO) {
+
+        return sqlSession.selectList("clubMapper.selectOldChatMessage", requestDTO);
+
+    }
 }

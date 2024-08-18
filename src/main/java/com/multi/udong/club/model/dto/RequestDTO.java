@@ -16,5 +16,6 @@ public class RequestDTO {
     private int logNo;
     private int replyNo;
     private int scheduleNo;
+    private int minChatNo;
 
 }

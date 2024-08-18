@@ -658,6 +658,27 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    public int saveChat(OutputChatMessage outputChatMessage) throws Exception {
+
+        return clubDAO.saveChat(sqlSession, outputChatMessage);
+
+    }
+
+    @Override
+    public List<OutputChatMessage> selectInitialChatMessage(int clubNo) throws Exception {
+
+        return clubDAO.selectInitialChatMessage(sqlSession, clubNo);
+
+    }
+
+    @Override
+    public List<OutputChatMessage> selectOldChatMessage(RequestDTO requestDTO) throws Exception {
+
+        return clubDAO.selectOldChatMessage(sqlSession, requestDTO);
+
+    }
+
+    @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
         return clubDAO.insertReply(sqlSession, replyDTO);

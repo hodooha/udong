@@ -24,10 +24,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 모임 Controller
@@ -2569,8 +2566,31 @@ public class ClubController {
             try {
 
                 ClubDTO clubDetail = clubService.selectClubHome(requestDTO);
-
                 model.addAttribute("clubDetail", clubDetail);
+
+                List<OutputChatMessage> initialMessage = clubService.selectInitialChatMessage(requestDTO.getClubNo());
+
+                for(OutputChatMessage one : initialMessage) {
+
+                    LocalDateTime sentAt = one.getSentAt();
+                    one.setSentAtStr(sentAt.getYear() + "." + sentAt.getMonthValue() + "." + sentAt.getDayOfMonth() + " - " +  sentAt.getHour() + ":" + sentAt.getMinute());
+
+                }
+
+                List<OutputChatMessage> reversedMessages = new ArrayList<>(initialMessage);
+                Collections.reverse(reversedMessages);
+                model.addAttribute("initialMessage", reversedMessages);
+
+                int minChatNo = -1;
+
+                if(reversedMessages.size() > 0) {
+
+                    minChatNo = reversedMessages.get(0).getChatNo();
+
+                }
+                model.addAttribute("minChatNo", minChatNo);
+
+                System.out.println("###### 가져온 채팅: " + initialMessage);
 
                 return "/club/clubChat";
 
@@ -2595,28 +2615,75 @@ public class ClubController {
         System.out.println("###### 들어온 메시지 데이터: " +  inputChatMessage);
         System.out.println("###### chatroomCode: " +  chatroomCode);
 
+        // 서버단에서 가입된 상태인지 한 번 더 확인
+        String joinStatus = checkJoinStatus(inputChatMessage.getSenderNo(), inputChatMessage.getClubNo());
+
         OutputChatMessage outputChatMessage = new OutputChatMessage();
-        outputChatMessage.setSenderNo(inputChatMessage.getSenderNo());
-        outputChatMessage.setSender(inputChatMessage.getSender());
-        outputChatMessage.setContent(inputChatMessage.getContent());
-        outputChatMessage.setType(inputChatMessage.getType());
 
-        LocalDateTime date = LocalDateTime.now();
-        outputChatMessage.setSentAt(date.getYear() + "." + date.getMonthValue() + "." + date.getDayOfMonth() + " - " +  date.getHour() + ":" + date.getMinute());
+        if(joinStatus.equals("Y")) {
 
-        try {
+            outputChatMessage.setClubNo(inputChatMessage.getClubNo());
+            outputChatMessage.setSenderNo(inputChatMessage.getSenderNo());
+            outputChatMessage.setSender(inputChatMessage.getSender());
+            outputChatMessage.setContent(inputChatMessage.getContent());
+            outputChatMessage.setType(inputChatMessage.getType());
 
-            String profileSavedName = clubService.selectMemberProfileImg(inputChatMessage.getSenderNo());
+            LocalDateTime date = LocalDateTime.now();
+            outputChatMessage.setSentAt(date);
+            outputChatMessage.setSentAtStr(date.getYear() + "." + date.getMonthValue() + "." + date.getDayOfMonth() + " - " +  date.getHour() + ":" + date.getMinute());
 
-            outputChatMessage.setProfileSavedName(profileSavedName);
+            try {
 
-        } catch (Exception e) {
+                String profileSavedName = clubService.selectMemberProfileImg(inputChatMessage.getSenderNo());
+                outputChatMessage.setProfileSavedName(profileSavedName);
 
-            e.printStackTrace();
+                clubService.saveChat(outputChatMessage);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+                outputChatMessage.setType("error");
+
+            }
+        }
+        else {
+
+            outputChatMessage.setType("deny");
 
         }
 
         return outputChatMessage;
+
+    }
+
+    @RequestMapping("/loadOldChat")
+    @ResponseBody
+    public List<OutputChatMessage> loadOldChat(RequestDTO requestDTO) {
+
+        System.out.println("##### clubNo= " + requestDTO.getClubNo());
+        System.out.println("##### minChatNo= " + requestDTO.getMinChatNo());
+
+        try {
+
+            List<OutputChatMessage> oldMessage = clubService.selectOldChatMessage(requestDTO);
+
+            for(OutputChatMessage one : oldMessage) {
+
+                LocalDateTime sentAt = one.getSentAt();
+                one.setSentAtStr(sentAt.getYear() + "." + sentAt.getMonthValue() + "." + sentAt.getDayOfMonth() + " - " +  sentAt.getHour() + ":" + sentAt.getMinute());
+
+            }
+
+            System.out.println("##### 이전 채팅: " + oldMessage);
+
+            return oldMessage;
+
+        } catch (Exception e) {
+
+            throw new RuntimeException(e);
+
+        }
 
     }
 

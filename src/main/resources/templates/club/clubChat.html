@@ -90,7 +90,7 @@
             border: 0.5px solid #D1D1D1;
         }
         .message {
-            margin-bottom: 20px;
+            margin: 10px 0px;
         }
         .message-content {
             display: inline-block;
@@ -144,6 +144,7 @@
     <script type="text/javascript">
 
         var stompClient = null;
+        const clubNo = "[[${clubDetail.clubNo}]]";
         const chatroomCode = "[[${clubDetail.chatroomCode}]]";
 
         $(document).ready(function() {
@@ -166,6 +167,7 @@
                 var content = sender + '님이 입장하셨습니다.';
 
                 stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                    'clubNo' : clubNo,
                     'senderNo': senderNo,
                     'sender': sender,
                     'content': content,
@@ -181,6 +183,7 @@
                 var content = sender + '님이 퇴장하셨습니다.';
 
                 stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                    'clubNo' : clubNo,
                     'senderNo': senderNo,
                     'sender': sender,
                     'content': content,
@@ -231,9 +234,11 @@
             var sender = document.getElementById('sender').value;
 
             stompClient.send("/clubChat/" + chatroomCode, {}, JSON.stringify({
+                'clubNo' : clubNo,
                 'senderNo' : senderNo,
                 'sender' : sender,
-                'content' : content
+                'content' : content,
+                'type' : 'chat'
             }));
 
             // 메시지 전송 후 입력 필드 비우기
@@ -241,6 +246,37 @@
         }
 
         function showOutputChatMessage(outputChatMessage) {
+
+            if (outputChatMessage.type === 'error') {
+                Swal.fire({
+                    title: '오류 발생',
+                    text: '채팅 전송 과정에서 문제가 발생했습니다.',
+                    icon: 'error',
+                    confirmButtonColor: '#3B5C9A',
+                    confirmButtonText: '확인'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.close();
+                    }
+                });
+                return;
+            }
+
+            if (outputChatMessage.type === 'deny') {
+                Swal.fire({
+                    title: '권한 인증 실패',
+                    text: '모임 채팅은 모임 멤버만 전송할 수 있습니다.',
+                    icon: 'warning',
+                    confirmButtonColor: '#3B5C9A',
+                    confirmButtonText: '확인'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.close();
+                    }
+                });
+                return;
+            }
+
             var chatMessages = document.getElementById('chatMessages');
             var messageDiv = document.createElement('div');
 
@@ -256,7 +292,7 @@
                     messageDiv.innerHTML = `
                         <div class="message-sender">${outputChatMessage.sender}</div>
                         <div class="message-content">${outputChatMessage.content}</div>
-                        <div class="message-time">${outputChatMessage.sentAt}</div>
+                        <div class="message-time">${outputChatMessage.sentAtStr}</div>
                     `;
                 } else {
                     // 다른 사람이 보낸 메시지
@@ -267,7 +303,7 @@
                         <div style="display: inline-block;">
                             <div class="message-sender">${outputChatMessage.sender}</div>
                             <div class="message-content">${outputChatMessage.content}</div>
-                            <div class="message-time">${outputChatMessage.sentAt}</div>
+                            <div class="message-time">${outputChatMessage.sentAtStr}</div>
                         </div>
                     `;
                 }
@@ -275,6 +311,75 @@
 
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        var minChatNo = [[${minChatNo}]];
+
+        function loadOldChat() {
+            $.ajax({
+                url: "/club/loadOldChat",
+                data: { clubNo: clubNo, minChatNo: minChatNo },
+                success: function(oldMessages) {
+                    var chatMessages = document.getElementById('chatMessages');
+                    var senderNo = document.getElementById('senderNo').value;
+                    var imgPath = "[[@{'/uploadFiles/'}]]";
+
+                    oldMessages.forEach(function(message) {
+                        var messageDiv = document.createElement('div');
+
+                        if (message.senderNo == senderNo) {
+                            // 내가 보낸 메시지
+                            messageDiv.className = 'message my-message';
+                            messageDiv.innerHTML = `
+                                <div class="message-sender">${message.sender}</div>
+                                <div class="message-content">${message.content}</div>
+                                <div class="message-time">${message.sentAtStr}</div>
+                            `;
+                        } else {
+                            // 다른 사람이 보낸 메시지
+                            messageDiv.className = 'message other-message';
+                            messageDiv.innerHTML = `
+                                <img src="${imgPath + message.profileSavedName}" alt="프로필 사진" class="profile-img">
+                                <div style="display: inline-block;">
+                                    <div class="message-sender">${message.sender}</div>
+                                    <div class="message-content">${message.content}</div>
+                                    <div class="message-time">${message.sentAtStr}</div>
+                                </div>
+                            `;
+                        }
+
+                        // 메시지를 채팅창의 맨 위에 추가
+                        chatMessages.insertBefore(messageDiv, chatMessages.firstChild);
+                    });
+
+                    // minChatNo 업데이트
+                    if (oldMessages.length > 0) {
+                        minChatNo = oldMessages[oldMessages.length - 1].chatNo;
+                    }
+
+                    // '이전 대화 내용 보기' 버튼 처리
+                    var loadMoreButton = document.querySelector('.load-more');
+                    if (oldMessages.length <= 9 && loadMoreButton) {
+                        loadMoreButton.style.display = 'none';
+                    }
+
+                    // 새로 추가된 첫 번째 메시지로 부드럽게 스크롤
+                    setTimeout(function() {
+                        if (chatMessages.firstChild) {
+                            chatMessages.firstChild.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100); // 100ms 지연
+                },
+                error: function() {
+                    Swal.fire({
+                        title: '오류 발생',
+                        text: '이전 대화 내용을 불러오는 데 실패했습니다.',
+                        icon: 'error',
+                        confirmButtonColor: '#3B5C9A',
+                        confirmButtonText: '확인'
+                    });
+                }
+            });
         }
 
         // 페이지 종료 시 disconnect 함수 호출
@@ -291,12 +396,26 @@
         <span th:text="${clubDetail.clubName}" class="club-name"></span>
         <span th:text="${clubDetail.currentPersonnel}" class="club-personnel"></span>
     </div>
-    <div class="load-more">이전 대화 내용 보기</div>
+    <th:block th:if="${#lists.size(initialMessage) == 5}">
+        <div class="load-more" onclick="loadOldChat()">이전 대화 내용 보기</div>
+    </th:block>
     <div id="chatMessages" class="chat-messages">
+
+        <div th:each="one : ${initialMessage}" th:class="${one.senderNo == #authentication.principal.memberDTO.memberNo} ? 'message my-message' : 'message other-message'">
+            <img th:if="${one.senderNo != #authentication.principal.memberDTO.memberNo}" th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" alt="프로필 사진" class="profile-img">
+            <div th:if="${one.senderNo != #authentication.principal.memberDTO.memberNo}" style="display: inline-block;">
+                <div class="message-sender" th:text="${one.sender}"></div>
+                <div class="message-content" th:text="${one.content}"></div>
+                <div class="message-time" th:text="${one.sentAtStr}"></div>
+            </div>
+            <div th:if="${one.senderNo == #authentication.principal.memberDTO.memberNo}" class="message-sender" th:text="${one.sender}"></div>
+            <div th:if="${one.senderNo == #authentication.principal.memberDTO.memberNo}" class="message-content" th:text="${one.content}"></div>
+            <div th:if="${one.senderNo == #authentication.principal.memberDTO.memberNo}" class="message-time" th:text="${one.sentAtStr}"></div>
+        </div>
 
     </div>
     <div class="footer">
-        <input type="text" id="content" class="content-input" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="content" class="content-input" placeholder="메시지를 입력하세요..." maxlength="500" onkeypress="handleKeyPress(event)">
         <input type="hidden" id="senderNo" th:value="${#authentication.principal.memberDTO.memberNo}">
         <input type="hidden" id="sender" th:value="${#authentication.principal.memberDTO.nickname}">
         <button class="btn btn-udh-blue" onclick="sendMessage()">전송</button>

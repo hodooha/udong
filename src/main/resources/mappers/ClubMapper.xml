@@ -182,6 +182,19 @@
 
     </resultMap>
 
+    <resultMap id="outputChatMessageResultMap" type="com.multi.udong.club.model.dto.OutputChatMessage">
+
+        <id property="chatNo" column="chat_no"/>
+        <result property="clubNo" column="club_no"/>
+        <result property="senderNo" column="sender_no"/>
+        <result property="sender" column="nickname"/>
+        <result property="profileSavedName" column="profile_saved_name"/>
+        <result property="content" column="content"/>
+        <result property="type" column="type"/>
+        <result property="sentAt" column="sent_at"/>
+
+    </resultMap>
+
 
 
     <select id="selectCategoryList" resultMap="categoryResultMap">
@@ -865,6 +878,45 @@
         SELECT saved_name
         FROM ATTACHMENT
         WHERE type_code = 'MEM' AND target_no = #{ memberNo }
+    </select>
+
+    <insert id="saveChat" parameterType="com.multi.udong.club.model.dto.OutputChatMessage">
+        INSERT INTO CL_CHAT
+        (club_no, sender_no, content, type, sent_at)
+        VALUES
+        (
+        #{ clubNo },
+        #{ senderNo },
+        #{ content },
+        #{ type },
+        #{ sentAt }
+        )
+    </insert>
+
+    <select id="selectInitialChatMessage" parameterType="Integer" resultMap="outputChatMessageResultMap">
+        SELECT
+            CLC.*,
+            M.nickname,
+            ATM.saved_name AS profile_saved_name
+        FROM CL_CHAT CLC
+        LEFT JOIN MEMBER M ON M.member_no = CLC.sender_no
+        LEFT JOIN ATTACHMENT ATM ON ATM.type_code = 'MEM' AND ATM.target_no = CLC.sender_no
+        WHERE CLC.club_no = #{ clubNo } AND CLC.type = 'chat'
+        ORDER BY CLC.chat_no DESC
+        LIMIT 5
+    </select>
+
+    <select id="selectOldChatMessage" parameterType="com.multi.udong.club.model.dto.RequestDTO" resultMap="outputChatMessageResultMap">
+        SELECT
+            CLC.*,
+            M.nickname,
+            ATM.saved_name AS profile_saved_name
+        FROM CL_CHAT CLC
+        LEFT JOIN MEMBER M ON M.member_no = CLC.sender_no
+        LEFT JOIN ATTACHMENT ATM ON ATM.type_code = 'MEM' AND ATM.target_no = CLC.sender_no
+        WHERE CLC.chat_no &lt; #{ minChatNo } AND CLC.club_no = #{ clubNo } AND CLC.type = 'chat'
+        ORDER BY CLC.chat_no DESC
+        LIMIT 10
     </select>
 
 </mapper>

@@ -132,4 +132,10 @@ public interface ClubService {
     int kickMember(ClubMemberDTO clubMemberDTO) throws Exception;
 
     String selectMemberProfileImg(int memberNo) throws Exception;
+
+    int saveChat(OutputChatMessage outputChatMessage) throws Exception;
+
+    List<OutputChatMessage> selectInitialChatMessage(int clubNo) throws Exception;
+
+    List<OutputChatMessage> selectOldChatMessage(RequestDTO requestDTO) throws Exception;
 }
