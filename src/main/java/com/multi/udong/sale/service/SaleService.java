@@ -4,6 +4,7 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface Sale service.
@@ -38,4 +39,5 @@ public interface SaleService {
     SaleDTO getSaleWithAttachments(int saleNo);
     void deleteSale(int saleNo) throws Exception;
     void updateSaleStatus(int saleNo, String status);
+    Map<Integer, String> getAllSaleStatuses();
 }

@@ -255,4 +255,14 @@ public class SaleController {
                             "message", "판매 상태 업데이트 중 오류가 발생했습니다."));
         }
     }
+    @GetMapping("/getStatuses")
+    public ResponseEntity<Map<Integer, String>> getSaleStatuses() {
+        try {
+            Map<Integer, String> statuses = saleService.getAllSaleStatuses();
+            return ResponseEntity.ok(statuses);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 }

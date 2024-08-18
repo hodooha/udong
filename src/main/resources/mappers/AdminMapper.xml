@@ -56,6 +56,8 @@
         MEMBER m ON b.member_no = m.member_no
         LEFT JOIN
         ATTACHMENT a ON b.member_no = a.target_no AND a.type_code = 'BRG'
+        ORDER BY
+        b.member_no DESC
     </select>
     <select id="getSellerByMemberNo" resultType="com.multi.udong.member.model.dto.MemBusDTO">
         SELECT mb.*, m.member_id

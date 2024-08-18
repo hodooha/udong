@@ -125,4 +125,14 @@ public class SaleServiceImpl implements SaleService {
             throw e; // 예외를 다시 던져서 상위 레벨에서 처리되도록 함
         }
     }
+    @Override
+    public Map<Integer, String> getAllSaleStatuses() {
+        List<SaleDTO> sales = getAllSalesWithAttachments();
+        Map<Integer, String> statuses = new HashMap<>();
+        for (SaleDTO sale : sales) {
+            statuses.put(sale.getSaleNo(), sale.getStatus());
+        }
+        return statuses;
+    }
+
 }

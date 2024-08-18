@@ -13,6 +13,7 @@
         <result property="salePrice" column="sale_price"/>
         <result property="address" column="address"/>
         <result property="content" column="content"/>
+        <result property="status" column="status"/>
         <result property="locationCode" column="location_code"/>
         <collection property="attachments" ofType="com.multi.udong.common.model.dto.AttachmentDTO">
             <id property="fileNo" column="file_no"/>
@@ -73,7 +74,7 @@
         ORDER BY s.sale_no DESC
     </select>
 
-    <select id="getSaleById" resultType="com.multi.udong.sale.model.dto.SaleDTO">
+    <select id="getSaleById" resultMap="saleWithAttachment">
         SELECT sale_no, writer, title, started_at, ended_at, original_price, sale_price,
         address, content, location_code, status, created_at, views
         FROM SAL
