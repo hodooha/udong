@@ -786,4 +786,15 @@
         AND m.is_deleted = 'N'
     </select>
 
+    <select id="getUpcomingReturns" resultMap="shaReqMap">
+        SELECT r.*, i.title, m.nickname AS owner_nickname, m2.nickname AS rqst_nickname, m2.level AS rqst_level
+        FROM SHA_REQ r
+        JOIN SHA_ITEMS i ON r.req_item = i.item_no
+        JOIN MEMBER m ON i.owner_no = m.member_no
+        JOIN MEMBER m2 ON r.rqst_no = m2.member_no
+        WHERE r.return_date BETWEEN #{returnDate} AND DATE_ADD(#{returnDate}, INTERVAL 1 HOUR)
+        AND r.status_code = 'RNT'
+    </select>
+
+
 </mapper>

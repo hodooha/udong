@@ -882,6 +882,10 @@ function toggleReportModalBorrow(req){
 
 }
 
+function clearReportForm(){
+    $('#reasonDetail').val("");
+}
+
 function getRecItems(){
 
     let reqUrl = "/share/recommendItem"

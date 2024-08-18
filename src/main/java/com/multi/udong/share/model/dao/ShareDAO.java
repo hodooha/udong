@@ -2,9 +2,11 @@ package com.multi.udong.share.model.dao;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.share.model.dto.*;
+import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -213,5 +215,13 @@ public class ShareDAO {
 
     public List<Integer> getLikedMembersByItemNo(SqlSessionTemplate sqlSession, int itemNo) {
         return sqlSession.selectList("ShareMapper.getLikedMembersByItemNo", itemNo);
+    }
+
+    public List<ShaReqDTO> getUpcomingReturns(SqlSession sqlSession, LocalDateTime returnDate) {
+        return sqlSession.selectList("ShareMapper.getUpcomingReturns", returnDate);
+    }
+
+    public List<ShaItemDTO> getUpcomingDraws(SqlSession sqlSession, LocalDateTime drawTime) {
+        return sqlSession.selectList("ShareMapper.getUpcomingDraws", drawTime);
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -821,6 +822,14 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+    /**
+     * 반납희망일 변경
+     *
+     * @param reqDTO the req dto
+     * @param c      the c
+     * @throws Exception the exception
+     * @since 2024 -08-17
+     */
     @Override
     public void updateReqReturnDate(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception {
 
@@ -853,6 +862,15 @@ public class ShareServiceImpl implements ShareService {
 
     }
 
+
+    /**
+     * 요청드림 목록에서 완료 목록 지우기
+     *
+     * @param reqDTO the req dto
+     * @param c      the c
+     * @throws Exception the exception
+     * @since 2024 -08-17
+     */
     @Override
     public void hideReqFromDream(ShaReqDTO reqDTO, CustomUserDetails c) throws Exception {
 
@@ -981,6 +999,43 @@ public class ShareServiceImpl implements ShareService {
         }
 
     }
+
+    // 매시간 실행
+    @Scheduled(cron = "0 0 * * * *")
+    public void sendShareReminders() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime seventyTwoHoursLater = now.plusHours(72);
+
+        // 대여 반납 알림
+        List<ShaReqDTO> upcomingReturns = shareDAO.getUpcomingReturns(sqlSession, seventyTwoHoursLater);
+        for (ShaReqDTO rent : upcomingReturns) {
+            // 대여자에게 알림
+            notiService.sendNoti(
+                    NotiSetCodeENUM.RENT_RETURN_BORROWER,
+                    List.of(rent.getRqstNo()),
+                    rent.getReqItem(),
+                    Map.of("itemName", rent.getItemDTO().getTitle()));
+
+            // 소유자에게 알림
+            notiService.sendNoti(
+                    NotiSetCodeENUM.RENT_RETURN_OWNER,
+                    List.of(rent.getOwnerNo()),
+                    rent.getReqItem(),
+                    Map.of("itemName", rent.getItemDTO().getTitle()));
+        }
+
+        // 나눔 추첨 알림
+        LocalDateTime twentyFourHoursLater = now.plusHours(24);
+        List<ShaItemDTO> upcomingDraws = shareDAO.getUpcomingDraws(sqlSession, twentyFourHoursLater);
+        for (ShaItemDTO give : upcomingDraws) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.GIVE_DRAW_REMIND,
+                    List.of(give.getOwnerNo()),
+                    give.getItemNo(),
+                    Map.of("itemName", give.getTitle()));
+        }
+    }
+
 
 
 }
