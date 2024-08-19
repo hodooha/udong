@@ -111,6 +111,12 @@
         WHERE news_no = #{ newsNo }
     </select>
 
+    <select id="checkIsAdDeleted" parameterType="Integer" resultType="String">
+        SELECT is_deleted
+        FROM NS_AD
+        WHERE ad_no = #{ adNo }
+    </select>
+
     <select id="checkNewsWriter" parameterType="Integer" resultType="Integer">
         SELECT writer
         FROM NS_POST
@@ -179,6 +185,11 @@
                 ELSE 0
             END,
         category_code;
+    </select>
+
+    <select id="selectLocationList" resultMap="locationResultMap">
+        SELECT *
+        FROM LOCATION
     </select>
 
     <insert id="insertNews" parameterType="com.multi.udong.news.model.dto.NewsDTO" useGeneratedKeys="true" keyProperty="newsNo">
@@ -306,5 +317,126 @@
             #{ url }
             )
     </insert>
+
+    <update id="updateNews" parameterType="com.multi.udong.news.model.dto.NewsDTO">
+        UPDATE NS_POST
+        SET
+            category_code = #{ category.categoryCode },
+            title = #{ title },
+            content = #{ content },
+            modified_at = NOW()
+        WHERE news_no = #{ newsNo }
+    </update>
+
+    <select id="selectAttachment" parameterType="Integer" resultMap="attachmentResultMap">
+        SELECT *
+        FROM ATTACHMENT
+        WHERE file_no = #{ fileNo }
+    </select>
+
+    <update id="updateAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        UPDATE ATTACHMENT
+        SET
+            original_name = #{ originalName },
+            saved_name = #{ savedName }
+        WHERE file_no = #{ fileNo } AND type_code = #{ typeCode } AND target_no = #{ targetNo }
+    </update>
+
+    <delete id="deleteAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        DELETE FROM ATTACHMENT
+        WHERE file_no = #{ fileNo } AND type_code = #{ typeCode } AND target_no = #{ targetNo }
+    </delete>
+
+    <insert id="insertAttachment" parameterType="com.multi.udong.common.model.dto.AttachmentDTO">
+        INSERT INTO ATTACHMENT
+            (type_code, target_no, original_name, saved_name)
+        VALUES
+            (
+            #{ typeCode },
+            #{ targetNo },
+            #{ originalName },
+            #{ savedName }
+            )
+    </insert>
+
+    <update id="deleteNews" parameterType="Integer">
+        UPDATE NS_POST
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
+        WHERE news_no = #{ newsNo }
+    </update>
+
+    <select id="selectHotNewsList" parameterType="com.multi.udong.news.model.dto.FilterDTO" resultMap="newsResultMap">
+        SELECT
+            NS.news_no,
+            NS.title,
+            NS.content,
+            NS.views,
+            NS.created_at,
+            NSC.category_name,
+            L.eup_myeon_dong_name,
+            M.nickname AS news_writer_nickname,
+            (SELECT COUNT(*) FROM NS_LIKE NSL WHERE NSL.news_no = NS.news_no) AS likes_count,
+            (SELECT COUNT(*) FROM NS_REPLY NSR WHERE NSR.news_no = NS.news_no) AS replies_count,
+            (SELECT ATM.saved_name FROM ATTACHMENT ATM WHERE ATM.type_code = 'NS' AND ATM.target_no = NS.news_no ORDER BY ATM.file_no LIMIT 1) AS saved_name
+        FROM NS_POST NS
+        LEFT JOIN NS_CATEGORY NSC ON NSC.category_code = NS.category_code
+        LEFT JOIN LOCATION L ON L.location_code = NS.location_code
+        LEFT JOIN MEMBER M ON M.member_no = NS.writer
+        WHERE NS.is_deleted = 'N' AND NS.location_code = #{ locationCode } AND NS.created_at &gt; #{ recentlyTime }
+        ORDER BY NS.views DESC
+        LIMIT 5
+    </select>
+
+    <insert id="insertAd" parameterType="com.multi.udong.news.model.dto.NewsDTO" useGeneratedKeys="true" keyProperty="newsNo">
+        INSERT INTO NS_AD
+        (location_code, title, content, writer)
+        VALUES
+        (
+        #{ location.locationCode },
+        #{ title },
+        #{ content },
+        #{ writer.memberNo }
+        )
+    </insert>
+
+    <select id="selectAdList" parameterType="com.multi.udong.news.model.dto.FilterDTO" resultMap="newsResultMap">
+        SELECT
+            NA.ad_no AS news_no,
+            NA.title,
+            NA.content,
+            L.eup_myeon_dong_name,
+            (SELECT ATM.saved_name FROM ATTACHMENT ATM WHERE ATM.type_code = 'AD' AND ATM.target_no = NA.ad_no ORDER BY ATM.file_no LIMIT 1) AS saved_name
+        FROM NS_AD NA
+        LEFT JOIN LOCATION L ON L.location_code = NA.location_code
+        WHERE NA.is_deleted = 'N' AND NA.location_code = #{ locationCode }
+        ORDER BY NA.ad_no DESC
+    </select>
+
+    <update id="addAdViews" parameterType="Integer">
+        UPDATE NS_AD
+        SET views = views + 1
+        WHERE ad_no = #{ adNo }
+    </update>
+
+    <select id="selectAdDetail" parameterType="Integer" resultMap="newsResultMap">
+        SELECT
+            NA.ad_no AS news_no,
+            NA.*,
+            L.eup_myeon_dong_name,
+            (SELECT ATM.saved_name FROM ATTACHMENT ATM WHERE ATM.type_code = 'AD' AND ATM.target_no = NA.ad_no ORDER BY ATM.file_no LIMIT 1) AS saved_name
+        FROM NS_AD NA
+        LEFT JOIN LOCATION L ON L.location_code = NA.location_code
+        WHERE NA.ad_no = #{ adNo }
+    </select>
+
+    <update id="deleteAd" parameterType="Integer">
+        UPDATE NS_AD
+        SET
+            is_deleted = 'Y',
+            deleted_at = NOW()
+        WHERE ad_no = #{ adNo }
+    </update>
 
 </mapper>

@@ -2,6 +2,8 @@ package com.multi.udong.news.model.dto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 @Data
 public class FilterDTO {
@@ -13,6 +15,7 @@ public class FilterDTO {
     private long locationCode;
     private String categoryCode;
     private String searchWord;
+    private LocalDateTime recentlyTime;
 
     /**
      * 받아온 page 값으로 조회를 시작할 index 설정

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .top{
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            white-space: nowrap;
+        }
+        .btn-news-main{
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        .news-list{
+            height: 720px;
+        }
+        .news-one{
+            cursor: pointer;
+        }
+        .rank {
+            font-family: 'Freesentation-7Bold';
+        }
+        .news-img{
+            width: 130px;
+            height: 130px;
+            border-radius: 3px;
+        }
+        .p-tag{
+            margin: 0px;
+        }
+        .news-category-name{
+            width: 70px;
+            text-align: center;
+            background-color: #E5E5E5;
+            border-radius: 3px;
+            font-size: 12px;
+            padding: 2px;
+            margin-bottom: 7px;
+        }
+        .news-title{
+            font-family: 'Freesentation-7Bold';
+            font-size: 16px;
+        }
+        .news-content{
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .news-etc{
+            font-size: 11px;
+            color: #6F6F6F;
+        }
+        .no-data-div {
+            width: 100%;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        .no-data-p {
+            background-color: #E5E5E5;
+            padding: 20px 30px 20px 30px;
+            margin-top: 180px;
+            width: 220px;
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+
+<div th:replace="~{/common/menubar}"></div>
+<div th:replace="~{/news/newsAlert}"></div>
+
+<div class="content" style="padding: 40px;">
+    <p class="menu">&#128293; 우동 인기 소식</p>
+    <div class="top">
+        <a th:href="@{/news/newsMain}">
+            <button class="btn btn-udh-blue btn-news-main">
+                소식 목록으로
+            </button>
+        </a>
+    </div>
+
+    <div class="news-list">
+        <hr>
+        <th:block th:if="${#lists.isEmpty(hotNewsList)}">
+            <div class="no-data-div">
+                <p class="no-data-p">❌ 조회할 소식이 없습니다.</p>
+            </div>
+        </th:block>
+        <div th:each="one, iterStat : ${hotNewsList}" class="news-one">
+            <table style="width: 100%;">
+                <tr>
+                    <td td style="width: 30px; vertical-align: top;">
+                        <span th:text="${iterStat.index + 1}" class="rank"></span>
+                    </td>
+                    <td>
+                        <input type="hidden" th:value="${one.newsNo}">
+                        <p th:text="${one.category.categoryName}" class="p-tag news-category-name"></p>
+                        <p th:text="${one.title}" class="p-tag news-title"></p>
+                        <p th:text="${one.content}" class="p-tag news-content"></p>
+                        <p class="p-tag news-etc">
+                            <span>&#128155;</span>
+                            <span th:text="${one.likesCount}"></span>
+                            <span style="margin-left: 15px;">&#128064;</span>
+                            <span th:text="${one.views}"></span>
+                            <span style="margin-left: 15px;">&#128172;</span>
+                            <span th:text="${one.repliesCount}"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#127960;</span>
+                            <span th:text="${one.location.eupMyeonDongName}" style="margin-left: 4px"></span>
+                        </p>
+                        <p class="p-tag news-etc">
+                            <span>&#128395;</span>
+                            <span th:text="${one.writer.nickname}" style="margin-left: 4px"></span>
+                            <span style="margin: 0px 6px 0px 6px">|</span>
+                            <span th:text="${one.createdAt}"></span>
+                        </p>
+                    </td>
+                    <td style="width: 120px" th:if="${one.attachments != null and one.attachments.size() > 0}">
+                        <img th:src="@{'/uploadFiles/' + ${one.attachments[0].savedName}}" class="news-img">
+                    </td>
+                </tr>
+            </table>
+            <hr>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $(document).on('click', '.news-one', function() {
+        var newsNo = $(this).find('input').val();
+        var url = "/news/newsDetail?newsNo=" + newsNo;
+        window.location.href = url;
+    });
+
+</script>
+</body>
+</html>

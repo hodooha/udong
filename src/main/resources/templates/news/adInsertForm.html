@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Select2 CSS와 JS 추가 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        .menu {
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
+        }
+        .insert-area {
+            background-color: #E5E5E5;
+            padding: 15px;
+            border-radius: 0.375rem;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+        }
+        .input {
+            font-family: 'Freesentation-3Light';
+            height: 25px;
+            background-color: #FFFFFF;
+            border: 1px solid #979797;
+        }
+        .location-select {
+            font-family: 'Freesentation-3Light';
+            height: 25px;
+            width: 100%;
+        }
+        .title-input {
+            width: 85%;
+        }
+        .writer-input {
+            width: 80%;
+            background-color: #C0C0C0;
+        }
+        .content-input {
+            font-family: 'Freesentation-3Light';
+            width: 100%;
+            resize: none;
+            border: 1px solid #979797;
+            margin-top: 4px;
+            height: 300px;
+        }
+        .img-div {
+            border: 1px solid #979797;
+            background-color: #FFFFFF;
+            width: 502px;
+            height: 502px;
+            margin: 5px 15px 20px 15px;
+        }
+        .img {
+            width: 500px;
+            height: 500px;
+            margin: 0px 15px 5px 0px;
+        }
+        .img-input {
+            font-family: 'Freesentation-3Light';
+        }
+        .insert-ad-btn-container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-insert-ad {
+            margin: 25px 0px 30px 0px;
+            font-family: 'Freesentation-5Medium' !important;
+        }
+        /* Select2 스타일 조정 */
+        .select2-container--default .select2-selection--single {
+            height: 25px;
+            line-height: 25px;
+            font-family: 'Freesentation-3Light';
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 25px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 23px;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $.ajax({
+                url: "/news/locationList",
+                success: function(data) {
+                    var locationSelect = $('select[name="locationCode"]');
+                    data.forEach(function(location) {
+                        locationSelect.append($('<option></option>').attr('value', location.locationCode).text(location.locationName));
+                    });
+
+                    // Select2 초기화
+                    locationSelect.select2({
+                        placeholder: "동네를 선택하세요",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                },
+                error: function() {
+                    alert('법정동을 불러오는 데 실패했습니다.');
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div th:replace="~{/common/menubar}"></div>
+
+<div class="content" style="padding: 40px; height: 670px">
+    <p class="menu">🔖 광고 작성</p>
+    <form th:action="@{/news/insertAd}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <div class="insert-area">
+            <table style="width: 100%">
+                <tr>
+                    <td style="width: 3%">
+                        <span>제목</span>
+                    </td>
+                    <td style="width: 37%">
+                        <input type="text" id="titleInput" class="input title-input" name="title" maxlength="30" required>
+                    </td>
+                    <td style="width: 4%">
+                        <span>작성자</span>
+                    </td>
+                    <td style="width: 26%">
+                        <input type="text" class="input writer-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
+                    </td>
+                    <td style="width: 3%">
+                        <span>동네</span>
+                    </td>
+                    <td style="width: 27%">
+                        <select class="location-select" name="locationCode" required>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <table style="width: 100%; margin: 30px 0px 30px 0px;">
+                <tr>
+                    <td style="width: 3%; vertical-align: top;">
+                        <span>내용</span>
+                    </td>
+                    <td style="width: 47%; vertical-align: top;">
+                        <textarea id="contentInput" class="content-input" name="content" maxlength="500" required></textarea>
+                    </td>
+                    <td style="width: 4%; vertical-align: top;">
+                        <span style="margin-left: 30px">이미지</span>
+                    </td>
+                    <td style="width: 46%">
+                        <div id="imgArea" class="img-div">
+                            <img id="img" class="img">
+                            <br>
+                            <input type="file" class="img-input" name="img" onchange="loadImg(this)" required>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="insert-ad-btn-container">
+            <button type="submit" class="btn btn-udh-blue btn-insert-ad">광고 작성</button>
+            <a th:href="@{/news/newsMain}">
+                <button type="button" class="btn btn-udh-silver btn-insert-ad" style="margin-left: 10px">취소</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    function loadImg(value) {
+        if (value.files && value.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById("img").src = e.target.result;
+            }
+            reader.readAsDataURL(value.files[0]);
+        }
+    }
+
+    function validateForm() {
+        const titleInput = document.getElementById('titleInput').value.trim();
+        const contentInput = document.getElementById('contentInput').value.trim();
+
+        if (titleInput === "" || contentInput === "") {
+            Swal.fire({
+                title: '입력 오류',
+                text: '제목과 내용은 공백만 입력할 수 없습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#3B5C9A',
+                confirmButtonText: '확인'
+            });
+
+            return false;
+        }
+
+        return true;
+    }
+</script>
+</body>
+</html>

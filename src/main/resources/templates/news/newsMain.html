@@ -59,10 +59,21 @@
             font-family: 'Freesentation-5Medium' !important;
         }
         .news-list{
-            height: 720px;
+            height: 890px;
+        }
+        .ad-one {
+            cursor: pointer;
+            background-color: #FFB83D;
+            padding: 10px;
+            border-radius: 4px;
         }
         .news-one{
             cursor: pointer;
+        }
+        .ad-img{
+            width: 100px;
+            height: 100px;
+            border-radius: 3px;
         }
         .news-img{
             width: 130px;
@@ -71,6 +82,15 @@
         }
         .p-tag{
             margin: 0px;
+        }
+        .ad-category-name{
+            width: 70px;
+            text-align: center;
+            background-color: #FFFFFF;
+            border-radius: 3px;
+            font-size: 12px;
+            padding: 2px;
+            margin-bottom: 7px;
         }
         .news-category-name{
             width: 70px;
@@ -168,7 +188,7 @@
 <div class="content" style="padding: 40px;">
     <p class="menu">&#128240; 우동 소식</p>
     <div class="top">
-        <a th:href="@{/news/selectHotNewsList}">
+        <a th:href="@{/news/hotNews}">
             <button type="button" class="btn btn-udh-yellow btn-hot-news">&#128293; 인기글</button>
         </a>
         <form class="search-form" th:action="@{/news/newsMain}" method="get">
@@ -192,6 +212,26 @@
                 <button type="button" class="btn btn-udh-blue btn-insert-news">광고 작성</button>
             </a>
         </th:block>
+    </div>
+
+    <div th:if="${ad.newsNo != 0}" class="ad-one">
+        <table style="width: 100%;">
+            <tr>
+                <td>
+                    <input type="hidden" th:value="${ad.newsNo}">
+                    <p class="p-tag ad-category-name">AD</p>
+                    <p th:text="${ad.title}" class="p-tag news-title"></p>
+                    <p th:text="${ad.content}" class="p-tag news-content"></p>
+                    <p class="p-tag news-etc">
+                        <span>&#127960;</span>
+                        <span th:text="${ad.location.eupMyeonDongName}" style="margin-left: 4px"></span>
+                    </p>
+                </td>
+                <td style="width: 100px" th:if="${ad.attachments != null and ad.attachments.size() > 0}">
+                    <img th:src="@{'/uploadFiles/' + ${ad.attachments[0].savedName}}" class="ad-img">
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="news-list">
@@ -254,6 +294,12 @@
     $(document).on('click', '.news-one', function() {
         var newsNo = $(this).find('input').val();
         var url = "/news/newsDetail?newsNo=" + newsNo;
+        window.location.href = url;
+    });
+
+    $(document).on('click', '.ad-one', function() {
+        var adNo = $(this).find('input').val();
+        var url = "/news/adDetail?adNo=" + adNo;
         window.location.href = url;
     });
 

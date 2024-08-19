@@ -2,6 +2,7 @@ package com.multi.udong.news.model.dao;
 
 import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.news.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,12 @@ public class NewsDAO {
     public String checkIsNewsDeleted(SqlSessionTemplate sqlSession, int newsNo) {
 
         return sqlSession.selectOne("newsMapper.checkIsNewsDeleted", newsNo);
+
+    }
+
+    public String checkIsAdDeleted(SqlSessionTemplate sqlSession, int adNo) {
+
+        return sqlSession.selectOne("newsMapper.checkIsAdDeleted", adNo);
 
     }
 
@@ -45,6 +52,12 @@ public class NewsDAO {
     public List<CategoryDTO> selectCategoryList(SqlSessionTemplate sqlSession) {
 
         return sqlSession.selectList("newsMapper.selectCategoryList");
+
+    }
+
+    public List<LocationDTO> selectLocationList(SqlSessionTemplate sqlSession) {
+
+        return sqlSession.selectList("newsMapper.selectLocationList");
 
     }
 
@@ -118,6 +131,80 @@ public class NewsDAO {
     public int reportNews(SqlSessionTemplate sqlSession, ReportDTO reportDTO) {
 
         return sqlSession.insert("newsMapper.report", reportDTO);
+
+    }
+
+    public int updateNews(SqlSessionTemplate sqlSession, NewsDTO newsDTO) {
+
+        return sqlSession.update("newsMapper.updateNews", newsDTO);
+
+    }
+
+    public AttachmentDTO selectAttachment(SqlSessionTemplate sqlSession, int fileNo) {
+
+        return sqlSession.selectOne("newsMapper.selectAttachment", fileNo);
+
+    }
+
+    public int updateAttachment(SqlSessionTemplate sqlSession, AttachmentDTO newImg) {
+
+        return sqlSession.update("newsMapper.updateAttachment", newImg);
+
+    }
+
+    public int deleteAttachment(SqlSessionTemplate sqlSession, AttachmentDTO deletedImg) {
+
+        return sqlSession.delete("newsMapper.deleteAttachment", deletedImg);
+
+    }
+
+    public int insertAttachment(SqlSessionTemplate sqlSession, AttachmentDTO newImg) {
+
+        return sqlSession.insert("newsMapper.insertAttachment", newImg);
+
+    }
+
+    public int deleteNews(SqlSessionTemplate sqlSession, int newsNo) {
+
+        return sqlSession.update("newsMapper.deleteNews", newsNo);
+
+    }
+
+    public List<NewsDTO> selectHotNewsList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("newsMapper.selectHotNewsList", filterDTO);
+
+    }
+
+
+    public int insertAd(SqlSessionTemplate sqlSession, NewsDTO newsDTO) {
+
+        return sqlSession.insert("newsMapper.insertAd", newsDTO);
+
+    }
+
+    public List<NewsDTO> selectAdList(SqlSessionTemplate sqlSession, FilterDTO filterDTO) {
+
+        return sqlSession.selectList("newsMapper.selectAdList", filterDTO);
+
+    }
+
+
+    public int addAdViews(SqlSessionTemplate sqlSession, int adNo) {
+
+        return sqlSession.update("newsMapper.addAdViews", adNo);
+
+    }
+
+    public NewsDTO selectAdDetail(SqlSessionTemplate sqlSession, int adNo) {
+
+        return sqlSession.selectOne("newsMapper.selectAdDetail", adNo);
+
+    }
+
+    public int deleteAd(SqlSessionTemplate sqlSession, int adNo) {
+
+        return sqlSession.update("newsMapper.deleteAd", adNo);
 
     }
 }

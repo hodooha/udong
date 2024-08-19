@@ -28,5 +28,4 @@ public class NewsDTO {
     private String isDeleted;
     private LocalDateTime deletedAt;
 
-
 }

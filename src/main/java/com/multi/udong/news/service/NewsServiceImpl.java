@@ -2,6 +2,7 @@ package com.multi.udong.news.service;
 
 import com.multi.udong.club.model.dto.ReportDTO;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.news.model.dao.NewsDAO;
 import com.multi.udong.news.model.dto.*;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -34,6 +35,13 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
+    public String checkIsAdDeleted(int adNo) throws Exception {
+
+        return newsDAO.checkIsAdDeleted(sqlSession, adNo);
+
+    }
+
+    @Override
     public int checkNewsWriter(int newsNo) throws Exception {
 
         return newsDAO.checkNewsWriter(sqlSession, newsNo);
@@ -62,10 +70,22 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
+    public List<NewsDTO> selectAdList(FilterDTO filterDTO) throws Exception {
+
+        return newsDAO.selectAdList(sqlSession, filterDTO);
+
+    }
+
+    @Override
     public List<CategoryDTO> selectCategoryList() throws Exception {
 
         return newsDAO.selectCategoryList(sqlSession);
 
+    }
+
+    @Override
+    public List<LocationDTO> selectLocationList() throws Exception {
+        return newsDAO.selectLocationList(sqlSession);
     }
 
     @Override
@@ -185,6 +205,125 @@ public class NewsServiceImpl implements NewsService {
     public int reportNews(ReportDTO reportDTO) throws Exception {
 
         return newsDAO.reportNews(sqlSession, reportDTO);
+
+    }
+
+    @Override
+    public int updateNews(NewsDTO newsDTO) throws Exception {
+
+        return newsDAO.updateNews(sqlSession, newsDTO);
+
+    }
+
+    @Override
+    public AttachmentDTO selectAttachment(int fileNo) throws Exception {
+
+        return newsDAO.selectAttachment(sqlSession, fileNo);
+
+    }
+
+    @Override
+    public int updateAttachment(AttachmentDTO newImg) throws Exception {
+
+        return newsDAO.updateAttachment(sqlSession, newImg);
+
+    }
+
+    @Override
+    public int deleteAttachment(AttachmentDTO deletedImg) throws Exception {
+
+        return newsDAO.deleteAttachment(sqlSession, deletedImg);
+
+    }
+
+    @Override
+    public int insertAttachment(AttachmentDTO newImg) throws Exception {
+
+        return newsDAO.insertAttachment(sqlSession, newImg);
+
+    }
+
+    @Override
+    public int deleteNews(int newsNo) throws Exception {
+
+        return newsDAO.deleteNews(sqlSession, newsNo);
+
+    }
+
+    @Override
+    public List<NewsDTO> selectHotNewsList(FilterDTO filterDTO) throws Exception {
+
+        return newsDAO.selectHotNewsList(sqlSession, filterDTO);
+
+    }
+
+    @Override
+    public int insertAd(NewsDTO newsDTO) throws Exception {
+
+        int result = 0;
+
+        int adResult = newsDAO.insertAd(sqlSession, newsDTO);
+
+        if(adResult == 1) {
+
+            int attachmentResult = 0;
+
+            List<AttachmentDTO> attachmentList = newsDTO.getAttachments();
+
+            if(attachmentList != null) {
+
+                AttachmentDTO attachmentDTO = newsDTO.getAttachments().get(0);
+
+                int adNo = newsDTO.getNewsNo();
+                attachmentDTO.setTargetNo(adNo);
+
+                attachmentResult = newsDAO.insertAttachment(sqlSession, attachmentDTO);
+
+                if(attachmentResult == 1) {
+
+                    result = 2;
+
+                }
+                else {
+
+                    throw new Exception("광고 이미지 업로드에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+                }
+
+
+            }
+
+            result = 1;
+
+        }
+        else {
+
+            throw new Exception("광고 작성에 실패했습니다. 트랜잭션이 롤백을 실행합니다.");
+
+        }
+
+        return result;
+
+    }
+
+    @Override
+    public int addAdViews(int adNo) throws Exception {
+
+        return newsDAO.addAdViews(sqlSession, adNo);
+
+    }
+
+    @Override
+    public NewsDTO selectAdDetail(int adNo) throws Exception {
+
+        return newsDAO.selectAdDetail(sqlSession, adNo);
+
+    }
+
+    @Override
+    public int deleteAd(int adNo) throws Exception {
+
+        return newsDAO.deleteAd(sqlSession, adNo);
 
     }
 
