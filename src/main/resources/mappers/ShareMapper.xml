@@ -778,24 +778,29 @@
     </update>
 
     <select id="getLikedMembersByItemNo" resultType="int">
-        SELECT sl.member_no
-        FROM SHA_LIKE sl
-        JOIN SHA_ITEMS si ON sl.item_no = si.item_no
-        JOIN MEMBER m ON sl.member_no = m.member_no
-        WHERE sl.item_no = #{itemNo}
-        AND si.status_code != 'UNAV'
-        AND m.is_deleted = 'N'
+        select sl.member_no
+        from sha_like sl
+        join sha_items si on sl.item_no = si.item_no
+        join member m on sl.member_no = m.member_no
+        where sl.item_no = #{itemNo}
+        and si.status_code != 'UNAV'
+        and m.is_deleted = 'N'
     </select>
 
     <select id="getUpcomingReturns" resultMap="shaReqMap">
-        SELECT r.*, i.title, m.nickname AS owner_nickname, m2.nickname AS rqst_nickname, m2.level AS rqst_level
-        FROM SHA_REQ r
-        JOIN SHA_ITEMS i ON r.req_item = i.item_no
-        JOIN MEMBER m ON i.owner_no = m.member_no
-        JOIN MEMBER m2 ON r.rqst_no = m2.member_no
-        WHERE r.return_date BETWEEN #{returnDate} AND DATE_ADD(#{returnDate}, INTERVAL 1 HOUR)
-        AND r.status_code = 'RNT'
+        select r.*, i.title, m.nickname as owner_nickname, m2.nickname as rqst_nickname, m2.level as rqst_level
+        from sha_req r
+        join sha_items i on r.req_item = i.item_no
+        join member m on i.owner_no = m.member_no
+        join member m2 on r.rqst_no = m2.member_no
+        where r.return_date between #{returnDate} and date_add(#{returnDate}, interval 1 hour)
+        and r.status_code = 'RNT'
     </select>
 
+    <select id="getMemberLevel" resultType="int">
+        select level
+        from member
+        where member_no = #{memberNo}
+    </select>
 
 </mapper>

@@ -700,7 +700,11 @@ function postScore(req){
         let msg = result.msg;
         if(await showAlerts(msg, type)){
             $('#evalModal').modal('toggle');
-            getLendItem(req.reqItem);
+            if(urlSearch.get("statusCode") != ''){
+                location.reload();
+            } else{
+                getLendItem(item.itemNo);
+            }
         };
     })
 }

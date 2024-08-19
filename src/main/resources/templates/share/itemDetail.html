@@ -135,7 +135,7 @@
                 <span class="badge text-bg-secondary mb-1"
                       style="width:max-content; font-size: 0.9em;">[[${item.itemCatName}]]</span>
                 <h2>[[${item.title}]]</h2>
-                <p class="owner">
+                <p class="owner" th:onclick="infoReport([[${item.ownerNo}]])" style="cursor: pointer; width:fit-content">
                     <img style="width:25px; height:25px; margin-right:7px"
                          th:src="${item.ownerImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
                          class="user-icon">[[${item.nickName}]]<img class="level"
