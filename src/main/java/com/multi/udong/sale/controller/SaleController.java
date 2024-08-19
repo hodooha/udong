@@ -149,8 +149,11 @@ public class SaleController {
     public String saleDetail(@PathVariable("saleNo") int saleNo, Model model) {
         SaleDTO sale = saleService.getSaleWithAttachments(saleNo);
         saleService.incrementViews(saleNo);
+        System.out.println("Sale: " + sale); // 로그 추가
+        System.out.println("Created At: " + sale.getCreatedAt()); // 로그 추가
+        System.out.println("Views: " + sale.getViews()); // 로그 추가
         model.addAttribute("sale", sale);
-        model.addAttribute("kakaoApiKey", kakaoApiKey);  // API 키를 모델에 추가
+        model.addAttribute("kakaoApiKey", kakaoApiKey);
         return "sale/saleDetail";
     }
 

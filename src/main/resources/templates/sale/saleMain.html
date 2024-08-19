@@ -260,9 +260,22 @@
 
 <script th:inline="javascript">
     const sales = /*[[${sales}]]*/ [];
+    const currentUserId = /*[[${#authentication.principal.memberDTO.memberNo}]]*/ null;
     let currentPage = 1;
     const itemsPerPage = 4;
     let filteredSales = [...sales];
+    let saleStatuses = {};
+
+    // CSRF 토큰 설정
+    const csrfToken = $("meta[name='_csrf']").attr("content");
+    const csrfHeader = $("meta[name='_csrf_header']").attr("content");
+
+    // AJAX 설정에 CSRF 토큰 추가
+    $.ajaxSetup({
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(csrfHeader, csrfToken);
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const excludeExpiredCheckbox = document.getElementById('excludeExpired');
@@ -294,12 +307,49 @@
             window.location.href = `/sale/saleMain?search=${encodeURIComponent(searchTerm)}${excludeExpiredParam}`;
         });
 
+        initializeSaleStatuses();
         filterSales();
         applySorting();
         displaySales(currentPage);
-        updateTimers();
-        setInterval(updateTimers, 1000);  // 1초마다 타이머 업데이트
+        updateAllTimers();
+        setInterval(updateAllTimers, 1000);  // 1초마다 타이머 업데이트
+        setInterval(updateSaleStatuses, 5000); // 5초마다 판매 상태 업데이트
     });
+
+    function initializeSaleStatuses() {
+        sales.forEach(sale => {
+            saleStatuses[sale.saleNo] = sale.status;
+        });
+    }
+
+    function updateSaleStatuses() {
+    $.ajax({
+        url: '/sale/getStatuses',
+        type: 'GET',
+        success: function(response) {
+            let hasUpdates = false;
+            for (let saleId in response) {
+                let newStatus = response[saleId] || saleStatuses[saleId]; // null이 아닐 때만 업데이트
+                if (saleStatuses[saleId] !== newStatus) {
+                    console.log(`Sale ID: ${saleId}, Old Status: ${saleStatuses[saleId]}, New Status: ${newStatus}`);
+                    saleStatuses[saleId] = newStatus;
+                    updateSaleCardUI(saleId, newStatus);
+                    hasUpdates = true;
+                }
+            }
+            if (hasUpdates) {
+                filterSales();
+                applySorting();
+                displaySales(currentPage);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error fetching sale statuses:", error);
+            console.error("Status:", status);
+            console.error("Response:", xhr.responseText);
+        }
+    });
+}
 
     function filterSales() {
         const excludeExpired = document.getElementById('excludeExpired').checked;
@@ -307,7 +357,7 @@
 
         filteredSales = sales.filter(sale => {
             const endTime = new Date(sale.endedAt).getTime();
-            return !(excludeExpired && endTime < now);
+            return !(excludeExpired && (saleStatuses[sale.saleNo] === 'closed' || endTime < now));
         });
     }
 
@@ -332,53 +382,46 @@
         }
     }
 
-    function updateTimers() {
+    function updateAllTimers() {
         const now = new Date().getTime();
         document.querySelectorAll('.sale-card-timer').forEach(timer => {
-            const startTime = new Date(timer.getAttribute('data-start-time')).getTime();
-            const endTime = new Date(timer.getAttribute('data-end-time')).getTime();
-            const saleId = timer.getAttribute('data-sale-id');
-            const saleStatus = timer.getAttribute('data-status');
-
-            if (saleStatus === 'closed' || now >= endTime) {
-                // 타이머가 끝난 경우
-                timer.innerHTML = "땡처리 마감";
-                timer.closest('.sale-card').classList.add('closed-sale'); // 비활성화 스타일 추가
-                // 서버에 상태 업데이트 요청
-                if (saleStatus !== 'closed') {
-                    updateSaleStatusToClosed(saleId, timer);
-                }
-            } else if (now < startTime) {
-                // 판매 시작 전
-                timer.innerHTML = "판매 예정";
-            } else {
-                // 판매 중 (카운트다운)
-                const remainingTime = endTime - now;
-                const hours = Math.floor(remainingTime / (1000 * 60 * 60));
-                const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
-                timer.innerHTML = `🕓 ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
+            updateTimer(timer);
         });
     }
 
-    function updateSaleStatusToClosed(saleId, timerElement) {
-        $.ajax({
-            url: '/sale/updateStatus/' + saleId,
-            type: 'POST',
-            data: JSON.stringify({ status: 'closed' }),
-            contentType: 'application/json',
-            success: function(response) {
-                console.log("Sale status updated to closed.");
-                // 상태 업데이트 성공 시 타이머의 상태를 'closed'로 업데이트
-                timerElement.setAttribute('data-status', 'closed');
-                timerElement.closest('.sale-card').classList.add('closed-sale'); // 비활성화 스타일 추가
-            },
-            error: function(xhr, status, error) {
-                console.error("Error updating sale status:", error);
-            }
-        });
+    function updateTimer(timerElement) {
+    const now = new Date().getTime();
+    const endTime = new Date(timerElement.getAttribute('data-end-time')).getTime();
+    const saleId = timerElement.getAttribute('data-sale-id');
+    const status = saleStatuses[saleId];
+
+    if (status === 'closed' || now >= endTime) {
+        console.log(`Timer stopped for Sale ID: ${saleId}`);
+        timerElement.innerHTML = "땡처리 마감";
+        timerElement.closest('.sale-card').classList.add('closed-sale');
+    } else {
+        const remainingTime = endTime - now;
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+        timerElement.innerHTML = `🕓 ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
+}
+
+    function updateSaleCardUI(saleId, status) {
+    const saleCard = document.querySelector(`.sale-card[data-sale-id="${saleId}"]`);
+    if (saleCard) {
+        const timer = saleCard.querySelector('.sale-card-timer');
+        console.log(`Updating UI for Sale ID: ${saleId}, Status: ${status}`);
+        if (status === 'closed') {
+            timer.innerHTML = "땡처리 마감";
+            saleCard.classList.add('closed-sale');
+        } else {
+            updateTimer(timer);
+        }
+    }
+}
+
 
     function displaySales(page) {
         currentPage = page;
@@ -392,11 +435,13 @@
         salesToDisplay.forEach((sale, index) => {
             const saleCard = document.createElement('div');
             saleCard.className = 'sale-card';
+            saleCard.setAttribute('data-sale-id', sale.saleNo);
+            saleCard.setAttribute('data-is-owner', sale.writer === currentUserId ? 'true' : 'false');
             saleCard.innerHTML = `
                 <div class="sale-card-header">
                     <h3 class="sale-card-title">${sale.title}</h3>
-                    <div class="sale-card-timer" data-sale-id="${sale.saleNo}" data-start-time="${sale.startedAt}" data-end-time="${sale.endedAt}" data-status="${sale.status}">
-                        ${sale.status === 'closed' ? '땡처리 마감' : '00:00:00'}
+                    <div class="sale-card-timer" data-sale-id="${sale.saleNo}" data-start-time="${sale.startedAt}" data-end-time="${sale.endedAt}">
+                        ${saleStatuses[sale.saleNo] === 'closed' ? '땡처리 마감' : ''}
                     </div>
                 </div>
                 <div class="sale-card-body">
@@ -415,17 +460,16 @@
                 </div>
             `;
             saleCard.addEventListener('click', () => {
-                window.location.href = `/sale/detail/${sale.saleNo}`; // 상세 페이지 URL로 이동
+                window.location.href = `/sale/detail/${sale.saleNo}`;
             });
             saleCardsContainer.appendChild(saleCard);
 
-            // 이미 closed 상태인 경우, 카드 비활성화
-            if (sale.status === 'closed') {
-                saleCard.classList.add('closed-sale'); // 비활성화 스타일 추가
+            if (saleStatuses[sale.saleNo] === 'closed') {
+                saleCard.classList.add('closed-sale');
             }
         });
 
-        updateTimers();
+        updateAllTimers();
         updatePagination();
         window.history.pushState(null, null, `?page=${page}`);
     }
@@ -449,6 +493,7 @@
         }
     }
 </script>
+
 
 </body>
 </html>

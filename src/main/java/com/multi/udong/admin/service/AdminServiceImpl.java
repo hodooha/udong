@@ -4,20 +4,25 @@ import com.multi.udong.admin.model.dao.AdminMapper;
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AdminServiceImpl implements AdminService {
 
     private final AdminMapper adminMapper;
+    private final NotiServiceImpl notiService;
 
     @Autowired
-    public AdminServiceImpl(AdminMapper adminMapper) {
+    public AdminServiceImpl(AdminMapper adminMapper, NotiServiceImpl notiService) {
         this.adminMapper = adminMapper;
+        this.notiService = notiService;
     }
 
     @Override
@@ -52,16 +57,28 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     public boolean updateSellerStatus(Integer memberNo, String status) {
         try {
+            // 판매자 상태 업데이트
             adminMapper.updateSellerStatus(memberNo, status);
+
+            // 상태에 따른 역할 변경
             if ("Y".equals(status)) {
                 adminMapper.updateMemberRole(memberNo, "ROLE_SELLER");
             } else if ("N".equals(status)) {
-                adminMapper.updateMemberRole(memberNo, "ROLE_MEMBER");  // 취소 시 일반 회원으로 변경
+                adminMapper.updateMemberRole(memberNo, "ROLE_MEMBER");  // 취소 시 일반 회원
             }
+
+            // 알림 전송
+            notiService.sendNoti(
+                    NotiSetCodeENUM.SELLER_APP_RESULT,
+                    List.of(memberNo),
+                    null,
+                    Map.of("result", "Y".equals(status) ? "승인" : "거절")
+            );
+
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("판매자 상태 업데이트 중 오류 발생", e); // 트랜잭션 롤백 유도
+            throw new RuntimeException("판매자 상태 업데이트 중 오류 발생", e);
         }
     }
 
