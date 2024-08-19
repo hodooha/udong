@@ -282,7 +282,7 @@ public class ShareController {
                     img.setTypeCode(itemDTO.getItemGroup());
 
                     imgList.add(img);
-                    f.transferTo(new File(IMAGE_PATH + "\\" + savedName));
+                    f.transferTo(new File(IMAGE_PATH + savedName));
 
                 }
             }
@@ -293,7 +293,7 @@ public class ShareController {
         } catch (Exception e) {
             // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
             for (AttachmentDTO img : imgList) {
-                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+                new File(IMAGE_PATH + img.getSavedName()).delete();
             }
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -504,7 +504,7 @@ public class ShareController {
                     img.setTargetNo(itemDTO.getItemNo());
 
                     newImgList.add(img);
-                    f.transferTo(new File(IMAGE_PATH + "\\" + savedName));
+                    f.transferTo(new File(IMAGE_PATH + savedName));
 
                 }
             }
@@ -514,12 +514,12 @@ public class ShareController {
 
             // 물건 정보 수정 성공 시 유저가 삭제한 파일 로컬에서 삭제
             for (String f : delFilesName) {
-                new File(IMAGE_PATH + "\\" + f).delete();
+                new File(IMAGE_PATH + f).delete();
             }
 
         } catch (Exception e) {
             for (AttachmentDTO img : newImgList) {
-                new File(IMAGE_PATH + "\\" + img.getSavedName()).delete();
+                new File(IMAGE_PATH + img.getSavedName()).delete();
             }
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
