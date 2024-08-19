@@ -224,4 +224,9 @@ public class ShareDAO {
     public List<ShaItemDTO> getUpcomingDraws(SqlSession sqlSession, LocalDateTime drawTime) {
         return sqlSession.selectList("ShareMapper.getUpcomingDraws", drawTime);
     }
+
+
+    public int getMemberLevel(SqlSessionTemplate sqlSession, int eveNo) {
+        return sqlSession.selectOne("ShareMapper.getMemberLevel", eveNo);
+    }
 }

@@ -515,10 +515,24 @@ public class ShareServiceImpl implements ShareService {
         ;
         System.out.println("=== 최종 점수 === ");
         System.out.println(evalDTO);
+
+        int previousLevel1 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEveNo());
+
         if (shareDAO.updateLevel(sqlSession, evalDTO) < 1) {
             throw new Exception("차용인 레벨 업데이트를 실패했습니다.");
+        };
+
+        int currentLevel1 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEveNo());
+
+        // 레벨이 올랐다면 알림 전송
+        if (currentLevel1 > previousLevel1) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.MEMBER_LEVEL_UP,
+                    List.of(evalDTO.getEveNo()),
+                    null,
+                    Map.of("newLevel", String.valueOf(currentLevel1))
+            );
         }
-        ;
 
         // 대여인 점수 & 레벨 변경
         ShaEvalDTO lenderEval = new ShaEvalDTO();
@@ -530,10 +544,25 @@ public class ShareServiceImpl implements ShareService {
         ;
         System.out.println("=== 최종 점수 === ");
         System.out.println(lenderEval);
+
+        int previousLevel2 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEvrNo());
+
         if (shareDAO.updateLevel(sqlSession, lenderEval) < 1) {
             throw new Exception("대여인 레벨 업데이트를 실패했습니다.");
         }
         ;
+
+        int currentLevel2 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEvrNo());
+
+        // 레벨이 올랐다면 알림 전송
+        if (currentLevel2 > previousLevel2) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.MEMBER_LEVEL_UP,
+                    List.of(evalDTO.getEvrNo()),
+                    null,
+                    Map.of("newLevel", String.valueOf(currentLevel2))
+            );
+        }
 
         // 반납완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
@@ -676,17 +705,33 @@ public class ShareServiceImpl implements ShareService {
         }
         ;
 
+        int previousLevel1 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEveNo());
+
         // 등록된 평가 토대로 대여인 점수 & 레벨 변경
         if (shareDAO.updateScore(sqlSession, evalDTO) < 1) {
             throw new Exception("대여인 점수 업데이트를 실패했습니다.");
         }
         ;
+        int currentLevel1 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEveNo());
+
         System.out.println("=== 최종 점수 === ");
         System.out.println(evalDTO);
+
+
         if (shareDAO.updateLevel(sqlSession, evalDTO) < 1) {
             throw new Exception("대여인 레벨 업데이트를 실패했습니다.");
         }
         ;
+
+        // 레벨이 올랐다면 알림 전송
+        if (currentLevel1 > previousLevel1) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.MEMBER_LEVEL_UP,
+                    List.of(evalDTO.getEveNo()),
+                    null,
+                    Map.of("newLevel", String.valueOf(currentLevel1))
+            );
+        }
 
         // 차용인 점수 & 레벨 변경
         ShaEvalDTO lenderEval = new ShaEvalDTO();
@@ -698,10 +743,24 @@ public class ShareServiceImpl implements ShareService {
         ;
         System.out.println("=== 최종 점수 === ");
         System.out.println(lenderEval);
+
+        int previousLevel2 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEvrNo());
+
         if (shareDAO.updateLevel(sqlSession, lenderEval) < 1) {
             throw new Exception("차용인 레벨 업데이트를 실패했습니다.");
         }
         ;
+        int currentLevel2 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEvrNo());
+
+        // 레벨이 올랐다면 알림 전송
+        if (currentLevel2 > previousLevel2) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.MEMBER_LEVEL_UP,
+                    List.of(evalDTO.getEvrNo()),
+                    null,
+                    Map.of("newLevel", String.valueOf(currentLevel2))
+            );
+        }
 
         // 평가완료 처리
         ShaReqDTO reqDTO = new ShaReqDTO();
@@ -968,10 +1027,24 @@ public class ShareServiceImpl implements ShareService {
                 ;
                 System.out.println("=== 최종 점수 === ");
                 System.out.println(giverEval);
+
+                int previousLevel = shareDAO.getMemberLevel(sqlSession, giverEval.getEveNo());
+
                 if (shareDAO.updateLevel(sqlSession, giverEval) < 1) {
                     throw new Exception("나눔 제공인 레벨 업데이트를 실패했습니다.");
                 }
                 ;
+                int currentLevel = shareDAO.getMemberLevel(sqlSession, giverEval.getEveNo());
+
+                // 레벨이 올랐다면 알림 전송
+                if (currentLevel > previousLevel) {
+                    notiService.sendNoti(
+                            NotiSetCodeENUM.MEMBER_LEVEL_UP,
+                            List.of(giverEval.getEveNo()),
+                            null,
+                            Map.of("newLevel", String.valueOf(currentLevel))
+                    );
+                }
 
                 // 당첨자 & 물건 나눔인에게 쪽지 및 알림 전송
                 MessageDTO messageDTO1 = new MessageDTO();
