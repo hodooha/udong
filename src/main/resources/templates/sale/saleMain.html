@@ -238,7 +238,7 @@
     <div th:each="sale : ${sales}" class="sale-card" >
         <div class="sale-card-header">
             <h3 class="sale-card-title" th:text="${sale.title}">땡처리 제목</h3>
-            <div class="sale-card-timer" th:attr="data-start-time=${sale.startedAt}, data-end-time=${sale.endedAt}">00:00:00</div>
+            <div class="sale-card-timer" data-sale-id="${sale.saleNo}" data-start-time="${sale.startedAt}" data-end-time="${sale.endedAt}"></div>
         </div>
         <div class="sale-card-body">
             <div th:if="${sale.attachments != null and !sale.attachments.empty}">
@@ -391,14 +391,20 @@
 
     function updateTimer(timerElement) {
     const now = new Date().getTime();
+    const startTime = new Date(timerElement.getAttribute('data-start-time')).getTime();
     const endTime = new Date(timerElement.getAttribute('data-end-time')).getTime();
     const saleId = timerElement.getAttribute('data-sale-id');
     const status = saleStatuses[saleId];
 
     if (status === 'closed' || now >= endTime) {
-        console.log(`Timer stopped for Sale ID: ${saleId}`);
         timerElement.innerHTML = "땡처리 마감";
         timerElement.closest('.sale-card').classList.add('closed-sale');
+    } else if (now < startTime) {
+        const timeUntilStart = startTime - now;
+        const hours = Math.floor(timeUntilStart / (1000 * 60 * 60));
+        const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
+        timerElement.innerHTML = `🕓판매 예정 (${hours}시간 ${minutes.toString().padStart(2, '0')}분 ${seconds.toString().padStart(2, '0')}초 후)`;
     } else {
         const remainingTime = endTime - now;
         const hours = Math.floor(remainingTime / (1000 * 60 * 60));
