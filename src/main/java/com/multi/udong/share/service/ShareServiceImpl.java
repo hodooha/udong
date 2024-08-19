@@ -195,17 +195,18 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("이미 신청하셨습니다.");
         }
 
+        // 요청 물건에 대한 정보 가져오기
         ShaItemDTO target = shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem());
-        if(target.getStatusCode().equals("GVD")){
+        if (target.getStatusCode().equals("GVD")) {
             throw new Exception("이미 나눔이 완료되었습니다.");
         }
 
-        if(target.getStatusCode().equals("UNAV")){
+        if (target.getStatusCode().equals("UNAV")) {
             throw new Exception("현재 대여 중단중인 물건으로 대여 신청이 불가합니다.");
         }
 
         // 날짜가 과거라면 예외 발생
-        if (!reqDTO.getReturnDate().isAfter(LocalDate.now())) {
+        if (target.getItemGroup().equals("rent") && !reqDTO.getReturnDate().isAfter(LocalDate.now())) {
             throw new Exception("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
         }
 
@@ -479,7 +480,7 @@ public class ShareServiceImpl implements ShareService {
         notiService.sendNoti(
                 NotiSetCodeENUM.RENT_CONFIRM,
                 List.of(reqDTO.getRqstNo()),
-                reqDTO.getItemDTO().getItemNo(),
+                reqDTO.getReqItem(),
                 Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, reqDTO.getReqItem()).getTitle())
         );
 
@@ -520,7 +521,8 @@ public class ShareServiceImpl implements ShareService {
 
         if (shareDAO.updateLevel(sqlSession, evalDTO) < 1) {
             throw new Exception("차용인 레벨 업데이트를 실패했습니다.");
-        };
+        }
+        ;
 
         int currentLevel1 = shareDAO.getMemberLevel(sqlSession, evalDTO.getEveNo());
 
@@ -589,19 +591,14 @@ public class ShareServiceImpl implements ShareService {
         ;
 
         // 물건 찜한 유저에게 대여 가능 알림 전송
-        notiService.sendNoti(
-                NotiSetCodeENUM.ITEM_AVAILABLE,
-                shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()),
-                evalDTO.getReqItem(),
-                Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, evalDTO.getReqItem()).getTitle())
-        );
-
-        notiService.sendNoti(
-                NotiSetCodeENUM.ITEM_AVAILABLE,
-                shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()),
-                evalDTO.getReqItem(),
-                Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, evalDTO.getReqItem()).getTitle())
-        );
+        if (!shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()).isEmpty()) {
+            notiService.sendNoti(
+                    NotiSetCodeENUM.ITEM_AVAILABLE,
+                    shareDAO.getLikedMembersByItemNo(sqlSession, evalDTO.getReqItem()),
+                    evalDTO.getReqItem(),
+                    Map.of("itemName", shareDAO.getItemDetailForCheck(sqlSession, evalDTO.getReqItem()).getTitle())
+            );
+        }
 
     }
 
@@ -695,7 +692,7 @@ public class ShareServiceImpl implements ShareService {
         }
 
         // 대여인과 평가 대상 일치 여부 확인
-        if(target.getOwnerNo() != evalDTO.getEveNo()){
+        if (target.getOwnerNo() != evalDTO.getEveNo()) {
             throw new Exception("평가 대상이 대여인과 일치하지 않습니다.");
         }
 
@@ -817,67 +814,67 @@ public class ShareServiceImpl implements ShareService {
             return null;
         }
 
-            // db에서 찜 내역, 대여 요청 내역 조회
-            List<MemberItemPreferenceDTO> preferences = shareDAO.getMemberItemPreferences(sqlSession, c.getMemberDTO().getMemAddressDTO().getLocationCode());
+        // db에서 찜 내역, 대여 요청 내역 조회
+        List<MemberItemPreferenceDTO> preferences = shareDAO.getMemberItemPreferences(sqlSession, c.getMemberDTO().getMemAddressDTO().getLocationCode());
 
-            Map<Integer, Map<Integer, Double>> itemMemberPreferences = new HashMap<>();
+        Map<Integer, Map<Integer, Double>> itemMemberPreferences = new HashMap<>();
 
-            // 물건 - 사용자 선호도 맵 생성
-            for (MemberItemPreferenceDTO p : preferences) {
-                itemMemberPreferences.putIfAbsent(p.getItemNo(), new HashMap<>());
-                itemMemberPreferences.get(p.getItemNo()).put(p.getMemberNo(), p.getPreference());
+        // 물건 - 사용자 선호도 맵 생성
+        for (MemberItemPreferenceDTO p : preferences) {
+            itemMemberPreferences.putIfAbsent(p.getItemNo(), new HashMap<>());
+            itemMemberPreferences.get(p.getItemNo()).put(p.getMemberNo(), p.getPreference());
+        }
+
+        // 로그인한 유저의 평가 데이터 생성
+        Map<Integer, Double> memberRatings = new HashMap<>();
+        for (MemberItemPreferenceDTO p : preferences) {
+            if (p.getMemberNo() == c.getMemberDTO().getMemberNo()) {
+                memberRatings.put(p.getItemNo(), p.getPreference());
+            }
+        }
+
+        // 로그인한 유저의 평가 데이터가 없을 경우 (찜, 대여 요청 없을 경우)
+        // 조회수/좋아요/신청자수 기반 랜덤 추천 물건
+        if (memberRatings.isEmpty()) {
+            List<Integer> hotItemNums = shareDAO.getAddRecomItems(sqlSession, new ArrayList<>(), 12, c.getMemberDTO().getMemAddressDTO().getLocationCode());
+            result = shareDAO.getItemListByItemNums(sqlSession, hotItemNums);
+            for (ShaItemDTO i : result) {
+                i.convertLocaldatetimeToTime();
+            }
+        } else {
+
+            // 아이템 기반 협업 필터링 알고리즘 실행
+            ItemBaseCollaborativeFiltering recommender = new ItemBaseCollaborativeFiltering(itemMemberPreferences);
+
+            Map<Integer, Double> recommendations = recommender.recommend(memberRatings);
+            System.out.println("알고리즘 실행 결과");
+            System.out.println(recommendations);
+
+
+            // 유사도 높은 상위 12개 물건 번호 list
+            List<Integer> recomItemNums = recommendations.entrySet().stream()
+                    .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
+                    .limit(12)
+                    .map(Map.Entry::getKey)
+                    .toList();
+
+            // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
+            if (recomItemNums.size() < 12) {
+                List<Integer> addItemNums = shareDAO.getAddRecomItems(sqlSession, recomItemNums, 12 - recomItemNums.size(), c.getMemberDTO().getMemAddressDTO().getLocationCode());
+                recomItemNums.addAll(addItemNums);
             }
 
-            // 로그인한 유저의 평가 데이터 생성
-            Map<Integer, Double> memberRatings = new HashMap<>();
-            for (MemberItemPreferenceDTO p : preferences) {
-                if (p.getMemberNo() == c.getMemberDTO().getMemberNo()) {
-                    memberRatings.put(p.getItemNo(), p.getPreference());
-                }
+            // 12개의 물건 번호로 물건 정보 가져오기
+            result = shareDAO.getItemListByItemNums(sqlSession, recomItemNums);
+            if (result.isEmpty()) {
+                throw new Exception("추천 물건 정보 조회를 실패했습니다.");
             }
-
-            // 로그인한 유저의 평가 데이터가 없을 경우 (찜, 대여 요청 없을 경우)
-            // 조회수/좋아요/신청자수 기반 랜덤 추천 물건
-            if (memberRatings.isEmpty()) {
-                List<Integer> hotItemNums = shareDAO.getAddRecomItems(sqlSession, new ArrayList<>(), 12, c.getMemberDTO().getMemAddressDTO().getLocationCode());
-                result = shareDAO.getItemListByItemNums(sqlSession, hotItemNums);
-                for (ShaItemDTO i : result) {
-                    i.convertLocaldatetimeToTime();
-                }
-            } else {
-
-                // 아이템 기반 협업 필터링 알고리즘 실행
-                ItemBaseCollaborativeFiltering recommender = new ItemBaseCollaborativeFiltering(itemMemberPreferences);
-
-                Map<Integer, Double> recommendations = recommender.recommend(memberRatings);
-                System.out.println("알고리즘 실행 결과");
-                System.out.println(recommendations);
-
-
-                // 유사도 높은 상위 12개 물건 번호 list
-                List<Integer> recomItemNums = recommendations.entrySet().stream()
-                        .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
-                        .limit(12)
-                        .map(Map.Entry::getKey)
-                        .toList();
-
-                // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
-                if (recomItemNums.size() < 12) {
-                    List<Integer> addItemNums = shareDAO.getAddRecomItems(sqlSession, recomItemNums, 12 - recomItemNums.size(), c.getMemberDTO().getMemAddressDTO().getLocationCode());
-                    recomItemNums.addAll(addItemNums);
-                }
-
-                // 12개의 물건 번호로 물건 정보 가져오기
-                result = shareDAO.getItemListByItemNums(sqlSession, recomItemNums);
-                if (result.isEmpty()) {
-                    throw new Exception("추천 물건 정보 조회를 실패했습니다.");
-                }
-                for (ShaItemDTO i : result) {
-                    i.convertLocaldatetimeToTime();
-                }
+            for (ShaItemDTO i : result) {
+                i.convertLocaldatetimeToTime();
             }
+        }
 
-            return result;
+        return result;
 
     }
 
@@ -896,12 +893,12 @@ public class ShareServiceImpl implements ShareService {
         ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, reqDTO.getReqNo());
 
         // 요청 신청자와 로그인한 유저가 다를 경우 예외 발생
-        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+        if (target.getRqstNo() != c.getMemberDTO().getMemberNo()) {
             throw new Exception("권한이 없습니다.");
         }
 
         // 요청 상태가 '신청완료'가 아닐 경우 예외 발생
-        if(!target.getStatusCode().equals("RQD")){
+        if (!target.getStatusCode().equals("RQD")) {
             throw new Exception("신청완료 상태일 경우에만 반납 예정일 변경이 가능합니다.");
         }
 
@@ -915,9 +912,10 @@ public class ShareServiceImpl implements ShareService {
             throw new Exception("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
         }
 
-        if(shareDAO.updateReqReturnDate(sqlSession, reqDTO) < 1){
+        if (shareDAO.updateReqReturnDate(sqlSession, reqDTO) < 1) {
             throw new Exception("반납 예정일 변경을 실패했습니다.");
-        };
+        }
+        ;
 
     }
 
@@ -937,18 +935,19 @@ public class ShareServiceImpl implements ShareService {
         ShaReqDTO target = shareDAO.getReqByReqNo(sqlSession, reqDTO.getReqNo());
 
         // 요청 신청자와 로그인한 유저가 다를 경우 예외 발생
-        if(target.getRqstNo() != c.getMemberDTO().getMemberNo()){
+        if (target.getRqstNo() != c.getMemberDTO().getMemberNo()) {
             throw new Exception("권한이 없습니다.");
         }
 
         // 요청 상태가 '평가완료', '낙첨', '당첨'이 아닐 경우 예외 발생
-        if(!(target.getStatusCode().equals("REV") || target.getStatusCode().equals("LST") || target.getStatusCode().equals("WIN"))){
+        if (!(target.getStatusCode().equals("REV") || target.getStatusCode().equals("LST") || target.getStatusCode().equals("WIN"))) {
             throw new Exception("완료된 내역만 삭제가 가능합니다.");
         }
 
-        if(shareDAO.hideReqFromDream(sqlSession, reqDTO) < 1){
+        if (shareDAO.hideReqFromDream(sqlSession, reqDTO) < 1) {
             throw new Exception("내역 삭제를 실패했습니다.");
-        };
+        }
+        ;
 
     }
 
@@ -960,7 +959,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 30 0 * * ?")
+    @Scheduled(cron = "0 0 12 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -1051,7 +1050,7 @@ public class ShareServiceImpl implements ShareService {
                 messageDTO1.setReceiverNo(winner.getRqstNo());
                 messageDTO1.setSenderNo(36);
                 messageDTO1.setReceiverNickname(winner.getRqstNickname());
-                messageDTO1.setContent("축하드립니다! 신청하신 "+i.getTitle()+ " 나눔에 당첨되셨습니다! 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 나눔해주신 이웃분과 쪽지를 통해 약속을 잡아주세요.");
+                messageDTO1.setContent("축하드립니다! 신청하신 " + i.getTitle() + " 나눔에 당첨되셨습니다! 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 나눔해주신 이웃분과 쪽지를 통해 약속을 잡아주세요.");
 
                 messageMapper.sendMessage(messageDTO1);
                 MessageDTO insertedMessage1 = messageMapper.getInsertedMessage(messageDTO1);
@@ -1061,7 +1060,7 @@ public class ShareServiceImpl implements ShareService {
                 messageDTO2.setReceiverNo(i.getOwnerNo());
                 messageDTO2.setSenderNo(36);
                 messageDTO2.setReceiverNickname(i.getNickName());
-                messageDTO2.setContent("나눔해주신 "+i.getTitle()+ "의 당첨자가 발표되었습니다. 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 당첨자분과 쪽지를 통해 약속을 잡아주세요.");
+                messageDTO2.setContent("나눔해주신 " + i.getTitle() + "의 당첨자가 발표되었습니다. 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 당첨자분과 쪽지를 통해 약속을 잡아주세요.");
 
                 messageMapper.sendMessage(messageDTO2);
                 MessageDTO insertedMessage2 = messageMapper.getInsertedMessage(messageDTO2);
@@ -1081,34 +1080,35 @@ public class ShareServiceImpl implements ShareService {
 
         // 대여 반납 알림
         List<ShaReqDTO> upcomingReturns = shareDAO.getUpcomingReturns(sqlSession, seventyTwoHoursLater);
-        for (ShaReqDTO rent : upcomingReturns) {
-            // 대여자에게 알림
-            notiService.sendNoti(
-                    NotiSetCodeENUM.RENT_RETURN_BORROWER,
-                    List.of(rent.getRqstNo()),
-                    rent.getReqItem(),
-                    Map.of("itemName", rent.getItemDTO().getTitle()));
+        if (!upcomingReturns.isEmpty()) {
+            for (ShaReqDTO rent : upcomingReturns) {
+                // 대여자에게 알림
+                notiService.sendNoti(
+                        NotiSetCodeENUM.RENT_RETURN_BORROWER,
+                        List.of(rent.getRqstNo()),
+                        rent.getReqItem(),
+                        Map.of("itemName", rent.getItemDTO().getTitle()));
 
-            // 소유자에게 알림
-            notiService.sendNoti(
-                    NotiSetCodeENUM.RENT_RETURN_OWNER,
-                    List.of(rent.getOwnerNo()),
-                    rent.getReqItem(),
-                    Map.of("itemName", rent.getItemDTO().getTitle()));
+                // 소유자에게 알림
+                notiService.sendNoti(
+                        NotiSetCodeENUM.RENT_RETURN_OWNER,
+                        List.of(rent.getOwnerNo()),
+                        rent.getReqItem(),
+                        Map.of("itemName", rent.getItemDTO().getTitle()));
+            }
         }
-
         // 나눔 추첨 알림
         LocalDateTime twentyFourHoursLater = now.plusHours(24);
         List<ShaItemDTO> upcomingDraws = shareDAO.getUpcomingDraws(sqlSession, twentyFourHoursLater);
-        for (ShaItemDTO give : upcomingDraws) {
-            notiService.sendNoti(
-                    NotiSetCodeENUM.GIVE_DRAW_REMIND,
-                    List.of(give.getOwnerNo()),
-                    give.getItemNo(),
-                    Map.of("itemName", give.getTitle()));
+        if (!upcomingDraws.isEmpty()) {
+            for (ShaItemDTO give : upcomingDraws) {
+                notiService.sendNoti(
+                        NotiSetCodeENUM.GIVE_DRAW_REMIND,
+                        List.of(give.getOwnerNo()),
+                        give.getItemNo(),
+                        Map.of("itemName", give.getTitle()));
+            }
         }
     }
-
-
 
 }

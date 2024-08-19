@@ -484,7 +484,7 @@
                                                                 th:data-bs-title="${rqst.rqstNickname}+'님의 대여 기록'"
                                                                 th:data-bs-content="'&#128202;총 대여 횟수: '+${rqst.endReqCnt}+'<br/> &#127775;평균 별점: '+${#numbers.formatDecimal(rqst.avgRating, 1, 2)}+'<br/> &#127894;레벨: '+${rqst.rqstLevel}"><img
                                             style="width:25px; height:25px; margin-right:7px"
-                                            th:src="${rqst.rqstImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + rqst.rqstImg}"
+                                            th:src="${rqst.rqstImg == 'defaultProfile.png' ? '/img/defaultProfile.png' : '/uploadFiles/' + rqst.rqstImg}"
                                             class="user-icon">[[${rqst.rqstNickname}]]<img class="level"
                                                                                            th:src="@{'/img/'+${rqst.rqstLevel}+'.png'}"></a>
                                     </td>
