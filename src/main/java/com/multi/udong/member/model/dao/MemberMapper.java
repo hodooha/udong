@@ -68,6 +68,8 @@ public interface MemberMapper {
 
     List<LinkedHashMap<String, Object>> selectSaleBoard(PageDTO memberNo);
 
+    Object getDashboardSummary(int memberNo);
+
     List<Map<String, Object>> getNewsData(int memberNo);
 
     List<Map<String, Object>> getLendData(int memberNo);
@@ -90,4 +92,5 @@ public interface MemberMapper {
 
     void deleteMemBus(int memberNo);
 
+    MemberDTO getMemberInfo(int memberNo);
 }

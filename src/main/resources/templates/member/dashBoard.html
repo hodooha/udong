@@ -7,19 +7,107 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .dashBoard {
-            width: calc((100% - 260px) / 2);
+            display: flex;
+            flex-direction: column;
+            width: calc((100vw - 300px) / 3);
+            min-width: calc((100vw - 300px) / 3);
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            transition: 0.1s;
+
+            & h2 {
+                text-align: left;
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+
+            &.recent {
+                height: 282px;
+
+                & .empty-message {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
+                    background-color: #EDEDED;
+                    border-radius: 10px;
+                    color: #888;
+                    font-style: italic;
+                }
+            }
+
+            @media (max-width: 1024px) {
+                width: calc((100vw - 280px) / 2);
+
+                &.recent {
+                    height: 240px;
+                }
+            }
         }
-        h2 {
-            text-align: left;
+        .summary-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+
+            & .summary {
+                flex: 1;
+                border-radius: 10px;
+                background-color: #EDEDED;
+                padding: 5px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #D3D3D3;
+                }
+
+                & h4 {
+                    font-weight: bold;
+                }
+
+                & span {
+                    color: #0059FF;
+                    font-size: 30px;
+                }
+
+                @media (max-width: 1024px) {
+                    & h4 {
+                        font-size: 15px;
+                    }
+
+                    & span {
+                        font-size: 20px;
+                    }
+                }
+            }
         }
-        .recent-board {
-            flex: 1;
+        .recent-board tbody {
+            display: flex;
             flex-direction: column;
+            gap: 10px;
+
+            & tr {
+                flex: 1;
+                text-align: left;
+                border-radius: 10px;
+                background-color: #EDEDED;
+                padding: 10px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #D3D3D3;
+                }
+
+                & td {
+                    display: flex;
+                    justify-content: space-between;
+                }
+            }
         }
     </style>
 </head>
@@ -31,60 +119,113 @@
     <div class="content-area">
         <div class="dashBoard">
             <h2>활동 요약</h2>
-            <div class="summary">올린 대여글</div>
-            <div class="summary">대여한 물건</div>
-            <div class="summary">올린 나눔글</div>
-            <div class="summary">가입한 모임</div>
-            <div class="summary">평균 평점</div>
-            <div class="summary">회원 레벨</div>
+            <div class="summary-container">
+                <div class="summary" th:onclick="|location.href='@{/share/dream/lend?group=rent}'|">
+                    <span th:text="${summary.lend_count}"></span>
+                    <h4>올린 대여글</h4>
+                </div>
+                <div class="summary" th:onclick="|location.href='@{/share/dream/borrow}'|">
+                    <span th:text="${summary.rent_count}"></span>
+                    <h4>대여한 물건</h4>
+                </div>
+                <div class="summary" th:onclick="|location.href='@{/share/dream/lend?group=give}'|">
+                    <span th:text="${summary.give_count}"></span>
+                    <h4>올린 나눔글</h4>
+                </div>
+                <div class="summary" th:onclick="|location.href='@{/member/act?table=club}'|">
+                    <span th:text="${summary.club_count}"></span>
+                    <h4>가입한 모임</h4>
+                </div>
+                <div class="summary" th:onclick="#">
+                    <span th:text="${#numbers.formatDecimal(summary.avg_rating, 1, 1)}"></span>
+                    <h4>평균 평점</h4>
+                </div>
+                <div class="summary" th:onclick="#">
+                    <span th:text="${summary.member_level}"></span>
+                    <h4>회원 레벨</h4>
+                </div>
+            </div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=newsBoard&page=1}'|">나의 우동 소식</h2>
             <table class="recent-board">
-                <tr th:each="data : ${newsData}">
-                    <td th:text="${data.title}"></td>
+                <tr th:each="data : ${newsData}" th:onclick="#">
+                    <td>
+                        <span th:text="${data.title}"></span>
+                        <span th:text="${data.created_at}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(newsData)}">아직 작성한 우동 소식이 없습니다!</div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 대여글</h2>
             <table class="recent-board">
-                <tr th:each="data : ${lendData}">
-                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|"></td>
+                <tr th:each="data : ${lendData}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|">
+                    <td>
+                        <span th:text="${data.title}"></span>
+                        <span th:text="${data['expiry_date'] != null ? #temporals.format(data['expiry_date'], 'yyyy-MM-dd') : '-'}"></span>
+                        <span th:text="${data.status_name}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(lendData)}">아직 등록한 대여 물품이 없습니다!</div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/borrow}'|">대여한 물건</h2>
             <table class="recent-board">
-                <tr th:each="data : ${rentData}">
-                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|"></td>
+                <tr th:each="data : ${rentData}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|">
+                    <td>
+                        <span th:text="${data.title}"></span>
+                        <span th:text="${data['return_date'] != null ? #temporals.format(data['return_date'], 'yyyy-MM-dd') : '-'}"></span>
+                        <span th:text="${data.status_name}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(rentData)}">아직 대여한 물품이 없습니다!</div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 나눔글</h2>
             <table class="recent-board">
-                <tr th:each="data : ${giveData}">
-                    <td th:text="${data.title}" th:onclick="|location.href='@{/share/give/detail(itemNo=${data.item_no})}'|"></td>
+                <tr th:each="data : ${giveData}" th:onclick="|location.href='@{/share/give/detail(itemNo=${data.item_no})}'|">
+                    <td>
+                        <span th:text="${data.title}"></span>
+                        <span th:text="${data['created_at'] != null ? #temporals.format(data['created_at'], 'yyyy-MM-dd') : '-'}"></span>
+                        <span th:text="${data.status_name}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(giveData)}">아직 등록한 나눔 물품이 없습니다!</div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=club&page=1}'|">가입한 모임</h2>
             <table class="recent-board">
-                <tr th:each="data : ${clubData}">
-                    <td th:text="${data.club_name}" th:onclick="|location.href='@{/club/clubHome(clubNo=${data.club_no})}'|"></td>
+                <tr th:each="data : ${clubData}" th:onclick="|location.href='@{/club/clubHome(clubNo=${data.club_no})}'|">
+                    <td>
+                        <span th:text="${data.club_name}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(clubData)}">아직 가입한 모임이 없습니다!</div>
         </div>
-        <div class="dashBoard">
+        <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=clubSchedule&page=1}'|">다가오는 일정</h2>
             <table class="recent-board">
-                <tr th:each="data : ${scheduleData}">
-                    <td th:text="${data.title}" th:onclick="|location.href='@{/club/clubSchedule/scheduleDetail(clubNo=${data.club_no},scheduleNo=${data.schedule_no})}'|"></td>
+                <tr th:each="data : ${scheduleData}" th:onclick="|location.href='@{/club/clubSchedule/scheduleDetail(clubNo=${data.club_no},scheduleNo=${data.schedule_no})}'|">
+                    <td>
+                        <span th:text="${data.club_name}"></span>
+                        <span th:text="${data.title}"></span>
+                        <span th:text="${data.gathering_at}"></span>
+                        <span>➡️</span>
+                    </td>
                 </tr>
             </table>
+            <div class="empty-message" th:if="${#lists.isEmpty(scheduleData)}">아직 참여한 모임이 없습니다!</div>
         </div>
     </div>
 </main>

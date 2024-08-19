@@ -166,7 +166,7 @@ function datePickerActive(){
     $('#datePicker').datepicker({
         format: 'yyyy-mm-dd',
         todayHighlight: true,
-        startDate: '+2d',
+        startDate: '+1d',
         autoclose : true,
         endDate: '+1m'
     })
@@ -178,7 +178,7 @@ function dateRefresh() {
     $('#datePicker').datepicker({
     format: 'yyyy-mm-dd',
     todayHighlight: true,
-    startDate: '+2d',
+    startDate: '+1d',
     autoclose : true,
     endDate: '+1m'
     });
@@ -550,9 +550,13 @@ function updateItStat(item){
                 let msg = result.msg;
                 if(await showAlerts(msg, type)){
                     if(path.includes("/share/dream")){
-                        getLendItem(item.itemNo);
+                        if(urlSearch.get("statusCode") != ''){
+                            location.reload();
+                        } else{
+                            getLendItem(item.itemNo);
+                        }
                     } else{
-                    updateItemDetail();
+                        updateItemDetail();
                     }
                 }
             })
@@ -701,7 +705,7 @@ function postScore(req){
     })
 }
 
-function toggleDeleteModal(item){
+function toggleDeleteItemModal(item){
     if(item.statusCode == 'RNT'){
         showAlerts("대여중인 물건은 '반납완료' 처리 후 삭제가 가능합니다.");
         $('#deleteModal').modal("hide", true);
@@ -878,6 +882,10 @@ function toggleReportModalBorrow(req){
 
 }
 
+function clearReportForm(){
+    $('#reasonDetail').val("");
+}
+
 function getRecItems(){
 
     let reqUrl = "/share/recommendItem"
@@ -893,6 +901,90 @@ async function clipUrl(){
     showSuccessAlert("링크가 복사되었습니다.");
 }
 
+function toggleChangeDateModal(req){
+    datePickerActive();
+    $('#datePicker').val(req.returnDate);
+
+    $('#changeDateModal').modal("toggle", true);
+
+    $('#changeBtn').on("click", function(){
+        let now = new Date();
+
+        if(req.returnDate == $('#datePicker').val()){
+            showConfirmAlert("기존 반납예정일과 동일합니다.");
+            return;
+        };
+
+        if($('#datePicker').val() == ''){
+            showConfirmAlert("반납예정일을 선택해주세요.");
+            return;
+        };
+        if(new Date($('#datePicker').val()) < now){
+            showConfirmAlert("반납예정일은 오늘 날짜 이후부터 선택 가능합니다.");
+            return;
+        };
+
+        req.returnDate = $('#datePicker').val();
+        changeDate(req);
+    })
+
+}
+
+function changeDate(req){
+    let reqUrl = "/share/dream/updateReqReturnDate"
+    let data = {
+        reqNo : req.reqNo,
+        returnDate : req.returnDate
+    }
+
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            $('#changeDateModal').modal("toggle", true);
+            getBorrowList();
+        };
+
+    })
+
+}
+
+function toggleDeleteReq(req){
+
+    Swal.fire({
+         title: "나의 드림 목록에서 지우시겠어요?",
+         text: `${req.itemDTO.title} 거래 내역을 삭제할까요?`,
+         icon: "warning",
+         showCancelButton: true,
+         confirmButtonText: "삭제",
+         confirmButtonColor: "#CB3333",
+         cancelButtonText: "취소",
+         reverseButtons: true
+        }).then((result) => {
+         if (result.isConfirmed) {
+            deleteReq(req);
+         }
+    });
+
+}
+
+function deleteReq(req){
+    let reqUrl = "/share/dream/hideReq"
+    let data = {
+        reqNo: req.reqNo
+    }
+
+    ajax_post(reqUrl, data).done(async function(result){
+        let type = result.type;
+        let msg = result.msg;
+        if(await showAlerts(msg, type)){
+            getBorrowList();
+        };
+
+
+    })
+
+}
 
 
 

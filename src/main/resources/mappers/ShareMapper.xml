@@ -89,7 +89,8 @@
     </select>
 
     <select id="getItemDetail" resultMap="shaItemMap">
-        select a.*, b.nickname, b.is_deleted, b.level, c.eup_myeon_dong_name, d.*, e.cat_name, f.saved_name, g.status_name, h.owner_img
+        select a.*, b.nickname, b.is_deleted, b.level, c.eup_myeon_dong_name, d.*, e.cat_name, f.saved_name,
+        g.status_name, h.owner_img
         from sha_items a
         left join
         member b
@@ -449,6 +450,7 @@
         on b.owner_no = c.member_no
         where b.deleted_at is null
         and c.is_deleted = 'N'
+        and a.deleted_at is null
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and b.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and b.item_group = #{group}</if>
@@ -503,6 +505,7 @@
         where
         d.deleted_at is null
         and d.is_deleted = 'N'
+        and g.deleted_at is null
         <if test="rqstNo != null and rqstNo != 0">and rqst_no = #{rqstNo}</if>
         <if test="catCode != null and catCode != ''">and d.item_cat_code = #{catCode}</if>
         <if test="group != null and group != ''">and d.item_group = #{group}</if>
@@ -521,7 +524,8 @@
 
     <select id="getRequesters" resultType="com.multi.udong.share.model.dto.ShaRqstDTO">
         select
-        a.req_no, a.req_item, a.rqst_no, b.nickname as rqst_nickname, b.level as rqst_level, d.rqst_img, a.return_date, a.created_at as req_created_at, ifnull(c.end_req_cnt, 0) as end_req_cnt, ifnull(e.avg_rating, 0) as avg_rating
+        a.req_no, a.req_item, a.rqst_no, b.nickname as rqst_nickname, b.level as rqst_level, d.rqst_img, a.return_date,
+        a.created_at as req_created_at, ifnull(c.end_req_cnt, 0) as end_req_cnt, ifnull(e.avg_rating, 0) as avg_rating
         from sha_req a
         left join
         member b
@@ -594,8 +598,11 @@
     </insert>
 
     <select id="getRaffleItem" resultType="shaItemDTO">
-        select *
-        from sha_items
+        select a.*, b.nickname
+        from sha_items a
+        left join
+        member b
+        on a.owner_no = b.member_no
         where item_group = 'give'
         and expiry_date = curdate();
     </select>
@@ -698,23 +705,23 @@
         and a.item_group = 'rent'
         and a.loc_code = #{locationCode}
         <if test="excludedItems != null and excludedItems.size() > 0">
-        and a.item_no not in
+            and a.item_no not in
             <foreach collection="excludedItems" item="itemNo" open="(" separator="," close=")">
                 #{itemNo}
             </foreach>
         </if>
         order by
-            (a.like_cnt * 0.3) +
-            (a.req_cnt * 0.3) +
-            (a.deal_cnt * 0.1) +
-            (a.view_cnt * 0.1) +
-            (datediff(now(), a.created_at) * -0.1) +
-            (rand() * 0.1) desc
+        (a.like_cnt * 0.3) +
+        (a.req_cnt * 0.3) +
+        (a.deal_cnt * 0.1) +
+        (a.view_cnt * 0.1) +
+        (datediff(now(), a.created_at) * -0.1) +
+        (rand() * 0.1) desc
         limit #{limit}
     </select>
 
     <select id="getItemListByItemNums" resultMap="shaItemMap">
-        select a.*, b.cat_name as item_cat_name, c.nickname, d.eup_myeon_dong_name,
+        select a.*, b.cat_name as cat_name, c.nickname, d.eup_myeon_dong_name,
         e.*, f.saved_name
         from sha_items a
         left join
@@ -756,6 +763,39 @@
         and c.is_deleted = 'N'
     </select>
 
+    <update id="updateReqReturnDate">
+        update
+        sha_req
+        set return_date = #{returnDate}
+        where req_no = #{reqNo}
+    </update>
+
+    <update id="hideReqFromDream">
+        update
+        sha_req
+        set deleted_at = now()
+        where req_no = #{reqNo}
+    </update>
+
+    <select id="getLikedMembersByItemNo" resultType="int">
+        SELECT sl.member_no
+        FROM SHA_LIKE sl
+        JOIN SHA_ITEMS si ON sl.item_no = si.item_no
+        JOIN MEMBER m ON sl.member_no = m.member_no
+        WHERE sl.item_no = #{itemNo}
+        AND si.status_code != 'UNAV'
+        AND m.is_deleted = 'N'
+    </select>
+
+    <select id="getUpcomingReturns" resultMap="shaReqMap">
+        SELECT r.*, i.title, m.nickname AS owner_nickname, m2.nickname AS rqst_nickname, m2.level AS rqst_level
+        FROM SHA_REQ r
+        JOIN SHA_ITEMS i ON r.req_item = i.item_no
+        JOIN MEMBER m ON i.owner_no = m.member_no
+        JOIN MEMBER m2 ON r.rqst_no = m2.member_no
+        WHERE r.return_date BETWEEN #{returnDate} AND DATE_ADD(#{returnDate}, INTERVAL 1 HOUR)
+        AND r.status_code = 'RNT'
+    </select>
 
 
 </mapper>

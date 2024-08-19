@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .popup-container {
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+
+            & h2 {
+                text-align: left;
+            }
+
+            & span {
+                white-space: no-wrap;
+            }
+        }
+        .info-popup {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .info-container {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .info-upper-section {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .info-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+
+            & .info-profile-icon {
+                width: 100px;
+                height: 100px;
+                border: 2px solid #FFB83D;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+
+            & .profile-right-section {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+
+                & .profile-name-section {
+                    display: flex;
+                    gap: 20px;
+
+                    & .profile-name {
+                        font-size: 24px;
+                        font-weight: bold;
+                        align-self: center;
+                    }
+
+                    & .info-location-btn {
+                        background-color: #FFB83D;
+                        color: white;
+                        border: none;
+                        padding: 8px 15px 8px 8px;
+                        border-radius: 10px;
+                        margin-right: 15px;
+                        display: flex;
+                        align-items: center;
+                        white-space: nowrap;
+                        font-size: 18px;
+                        font-family: Freesentation-5Medium;
+
+                        & svg {
+                            width: 25px;
+                            height: 25px;
+                            margin-right: 5px;
+                            fill: currentColor;
+                        }
+                    }
+                }
+            }
+        }
+        .info-dashboard {
+            text-align: center;
+        }
+        .info-summary-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+
+            & .info-summary {
+                flex: 1;
+                border-radius: 10px;
+                background-color: #EDEDED;
+                padding: 10px;
+
+                & h4 {
+                    font-weight: bold;
+                    white-space: no-wrap;
+                }
+
+                & span {
+                    color: #0059FF;
+                    font-size: 30px;
+                }
+            }
+        }
+        .info-downer-section h2 {
+            margin-bottom: 10px;
+        }
+        .recent-board tbody {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            & tr {
+                flex: 1;
+                text-align: left;
+                border-radius: 10px;
+                background-color: #EDEDED;
+                padding: 10px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #D3D3D3;
+                }
+
+                & td {
+                    display: flex;
+                    justify-content: space-between;
+                }
+            }
+        }
+        .empty-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            background-color: #EDEDED;
+            border-radius: 10px;
+            color: #888;
+            font-style: italic;
+        }
+        .info-button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{/member/alert}"></div>
+<div class="popup-container">
+<th:block th:if="${memberData != null and summary != null and newsData != null}">
+    <div class="info-popup">
+        <div class="info-upper-section">
+            <div class="info-container" style="height: 300px;">
+                <h2>프로필</h2>
+                <div class="info-profile">
+                    <img class="info-profile-icon" th:src="${memberData.savedName == null
+                                || memberData.savedName == ''
+                                || memberData.savedName == 'defaultProfile.png'
+                                ? '/img/defaultProfile.png' : '/uploadFiles/' + memberData.savedName}"
+                         alt="프로필 이미지">
+                    <div class="profile-right-section">
+                        <div class="profile-name-section">
+                            <span class="profile-name" th:text="${memberData.nickname + ' 님'}"></span>
+                            <button class="info-location-btn">
+                                <svg viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                </svg>
+                                <span th:text="${memberData.memAddressDTO.eupMyeonDongName}"></span>
+                            </button>
+                        </div>
+                        <span class="profile-signupAt" th:text="${'가입일 : ' + memberData.signupAt}"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-dashboard info-container" style="height: 300px;">
+                <h2>활동 요약</h2>
+                <div class="info-summary-container">
+                    <div class="info-summary">
+                        <span th:text="${summary.lend_count}"></span>
+                        <h4>올린 대여글</h4>
+                    </div>
+                    <div class="info-summary">
+                        <span th:text="${summary.give_count}"></span>
+                        <h4>올린 나눔글</h4>
+                    </div>
+                    <div class="info-summary">
+                        <span th:text="${#numbers.formatDecimal(summary.avg_rating, 1, 1)}"></span>
+                        <h4>평균 평점</h4>
+                    </div>
+                    <div class="info-summary">
+                        <span th:text="${summary.member_level}"></span>
+                        <h4>회원 레벨</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="info-downer-section info-container">
+            <div class="info-news-board">
+                <h2>최근 우동 소식 게시글</h2>
+                <table class="recent-board">
+                    <tr th:each="data : ${newsData}" th:onclick="#">
+                        <td>
+                            <span th:text="${data.title}"></span>
+                            <span th:text="${data.created_at}"></span>
+                            <span>➡️</span>
+                        </td>
+                    </tr>
+                </table>
+                <div class="empty-message" th:if="${#lists.isEmpty(newsData)}">아직 작성한 우동 소식이 없습니다!</div>
+            </div>
+        </div>
+        <div class="info-button-group">
+            <button class="btn btn-udh-blue" th:onclick="writeMessage()">쪽지 보내기</button>
+        </div>
+    </div>
+</th:block>
+</div>
+</body>
+<script th:inline="javascript">
+    let infoMemberNo = /*[[${memberNo}]]*/ '';
+
+    function infoReport(memberNo) {
+        infoMemberNo = memberNo;
+        console.log('infoMemberNo :', infoMemberNo);
+        window.open(`/member/memInfoPopup?no=${memberNo}`, '','width=750, height=570, left=300, top=300');
+    }
+
+    function writeMessage() {
+        console.log('infoMemberNo :', infoMemberNo);
+        window.open(`/message/sendMessageForm?memberNo=${infoMemberNo}`, '','width=500, height=410, left=300, top=300');
+    }
+</script> <!--전역함수-->
+</html>

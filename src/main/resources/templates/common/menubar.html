@@ -79,12 +79,13 @@
             &:hover {
                 background-color: #FFA11E;
             }
-        }
-        .location-btn svg {
-            width: 25px;
-            height: 25px;
-            margin-right: 5px;
-            fill: currentColor;
+
+            & svg {
+                width: 25px;
+                height: 25px;
+                margin-right: 5px;
+                fill: currentColor;
+            }
         }
         .user-icon {
             width: 50px;
@@ -267,7 +268,7 @@
             </button>
 
             <button class="location-btn" onclick="location.href='/member/address'">
-                <svg class="location-icon" viewBox="0 0 24 24" width="16" height="16">
+                <svg viewBox="0 0 24 24" width="16" height="16">
                     <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                 </svg>
                 <span sec:authentication="principal.memberDTO.memAddressDTO.eupMyeonDongName"></span>
@@ -341,6 +342,7 @@
 <div th:replace="~{/message/toggleMessage}"></div>
 <div th:replace="~{/notification/toggleNoti}"></div>
 <div th:replace="~{/cs/chatbot}"></div>
+<div th:replace="~{/member/memInfoPopup}"></div>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const currentPath = window.location.pathname;
@@ -373,10 +375,12 @@
 
     userToggle.forEach(button => {
         button.addEventListener('click', function(event) {
-            event.stopPropagation();
-            event.preventDefault();
-            userSideNav.classList.toggle('open');
-            sideNav.classList.remove('open');
+            if (window.innerWidth <= 1024) {
+                event.stopPropagation();
+                event.preventDefault();
+                userSideNav.classList.toggle('open');
+                sideNav.classList.remove('open');
+            }
         });
     });
 
@@ -391,6 +395,13 @@
     document.addEventListener('click', function() {
         sideNav.classList.remove('open');
         userSideNav.classList.remove('open');
+    });
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 1024) {
+            sideNav.classList.remove('open');
+            userSideNav.classList.remove('open');
+        }
     });
 </script> <!--사이드 내비 토글-->
 </body>
