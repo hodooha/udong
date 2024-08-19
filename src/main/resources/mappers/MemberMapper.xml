@@ -493,8 +493,18 @@
         WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
+    <select id="getDashboardSummary" resultType="map">
+        SELECT
+            (SELECT COUNT(*) FROM SHA_ITEMS WHERE owner_no = #{memberNo} AND item_group = 'RENT' AND deleted_at IS NULL) as lend_count,
+            (SELECT COUNT(*) FROM SHA_REQ WHERE rqst_no = #{memberNo}) as rent_count,
+            (SELECT COUNT(*) FROM SHA_ITEMS WHERE owner_no = #{memberNo} AND item_group = 'GIVE' AND deleted_at IS NULL) as give_count,
+            (SELECT COUNT(*) FROM CL_MEMBER WHERE member_no = #{memberNo} AND join_status = 'Y') as club_count,
+            (SELECT AVG(rating) FROM SHA_EVAL WHERE eve_no = #{memberNo}) as avg_rating,
+            (SELECT level FROM MEMBER WHERE member_no = #{memberNo}) as member_level
+    </select>
+
     <select id="getNewsData" resultType="map">
-        SELECT news_no, title, created_at, views
+        SELECT news_no, title, created_at
         FROM NS_POST
         WHERE writer = #{memberNo}
         AND is_deleted = 'N'
@@ -503,31 +513,34 @@
     </select>
 
     <select id="getLendData" resultType="map">
-        SELECT item_no, title, expiry_date, status_code
-        FROM SHA_ITEMS
-        WHERE owner_no = #{memberNo}
-        AND item_group = 'RENT'
-        AND deleted_at IS NULL
-        ORDER BY created_at DESC
+        SELECT i.item_no, i.title, i.expiry_date, s.status_name
+        FROM SHA_ITEMS i
+        JOIN SHA_STATUS s ON i.status_code = s.status_code
+        WHERE i.owner_no = #{memberNo}
+        AND i.item_group = 'RENT'
+        AND i.deleted_at IS NULL
+        ORDER BY i.created_at DESC
         LIMIT 3
     </select>
 
     <select id="getRentData" resultType="map">
-        SELECT si.item_no, si.title, sr.return_date, sr.status_code
+        SELECT si.item_no, si.title, sr.return_date, ss.status_name
         FROM SHA_REQ sr
         JOIN SHA_ITEMS si ON sr.req_item = si.item_no
+        JOIN SHA_STATUS ss ON sr.status_code = ss.status_code
         WHERE sr.rqst_no = #{memberNo}
         ORDER BY sr.created_at DESC
         LIMIT 3
     </select>
 
     <select id="getGiveData" resultType="map">
-        SELECT item_no, title, created_at, status_code
-        FROM SHA_ITEMS
-        WHERE owner_no = #{memberNo}
-        AND item_group = 'GIVE'
-        AND deleted_at IS NULL
-        ORDER BY created_at DESC
+        SELECT i.item_no, i.title, i.created_at, s.status_name
+        FROM SHA_ITEMS i
+        JOIN SHA_STATUS s ON i.status_code = s.status_code
+        WHERE i.owner_no = #{memberNo}
+        AND i.item_group = 'GIVE'
+        AND i.deleted_at IS NULL
+        ORDER BY i.created_at DESC
         LIMIT 3
     </select>
 
@@ -537,6 +550,7 @@
         JOIN CL_MEMBER cm ON c.club_no = cm.club_no
         WHERE cm.member_no = #{memberNo}
         AND c.is_deleted = 'N'
+        AND cm.join_status = 'Y'
         ORDER BY c.created_at DESC
         LIMIT 3
     </select>
@@ -549,6 +563,7 @@
         WHERE csp.member_no = #{memberNo}
         AND cs.gathering_at > NOW()
         AND cs.is_deleted = 'N'
+        AND c.is_deleted = 'N'
         ORDER BY cs.gathering_at ASC
         LIMIT 3
     </select>
@@ -596,4 +611,22 @@
         SET last_login_at = CURRENT_TIMESTAMP
         WHERE member_id = #{memberId}
     </update>
+
+    <select id="getMemberInfo" resultMap="memberResultMap">
+        SELECT m.*, ma.eup_myeon_dong_name, a.saved_name
+        FROM member m
+        LEFT JOIN mem_address ma ON m.member_no = ma.member_no
+        LEFT JOIN (
+            SELECT target_no, saved_name
+            FROM ATTACHMENT
+            WHERE type_code = 'MEM'
+            AND (target_no, file_no) IN (
+                SELECT target_no, MAX(file_no)
+                FROM ATTACHMENT
+                WHERE type_code = 'MEM'
+                GROUP BY target_no
+            )
+        ) a ON m.member_no = a.target_no
+        WHERE m.member_no = #{memberNo}
+    </select>
 </mapper>

@@ -38,4 +38,6 @@ public interface MemberService {
     Map<String, Object> selectAllDashBoard(int memberNo);
 
     String deleteMember(int memberNo);
+
+    Map<String, Object> getMemberInfo(int memberNo);
 }

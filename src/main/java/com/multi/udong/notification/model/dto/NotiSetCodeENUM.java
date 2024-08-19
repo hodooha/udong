@@ -17,7 +17,6 @@ public enum NotiSetCodeENUM {
     RENT_RETURN_OWNER("대여 물품 반납 3일 전 알림(소유자)", "대여해주신 물품 \"{itemName}\" 의 반납 기한이 3일 후입니다.", "/share/rent/myItems"),
     ITEM_AVAILABLE("관심 물품 대여 가능", "찜한 물품 \"{itemName}\" 이 대여 가능한 상태가 되었습니다.", "/share/rent/detail?itemNo="),
     GIVE_DRAW_REMIND("나눔 물품 추첨 24시간 전 알림(소유자)", "나눔하신 물품 \"{itemName}\" 의 당첨자 추첨이 24시간 후에 진행됩니다.", "/share/give/detail?itemNo="),
-    GIVE_WINNER_SELECTED("나눔 물품 당첨자 선정", "나눔하신 물품 \"{itemName}\" 의 당첨자가 선정되었습니다.", "/share/give/detail?itemNo="),
 
     // 모임
     CL_JOIN_RESULT("모임 가입 신청 결과", "모임 \"{clubName}\" 의 가입 신청이 {result}되었습니다.", "/club/clubHome?clubNo="),
@@ -27,10 +26,10 @@ public enum NotiSetCodeENUM {
     CL_NEW_JOIN_REQ("새 모임 가입 신청", "모임 \"{clubName}\" 에 가입 신청이 있습니다.", "/club/clubHome?clubNo="),
 
     // 소식
-    NEWS_COMMENT("소식 게시글 새 댓글", "소식 게시글에 새 댓글이 달렸습니다", "/news/detail?newsNo="),
+    NEWS_COMMENT("소식 게시글 새 댓글", "소식 게시글에 새 댓글이 달렸습니다.", "/news/detail?newsNo="),
 
     // 회원
-    MEMBER_LEVEL_UP("회원 등급 상승", "회원님의 등급이 {newLevel}로 상승했습니다.", "/mypage"),
+    MEMBER_LEVEL_UP("회원 등급 상승", "회원님의 레벨이 {newLevel}레벨로 상승했습니다!", "/member/dashBoard"),
     CS_ANSWER("문의글 답변","작성하신 문의글에 답변이 등록되었습니다.", "/cs/queDetail?no="),
 
     // 관리자

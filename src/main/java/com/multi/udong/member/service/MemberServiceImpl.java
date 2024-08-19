@@ -136,6 +136,7 @@ public class MemberServiceImpl implements MemberService {
 
         Map<String, Object> result = new HashMap<>();
 
+        result.put("summary", memberMapper.getDashboardSummary(memberNo));
         result.put("newsData", memberMapper.getNewsData(memberNo));
         result.put("lendData", memberMapper.getLendData(memberNo));
         result.put("rentData", memberMapper.getRentData(memberNo));
@@ -179,6 +180,25 @@ public class MemberServiceImpl implements MemberService {
         } else {
             return "disable";
         }
+    }
+
+    /**
+     * Get member info member dto.
+     *
+     * @param memberNo the member no
+     * @return the member dto
+     * @since 2024 -08-19
+     */
+    @Override
+    public Map<String, Object> getMemberInfo(int memberNo) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("memberData", memberMapper.getMemberInfo(memberNo));
+        result.put("summary", memberMapper.getDashboardSummary(memberNo));
+        result.put("newsData", memberMapper.getNewsData(memberNo));
+
+        return result;
     }
 
     /**

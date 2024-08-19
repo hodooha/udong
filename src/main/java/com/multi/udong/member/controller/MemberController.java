@@ -43,7 +43,7 @@ public class MemberController {
     private final KakaoLoginController kakaoLoginController;
 
     /**
-     * Dash board.
+     * 대시보드.
      *
      * @param c     the c
      * @param model the model
@@ -56,14 +56,31 @@ public class MemberController {
 
         Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
 
-        System.out.println("##### map : " + map);
-
+        model.addAttribute("summary", map.get("summary"));
         model.addAttribute("newsData", map.get("newsData"));
         model.addAttribute("lendData", map.get("lendData"));
         model.addAttribute("rentData", map.get("rentData"));
         model.addAttribute("giveData", map.get("giveData"));
         model.addAttribute("clubData", map.get("clubData"));
         model.addAttribute("scheduleData", map.get("scheduleData"));
+    }
+
+    /**
+     * Mem info popup.
+     *
+     * @param memberNo the memberNo
+     * @param model    the model
+     * @since 2024 -08-19
+     */
+    @GetMapping("/memInfoPopup")
+    public void getMemberInfo(@RequestParam("no") int memberNo, Model model) {
+
+        Map<String, Object> map = memberService.getMemberInfo(memberNo);
+
+        model.addAttribute("memberData", map.get("memberData"));
+        model.addAttribute("summary", map.get("summary"));
+        model.addAttribute("newsData", map.get("newsData"));
+        model.addAttribute("memberNo", memberNo);
     }
 
     /**

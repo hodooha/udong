@@ -10,8 +10,7 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        .form-container {
             background-color: #f5f5f5;
             display: flex;
             justify-content: center;
@@ -25,53 +24,60 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             max-width: 400px;
-        }
-        h2 {
-            color: #333;
-            margin: 10px 0;
-            text-align: center;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        label {
-            display: block;
-            margin: 0 auto 5px 0;
-            color: #666;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            margin-bottom: 20px;
 
-            &:focus {
-                border-color: #007bff;
-                outline: none;
+            & h2 {
+                color: #333;
+                margin: 10px 0;
+                text-align: center;
             }
-        }
-        textarea {
-            height: 100px;
-            resize: vertical;
+
+            & form {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+
+                & label {
+                    display: block;
+                    margin: 0 auto 5px 0;
+                    color: #666;
+                }
+
+                & input, textarea {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    margin-bottom: 20px;
+
+                    &:focus {
+                        border-color: #007bff;
+                        outline: none;
+                    }
+                }
+
+                & textarea {
+                    height: 100px;
+                    resize: vertical;
+                }
+            }
         }
     </style>
 </head>
 <body>
 <div th:replace="~{/member/alert}"></div>
-<div class="message-form">
-    <h2>메시지 작성</h2>
-    <form>
-        <label for="receiverNickname">받는 사람:</label>
-        <input type="text" id="receiverNickname" th:value="${receiverNickname}" required>
-        <label for="content">내용:</label>
-        <textarea id="content" required></textarea>
-        <button class="btn btn-udh-blue">보내기</button>
-    </form>
+<div class="form-container">
+    <div class="message-form">
+        <h2>메시지 작성</h2>
+        <form>
+            <label for="receiverNickname">받는 사람:</label>
+            <input type="text" id="receiverNickname" th:value="${receiverNickname}" required>
+            <label for="content">내용:</label>
+            <textarea id="content" required></textarea>
+            <button class="btn btn-udh-blue">보내기</button>
+        </form>
+    </div>
 </div>
 </body>
 <script>
