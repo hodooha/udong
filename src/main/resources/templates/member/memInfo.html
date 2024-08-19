@@ -258,27 +258,41 @@
         const checkDuplicateButton = document.querySelector('#checkDuplicate');
         const updateProfileForm = document.querySelector('.profile-update form');
         const currentNickname = currentNicknameInput.value.trim();
+        const fileInput = document.querySelector('#profile-pic');
 
         const nicknameMessage = document.querySelector('#nickname-message');
 
-        // 닉네임 변경 감지
         let isNicknameChanged = false;
-        nicknameInput.addEventListener('onchange', function() {
+        let isNicknameChecked = false;
+        let isProfilePicChanged = false;
+
+        // 닉네임 변경 감지
+        nicknameInput.addEventListener('input', function() {
             isNicknameChanged = (this.value.trim() !== currentNickname);
             if (isNicknameChanged) {
                 isNicknameChecked = false;
                 checkDuplicateButton.disabled = false;
+            } else {
+                isNicknameChecked = true;
+                checkDuplicateButton.disabled = true;
             }
+            updateSubmitButtonState();
+        });
+
+        // 프로필 사진 변경 감지
+        fileInput.addEventListener('change', function() {
+            isProfilePicChanged = (this.files.length > 0);
+            updateSubmitButtonState();
         });
 
         // 닉네임 중복 검사
-        let isNicknameChecked = false;
         checkDuplicateButton.addEventListener('click', function() {
             let nickname = nicknameInput.value.trim();
 
             if (nickname === currentNickname) {
                 showMessage(nicknameMessage, '현재 사용 중인 닉네임과 동일합니다.', false);
                 isNicknameChecked = true;
+                updateSubmitButtonState();
                 return;
             }
 
@@ -308,6 +322,7 @@
                     showMessage(nicknameMessage, '이미 사용 중인 닉네임입니다. 다른 닉네임을 사용해 주세요.', true);
                     isNicknameChecked = false;
                 }
+                updateSubmitButtonState();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -319,12 +334,17 @@
         updateProfileForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            if (isNicknameChanged || !isNicknameChecked) {
+            if (isNicknameChanged && !isNicknameChecked) {
                 showMessage(nicknameMessage, '닉네임 중복 검사를 완료해주세요.', true);
                 return;
             }
 
-            this.submit();
+           // 닉네임이 변경되었거나 프로필 사진이 변경되었을 때만 제출
+            if (isNicknameChanged || isProfilePicChanged) {
+                this.submit();
+            } else {
+                showMessage(nicknameMessage, '변경된 내용이 없습니다.', true);
+            }
         });
 
         // 닉네임 초기화 버튼
@@ -334,8 +354,22 @@
             nicknameInput.readOnly = false;
             checkDuplicateButton.disabled = false;
             isNicknameChecked = false;
+            isNicknameChanged = true;
             nicknameInput.focus();
+            updateSubmitButtonState();
         });
+
+        // 제출 버튼 상태 업데이트 함수
+        function updateSubmitButtonState() {
+            const submitButton = document.querySelector('#updateProfile');
+            if (isNicknameChanged && !isNicknameChecked) {
+                submitButton.disabled = true;
+            } else if (isNicknameChanged || isProfilePicChanged) {
+                submitButton.disabled = false;
+            } else {
+                submitButton.disabled = true;
+            }
+        }
     });
 
     // 메세지 표시

@@ -9,6 +9,10 @@
 </body>
 <script th:inline="javascript">
     window.onload = function() {
+        var isNewMember = /*[[${isNewMember}]]*/ false;
+        if (isNewMember) {
+            window.opener.sessionStorage.setItem('googleLoginMessage', 'newMember');
+        }
         window.opener.location.href = '/';
         window.close();
     }

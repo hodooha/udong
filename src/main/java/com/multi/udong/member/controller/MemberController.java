@@ -56,6 +56,8 @@ public class MemberController {
 
         Map<String, Object> map = memberService.selectAllDashBoard(memberNo);
 
+        System.out.println("###summary : " + map.get("summary"));
+
         model.addAttribute("summary", map.get("summary"));
         model.addAttribute("newsData", map.get("newsData"));
         model.addAttribute("lendData", map.get("lendData"));

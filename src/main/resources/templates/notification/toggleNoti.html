@@ -161,6 +161,7 @@
 
     let stompClient = null;
     let memberNo = /*[[${#authentication.principal instanceof T(com.multi.udong.login.service.CustomUserDetails) ? #authentication.principal.memberDTO.memberNo : null}]]*/ null;
+    let reconnectInterval = null;
 
     // 웹소켓 연결
     function connect() {
@@ -170,6 +171,9 @@
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
+            clearInterval(reconnectInterval);
+            reconnectInterval = null;
+
             // 알림 구독
             stompClient.subscribe('/topic/noti/' + memberNo, function (noti) {
                 showNoti(JSON.parse(noti.body));
@@ -182,6 +186,25 @@
             });
         });
     }
+
+    // 웹소켓 재연결
+    function reconnect() {
+        if (!reconnectInterval) {
+            reconnectInterval = setInterval(function() {
+                console.log('재연결 시도 중...');
+                connect();
+            }, 5000);
+        }
+    }
+
+    // 1분마다 연결상태 확인
+    function checkConnection() {
+        if (!stompClient || !stompClient.connected) {
+            console.log('웹소켓 연결이 끊겼습니다. 재연결 시도 중...');
+            connect();
+        }
+    }
+    setInterval(checkConnection, 60000);
 
     // 알림 개수 표시
     let unreadNotiCount = 0;

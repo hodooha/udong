@@ -84,13 +84,20 @@ public class GoogleLoginController {
             memberDTO.setEmail(googleEmail);
             memberDTO.setNickname(googleNickname);
 
+            boolean isNewMember = false;
+
             // 가입되어있지 않다면 회원가입 진행
             if (memberMapper.findMemberById(googleMemberId) == null) {
                 memberService.signup(memberDTO);
+                isNewMember = true;
             }
 
             // 로그인 작업 수행
             loginController.authenticateUserAndSetSession(memberDTO, request);
+
+            if (isNewMember) {
+                model.addAttribute("isNewMember", true);
+            }
         }
 
         return "member/googleClose";

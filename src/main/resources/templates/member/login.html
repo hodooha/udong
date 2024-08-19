@@ -240,26 +240,27 @@
 
                                                 success: function(json) {
                                                     if (json.success) { // 회원가입 성공시
+                                                        sessionStorage.setItem('kakaoLoginMessage', 'newMember');
                                                         createHiddenLoginForm(kakaoid); // HiddenLoginForm으로 kakaoid를 전달
                                                     } else {
-                                                        alert('카카오 회원가입 실패. 일반계정으로 로그인하시기 바랍니다.');
+                                                        showErrorAlert('카카오 회원가입 실패. 일반계정으로 로그인하시기 바랍니다.');
                                                     }
                                                 },
                                                 error: function(request, status, error) {
-                                                    alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
+                                                    showErrorAlert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
                                                 }
                                             });
                                         }
                                     },
                                     error: function(request, status, error) {
-                                        alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
+                                        showErrorAlert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
                                     }
                                 });
                             }
                         });
                     },
                     fail: function(error) {
-                        alert(error);
+                        showErrorAlert(error);
                     }
                 });
             },

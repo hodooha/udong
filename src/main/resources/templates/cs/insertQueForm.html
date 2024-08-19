@@ -75,11 +75,21 @@
                 <label>
                     <input type="checkbox" required>개인정보 수집 및 이용 동의 (필수)
                 </label>
-                <button class="btn btn-udh-blue">문의하기</button>
+                <button class="btn btn-udh-blue" id="submitBtn" >문의하기</button>
             </form>
         </div>
 
     </div>
 </main>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const agreementCheckbox = document.getElementById('agreement');
+        const submitButton = document.getElementById('submitBtn');
+
+        agreementCheckbox.addEventListener('change', function() {
+            submitButton.disabled = !this.checked;
+        });
+    });
+</script> <!--문의하기 버튼 활성화-->
 </html>

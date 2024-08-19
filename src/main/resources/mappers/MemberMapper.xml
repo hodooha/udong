@@ -501,7 +501,7 @@
             (SELECT COUNT(*) FROM SHA_REQ WHERE rqst_no = #{memberNo}) as rent_count,
             (SELECT COUNT(*) FROM SHA_ITEMS WHERE owner_no = #{memberNo} AND item_group = 'GIVE' AND deleted_at IS NULL) as give_count,
             (SELECT COUNT(*) FROM CL_MEMBER WHERE member_no = #{memberNo} AND join_status = 'Y') as club_count,
-            (SELECT AVG(rating) FROM SHA_EVAL WHERE eve_no = #{memberNo}) as avg_rating,
+            COALESCE((SELECT AVG(rating) FROM SHA_EVAL WHERE eve_no = #{memberNo}), 0) as avg_rating,
             (SELECT level FROM MEMBER WHERE member_no = #{memberNo}) as member_level
     </select>
 

@@ -172,6 +172,19 @@
     });
     /*]]>*/
 </script>
+<script>
+    window.onload = function() {
+        var googleMessage = sessionStorage.getItem('googleLoginMessage');
+        var kakaoMessage = sessionStorage.getItem('kakaoLoginMessage');
 
+        if (googleMessage === 'newMember') {
+            showSuccessAlert("구글 계정으로 회원가입 되었습니다!");
+            sessionStorage.removeItem('googleLoginMessage');
+        } else if (kakaoMessage === 'newMember') {
+            showSuccessAlert("카카오 계정으로 회원가입 되었습니다!");
+            sessionStorage.removeItem('kakaoLoginMessage');
+        }
+    };
+</script>
 </body>
 </html>
