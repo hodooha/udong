@@ -253,7 +253,7 @@
 
     <select id="selectNewsReply" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
         SELECT
-            sub.reply_no,
+            sub.news_no,
             nc.category_name,
             l.eup_myeon_dong_name,
             np.title,
@@ -262,7 +262,9 @@
             sub.total_count
         FROM (
             SELECT
-                nr.*,
+                nr.news_no,
+                nr.content,
+                nr.created_at,
                 COUNT(*) OVER() AS total_count,
                 ROW_NUMBER() OVER (ORDER BY nr.created_at DESC) AS rownum
             FROM NS_REPLY nr
@@ -545,7 +547,11 @@
     </select>
 
     <select id="getClubData" resultType="map">
-        SELECT c.club_no, c.club_name
+        SELECT
+            c.club_no,
+            c.club_name,
+            c.max_personnel,
+            (SELECT COUNT(*) FROM CL_MEMBER WHERE club_no = c.club_no AND join_status = 'Y') AS current_members
         FROM CL c
         JOIN CL_MEMBER cm ON c.club_no = cm.club_no
         WHERE cm.member_no = #{memberNo}
