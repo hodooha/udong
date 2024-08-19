@@ -11,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +28,10 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/sale") //sale에 대한 경로 요청 처리
@@ -146,7 +152,7 @@ public class SaleController {
     private String kakaoApiKey;
 
     @GetMapping("/detail/{saleNo}")
-    public String saleDetail(@PathVariable("saleNo") int saleNo, Model model) {
+    public String saleDetail(@PathVariable("saleNo") int saleNo, Model model, Authentication authentication) {
         SaleDTO sale = saleService.getSaleWithAttachments(saleNo);
         saleService.incrementViews(saleNo);
         System.out.println("Sale: " + sale); // 로그 추가
@@ -154,6 +160,21 @@ public class SaleController {
         System.out.println("Views: " + sale.getViews()); // 로그 추가
         model.addAttribute("sale", sale);
         model.addAttribute("kakaoApiKey", kakaoApiKey);
+
+
+        if (authentication != null && authentication.isAuthenticated()) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) principal;
+                model.addAttribute("currentUserId", userDetails.getUsername());
+
+
+                boolean isSeller = authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_SELLER"));
+                model.addAttribute("isSeller", isSeller);
+            }
+        }
+
         return "sale/saleDetail";
     }
 
@@ -238,20 +259,16 @@ public class SaleController {
                                               @RequestBody Map<String, String> body,
                                               @AuthenticationPrincipal CustomUserDetails currentUser) {
         try {
-            SaleDTO sale = saleService.getSaleById(saleNo);
-
-            if (sale.getWriter() != currentUser.getMemberDTO().getMemberNo()) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "권한 없음",
-                                "message", "이 판매글을 수정할 권한이 없습니다."));
-            }
-
             String status = body.get("status");
-            saleService.updateSaleStatus(saleNo, status);
+            saleService.updateSaleStatus(saleNo, status, currentUser.getMemberDTO().getMemberNo());
 
             return ResponseEntity.ok()
                     .body(Map.of("status", status,
                             "message", "판매 상태가 성공적으로 업데이트되었습니다."));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "권한 없음",
+                            "message", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "서버 오류",

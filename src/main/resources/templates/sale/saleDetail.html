@@ -245,7 +245,9 @@
 <div class="detail-container">
     <div class="header-container">
     <h1 class="sale-title"><span th:text="${sale.title}">땡처리 제목</span></h1>
-        <div class="toggle-container" title="주의: 마감 처리 후에는 되돌릴 수 없습니다." th:if="${#authorization.expression('hasRole(''ROLE_SELLER'')')}">
+        <div class="toggle-container"
+             title="주의: 마감 처리 후에는 되돌릴 수 없습니다."
+             th:if="${#authorization.expression('hasRole(''ROLE_SELLER'')') and #authentication.principal.memberDTO.memberNo == sale.writer}">
             <span style="display: inline-block;">마감</span>
             <label for="statusToggle" class="switch">
                 <input type="checkbox" id="statusToggle" th:checked="${sale.status == 'closed'}">

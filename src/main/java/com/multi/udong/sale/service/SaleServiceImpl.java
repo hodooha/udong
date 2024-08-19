@@ -6,6 +6,7 @@ import com.multi.udong.sale.model.dao.SaleDAO;
 import com.multi.udong.sale.model.dto.SaleDTO;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,16 +115,17 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
-    public void updateSaleStatus(int saleNo, String status) {
-        try {
-            Map<String, Object> params = new HashMap<>();
-            params.put("saleNo", saleNo);
-            params.put("status", status);
-            sqlSession.update("SaleMapper.updateSaleStatus", params);
-        } catch (Exception e) {
-            e.printStackTrace(); // 서버 로그에 오류를 기록
-            throw e; // 예외를 다시 던져서 상위 레벨에서 처리되도록 함
+    public void updateSaleStatus(int saleNo, String status, int currentUserId) {
+        SaleDTO sale = getSaleWithAttachments(saleNo);
+
+        if (sale.getWriter() != currentUserId) {
+            throw new AccessDeniedException("이 판매글을 수정할 권한이 없습니다.");
         }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("saleNo", saleNo);
+        params.put("status", status);
+        sqlSession.update("SaleMapper.updateSaleStatus", params);
     }
 
 }
