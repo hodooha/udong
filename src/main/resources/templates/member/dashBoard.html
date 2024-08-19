@@ -16,7 +16,6 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            transition: 0.1s;
 
             & h2 {
                 text-align: left;
@@ -86,6 +85,10 @@
                 }
             }
         }
+        .recent-board {
+            width: 100%;
+            flex: 1;
+        }
         .recent-board tbody {
             display: flex;
             flex-direction: column;
@@ -93,7 +96,6 @@
 
             & tr {
                 flex: 1;
-                text-align: left;
                 border-radius: 10px;
                 background-color: #EDEDED;
                 padding: 10px;
@@ -106,6 +108,20 @@
                 & td {
                     display: flex;
                     justify-content: space-between;
+
+                    & span {
+                        flex: 1;
+                        white-space: nowrap;
+                        overflow: hidden;
+
+                        &:first-child {
+                            text-align: left;
+                        }
+
+                        &:last-child {
+                            text-align: right;
+                        }
+                    }
                 }
             }
         }
@@ -146,10 +162,11 @@
                 </div>
             </div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=newsBoard&page=1}'|">나의 우동 소식</h2>
             <table class="recent-board">
-                <tr th:each="data : ${newsData}" th:onclick="#">
+                <tr th:each="data : ${newsData}" th:onclick="|location.href='@{/news/newsDetail(newsNo=${data.news_no})}'|">
                     <td>
                         <span th:text="${data.title}"></span>
                         <span th:text="${data.created_at}"></span>
@@ -159,6 +176,7 @@
             </table>
             <div class="empty-message" th:if="${#lists.isEmpty(newsData)}">아직 작성한 우동 소식이 없습니다!</div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 대여글</h2>
             <table class="recent-board">
@@ -173,6 +191,7 @@
             </table>
             <div class="empty-message" th:if="${#lists.isEmpty(lendData)}">아직 등록한 대여 물품이 없습니다!</div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/borrow}'|">대여한 물건</h2>
             <table class="recent-board">
@@ -187,6 +206,7 @@
             </table>
             <div class="empty-message" th:if="${#lists.isEmpty(rentData)}">아직 대여한 물품이 없습니다!</div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/share/dream/lend}'|">올린 나눔글</h2>
             <table class="recent-board">
@@ -201,18 +221,21 @@
             </table>
             <div class="empty-message" th:if="${#lists.isEmpty(giveData)}">아직 등록한 나눔 물품이 없습니다!</div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=club&page=1}'|">가입한 모임</h2>
             <table class="recent-board">
                 <tr th:each="data : ${clubData}" th:onclick="|location.href='@{/club/clubHome(clubNo=${data.club_no})}'|">
                     <td>
                         <span th:text="${data.club_name}"></span>
+                        <span th:text="${data.current_members + ' / ' + data.max_personnel}"></span>
                         <span>➡️</span>
                     </td>
                 </tr>
             </table>
             <div class="empty-message" th:if="${#lists.isEmpty(clubData)}">아직 가입한 모임이 없습니다!</div>
         </div>
+
         <div class="dashBoard recent">
             <h2 th:onclick="|location.href='@{/member/act?table=clubSchedule&page=1}'|">다가오는 일정</h2>
             <table class="recent-board">

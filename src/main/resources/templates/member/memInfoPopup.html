@@ -6,7 +6,6 @@
     <title>Title</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .popup-container {
             background-color: #f5f5f5;
@@ -20,7 +19,7 @@
             }
 
             & span {
-                white-space: no-wrap;
+                white-space: nowrap;
             }
         }
         .info-popup {
@@ -64,6 +63,11 @@
                     display: flex;
                     gap: 20px;
 
+                    & .level {
+                        width: 40px;
+                        height: 40px;
+                    }
+
                     & .profile-name {
                         font-size: 24px;
                         font-weight: bold;
@@ -76,7 +80,6 @@
                         border: none;
                         padding: 8px 15px 8px 8px;
                         border-radius: 10px;
-                        margin-right: 15px;
                         display: flex;
                         align-items: center;
                         white-space: nowrap;
@@ -109,7 +112,7 @@
 
                 & h4 {
                     font-weight: bold;
-                    white-space: no-wrap;
+                    white-space: nowrap;
                 }
 
                 & span {
@@ -121,14 +124,18 @@
         .info-downer-section h2 {
             margin-bottom: 10px;
         }
+        .info-news-board {
+            display: flex;
+            flex-direction: column;
+        }
         .recent-board tbody {
+            flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
 
             & tr {
                 flex: 1;
-                text-align: left;
                 border-radius: 10px;
                 background-color: #EDEDED;
                 padding: 10px;
@@ -141,6 +148,20 @@
                 & td {
                     display: flex;
                     justify-content: space-between;
+
+                    & span {
+                        flex: 1;
+                        white-space: nowrap;
+                        overflow: hidden;
+
+                        &:nth-child(1) {
+                            flex: 2 1 0;
+                        }
+
+                        &:nth-child(3) {
+                            text-align: right;
+                        }
+                    }
                 }
             }
         }
@@ -178,6 +199,7 @@
                     <div class="profile-right-section">
                         <div class="profile-name-section">
                             <span class="profile-name" th:text="${memberData.nickname + ' 님'}"></span>
+                            <img class="level" th:src="@{'/img/'+${#authentication.principal.memberDTO.level}+'.png'}">
                             <button class="info-location-btn">
                                 <svg viewBox="0 0 24 24" width="16" height="16">
                                     <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
@@ -215,7 +237,7 @@
             <div class="info-news-board">
                 <h2>최근 우동 소식 게시글</h2>
                 <table class="recent-board">
-                    <tr th:each="data : ${newsData}" th:onclick="#">
+                    <tr th:each="data : ${newsData}" th:onclick="openNewsDetail([[${data.news_no}]])">
                         <td>
                             <span th:text="${data.title}"></span>
                             <span th:text="${data.created_at}"></span>
@@ -236,15 +258,13 @@
 <script th:inline="javascript">
     let infoMemberNo = /*[[${memberNo}]]*/ '';
 
-    function infoReport(memberNo) {
-        infoMemberNo = memberNo;
-        console.log('infoMemberNo :', infoMemberNo);
-        window.open(`/member/memInfoPopup?no=${memberNo}`, '','width=750, height=570, left=300, top=300');
-    }
-
     function writeMessage() {
         console.log('infoMemberNo :', infoMemberNo);
         window.open(`/message/sendMessageForm?memberNo=${infoMemberNo}`, '','width=500, height=410, left=300, top=300');
+    }
+
+    function openNewsDetail(newsNo) {
+        window.opener.open(`/news/newsDetail?newsNo=${newsNo}`, '_blank');
     }
 </script> <!--전역함수-->
 </html>
