@@ -125,4 +125,5 @@ public class SaleServiceImpl implements SaleService {
             throw e; // 예외를 다시 던져서 상위 레벨에서 처리되도록 함
         }
     }
+
 }

@@ -77,5 +77,6 @@ public interface AdminMapper {
     // 블랙리스트 해제
     @Update("UPDATE MEMBER SET is_blacked = 'R', blacked_at = NULL WHERE member_no = #{memberNo}")
     void unblacklistMember(@Param("memberNo") int memberNo);
+    List<MemberDTO> searchBlacklistedMembersByIdOrName(@Param("search") String search);
 
 }

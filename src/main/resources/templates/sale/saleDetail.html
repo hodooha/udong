@@ -210,6 +210,19 @@
             opacity: 0.5;
             pointer-events: none;
         }
+        .sale-card-timer {
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #CB3333;
+            padding: 5px 10px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            display: inline-block;
+            max-width: 45%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
 
     </style>
@@ -252,6 +265,10 @@
             </p>
             <p>
                 <strong>조회수:</strong> <span th:text="${sale.views}"></span>
+            </p>
+            <p>
+               <strong></strong>
+               <span class="sale-card-timer" th:attr="data-sale-id=${sale.saleNo}, data-start-time=${sale.startedAt}, data-end-time=${sale.endedAt}">00:00:00</span>
             </p>
             <p id="content-text" th:text="${sale.content}">땡처리 내용</p>
         </div>
@@ -299,38 +316,46 @@
     });
 
     function updateSaleStatus(saleId, newStatus, $toggle) {
-        var token = $("meta[name='_csrf']").attr("content");
-        var header = $("meta[name='_csrf_header']").attr("content");
+    var token = $("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
 
-        $toggle.prop('disabled', true); // 요청 중 토글 비활성화
+    $toggle.prop('disabled', true); // 요청 중 토글 비활성화
 
-        $.ajax({
-            url: '/sale/updateStatus/' + saleId,
-            type: 'POST',
-            data: JSON.stringify({ status: newStatus }),
-            contentType: 'application/json',
-            beforeSend: function(xhr) {
-                if (header && token) {
-                    xhr.setRequestHeader(header, token);
-                } else {
-                    console.error('CSRF 토큰 또는 헤더가 설정되지 않았습니다.');
-                }
-            },
-            success: function(response) {
-                console.log("Server response:", response);
-                updateUIBasedOnStatus(response.status);
-                Swal.fire('성공', '상태가 성공적으로 업데이트되었습니다.', 'success');
-            },
-            error: function(xhr, status, error) {
-                console.error("Error updating status:", error);
-                $toggle.prop('checked', !$toggle.prop('checked'));
-                Swal.fire('오류', '판매 상태 업데이트 권한이 없습니다.', 'error');
-            },
-            complete: function() {
-                $toggle.prop('disabled', false); // 요청 완료 후 토글 활성화
+    $.ajax({
+        url: '/sale/updateStatus/' + saleId,
+        type: 'POST',
+        data: JSON.stringify({ status: newStatus }),
+        contentType: 'application/json',
+        beforeSend: function(xhr) {
+            if (header && token) {
+                xhr.setRequestHeader(header, token);
+            } else {
+                console.error('CSRF 토큰 또는 헤더가 설정되지 않았습니다.');
             }
-        });
-    }
+        },
+        success: function(response) {
+            console.log("Server response:", response);
+            Swal.fire({
+                title: '성공',
+                text: '상태가 성공적으로 업데이트되었습니다.',
+                icon: 'success',
+                confirmButtonText: '확인'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    location.reload(); // 페이지 새로고침
+                }
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error("Error updating status:", error);
+            $toggle.prop('checked', !$toggle.prop('checked'));
+            Swal.fire('오류', '판매 상태 업데이트 권한이 없습니다.', 'error');
+        },
+        complete: function() {
+            $toggle.prop('disabled', false); // 요청 완료 후 토글 활성화
+        }
+    });
+}
 
     function updateUIBasedOnStatus(status) {
         var isChecked = status === 'closed';
@@ -390,6 +415,34 @@
         });
         return false;
     }
+    function updateTimer(timerElement) {
+    const now = new Date().getTime();
+    const endTime = new Date(timerElement.getAttribute('data-end-time')).getTime();
+    const saleId = timerElement.getAttribute('data-sale-id');
+    const status = /*[[${sale.status}]]*/ 'active'; // Thymeleaf will replace this with actual status
+
+    if (status === 'closed' || now >= endTime) {
+        timerElement.innerHTML = "땡처리 마감";
+    } else {
+        const remainingTime = endTime - now;
+        const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+        const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+        timerElement.innerHTML = `🕓 ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+}
+
+function updateAllTimers() {
+    document.querySelectorAll('.sale-card-timer').forEach(timer => {
+        updateTimer(timer);
+    });
+}
+
+// 페이지 로드 시 타이머 시작
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllTimers();
+    setInterval(updateAllTimers, 1000);  // 1초마다 타이머 업데이트
+});
 </script>
     <div class="button-container">
         <button class="btn-submit btn-udh-blue" onclick="history.back()">뒤로가기</button>

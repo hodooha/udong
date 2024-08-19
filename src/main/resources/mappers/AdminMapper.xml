@@ -56,12 +56,21 @@
         MEMBER m ON b.member_no = m.member_no
         LEFT JOIN
         ATTACHMENT a ON b.member_no = a.target_no AND a.type_code = 'BRG'
+        ORDER BY
+        b.member_no DESC
     </select>
     <select id="getSellerByMemberNo" resultType="com.multi.udong.member.model.dto.MemBusDTO">
         SELECT mb.*, m.member_id
         FROM MEM_BUS mb
         JOIN MEMBER m ON mb.member_no = m.member_no
         WHERE mb.member_no = #{memberNo}
+    </select>
+
+    <select id="searchBlacklistedMembersByIdOrName" parameterType="string" resultType="memberDTO">
+        SELECT * FROM MEMBER
+        WHERE (is_blacked = 'Y' OR is_blacked = 'R')
+        AND (member_id LIKE CONCAT('%', #{search}, '%')
+        OR nickname LIKE CONCAT('%', #{search}, '%'))
     </select>
 
 </mapper>

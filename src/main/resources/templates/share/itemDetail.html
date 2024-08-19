@@ -174,7 +174,7 @@
 
                 <span th:if="${item.ownerNo} == ${#authentication.principal.memberDTO.memberNo}">
                 <button class="btn btn-udh-yellow"
-                        th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" th:disabled="${item.statusCode == 'GVD'} ? 'disabled'">수정하기</button>
+                        th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|" >수정하기</button>
                 </span>
                 </th:block>
 
@@ -215,7 +215,7 @@
                             class="btn btn-udh-silver"
                             th:onclick="updateItStat([[${item}]])"
                             th:text="${item.statusCode == 'UNAV' ? '중단해제' : '일시중단'}"></button>
-                    <button class="btn btn-udh-red" th:onclick="toggleDeleteModal([[${item}]])">삭제</button>
+                    <button class="btn btn-udh-red" th:onclick="toggleDeleteItemModal([[${item}]])">삭제</button>
                 </span>
                 </th:block>
 
@@ -236,7 +236,7 @@
                         <div class="modal-header "
                              style="background-color:#CB3333; color:white; background-image : var (-bs-gradient);">
                             <h1 class="modal-title fs-5" id="reportModalLabel">신고하기</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ></button>
                         </div>
                         <div class="modal-body">
                             <th:block th:if="${item != null}">
@@ -307,7 +307,7 @@
 
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal">취소</button>
+                            <button type="button" class="btn btn-udh-silver" data-bs-dismiss="modal" onclick="clearReportForm()">취소</button>
                             <button type="button" class="btn btn-udh-red" id="reportBtn" onclick="postReport()">신고
                             </button>
                         </div>
