@@ -205,7 +205,7 @@
                 <tr th:each="data : ${rentData}" th:onclick="|location.href='@{/share/rent/detail(itemNo=${data.item_no})}'|">
                     <td>
                         <span th:text="${data.title}"></span>
-                        <span th:text="${data.return_date}"></span>
+<!--                        <span th:text="${data.return_date}"></span>-->
                         <span th:text="${data.status_name}"></span>
                         <span>➡️</span>
                     </td>

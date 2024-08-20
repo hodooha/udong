@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
@@ -227,7 +228,7 @@ public class CSController {
     public String insertQueForm (@AuthenticationPrincipal CustomUserDetails c,
                                  @RequestParam(value = "files", required = false) List<MultipartFile> files,
                                  CSQuestionDTO csQuestionDTO,
-                                 Model model) {
+                                 RedirectAttributes redirectAttributes) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
         csQuestionDTO.setWriterNo(memberNo);
@@ -246,8 +247,9 @@ public class CSController {
 
         csService.insertQueForm(csQuestionDTO, attachments);
 
-        model.addAttribute("msg", "문의글 등록이 완료되었습니다.");
-        return "redirect:csMyQue";
+        redirectAttributes.addFlashAttribute("alert", "문의 등록이 완료되었습니다.");
+        redirectAttributes.addFlashAttribute("alertType", "success");
+        return "redirect:/cs/csMyQue";
     }
 
     /**
@@ -290,16 +292,18 @@ public class CSController {
      * @since 2024 -08-14
      */
     @PostMapping("/deleteQue")
-    public String deleteQue(@RequestParam("csNo") int csNo, Model model) {
+    public String deleteQue(@RequestParam("csNo") int csNo, RedirectAttributes redirectAttributes) {
 
         String result = csService.deleteQue(csNo);
 
         if (result.equals("answered")) {
-            model.addAttribute("msg", "답변이 완료된 문의는 삭제할 수 없습니다.");
-            return "cs/queDetail";
+            redirectAttributes.addAttribute("alert", "답변이 완료된 문의는 삭제할 수 없습니다.");
+            redirectAttributes.addAttribute("alertType", "error");
+            return "redirect:/cs/queDetail";
         } else {
-            model.addAttribute("msg", "문의글이 삭제되었습니다.");
-            return "cs/csMyQue";
+            redirectAttributes.addFlashAttribute("alert", "문의글이 삭제되었습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/cs/csMyQue";
         }
     }
 

@@ -81,13 +81,11 @@ public class SpringSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         Map<String, List<String>> permitListMap = authenticationService.getPermitListMap();
         List<String> adminPermitList = permitListMap.get("adminPermitList");
-        List<String> sellerPermitList = permitListMap.get("sellerPermitList");
         List<String> permitAllList = permitListMap.get("permitAllList");
 
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers(adminPermitList.toArray(new String[0])).hasRole("ADMIN")
-                .requestMatchers(sellerPermitList.toArray(new String[0])).hasAnyRole("SELLER")
                 .requestMatchers(permitAllList.toArray(new String[0])).permitAll()
                 .anyRequest().authenticated()
             )

@@ -35,13 +35,13 @@
         <p>자주 묻는 질문 입니다.</p>
     </div>
 
-    <div class="card" sec:authorize="hasRole('MEMBER')" onClick="location.href ='/cs/insertQueForm'">
+    <div class="card" sec:authorize="hasAnyRole('MEMBER', 'SELLER')" onClick="location.href ='/cs/insertQueForm'">
         <i>B</i>
         <h3>문의하기</h3>
         <p>문의하기 입니다.</p>
     </div>
 
-    <div class="card" sec:authorize="hasRole('MEMBER')" onClick="location.href='/cs/csMyQue'">
+    <div class="card" sec:authorize="hasAnyRole('MEMBER', 'SELLER')" onClick="location.href='/cs/csMyQue'">
         <i>C</i>
         <h3>문의내역</h3>
         <p>내 문의내역 입니다.</p>
