@@ -852,11 +852,11 @@ public class ShareServiceImpl implements ShareService {
 
 
             // 유사도 높은 상위 12개 물건 번호 list
-            List<Integer> recomItemNums = recommendations.entrySet().stream()
+            List<Integer> recomItemNums = new ArrayList<>(recommendations.entrySet().stream()
                     .sorted(Map.Entry.<Integer, Double>comparingByValue().reversed())
                     .limit(12)
                     .map(Map.Entry::getKey)
-                    .toList();
+                    .toList());
 
             // 12개보다 적을 경우 조회수/좋아요/신청자수 기반 랜덤 추천 물건으로 채우기
             if (recomItemNums.size() < 12) {
@@ -959,7 +959,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 0 12 * * ?")
+    @Scheduled(cron = "0 30 14 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
