@@ -148,11 +148,13 @@
                                 채팅 참여
                             </button>
                         </th:block>
-                        <a th:href="@{/club/clubReportForm(clubNo=${clubHome.clubNo})}">
-                            <button class="btn btn-udh-blue btn-right">
-                                모임 신고
-                            </button>
-                        </a>
+                        <th:block th:if="${clubHome.master.memberNo != #authentication.principal.memberDTO.memberNo}">
+                            <a th:href="@{/club/clubReportForm(clubNo=${clubHome.clubNo})}">
+                                <button class="btn btn-udh-blue btn-right">
+                                    모임 신고
+                                </button>
+                            </a>
+                        </th:block>
                         <th:block th:if="${clubHome.master.memberNo == #authentication.principal.memberDTO.memberNo}">
                             <a th:href="@{/club/clubUpdateForm(clubNo=${clubHome.clubNo})}">
                                 <button class="btn btn-udh-blue btn-right">

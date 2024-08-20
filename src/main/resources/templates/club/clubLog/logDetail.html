@@ -24,9 +24,11 @@
             border: 1px solid #ccc;
             border-radius: 50%;
             margin: 0px 10px 8px 0px;
+            cursor: pointer;
         }
         .writer-nickname {
             font-family: 'Freesentation-5Medium';
+            cursor: pointer;
         }
         .p-tag {
             margin: 0px;
@@ -195,24 +197,26 @@
             <tr style="white-space: nowrap;">
                 <td>
                     <th:block th:if="${logDetail.writer.profileSavedName == 'defaultProfile.png'}">
-                        <img th:src="@{'/img/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img">
+                        <img th:src="@{'/img/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img" th:onclick="'infoReport(' + ${logDetail.writer.memberNo} + ')'">
                     </th:block>
                     <th:block th:if="${logDetail.writer.profileSavedName != 'defaultProfile.png'}">
-                        <img th:src="@{'/uploadFiles/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img">
+                        <img th:src="@{'/uploadFiles/' + ${logDetail.writer.profileSavedName}}" class="writer-profile-img" th:onclick="'infoReport(' + ${logDetail.writer.memberNo} + ')'">
                     </th:block>
-                    <span th:text="${logDetail.writer.nickname}" class="writer-nickname"></span>
-                    <p th:text="${logDetail.createdAt}" class="p-tag log-etc"></p>
+                    <span th:text="${logDetail.writer.nickname}" class="writer-nickname" th:onclick="'infoReport(' + ${logDetail.writer.memberNo} + ')'"></span>
+                    <p th:text="${#temporals.format(logDetail.createdAt, 'yyyy.MM.dd - HH:mm')}" class="p-tag log-etc"></p>
                 </td>
                 <td class="btn-right-area">
                     <th:block th:if="${logDetail.isDeleted == 'Y'}">
                         <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px;">❕ 삭제된 기록입니다.</span>
                     </th:block>
                     <th:block th:if="${logDetail.isDeleted == 'N'}">
-                        <a th:href="@{/club/clubLog/logReportForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
-                            <button class="btn btn-udh-blue btn-right">
-                                기록 신고
-                            </button>
-                        </a>
+                        <th:block th:if="${logDetail.writer.memberNo != #authentication.principal.memberDTO.memberNo}">
+                            <a th:href="@{/club/clubLog/logReportForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
+                                <button class="btn btn-udh-blue btn-right">
+                                    기록 신고
+                                </button>
+                            </a>
+                        </th:block>
                         <th:block th:if="${logDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo}">
                             <a th:href="@{/club/clubLog/logUpdateForm(clubNo=${logDetail.clubNo}, logNo=${logDetail.logNo})}">
                                 <button class="btn btn-udh-blue btn-right">
@@ -338,7 +342,7 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 10%;">
-                            <span th:text="${reply.createdAt}" class="reply-etc"></span>
+                            <span th:text="${#temporals.format(reply.createdAt, 'yyyy.MM.dd - HH:mm')}" class="reply-etc"></span>
                         </td>
                         <td>
                             <p class="p-tag reply-like">

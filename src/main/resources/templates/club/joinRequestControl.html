@@ -31,9 +31,11 @@
             border: 1px solid #ccc;
             border-radius: 50%;
             margin: 0px 10px 0px 0px;
+            cursor: pointer;
         }
         .nickname {
             font-family: 'Freesentation-5Medium';
+            cursor: pointer;
         }
         .applied-at {
             font-size: 11px;
@@ -94,15 +96,15 @@
                     <tr>
                         <td style="display: flex; align-items: center;">
                             <th:block th:if="${one.profileSavedName == 'defaultProfile.png'}">
-                                <img th:src="@{'/img/' + ${one.profileSavedName}}" class="profile-img">
+                                <img th:src="@{'/img/' + ${one.profileSavedName}}" class="profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                             </th:block>
                             <th:block th:if="${one.profileSavedName != 'defaultProfile.png'}">
-                                <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="profile-img">
+                                <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                             </th:block>
-                            <span th:text="${one.nickname}" class="nickname"></span>
+                            <span th:text="${one.nickname}" class="nickname" th:onclick="'infoReport(' + ${one.memberNo} + ')'"></span>
 
                             <span class="applied-at" style="margin: 0px 7px 0px auto;">신청일 : </span>
-                            <span th:text="${one.appliedAt}" class="applied-at" style="margin-right: 20px"></span>
+                            <span th:text="${#temporals.format(one.appliedAt, 'yyyy.MM.dd - HH:mm')}" class="applied-at" style="margin-right: 20px"></span>
                             <form th:action="@{/club/approveJoinRequest}" method="post" style="display: inline">
                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                                 <input type="hidden" name="clubNo" th:value="${one.clubNo}">
