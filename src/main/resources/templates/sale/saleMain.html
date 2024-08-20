@@ -178,38 +178,25 @@
          flex: 1;
          overflow: hidden;
         }
-
-        .pagination {
-         display: flex;
-         justify-content: center;
-         margin-top: 20px;
-        }
-
-        .page-button {
-         margin: 0 5px;
-         padding: 5px 10px;
-         border: 1px solid #ddd;
-         background-color: #3B5C9A;
-         cursor: pointer;
-         color: white;
-         border-radius: 10px;
-        }
-
-        .page-button.active {
-         background-color: #0B1D40;
-         color: white;
-        }
-
-        .btn-pagination {
-         font-family: 'Freesentation-5Medium' !important;
-         font-size: 12px !important;
-         padding: 4px 8px 4px 8px !important;
-         margin-right: 7px;
-        }
-
         .closed-sale {
          opacity: 0.5;
-         pointer-events: none;
+         
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 60px;
+        }
+        .page-button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            background-color: #3B5C9A;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .page-button:hover {
+            background-color: #0B1D40;
         }
 
     </style>
@@ -507,23 +494,29 @@
         }
 
         function updatePagination() {
-            const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
-            const paginationContainer = document.getElementById('pagination');
-            paginationContainer.innerHTML = '';
+    const totalPages = Math.ceil(filteredSales.length / itemsPerPage);
+    const paginationContainer = document.getElementById('pagination');
+    paginationContainer.innerHTML = '';
 
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.classList.add('btn', 'btn-udh-blue', 'btn-pagination');
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.addEventListener('click', () => {
-                    displaySales(i);
-                });
-                paginationContainer.appendChild(pageButton);
-            }
-        }
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('a');
+        pageButton.textContent = i;
+        pageButton.classList.add('page-button');
+        pageButton.href = '#';
+        pageButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            displaySales(i);
+        });
+        paginationContainer.appendChild(pageButton);
+    }
+}
+
+// 페이지 로드 시 페이지네이션 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    displaySales(currentPage);
+    updatePagination();
+});
+
     </script>
 
 
