@@ -290,14 +290,14 @@
             let nickname = nicknameInput.value.trim();
 
             if (nickname === currentNickname) {
-                showMessage(nicknameMessage, '현재 사용 중인 닉네임과 동일합니다.', false);
+                showInfoMessage(nicknameMessage, '현재 사용 중인 닉네임과 동일합니다.', false);
                 isNicknameChecked = true;
                 updateSubmitButtonState();
                 return;
             }
 
             if (nickname.length < 2 || nickname.length > 20) {
-                showMessage(nicknameMessage, '닉네임은 2~20 글자만 가능합니다.', true);
+                showInfoMessage(nicknameMessage, '닉네임은 2~20 글자만 가능합니다.', true);
                 nicknameInput.focus();
                 return;
             }
@@ -313,13 +313,13 @@
             .then(response => response.text())
             .then(result => {
                 if(result === 'available') {
-                    showMessage(nicknameMessage, '사용 가능한 닉네임입니다.', false);
+                    showInfoMessage(nicknameMessage, '사용 가능한 닉네임입니다.', false);
                     nicknameInput.readOnly = true;
                     checkDuplicateButton.disabled = true;
                     isNicknameChecked = true;
 
                 } else {
-                    showMessage(nicknameMessage, '이미 사용 중인 닉네임입니다. 다른 닉네임을 사용해 주세요.', true);
+                    showInfoMessage(nicknameMessage, '이미 사용 중인 닉네임입니다. 다른 닉네임을 사용해 주세요.', true);
                     isNicknameChecked = false;
                 }
                 updateSubmitButtonState();
@@ -335,7 +335,7 @@
             e.preventDefault();
 
             if (isNicknameChanged && !isNicknameChecked) {
-                showMessage(nicknameMessage, '닉네임 중복 검사를 완료해주세요.', true);
+                showInfoMessage(nicknameMessage, '닉네임 중복 검사를 완료해주세요.', true);
                 return;
             }
 
@@ -343,7 +343,7 @@
             if (isNicknameChanged || isProfilePicChanged) {
                 this.submit();
             } else {
-                showMessage(nicknameMessage, '변경된 내용이 없습니다.', true);
+                showInfoMessage(nicknameMessage, '변경된 내용이 없습니다.', true);
             }
         });
 
@@ -373,7 +373,7 @@
     });
 
     // 메세지 표시
-    function showMessage(element, message, isError) {
+    function showInfoMessage(element, message, isError) {
         element.textContent = message;
         element.classList.remove('error', 'success');
         element.classList.add(isError ? 'error' : 'success');
@@ -431,7 +431,7 @@
             let fullEmail = emailIdInput.value.trim() + '@' + emailDomainInput.value.trim();
 
             if (!isValidEmailId(emailIdInput.value.trim()) || !isValidDomain(emailDomainInput.value.trim())) {
-                showMessage(emailMessage, '유효하지 않은 이메일 형식입니다.', true);
+                showInfoMessage(emailMessage, '유효하지 않은 이메일 형식입니다.', true);
                 isEmailChecked = false;
             } else {
                 hideMessage(emailMessage);
@@ -459,7 +459,7 @@
         let isPhoneChecked = false;
         phoneInput.addEventListener('blur', function() {
             if (!isValidPhone(this.value.trim())) {
-                showMessage(phoneMessage, '전화번호는 11자리 숫자만 입력 가능합니다.', true);
+                showInfoMessage(phoneMessage, '전화번호는 11자리 숫자만 입력 가능합니다.', true);
                 isPhoneChecked = false;
             } else {
                 hideMessage(phoneMessage);
@@ -499,7 +499,7 @@
         let isPwChecked = false;
         passwordInput.addEventListener('blur', function() {
             if (!isValidPassword(this.value.trim())) {
-                showMessage(passwordMessage, '새 비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
+                showInfoMessage(passwordMessage, '새 비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
                 isPwChecked = false;
             } else {
                 hideMessage(passwordMessage);
@@ -511,7 +511,7 @@
         let isPwConfirmed = false;
         confirmPasswordInput.addEventListener('blur', function() {
             if (this.value.trim() !== passwordInput.value.trim()) {
-                showMessage(passwordMessage, '새 비밀번호가 일치하지 않습니다.', true);
+                showInfoMessage(passwordMessage, '새 비밀번호가 일치하지 않습니다.', true);
                 isPwConfirmed = false;
             } else {
                 hideMessage(passwordMessage);

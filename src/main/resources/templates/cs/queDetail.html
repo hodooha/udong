@@ -182,9 +182,11 @@
                     </div>
                 </div>
             </div>
-            <div th:if="${#lists.isEmpty(answers)}" class="no-answer">
+            <div th:if="${#lists.isEmpty(answers)}">
                 <h2>답변:</h2>
-                <p>아직 답변이 없습니다.</p>
+                <div class="no-answer">
+                    <p>아직 답변이 없습니다.</p>
+                </div>
             </div>
 
             <div class="answer-form">

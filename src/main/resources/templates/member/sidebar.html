@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -138,7 +139,7 @@
                     <li><a href="/member/act?table=clubLog&page=1">모임 기록</a></li>
                     <li><a href="/member/act?table=clubSchedule&page=1">모임 일정</a></li>
                     <li><a href="/member/act?table=shareLike&page=1">찜한 물건</a></li>
-                    <li><a href="/member/act?table=saleBoard&page=1">땡처리 물건</a></li>
+                    <li sec:authorize="hasRole('ROLE_SELLER')"><a href="/member/act?table=saleBoard&page=1">땡처리 물건</a></li>
                 </ul>
             </li>
             <li class="has-submenu">
