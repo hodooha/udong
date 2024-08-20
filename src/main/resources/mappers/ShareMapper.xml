@@ -124,7 +124,7 @@
         from
         (
         select *,
-        row_number() over (partition by target_no order by file_no) as rn
+        row_number() over (partition by target_no, type_code order by file_no) as rn
         from attachment
         ) sub
         where rn = 1
@@ -186,7 +186,7 @@
         from
         (
         select *,
-        row_number() over (partition by target_no order by file_no) as rn
+        row_number() over (partition by target_no, type_code order by file_no) as rn
         from attachment
         ) sub
         where rn = 1
@@ -409,7 +409,7 @@
         from
         (
         select *,
-        row_number() over (partition by target_no order by file_no) as rn
+        row_number() over (partition by target_no, type_code order by file_no) as rn
         from attachment
         ) sub
         where rn = 1
@@ -485,12 +485,13 @@
         from
         (
         select *,
-        row_number() over (partition by target_no order by file_no) as rn
+        row_number() over (partition by target_no, type_code order by file_no) as rn
         from attachment
         ) sub
         where rn = 1
         ) c
-        on b.item_no = c.target_no and b.item_group = c.type_code
+        on b.item_no = c.target_no
+        and b.item_group = c.type_code
         left join
         sha_cat f
         on b.item_cat_code = f.cat_code
@@ -749,7 +750,7 @@
         from
         (
         select *,
-        row_number() over (partition by target_no order by file_no) as rn
+        row_number() over (partition by target_no, type_code order by file_no) as rn
         from attachment
         ) sub
         where rn = 1
