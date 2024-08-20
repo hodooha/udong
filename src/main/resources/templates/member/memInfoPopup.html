@@ -74,24 +74,28 @@
                         align-self: center;
                     }
 
-                    & .info-location-btn {
-                        background-color: #FFB83D;
-                        color: white;
-                        border: none;
-                        padding: 8px 15px 8px 8px;
-                        border-radius: 10px;
-                        display: flex;
-                        align-items: center;
-                        white-space: nowrap;
-                        font-size: 18px;
-                        font-family: Freesentation-5Medium;
+                    & span {
+                        white-space: normal;
+                    }
+                }
 
-                        & svg {
-                            width: 25px;
-                            height: 25px;
-                            margin-right: 5px;
-                            fill: currentColor;
-                        }
+                & .info-location-btn {
+                    display: flex;
+                    background-color: #FFB83D;
+                    color: white;
+                    border: none;
+                    padding: 8px 15px 8px 8px;
+                    border-radius: 10px;
+                    align-items: center;
+                    white-space: nowrap;
+                    font-size: 18px;
+                    font-family: Freesentation-5Medium;
+
+                    & svg {
+                        width: 25px;
+                        height: 25px;
+                        margin-right: 5px;
+                        fill: currentColor;
                     }
                 }
             }
@@ -200,13 +204,13 @@
                         <div class="profile-name-section">
                             <span class="profile-name" th:text="${memberData.nickname + ' 님'}"></span>
                             <img class="level" th:src="@{'/img/'+${#authentication.principal.memberDTO.level}+'.png'}">
-                            <button class="info-location-btn">
-                                <svg viewBox="0 0 24 24" width="16" height="16">
-                                    <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                                </svg>
-                                <span th:text="${memberData.memAddressDTO.eupMyeonDongName}"></span>
-                            </button>
                         </div>
+                        <button class="info-location-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16">
+                                <path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                            </svg>
+                            <span th:text="${memberData.memAddressDTO.eupMyeonDongName}"></span>
+                        </button>
                         <span class="profile-signupAt" th:text="${'가입일 : ' + memberData.signupAt}"></span>
                     </div>
                 </div>

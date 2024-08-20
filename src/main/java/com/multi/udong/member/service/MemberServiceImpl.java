@@ -144,6 +144,8 @@ public class MemberServiceImpl implements MemberService {
         result.put("clubData", memberMapper.getClubData(memberNo));
         result.put("scheduleData", memberMapper.getScheduleData(memberNo));
 
+        System.out.println("###result : " + result);
+
         return result;
     }
 

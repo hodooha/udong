@@ -24,7 +24,9 @@ public interface MessageMapper {
 
     void sendMessage(MessageDTO messageDTO);
 
-    int deleteMessages(List<Integer> messageNos);
+    int deleteReceiveMessages(List<Integer> messageNos);
+
+    int deleteSendMessages(List<Integer> messageNos);
 
     int blockMessages(@Param("blockerNo") int blockerNo, @Param("blockedNo") int blockedNo);
 

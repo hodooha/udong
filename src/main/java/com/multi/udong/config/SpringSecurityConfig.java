@@ -81,17 +81,15 @@ public class SpringSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         Map<String, List<String>> permitListMap = authenticationService.getPermitListMap();
         List<String> adminPermitList = permitListMap.get("adminPermitList");
-        List<String> memberPermitList = permitListMap.get("memberPermitList");
+        List<String> sellerPermitList = permitListMap.get("sellerPermitList");
+        List<String> permitAllList = permitListMap.get("permitAllList");
 
         http
             .authorizeHttpRequests((requests) -> requests
-//                    .requestMatchers("/").permitAll()
-//                    .requestMatchers("/login").permitAll()
-//                    .requestMatchers("/signup").permitAll()
-//                    .requestMatchers(memberPermitList.toArray(new String[0])).hasAnyRole("MEMBER", "ADMIN")
-//                    .requestMatchers(adminPermitList.toArray(new String[0])).hasRole("ADMIN")
-//                    .anyRequest().authenticated()
-                .anyRequest().permitAll()
+                .requestMatchers(adminPermitList.toArray(new String[0])).hasRole("ADMIN")
+                .requestMatchers(sellerPermitList.toArray(new String[0])).hasAnyRole("SELLER")
+                .requestMatchers(permitAllList.toArray(new String[0])).permitAll()
+                .anyRequest().authenticated()
             )
             .formLogin((form) -> form
                 .loginPage("/login")

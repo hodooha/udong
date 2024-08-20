@@ -17,8 +17,9 @@ public class AuthenticationService {
     public Map<String, List<String>> getPermitListMap() {
         Map<String, List<String>> permitListMap = new HashMap<>();
 
-        permitListMap.put("adminPermitList", Arrays.asList("/admin/**", "/manage/**"));
-        permitListMap.put("memberPermitList", Arrays.asList("/user/**", "/order/**", "/profile/**"));
+        permitListMap.put("adminPermitList", Arrays.asList("/admin/**"));
+        permitListMap.put("sellerPermitList", Arrays.asList("/sale/**"));
+        permitListMap.put("permitAllList", Arrays.asList("/", "/login/**", "/logout", "/signup/**", "/kakao", "/selectRole", "/isIdDuplicate", "/cs/**", "/chatbot/**"));
 
         return permitListMap;
     }

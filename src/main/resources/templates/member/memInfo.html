@@ -146,7 +146,7 @@
                     <div class="submit-group">
                         <i class="fi fi-rr-user"></i>
                         <div class="input-wrapper">
-                            <input type="text" class="nickname" name="nickname" id="nickname" th:value="${nickname}" placeholder="최대 20글자까지 가능" required>
+                            <input type="text" class="nickname" name="nickname" id="nickname" th:value="${nickname}" placeholder="최대 20글자까지 가능합니다." maxlength="20" required>
                             <button class="clear-input" type="button">&times;</button>
                         </div>
                         <input type="hidden" id="current-nickname" th:value="${nickname}">

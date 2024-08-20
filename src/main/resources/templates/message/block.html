@@ -6,6 +6,10 @@
     <title>Title</title>
     <style>
         .blocked {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
             min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
@@ -44,7 +48,18 @@
             }
         }
         #no-result {
-            margin: 20px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20%;
+            background-color: #EDEDED;
+            border-radius: 10px;
+            color: #888;
+            font-style: italic;
+        }
+        .downer {
+            border-top: 1px solid #D4D4D4;
         }
         .pagination {
             display: flex;
@@ -85,26 +100,30 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="blocked">
-            <h2>차단 설정</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="all-checkbox"></th>
-                        <th th:each="header : ${tableHeader}" th:text="${header}"></th>
-                    </tr>
-                </thead>
-                <tbody id="result-table">
-                    <tr class="clickable-row" th:each="data : ${tableData}" th:attr="blockedNo=${data.blockedNo}">
-                        <td><input type="checkbox" id="row-checkbox"></td>
-                        <td th:text="${data.blockedNickname}"></td>
-                        <td th:text="${data.createdAt}"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div id="no-result" hidden>차단된 회원이 없습니다.</div>
-            <div class="pagination"></div>
-            <div class="button-group">
-                <button class="btn btn-udh-red" id="blockBtn">차단 해제하기</button>
+            <div class="upper">
+                <h2>차단 설정</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="all-checkbox"></th>
+                            <th th:each="header : ${tableHeader}" th:text="${header}"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table">
+                        <tr class="clickable-row" th:each="data : ${tableData}" th:attr="blockedNo=${data.blockedNo}">
+                            <td><input type="checkbox" id="row-checkbox"></td>
+                            <td th:text="${data.blockedNickname}"></td>
+                            <td th:text="${data.createdAt}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="no-result" hidden>차단된 회원이 없습니다.</div>
+            </div>
+            <div class="downer">
+                <div class="pagination"></div>
+                <div class="button-group">
+                    <button class="btn btn-udh-red" id="blockBtn">차단 해제하기</button>
+                </div>
             </div>
         </div>
     </div>

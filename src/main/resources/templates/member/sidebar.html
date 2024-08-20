@@ -94,17 +94,15 @@
                         }
                     }
 
-                    &.has-submenu > a {
-                        &::after {
-                            content: '\25BC';
-                            position: absolute;
-                            right: 10px;
-                            transition: all 0.3s;
-                        }
+                    &.has-submenu > a::after {
+                        content: '\25BC';
+                        position: absolute;
+                        right: 10px;
+                        transition: all 0.3s;
+                    }
 
-                        &.active > a::after {
-                            transform: rotate(180deg);
-                        }
+                    &.has-submenu.active > a::after {
+                        transform: rotate(180deg);
                     }
 
                     &.active ul.submenu {

@@ -89,13 +89,17 @@
         const detailDeleteBtn = document.querySelector('#detailDeleteBtn');
         const detailSendReplyBtn = document.querySelector('#detailSendReplyBtn');
 
+        const pageType = /*[[${type}]]*/ 'received';
+
         // 삭제하기 버튼 클릭 이벤트
         detailDeleteBtn.addEventListener('click', async function() {
 
             if (await showConfirmAlert('쪽지를 삭제하시겠습니까?')) { // 여기에 async 추가
                 const messageNo = /*[[${messageNo}]]*/ null;
 
-                fetch('/message/deleteMessages', {
+                const endpoint = pageType === 'received' ? '/message/deleteReceiveMessages' : '/message/deleteSendMessages';
+
+                fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

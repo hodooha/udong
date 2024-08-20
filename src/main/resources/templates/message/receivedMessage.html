@@ -9,12 +9,17 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .message {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
             min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
+
         }
         table {
             width: 100%;
@@ -60,7 +65,18 @@
             background-color: #f0f8ff;
         }
         #no-result {
-            margin: 20px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20%;
+            background-color: #EDEDED;
+            border-radius: 10px;
+            color: #888;
+            font-style: italic;
+        }
+        .downer {
+            border-top: 1px solid #D4D4D4;
         }
         .pagination {
             display: flex;
@@ -114,51 +130,55 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="message">
-            <h2>받은 쪽지함</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th><input type="checkbox" id="all-checkbox"></th>
-                        <th th:each="header : ${tableHeader}" th:text="${header}"></th>
-                    </tr>
-                </thead>
-                <tbody id="result-table">
-                    <tr th:each="data : ${tableData}"
-                        th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
-                        th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|"
-                        th:class="${data.isRead == 'N' ? 'clickable-row unread-message' : 'clickable-row'}">
-                        <!--th:onclick https://velog.io/@leejk0924/Tymeleaf%EC%9D%98-thonclick-%EC%82%AC%EC%9A%A9%EB%B2%95-->
-                        <td>
-                            <input type="checkbox" id="row-checkbox">
-                            <span th:if="${data.isRead == 'N'}" class="new">new</span>
-                        </td>
-                        <td th:text="${data.senderNickname}"></td>
-                        <td th:text="${data.content}"></td>
-                        <td th:text="${data.createdAt}"></td>
-                        <td th:text="${data.isRead.equals('Y') ? '읽음' : '안읽음'}"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div id="no-result" hidden>결과가 없습니다.</div>
-            <div class="pagination"></div>
-            <div class="button-group">
-                <button class="btn btn-udh-red" id="deleteBtn">삭제하기</button>
-                <button class="btn btn-udh-red" id="blockBtn">차단하기</button>
-                <button class="btn btn-udh-blue" id="sendReplyBtn">답장하기</button>
-                <button class="btn btn-udh-blue" id="writeMessageBtn">쪽지 작성하기</button>
+            <div class="upper">
+                <h2>받은 쪽지함</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="all-checkbox"></th>
+                            <th th:each="header : ${tableHeader}" th:text="${header}"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table">
+                        <tr th:each="data : ${tableData}"
+                            th:attr="messageNo=${data.messageNo}, senderNo=${data.senderNo}"
+                            th:onclick="|location.href='@{/message/receivedMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|"
+                            th:class="${data.isRead == 'N' ? 'clickable-row unread-message' : 'clickable-row'}">
+                            <!--th:onclick https://velog.io/@leejk0924/Tymeleaf%EC%9D%98-thonclick-%EC%82%AC%EC%9A%A9%EB%B2%95-->
+                            <td>
+                                <input type="checkbox" id="row-checkbox">
+                                <span th:if="${data.isRead == 'N'}" class="new">new</span>
+                            </td>
+                            <td th:text="${data.senderNickname}"></td>
+                            <td th:text="${data.content}"></td>
+                            <td th:text="${data.createdAt}"></td>
+                            <td th:text="${data.isRead.equals('Y') ? '읽음' : '안읽음'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="no-result" hidden>결과가 없습니다.</div>
             </div>
-            <div class="search">
-                <form action="/message/receivedMessage" method="get">
-                    <select name="searchCategory" id="search-category">
-                        <option th:each="category : ${searchCategories}"
-                                th:value="${category}"
-                                th:text="${category}"
-                                th:selected="${category == searchCategory}">
-                        </option>
-                    </select>
-                    <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
-                    <button class="btn btn-udh-yellow">검색</button>
-                </form>
+            <div class="downer">
+                <div class="pagination"></div>
+                <div class="button-group">
+                    <button class="btn btn-udh-red" id="deleteBtn">삭제하기</button>
+                    <button class="btn btn-udh-red" id="blockBtn">차단하기</button>
+                    <button class="btn btn-udh-blue" id="sendReplyBtn">답장하기</button>
+                    <button class="btn btn-udh-blue" id="writeMessageBtn">쪽지 작성하기</button>
+                </div>
+                <div class="search">
+                    <form action="/message/receivedMessage" method="get">
+                        <select name="searchCategory" id="search-category">
+                            <option th:each="category : ${searchCategories}"
+                                    th:value="${category}"
+                                    th:text="${category}"
+                                    th:selected="${category == searchCategory}">
+                            </option>
+                        </select>
+                        <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
+                        <button class="btn btn-udh-yellow">검색</button>
+                    </form>
+                </div>
             </div>
         </div>
         <div th:replace="~{/message/messageDetail}"></div>
@@ -276,7 +296,7 @@
             if (await showConfirmAlert('선택한 쪽지를 삭제하시겠습니까?')) {
                 const messageNos = checkedRows.map(row => row.getAttribute('messageNo'));
 
-                fetch('/message/deleteMessages', {
+                fetch('/message/deleteReceiveMessages', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

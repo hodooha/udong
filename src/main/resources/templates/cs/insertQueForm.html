@@ -20,6 +20,7 @@
         .content-area {
             display: flex;
             flex-direction: column;
+            width: 800px;
             overflow: auto;
             margin: 0 auto;
             padding: 20px;
@@ -27,21 +28,69 @@
             flex-wrap: wrap;
         }
         .question {
-            text-align: center;
-            border: 1px solid #000000;
-            border-radius: 5px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #ddd;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-
-            & form {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                text-align: left;
-            }
+            padding: 30px;
         }
         h2 {
-            text-align: left;
+            color: #3B5C9A;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-weight: bold;
+        }
+        select, input[type="text"], textarea {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        .btn-udh-blue {
+            background-color: #3B5C9A;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn-udh-blue:hover {
+            background-color: #2C4676;
+        }
+        .btn-udh-blue:disabled {
+            background-color: #9BAFD4;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -50,7 +99,6 @@
 <div th:replace="~{/member/alert}"></div>
 <main>
     <div class="content-area">
-
         <div class="question">
             <h2>문의하기</h2>
             <form action="/cs/insertQueForm" method="post" enctype="multipart/form-data">
@@ -78,7 +126,6 @@
                 <button class="btn btn-udh-blue" id="submitBtn" >문의하기</button>
             </form>
         </div>
-
     </div>
 </main>
 </body>

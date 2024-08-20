@@ -13,24 +13,24 @@
             sub.total_count
         FROM (
             SELECT
-            msg.*,
-            COUNT(*) OVER() AS total_count,
-            ROW_NUMBER() OVER (ORDER BY
-                CASE WHEN msg.is_read = 'N' THEN 0 ELSE 1 END,
-                msg.created_at DESC
-        ) AS rownum
-        FROM MSG msg
-        WHERE msg.receiver_no = #{memberNo}
-        <if test="searchCategory != null and searchWord != null">
-            <choose>
-                <when test="searchCategory == '보낸 사람'">
-                    AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
-                </when>
-                <when test="searchCategory == '내용'">
-                    AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
-                </when>
-            </choose>
-        </if>
+                msg.*,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY
+                    CASE WHEN msg.is_read = 'N' THEN 0 ELSE 1 END,
+                    msg.created_at DESC) AS rownum
+            FROM MSG msg
+            WHERE msg.receiver_no = #{memberNo}
+            AND msg.is_receive_deleted = 'N'
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '보낸 사람'">
+                        AND msg.sender_no IN (SELECT member_no FROM MEMBER WHERE nickname LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '내용'">
+                        AND msg.content LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
         ) sub
         JOIN MEMBER m ON sub.sender_no = m.member_no
         WHERE sub.rownum BETWEEN #{start} AND #{end}
@@ -55,6 +55,7 @@
                 ROW_NUMBER() OVER (ORDER BY msg.created_at DESC) AS rownum
             FROM MSG msg
             WHERE msg.sender_no = #{memberNo}
+            AND msg.is_send_deleted = 'N'  -- 추가된 조건
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '받은 사람'">
@@ -85,28 +86,44 @@
     </select>
 
     <insert id="sendMessage" parameterType="messageDTO">
-        INSERT INTO MSG (sender_no, receiver_no, content)
+        INSERT INTO MSG (sender_no, receiver_no, content, is_read)
         SELECT
         #{senderNo},
             (SELECT member_no
             FROM MEMBER
             WHERE nickname = #{receiverNickname}
             AND is_deleted = 'N'),
-        #{content}
+        #{content},
+        #{isRead}
     </insert>
 
     <select id="getInsertedMessage" resultType="messageDTO">
-        SELECT * FROM MSG
-        WHERE sender_no = #{senderNo} AND receiver_no = #{receiverNo}
-        ORDER BY created_at DESC LIMIT 1
+        SELECT M.*, MB.nickname AS receiverNickname
+        FROM MSG M
+        JOIN MEMBER MB ON M.receiver_no = MB.member_no
+        WHERE M.sender_no = #{senderNo}
+            AND M.receiver_no = #{receiverNo}
+            AND M.is_read = 'N'
+        ORDER BY M.created_at DESC LIMIT 1
     </select>
 
-    <delete id="deleteMessages" parameterType="list">
-        DELETE FROM MSG WHERE message_no In
+    <delete id="deleteReceiveMessages" parameterType="list">
+        UPDATE MSG
+        SET is_receive_deleted = 'Y'
+        WHERE message_no IN
         <foreach item="messageNo" collection="list" open="(" separator="," close=")">
             #{messageNo}
         </foreach>
     </delete>
+
+    <update id="deleteSendMessages" parameterType="list">
+        UPDATE MSG
+        SET is_send_deleted = 'Y'
+        WHERE message_no IN
+        <foreach item="messageNo" collection="list" open="(" separator="," close=")">
+            #{messageNo}
+        </foreach>
+    </update>
 
     <insert id="blockMessages" parameterType="int">
         INSERT INTO MSG_BLOCK (blocker_no, blocked_no)

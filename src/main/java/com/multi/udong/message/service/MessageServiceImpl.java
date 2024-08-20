@@ -82,9 +82,22 @@ public class MessageServiceImpl implements MessageService{
             boolean blocked = messageMapper.getIsBlocked(messageDTO);
 
             if (!blocked) {
+
+                // 나에게 보내는 쪽지일경우 읽음상태 Y
+                if (messageDTO.getSenderNo() == messageDTO.getReceiverNo()) {
+                    messageDTO.setIsRead("Y");
+                } else {
+                    messageDTO.setIsRead("N");
+                }
+
                 messageMapper.sendMessage(messageDTO);
-                MessageDTO insertedMessage = messageMapper.getInsertedMessage(messageDTO);
-                createMessageNoti(insertedMessage);
+
+                // 나에게 보내는 쪽지가 아니면 알림 보냄
+                if (messageDTO.getSenderNo() != messageDTO.getReceiverNo()){
+                    MessageDTO insertedMessage = messageMapper.getInsertedMessage(messageDTO);
+                    System.out.println("insertedMessage" + insertedMessage);
+                    createMessageNoti(insertedMessage);
+                }
             }
 
             return true;
@@ -106,11 +119,23 @@ public class MessageServiceImpl implements MessageService{
      * @since 2024 -08-08
      */
     @Override
-    public boolean deleteMessages(List<Integer> messageNos) {
+    public boolean deleteReceiveMessages(List<Integer> messageNos) {
 
-        return messageMapper.deleteMessages(messageNos) > 0;
+        return messageMapper.deleteReceiveMessages(messageNos) > 0;
     }
 
+    /**
+     * Delete send messages boolean.
+     *
+     * @param messageNos the message nos
+     * @return the boolean
+     * @since 2024 -08-20
+     */
+    @Override
+    public boolean deleteSendMessages(List<Integer> messageNos) {
+
+        return messageMapper.deleteSendMessages(messageNos) > 0;
+    }
 
     /**
      * Block messages boolean.

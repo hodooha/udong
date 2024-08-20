@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -314,7 +315,8 @@ public class CSController {
     public ResponseEntity<Resource> downloadFile (@PathVariable("fileNo") int fileNo) throws IOException {
         AttachmentDTO attachmentDTO = csService.getAttachment(fileNo);
 
-        Path filePath = Paths.get("C:\\workspace\\local\\udong\\src\\main\\resources\\static\\uploadFiles\\" + attachmentDTO.getSavedName());
+        String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString() + File.separator;
+        Path filePath =  Paths.get(path + attachmentDTO.getSavedName());
         Resource resource = new UrlResource(filePath.toUri());
 
         if(!resource.exists()) {

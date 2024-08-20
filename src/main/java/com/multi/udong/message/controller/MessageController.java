@@ -97,6 +97,9 @@ public class MessageController {
         model.addAttribute("searchCategory", searchCategory);
         model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
+
+        // 페이지 타입
+        model.addAttribute("type", "received");
     }
 
     /**
@@ -164,6 +167,9 @@ public class MessageController {
         model.addAttribute("searchCategory", searchCategory);
         model.addAttribute("searchCategoryIndex", searchCategoryIndex);
         model.addAttribute("searchWord", searchWord);
+
+        // 페이지 타입
+        model.addAttribute("type", "sent");
     }
 
     /**
@@ -254,14 +260,32 @@ public class MessageController {
      * @return the map
      * @since 2024 -08-08
      */
-    @PostMapping("/deleteMessages")
+    @PostMapping("/deleteReceiveMessages")
     @ResponseBody
-    public Map<String, Boolean> deleteMessages(@RequestBody Map<String, List<Integer>> request) {
+    public Map<String, Boolean> deleteReceiveMessages(@RequestBody Map<String, List<Integer>> request) {
 
         List<Integer> messageNos = request.get("messageNos");
 
         Map<String, Boolean> result = new HashMap<>();
-        result.put("success", messageService.deleteMessages(messageNos));
+        result.put("success", messageService.deleteReceiveMessages(messageNos));
+        return result;
+    }
+
+    /**
+     * Delete send messages map.
+     *
+     * @param request the request
+     * @return the map
+     * @since 2024 -08-20
+     */
+    @PostMapping("/deleteSendMessages")
+    @ResponseBody
+    public Map<String, Boolean> deleteSendMessages(@RequestBody Map<String, List<Integer>> request) {
+
+        List<Integer> messageNos = request.get("messageNos");
+
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("success", messageService.deleteSendMessages(messageNos));
         return result;
     }
 
@@ -330,7 +354,7 @@ public class MessageController {
      * @return the response entity
      * @since 2024 -08-13
      */
-    // 웹소켓
+// 웹소켓
     @GetMapping("/getMessage")
     public ResponseEntity<List<MessageDTO>> getMessage(@AuthenticationPrincipal CustomUserDetails c) {
 

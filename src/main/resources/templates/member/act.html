@@ -7,14 +7,16 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
     <style>
         .act {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
             min-width: 1000px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            display: flex;
-            flex-direction: column;
         }
         table {
             width: 100%;
@@ -39,6 +41,20 @@
             &:hover {
                 background-color: #D4D4D4;
             }
+        }
+        #no-result {
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20%;
+            background-color: #EDEDED;
+            border-radius: 10px;
+            color: #888;
+            font-style: italic;
+        }
+        .downer {
+            border-top: 1px solid #D4D4D4;
         }
         .pagination {
             display: flex;
@@ -84,37 +100,41 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="act">
-            <h2>나의 활동 기록</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
-                    </tr>
-                </thead>
-                <tbody id="result-table">
-                    <tr th:each="data : ${tableData}"
-                        th:attr="data-no=${data[0]}, data-club-no=${table == 'clubLog'} ? ${data[1]} : ''" class="clickable-row">
-                        <td th:each="element, elementStat : ${data}"
-                            th:if="${table == 'clubLog'} ? ${elementStat.index > 1} : ${elementStat.index > 0}"
-                            th:text="${element}"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div id="no-result" hidden>결과가 없습니다.</div>
-            <div class="pagination"></div>
-            <div class="search">
-                <form action="/member/act" method="get">
-                    <input type="hidden" name="table" th:value="${table}">
-                    <select name="searchCategory" id="search-category">
-                        <option th:each="category : ${searchCategories}"
-                                th:value="${category}"
-                                th:text="${category}"
-                                th:selected="${category == searchCategory}">
-                        </option>
-                    </select>
-                    <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
-                    <button class="btn btn-udh-yellow">검색</button>
-                </form>
+            <div class="upper">
+                <h2>나의 활동 기록</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table">
+                        <tr th:each="data : ${tableData}"
+                            th:attr="data-no=${data[0]}, data-club-no=${table == 'clubLog'} ? ${data[1]} : ''" class="clickable-row">
+                            <td th:each="element, elementStat : ${data}"
+                                th:if="${table == 'clubLog'} ? ${elementStat.index > 1} : ${elementStat.index > 0}"
+                                th:text="${element}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="no-result" hidden>결과가 없습니다.</div>
+            </div>
+            <div class="downer">
+                <div class="pagination"></div>
+                <div class="search">
+                    <form action="/member/act" method="get">
+                        <input type="hidden" name="table" th:value="${table}">
+                        <select name="searchCategory" id="search-category">
+                            <option th:each="category : ${searchCategories}"
+                                    th:value="${category}"
+                                    th:text="${category}"
+                                    th:selected="${category == searchCategory}">
+                            </option>
+                        </select>
+                        <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
+                        <button class="btn btn-udh-yellow">검색</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

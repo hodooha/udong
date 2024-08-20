@@ -298,7 +298,7 @@
             cc.category_name,
             l.eup_myeon_dong_name,
             sub.club_name,
-            m.nickname,
+            m.nickname AS master_nickname,
             DATE_FORMAT(sub.created_at, '%Y-%m-%d %H:%i:%s') AS created_at,
             sub.total_count
         FROM (
@@ -307,7 +307,9 @@
                 COUNT(*) OVER() AS total_count,
                 ROW_NUMBER() OVER (ORDER BY c.created_at DESC) AS rownum
             FROM CL c
-            WHERE c.master = #{memberNo}
+            JOIN CL_MEMBER cm ON c.club_no = cm.club_no
+            WHERE cm.member_no = #{memberNo}
+            AND cm.join_status = 'Y'
             AND c.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>

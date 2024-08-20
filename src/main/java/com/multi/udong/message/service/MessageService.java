@@ -21,7 +21,9 @@ public interface MessageService {
 
     boolean sendMessage(MessageDTO messageDTO);
 
-    boolean deleteMessages(List<Integer> messageNos);
+    boolean deleteReceiveMessages(List<Integer> messageNos);
+
+    boolean deleteSendMessages(List<Integer> messageNos);
 
     Boolean blockMessages(int blockerNo, List<Integer> messageNos);
 

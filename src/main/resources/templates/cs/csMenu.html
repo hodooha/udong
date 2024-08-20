@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -28,27 +28,30 @@
     </style>
 </head>
 <body>
-    <div class="category">
-        <div class="card" onClick="location.href ='/cs/csMain'">
-            <i>A</i>
-            <h3>자주 묻는 질문</h3>
-            <p>자주 묻는 질문 입니다.</p>
-        </div>
-        <div class="card" onClick="location.href ='/cs/insertQueForm'">
-            <i>B</i>
-            <h3>문의하기</h3>
-            <p>문의하기 입니다.</p>
-        </div>
-        <div th:if="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csAllQue'">
-            <i>C</i>
-            <h3>전체 문의내역</h3>
-            <p>모든 사용자의 문의내역입니다.</p>
-        </div>
-        <div th:unless="${#authorization.expression('hasRole(''ADMIN'')')}" class="card" onClick="location.href='/cs/csMyQue'">
-            <i>C</i>
-            <h3>문의내역</h3>
-            <p>내 문의내역 입니다.</p>
-        </div>
+<div class="category" sec:authorize="isAuthenticated()">
+    <div class="card" onClick="location.href ='/cs/csMain'">
+        <i>A</i>
+        <h3>자주 묻는 질문</h3>
+        <p>자주 묻는 질문 입니다.</p>
     </div>
+
+    <div class="card" sec:authorize="hasRole('MEMBER')" onClick="location.href ='/cs/insertQueForm'">
+        <i>B</i>
+        <h3>문의하기</h3>
+        <p>문의하기 입니다.</p>
+    </div>
+
+    <div class="card" sec:authorize="hasRole('MEMBER')" onClick="location.href='/cs/csMyQue'">
+        <i>C</i>
+        <h3>문의내역</h3>
+        <p>내 문의내역 입니다.</p>
+    </div>
+
+    <div class="card" sec:authorize="hasRole('ADMIN')" onClick="location.href='/cs/csAllQue'">
+        <i>C</i>
+        <h3>전체 문의내역</h3>
+        <p>모든 사용자의 문의내역입니다.</p>
+    </div>
+</div>
 </body>
 </html>
