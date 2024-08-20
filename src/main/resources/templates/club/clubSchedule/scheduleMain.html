@@ -175,7 +175,7 @@
                             </th:block>
                             <input type="hidden" th:value="${one.scheduleNo}">
                             <p th:text="${one.title}" class="p-tag schedule-title"></p>
-                            <p th:text="${one.content}" class="p-tag schedule-content"></p>
+                            <p th:text="${#strings.abbreviate(one.content, 63)}" class="p-tag schedule-content"></p>
                             <p class="p-tag schedule-etc">
                                 <span>&#128197;</span>
                                 <span th:text="${one.gatheringAtStr}" style="margin-left: 2px;"></span>

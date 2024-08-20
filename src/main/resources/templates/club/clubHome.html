@@ -176,7 +176,7 @@
             </tr>
             <tr>
                 <td colspan="3" style="padding-top: 30px;">
-                    <span th:text="${clubHome.introduction}"></span>
+                    <span th:utext="${#strings.replace(clubHome.introduction, '&#10;', '&lt;br&gt;')}"></span>
                 </td>
             </tr>
         </table>

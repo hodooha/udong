@@ -197,7 +197,7 @@
                         <input type="hidden" th:value="${one.clubNo}">
                         <p th:text="${one.category.categoryName}" class="p-tag club-category-name"></p>
                         <p th:text="${one.clubName}" class="p-tag club-name"></p>
-                        <p th:text="${one.introduction}" class="p-tag club-introduction"></p>
+                        <p th:text="${#strings.abbreviate(one.introduction, 63)}" class="p-tag club-introduction"></p>
                         <p class="p-tag club-etc">
                             <span style="margin-right: 4px">&#127960;</span>
                             <span th:text="${one.location.eupMyeonDongName}"></span>
