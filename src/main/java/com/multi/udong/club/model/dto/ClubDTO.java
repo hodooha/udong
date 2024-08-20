@@ -32,5 +32,6 @@ public class ClubDTO {
     private List<ClubMemberDTO> clubMember;
     private String isDeleted;
     private LocalDateTime deletedAt;
+    private int joinRequestCount;
 
 }

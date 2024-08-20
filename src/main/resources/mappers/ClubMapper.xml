@@ -18,6 +18,7 @@
         <result property="joinStatus" column="join_status"/>
         <result property="isDeleted" column="is_deleted"/>
         <result property="deletedAt" column="deleted_at"/>
+        <result property="joinRequestCount" column="join_request_count"/>
 
         <association property="category" resultMap="categoryResultMap"/>
         <association property="location" resultMap="locationResultMap"/>
@@ -277,7 +278,7 @@
                 OR A.introduction LIKE CONCAT('%', #{ searchWord }, '%')
             )
         </if>
-        ORDER BY current_personnel DESC
+        ORDER BY current_personnel DESC, A.created_at
         LIMIT #{ startIndex }, #{ pageCount }
     </select>
 
@@ -302,6 +303,7 @@
             C.*,
             (SELECT D.nickname FROM MEMBER D WHERE D.member_no = A.master) AS master_nickname,
             (SELECT COUNT(*) FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.join_status = 'Y') AS current_personnel,
+            (SELECT COUNT(*) FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.join_status = 'W') AS join_request_count,
             (SELECT E.join_status FROM CL_MEMBER E WHERE E.club_no = A.club_no AND E.member_no = #{ memberNo }) AS join_status,
             F.*
         FROM CL A
