@@ -24,7 +24,7 @@
         .admin-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 80px;
+            margin-top: 40px;
         }
 
         .admin-table th, .admin-table td {
@@ -80,6 +80,43 @@
         .status-text {
             margin-right: 10px;
         }
+         .search-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 60px;
+            margin-top:-85px;
+        }
+        .search-input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            height: 40px;
+            box-sizing: border-box;
+        }
+        .search-button {
+            background-color: #FFB83D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-button:hover {
+            background-color: #FF9909;
+            color: #FFFFFF;
+        }
+        .category-select {
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 40px;
+        }
     </style>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
@@ -88,6 +125,19 @@
 
 <div class="admin-content">
     <h5 style="text-align: center; margin-bottom: 100px;">신고관리</h5>
+    <div class="search-container">
+        <select class="category-select" id="categoryFilter">
+            <option value="">카테고리</option>
+            <option value="SAL">땡처리</option>
+            <option value="RENT">대여</option>
+            <option value="GIVE">나눔</option>
+            <option value="NS">소식</option>
+            <option value="CL">모임</option>
+        </select>
+        <input type="text" id="searchInput" class="search-input" placeholder="검색어를 입력해주세요">
+        <button class="search-button" onclick="searchReports()">검색</button>
+    </div>
+
 
     <table class="admin-table">
         <thead>
@@ -138,6 +188,7 @@
         const itemsPerPage = 6;
         let currentSortColumn = 'createdAt';
         let sortDirection = true;
+        let filteredReports = [...reports];
 
         function changeStatus(reportNo, status) {
             Swal.fire({
@@ -201,14 +252,17 @@
         }
 
         function displayReports(page) {
-            currentPage = page;
-            const startIndex = (page - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const reportsToDisplay = reports.slice(startIndex, endIndex);
+        currentPage = page;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const reportsToDisplay = filteredReports.slice(startIndex, endIndex);
 
-            const reportsTableBody = $('.admin-table tbody');
-            reportsTableBody.empty();
+        const reportsTableBody = $('.admin-table tbody');
+        reportsTableBody.empty();
 
+        if (filteredReports.length === 0) {
+            showNoResultsMessage(reportsTableBody);
+        } else {
             reportsToDisplay.forEach((report) => {
                 const row = $('<tr>').attr('data-report-no', report.reportNo).attr('data-status', report.status);
                 row.html(`
@@ -225,59 +279,62 @@
                 `);
                 reportsTableBody.append(row);
             });
-            console.log('Reports displayed');
-
-            updatePagination();
         }
+
+        updatePagination();
+    }
+    function showNoResultsMessage(tableBody) {
+        tableBody.html('<tr><td colspan="7" style="text-align: center;">검색 결과가 없습니다.</td></tr>');
+        $('.pagination').empty();
+    }
 
         function updatePagination() {
-            const totalPages = Math.ceil(reports.length / itemsPerPage);
-            const paginationContainer = $('.pagination');
-            paginationContainer.empty();
+        const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
+        const paginationContainer = $('.pagination');
+        paginationContainer.empty();
 
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = $('<a>')
-                    .text(i)
-                    .addClass('page-button')
-                    .toggleClass('active', i === currentPage)
-                    .on('click', function(event) {
-                        //event.preventDefault();
-                        displayReports(i);
-                    });
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = $('<a>')
+                .text(i)
+                .addClass('page-button')
+                .toggleClass('active', i === currentPage)
+                .on('click', function(event) {
+                    displayReports(i);
+                });
 
-                paginationContainer.append(pageButton);
-            }
+            paginationContainer.append(pageButton);
         }
+    }
 
         function sortReports(column) {
-            if (currentSortColumn === column) {
-                sortDirection = !sortDirection;
-            } else {
-                currentSortColumn = column;
-                 sortDirection = false;
+        if (currentSortColumn === column) {
+            sortDirection = !sortDirection;
+        } else {
+            currentSortColumn = column;
+            sortDirection = false;
+        }
+
+        filteredReports.sort((a, b) => {
+            let valueA = a[column];
+            let valueB = b[column];
+
+            if (column === 'status') {
+                const order = { 'W': 1, 'A': 2, 'R': 3 };
+                valueA = order[valueA];
+                valueB = order[valueB];
+            } else if (column === 'createdAt') {
+                valueA = new Date(valueA);
+                valueB = new Date(valueB);
             }
 
-            reports.sort((a, b) => {
-                let valueA = a[column];
-                let valueB = b[column];
+            if (valueA < valueB) return sortDirection ? -1 : 1;
+            if (valueA > valueB) return sortDirection ? 1 : -1;
+            return 0;
+        });
 
-                if (column === 'status') {
-                    const order = { 'W': 1, 'A': 2, 'R': 3 };
-                    valueA = order[valueA];
-                    valueB = order[valueB];
-                } else if (column === 'createdAt') {
-                    valueA = new Date(valueA);
-                    valueB = new Date(valueB);
-                }
-
-                if (valueA < valueB) return sortDirection ? -1 : 1;
-                if (valueA > valueB) return sortDirection ? 1 : -1;
-                return 0;
-            });
-
-            displayReports(currentPage);
-            updateSortIndicators();
-        }
+        displayReports(1);
+        updateSortIndicators();
+    }
 
         function updateSortIndicators() {
         $('.sortable').each(function() {
@@ -286,30 +343,64 @@
             if (column === currentSortColumn) {
                 text += sortDirection ? ' ▲' : ' ▼';
             } else {
-                text += ' ▼'; // 정렬되지 않은 컬럼에도 기본 화살표 추가
+                text += ' ▼';
             }
             $(this).text(text);
         });
     }
+     function searchReports() {
+        const searchTerm = $('#searchInput').val().trim().toLowerCase();
+        const category = $('#categoryFilter').val();
+
+        if (searchTerm === '' && category === '') {
+            filteredReports = [...reports];
+        } else {
+            filteredReports = reports.filter(report => {
+                const matchesSearch = searchTerm === '' ||
+                                      report.reporterMemberId.toLowerCase().includes(searchTerm) ||
+                                      report.reportedMemberId.toLowerCase().includes(searchTerm);
+                const matchesCategory = category === '' || report.typeCode === category;
+                return matchesSearch && matchesCategory;
+            });
+        }
+
+        sortReports(currentSortColumn);
+        displayReports(1);
+    }
 
 
         $(document).ready(function() {
-            console.log("Reports:", reports);  // 데이터 확인용 로그
-            sortReports('createdAt'); // 초기 정렬 적용
-            displayReports(currentPage);
+        console.log("Reports:", reports);
+        sortReports('createdAt');
+        displayReports(currentPage);
 
-            $('.sortable').on('click', function() {
-                sortReports($(this).data('sort'));
-            });
-             $(document).ready(function() {
-          $(document).on('click', '.report-link', function(e) {
+        $('.sortable').on('click', function() {
+            sortReports($(this).data('sort'));
+        });
+
+        $(document).on('click', '.report-link', function(e) {
             e.preventDefault();
             const url = $(this).attr('href');
             console.log('Link clicked:', url);
             window.open(url, '_blank');
-          });
         });
+
+        $('#searchInput').on('input', function() {
+            if ($(this).val().trim() !== '' || $('#categoryFilter').val() !== '') {
+                searchReports();
+            } else {
+                filteredReports = [...reports];
+                displayReports(1);
+            }
         });
+
+        $('#categoryFilter').on('change', searchReports);
+
+        $('.search-button').on('click', function(e) {
+            e.preventDefault();
+            searchReports();
+        });
+    });
 
 
         // 전역 함수로 노출
