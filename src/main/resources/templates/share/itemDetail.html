@@ -137,7 +137,7 @@
                 <h2>[[${item.title}]]</h2>
                 <p class="owner" th:onclick="infoReport([[${item.ownerNo}]])" style="cursor: pointer; width:fit-content">
                     <img style="width:25px; height:25px; margin-right:7px"
-                         th:src="${item.ownerImg == null ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
+                         th:src="${item.ownerImg == 'defaultProfile.png' ? '/img/defaultProfile.png' : '/uploadFiles/' + item.ownerImg}"
                          class="user-icon">[[${item.nickName}]]<img class="level"
                                                                     th:src="@{'/img/'+${item.level}+'.png'}"></p>
                 <p>💛 <span id="likeCnt" th:text="${item.likeCnt}"></span>👀 <span id="viewCnt"
@@ -162,10 +162,10 @@
                     ></button>
                         <span class="dropdown">
                       <button class="btn btn-udh-yellow" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        &#8285;
+                        &#8230;
                       </button>
                       <ul class="dropdown-menu">
-                        <li><button class="dropdown-item" type="button">&#128279;공유</button></li>
+                        <li><button class="dropdown-item" type="button" onclick="clipUrl()">&#128279;링크복사</button></li>
                         <li><button class="dropdown-item" type="button" data-bs-toggle="modal"
                                     data-bs-target="#reportModal">&#128680;신고</button></li>
                       </ul>
