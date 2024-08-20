@@ -3,6 +3,7 @@ package com.multi.udong.share.controller;
 
 import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.service.MemberService;
+import com.multi.udong.share.exeption.NoLocationException;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.HashMap;
 import java.util.List;
@@ -30,15 +32,11 @@ public class ShaDreamController {
     private final ShareService shareService;
     private final MemberService memberService;
 
-    public static void checkBeforehand(CustomUserDetails c) throws Exception {
-        // 로그인 확인
-        if (c == null) {
-            throw new Exception("로그인을 먼저 해주세요.");
-        }
-
+    public static void checkBeforehand(CustomUserDetails c) throws NoLocationException {
         // 지역 등록 여부 확인
         if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
-            throw new Exception("지역을 먼저 등록해주세요.");
+
+            throw new NoLocationException("먼저 동네를 등록해 주세요.");
         }
     }
     /**
@@ -50,7 +48,7 @@ public class ShaDreamController {
      * @since 2024 -08-02
      */
     @GetMapping("/lend")
-    public String dreamLendMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String dreamLendMain(Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
         // 결과값 초기 설정
         List<ShaCatDTO> catList = null;
         ShaDreamPageDTO pageInfo = new ShaDreamPageDTO();
@@ -79,6 +77,10 @@ public class ShaDreamController {
             // 카테고리 목록 조회
             catList = shareService.getShaCat();
             model.addAttribute("catList", catList);
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
@@ -97,7 +99,7 @@ public class ShaDreamController {
      * @since 2024 -08-02
      */
     @GetMapping("/borrow")
-    public String dreamBorrowMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String dreamBorrowMain(Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
 
         // 결과값 초기 설정
         List<ShaCatDTO> catList = null;
@@ -127,7 +129,10 @@ public class ShaDreamController {
             // 카테고리 목록 조회
             catList = shareService.getShaCat();
             model.addAttribute("catList", catList);
-
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             e.printStackTrace();
             model.addAttribute("msg", e.getMessage());
