@@ -12,12 +12,13 @@
         <result property="reporterMemberId" column="reporter_member_id"/>
         <result property="reason" column="reason"/>
         <result property="url" column="url"/>
+        <result property="createdAt" column="created_at"/>
         <result property="status" column="status"/>
     </resultMap>
 
     <insert id="insertReport" parameterType="com.multi.udong.admin.model.dto.ReportDTO">
-        INSERT INTO ADM_REPORT (reported_no, type_code, reported_member, reporter_member, reason, url, status)
-        VALUES (#{reportedNo}, #{typeCode}, #{reportedMember}, #{reporterMember}, #{reason}, #{url}, #{status})
+        INSERT INTO ADM_REPORT (reported_no, type_code, reported_member, reporter_member, reason, url, created_at, status)
+        VALUES (#{reportedNo}, #{typeCode}, #{reportedMember}, #{reporterMember}, #{reason}, #{url}, #{createdAt}, #{status})
     </insert>
 
     <select id="findAllReports" resultMap="ReportResultMap">
@@ -31,6 +32,7 @@
         m2.member_id AS reporter_member_id,
         r.reason,
         r.url,
+        r.created_at,
         r.status
         FROM
         ADM_REPORT r
@@ -59,6 +61,7 @@
         m2.member_id AS reporter_member_id,
         r.reason,
         r.url,
+        r.created_at,
         r.status,
         a.original_name AS image_file_name  <!-- 첨부 파일 정보 추가 -->
         FROM

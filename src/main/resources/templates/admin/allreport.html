@@ -97,6 +97,7 @@
             <th>신고자</th>
             <th>신고사유</th>
             <th>첨부파일</th>
+            <th class="sortable" data-sort="createdAt">작성일 ▼</th>
             <th class="sortable" data-sort="status">처리여부 ▼</th>
         </tr>
         </thead>
@@ -106,7 +107,8 @@
             <td th:text="${report.reportedMemberId}"></td>
             <td th:text="${report.reporterMemberId}"></td>
             <td>
-                <a th:href="@{${report.url}}" th:text="${report.reason}"></a>
+                <a th:href="${report.url}" th:text="${report.reason}" target="_blank" class="report-link"></a>
+            </td>
             </td>
             <td>
     <span th:if="${report.imageFileName != null and !report.imageFileName.isEmpty()}">
@@ -114,6 +116,7 @@
     </span>
                 <span th:unless="${report.imageFileName != null and !report.imageFileName.isEmpty()}">첨부 파일 없음</span>
             </td>
+            <td th:text="${report.createdAt}"></td>
             <td>
                 <span th:text="${report.status == 'W' ? '대기' : (report.status == 'A' ? '승인' : '반려')}" class="status-text"></span>
                 <button th:if="${report.status == 'W' || report.status == 'R'}"
@@ -133,6 +136,7 @@
         const reports = /*[[${reports}]]*/ [];
         let currentPage = 1;
         const itemsPerPage = 6;
+        let currentSortColumn = 'createdAt';
         let sortDirection = true;
 
         function changeStatus(reportNo, status) {
@@ -211,8 +215,9 @@
                     <td>${report.typeName}</td>
                     <td>${report.reportedMemberId}</td>
                     <td>${report.reporterMemberId}</td>
-                    <td><a href="${report.url}">${report.reason}</a></td>
+                    <td><a href="${report.url}" target="_blank" rel="noopener noreferrer" class="report-link">${report.reason}</a></td>
                     <td>${report.imageFileName ? `<a href="/admin/downloadReportImage/${report.reportNo}">[다운로드]</a>` : '첨부 파일 없음'}</td>
+                    <td>${report.createdAt}</td>
                     <td>
                         <span class="status-text">${report.status === 'W' ? '대기' : (report.status === 'A' ? '승인' : '반려')}</span>
                         ${getStatusButtons(report.reportNo, report.status)}
@@ -220,6 +225,7 @@
                 `);
                 reportsTableBody.append(row);
             });
+            console.log('Reports displayed');
 
             updatePagination();
         }
@@ -235,7 +241,7 @@
                     .addClass('page-button')
                     .toggleClass('active', i === currentPage)
                     .on('click', function(event) {
-                        event.preventDefault();
+                        //event.preventDefault();
                         displayReports(i);
                     });
 
@@ -243,25 +249,68 @@
             }
         }
 
-        function sortReports() {
+        function sortReports(column) {
+            if (currentSortColumn === column) {
+                sortDirection = !sortDirection;
+            } else {
+                currentSortColumn = column;
+                 sortDirection = false;
+            }
+
             reports.sort((a, b) => {
-                const order = { 'W': 1, 'A': 2, 'R': 3 };
-                return sortDirection ? order[a.status] - order[b.status] : order[b.status] - order[a.status];
+                let valueA = a[column];
+                let valueB = b[column];
+
+                if (column === 'status') {
+                    const order = { 'W': 1, 'A': 2, 'R': 3 };
+                    valueA = order[valueA];
+                    valueB = order[valueB];
+                } else if (column === 'createdAt') {
+                    valueA = new Date(valueA);
+                    valueB = new Date(valueB);
+                }
+
+                if (valueA < valueB) return sortDirection ? -1 : 1;
+                if (valueA > valueB) return sortDirection ? 1 : -1;
+                return 0;
             });
 
-            sortDirection = !sortDirection;
             displayReports(currentPage);
-
-            const headerElement = $('.sortable[data-sort="status"]');
-            headerElement.text(headerElement.text().replace(/[▼▲]/, sortDirection ? '▼' : '▲'));
+            updateSortIndicators();
         }
+
+        function updateSortIndicators() {
+        $('.sortable').each(function() {
+            const column = $(this).data('sort');
+            let text = $(this).text().replace(/[▼▲]/, '').trim();
+            if (column === currentSortColumn) {
+                text += sortDirection ? ' ▲' : ' ▼';
+            } else {
+                text += ' ▼'; // 정렬되지 않은 컬럼에도 기본 화살표 추가
+            }
+            $(this).text(text);
+        });
+    }
+
 
         $(document).ready(function() {
             console.log("Reports:", reports);  // 데이터 확인용 로그
+            sortReports('createdAt'); // 초기 정렬 적용
             displayReports(currentPage);
 
-            $('.sortable').on('click', sortReports);
+            $('.sortable').on('click', function() {
+                sortReports($(this).data('sort'));
+            });
+             $(document).ready(function() {
+          $(document).on('click', '.report-link', function(e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            console.log('Link clicked:', url);
+            window.open(url, '_blank');
+          });
         });
+        });
+
 
         // 전역 함수로 노출
         window.changeStatus = changeStatus;
