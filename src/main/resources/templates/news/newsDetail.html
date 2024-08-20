@@ -239,7 +239,7 @@
 
         <p th:text="${newsDetail.category.categoryName}" class="p-tag news-category-name"></p>
         <p th:text="${newsDetail.title}" class="p-tag news-title"></p>
-        <p th:text="${newsDetail.content}" class="p-tag news-content"></p>
+        <p th:utext="${#strings.replace(newsDetail.content, '&#10;', '&lt;br&gt;')}" class="p-tag news-content"></p>
 
         <table>
             <tr>

@@ -240,7 +240,7 @@
         </table>
 
         <p th:text="${logDetail.title}" class="p-tag log-title"></p>
-        <p th:text="${logDetail.content}" class="p-tag log-content"></p>
+        <p th:utext="${#strings.replace(logDetail.content, '&#10;', '&lt;br&gt;')}" class="p-tag log-content"></p>
 
         <table>
             <tr>
