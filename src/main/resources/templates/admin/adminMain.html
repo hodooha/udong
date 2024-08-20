@@ -126,6 +126,7 @@
                 <th>NO.</th>
                 <th>ID</th>
                 <th>닉네임</th>
+                <th class="sortable" data-sort="signupAt">가입일 ▼</th>
                 <th class="sortable" data-sort="authority">회원유형 ▼</th>
                 <th class="sortable" data-sort="reportedCnt">신고 ▼</th>
                 <th class="sortable" data-sort="status">비고 ▼</th>
@@ -136,6 +137,7 @@
                 <td th:text="${member.memberNo}"></td>
                 <td th:text="${member.memberId}"></td>
                 <td th:text="${member.nickname}"></td>
+                <td th:text="${member.signupAt}"></td>
                 <td th:text="${member.authority == 'ROLE_MEMBER' ? '일반회원' : (member.authority == 'ROLE_SELLER' ? '판매자' : (member.authority == 'ROLE_ADMIN' ? '관리자' : member.authority))}"></td> <!-- 회원 유형 -->
                 <td th:text="${member.reportedCnt}"></td>
                 <td>
@@ -204,6 +206,7 @@
                 <td>${member.memberNo}</td>
                 <td>${member.memberId}</td>
                 <td>${member.nickname}</td>
+                <td>${member.signupAt}</td>
                 <td>${getAuthorityDisplay(member.authority)}</td>
                 <td>${member.reportedCnt}</td>
                 <td>${getStatusDisplay(member)}</td>
@@ -259,34 +262,37 @@
     }
 
     function sortMembers(column) {
-        if (currentSortColumn === column) {
-            isAscending = !isAscending;
-        } else {
-            currentSortColumn = column;
-            isAscending = true;
+    if (currentSortColumn === column) {
+        isAscending = !isAscending;
+    } else {
+        currentSortColumn = column;
+        isAscending = true;
+    }
+
+    members.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+
+        if (column === 'authority') {
+            valueA = getAuthorityOrder(valueA);
+            valueB = getAuthorityOrder(valueB);
+        } else if (column === 'status') {
+            valueA = getStatusOrder(a);
+            valueB = getStatusOrder(b);
+        } else if (column === 'signupAt') {
+            valueA = new Date(valueA);
+            valueB = new Date(valueB);
         }
 
-        members.sort((a, b) => {
-            let valueA = a[column];
-            let valueB = b[column];
+        if (valueA < valueB) return isAscending ? -1 : 1;
+        if (valueA > valueB) return isAscending ? 1 : -1;
+        return 0;
+    });
 
-            if (column === 'authority') {
-                valueA = getAuthorityOrder(valueA);
-                valueB = getAuthorityOrder(valueB);
-            } else if (column === 'status') {
-                valueA = getStatusOrder(a);
-                valueB = getStatusOrder(b);
-            }
-
-            if (valueA < valueB) return isAscending ? -1 : 1;
-            if (valueA > valueB) return isAscending ? 1 : -1;
-            return 0;
-        });
-
-        currentPage = 1; // 정렬 후 첫 페이지로 이동
-        displayMembers(currentPage);
-        updateSortIndicators();
-    }
+    currentPage = 1; // 정렬 후 첫 페이지로 이동
+    displayMembers(currentPage);
+    updateSortIndicators();
+}
 
     function getAuthorityOrder(authority) {
         switch(authority) {
