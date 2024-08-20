@@ -24,6 +24,7 @@
             border: 1px solid #ccc;
             border-radius: 50%;
             margin: 0px 10px 8px 0px;
+            cursor: pointer;
         }
         .participant-profile-img {
             width: 20px;
@@ -31,12 +32,15 @@
             border: 1px solid #ccc;
             border-radius: 50%;
             margin: 0px 5px 0px 0px;
+            cursor: pointer;
         }
         .maker-nickname {
             font-family: 'Freesentation-5Medium';
+            cursor: pointer;
         }
         .participant-nickname {
             font-size: 13px;
+            cursor: pointer;
         }
         .p-tag {
             margin: 0px;
@@ -182,12 +186,12 @@
             <tr style="white-space: nowrap;">
                 <td>
                     <th:block th:if="${scheduleDetail.maker.profileSavedName == 'defaultProfile.png'}">
-                        <img th:src="@{'/img/' + ${scheduleDetail.maker.profileSavedName}}" class="maker-profile-img">
+                        <img th:src="@{'/img/' + ${scheduleDetail.maker.profileSavedName}}" class="maker-profile-img" th:onclick="'infoReport(' + ${scheduleDetail.maker.memberNo} + ')'">
                     </th:block>
                     <th:block th:if="${scheduleDetail.maker.profileSavedName != 'defaultProfile.png'}">
-                        <img th:src="@{'/uploadFiles/' + ${scheduleDetail.maker.profileSavedName}}" class="maker-profile-img">
+                        <img th:src="@{'/uploadFiles/' + ${scheduleDetail.maker.profileSavedName}}" class="maker-profile-img" th:onclick="'infoReport(' + ${scheduleDetail.maker.memberNo} + ')'">
                     </th:block>
-                    <span th:text="${scheduleDetail.maker.nickname}" class="maker-nickname"></span>
+                    <span th:text="${scheduleDetail.maker.nickname}" class="maker-nickname" th:onclick="'infoReport(' + ${scheduleDetail.maker.memberNo} + ')'"></span>
                     <p th:text="${scheduleDetail.createdAt}" class="p-tag schedule-etc"></p>
                 </td>
                 <td class="btn-right-area">
@@ -236,12 +240,12 @@
                 <tr th:each="one : ${scheduleDetail.participants.subList(0, 4)}">
                     <td>
                         <th:block th:if="${one.profileSavedName == 'defaultProfile.png'}">
-                            <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img">
+                            <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                         </th:block>
                         <th:block th:if="${one.profileSavedName != 'defaultProfile.png'}">
-                            <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img">
+                            <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                         </th:block>
-                        <span th:text="${one.nickname}" class="participant-nickname"></span>
+                        <span th:text="${one.nickname}" class="participant-nickname" th:onclick="'infoReport(' + ${one.memberNo} + ')'"></span>
                     </td>
                 </tr>
             </table>
@@ -249,12 +253,12 @@
                 <tr th:each="one : ${scheduleDetail.participants}">
                     <td>
                         <th:block th:if="${one.profileSavedName == 'defaultProfile.png'}">
-                            <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img">
+                            <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                         </th:block>
                         <th:block th:if="${one.profileSavedName != 'defaultProfile.png'}">
-                            <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img">
+                            <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                         </th:block>
-                        <span th:text="${one.nickname}" class="participant-nickname"></span>
+                        <span th:text="${one.nickname}" class="participant-nickname" th:onclick="'infoReport(' + ${one.memberNo} + ')'"></span>
                     </td>
                 </tr>
             </table>
@@ -307,12 +311,12 @@
             <tr th:each="one : ${scheduleDetail.participants}">
                 <td>
                     <th:block th:if="${one.profileSavedName == 'defaultProfile.png'}">
-                        <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img">
+                        <img th:src="@{'/img/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                     </th:block>
                     <th:block th:if="${one.profileSavedName != 'defaultProfile.png'}">
-                        <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img">
+                        <img th:src="@{'/uploadFiles/' + ${one.profileSavedName}}" class="participant-profile-img" th:onclick="'infoReport(' + ${one.memberNo} + ')'">
                     </th:block>
-                    <span th:text="${one.nickname}" class="participant-nickname"></span>
+                    <span th:text="${one.nickname}" class="participant-nickname" th:onclick="'infoReport(' + ${one.memberNo} + ')'"></span>
                 </td>
             </tr>
         </table>

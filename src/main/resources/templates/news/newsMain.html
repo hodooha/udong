@@ -202,7 +202,7 @@
                 <button type="submit" class="btn btn-udh-silver btn-search">검색</button>
             </div>
         </form>
-        <th:block th:if="${#authentication.principal.memberDTO.authority == 'ROLE_MEMBER'}">
+        <th:block th:if="${#authentication.principal.memberDTO.authority != 'ROLE_ADMIN'}">
             <a th:href="@{/news/newsInsertForm}">
                 <button type="button" class="btn btn-udh-blue btn-insert-news">소식 작성</button>
             </a>
@@ -265,7 +265,7 @@
                             <span>&#128395;</span>
                             <span th:text="${one.writer.nickname}" style="margin-left: 4px"></span>
                             <span style="margin: 0px 6px 0px 6px">|</span>
-                            <span th:text="${one.createdAt}"></span>
+                            <span th:text="${#temporals.format(one.createdAt, 'yyyy.MM.dd - HH:mm')}"></span>
                         </p>
                     </td>
                     <td style="width: 120px" th:if="${one.attachments != null and one.attachments.size() > 0}">

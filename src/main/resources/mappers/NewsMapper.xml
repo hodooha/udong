@@ -385,7 +385,7 @@
         LEFT JOIN LOCATION L ON L.location_code = NS.location_code
         LEFT JOIN MEMBER M ON M.member_no = NS.writer
         WHERE NS.is_deleted = 'N' AND NS.location_code = #{ locationCode } AND NS.created_at &gt; #{ recentlyTime }
-        ORDER BY NS.views DESC
+        ORDER BY likes_count DESC
         LIMIT 5
     </select>
 

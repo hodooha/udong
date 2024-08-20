@@ -15,9 +15,11 @@
             border: 1px solid #ccc;
             border-radius: 50%;
             margin: 0px 10px 8px 0px;
+            cursor: pointer;
         }
         .writer-nickname {
             font-family: 'Freesentation-5Medium';
+            cursor: pointer;
         }
         .p-tag {
             margin: 0px;
@@ -190,14 +192,14 @@
             <tr style="white-space: nowrap;">
                 <td>
                     <th:block th:if="${newsDetail.writer.profileSavedName == 'defaultProfile.png'}">
-                        <img th:src="@{'/img/' + ${newsDetail.writer.profileSavedName}}" class="writer-profile-img">
+                        <img th:src="@{'/img/' + ${newsDetail.writer.profileSavedName}}" class="writer-profile-img" th:onclick="'infoReport(' + ${newsDetail.writer.memberNo} + ')'">
                     </th:block>
                     <th:block th:if="${newsDetail.writer.profileSavedName != 'defaultProfile.png'}">
-                        <img th:src="@{'/uploadFiles/' + ${newsDetail.writer.profileSavedName}}" class="writer-profile-img">
+                        <img th:src="@{'/uploadFiles/' + ${newsDetail.writer.profileSavedName}}" class="writer-profile-img" th:onclick="'infoReport(' + ${newsDetail.writer.memberNo} + ')'">
                     </th:block>
-                    <span th:text="${newsDetail.writer.nickname}" class="writer-nickname"></span>
+                    <span th:text="${newsDetail.writer.nickname}" class="writer-nickname" th:onclick="'infoReport(' + ${newsDetail.writer.memberNo} + ')'"></span>
                     <p class="p-tag news-etc">
-                        <span th:text="${newsDetail.createdAt}" class="p-tag news-etc"></span>
+                        <span th:text="${#temporals.format(newsDetail.createdAt, 'yyyy.MM.dd - HH:mm')}" class="p-tag news-etc"></span>
                         <span style="margin: 0px 5px 0px 5px">|</span>
                         <span th:text="${newsDetail.location.eupMyeonDongName}" class="p-tag news-etc"></span>
                     </p>
@@ -207,11 +209,13 @@
                         <span style="color: #FFFFFF; background-color: #CB3333; padding: 10px 10px 10px 7px;">❕ 삭제된 소식입니다.</span>
                     </th:block>
                     <th:block th:if="${newsDetail.isDeleted == 'N'}">
-                        <a th:href="@{/news/newsReportForm(newsNo=${newsDetail.newsNo})}">
-                            <button class="btn btn-udh-blue btn-right">
-                                소식 신고
-                            </button>
-                        </a>
+                        <th:block th:if="${newsDetail.writer.memberNo != #authentication.principal.memberDTO.memberNo}">
+                            <a th:href="@{/news/newsReportForm(newsNo=${newsDetail.newsNo})}">
+                                <button class="btn btn-udh-blue btn-right">
+                                    소식 신고
+                                </button>
+                            </a>
+                        </th:block>
                         <th:block th:if="${newsDetail.writer.memberNo == #authentication.principal.memberDTO.memberNo}">
                             <a th:href="@{/news/newsUpdateForm(newsNo=${newsDetail.newsNo})}">
                                 <button class="btn btn-udh-blue btn-right">
@@ -334,7 +338,7 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 10%;">
-                            <span th:text="${reply.createdAt}" class="reply-etc"></span>
+                            <span th:text="${#temporals.format(reply.createdAt, 'yyyy.MM.dd - HH:mm')}" class="reply-etc"></span>
                         </td>
                         <td>
                             <p class="p-tag reply-like">

@@ -58,7 +58,16 @@ public class ClubController {
      * @since 2024 -07-23
      */
     @RequestMapping("/clubMain")
-    public String clubMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model) {
+    public String clubMain(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
+
+        if(c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
+
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+
+            return "redirect:/";
+
+        }
 
         // 받아온 page로 시작 및 시작 index를 설정
         filterDTO.setStartAndStartIndex(filterDTO.getPage());

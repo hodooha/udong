@@ -12,6 +12,12 @@
             font-size: 25px;
             margin-bottom: 30px;
         }
+        .menu-info {
+            font-family: 'Freesentation-3Light';
+            font-size: 13px;
+            margin-left: 10px;
+            color: #6F6F6F;
+        }
         .top{
             display: flex;
             align-items: center;
@@ -81,7 +87,10 @@
 <div th:replace="~{/news/newsAlert}"></div>
 
 <div class="content" style="padding: 40px;">
-    <p class="menu">&#128293; 우동 인기 소식</p>
+    <p class="menu">
+        &#128293; 우동 인기 소식
+        <span class="menu-info">최근 일주일 동안 우리 동네에서 가장 인기 있는 소식이에요.</span>
+    </p>
     <div class="top">
         <a th:href="@{/news/newsMain}">
             <button class="btn btn-udh-blue btn-news-main">
@@ -124,7 +133,7 @@
                             <span>&#128395;</span>
                             <span th:text="${one.writer.nickname}" style="margin-left: 4px"></span>
                             <span style="margin: 0px 6px 0px 6px">|</span>
-                            <span th:text="${one.createdAt}"></span>
+                            <span th:text="${#temporals.format(one.createdAt, 'yyyy.MM.dd - HH:mm')}"></span>
                         </p>
                     </td>
                     <td style="width: 120px" th:if="${one.attachments != null and one.attachments.size() > 0}">
