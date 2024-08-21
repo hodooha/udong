@@ -103,10 +103,10 @@
             <div class="insert-area">
                 <table style="width: 100%">
                     <tr>
-                        <td style="width: 3%">
-                            <span>제목</span>
+                        <td style="width: 3.5%">
+                            <span>제목</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 72%">
+                        <td style="width: 71.5%">
                             <input type="text" id="titleInput" class="input log-title-input" name="title" th:value="${logDetail.title}" maxlength="30" required>
                         </td>
                         <td style="width: 4%">
@@ -119,10 +119,10 @@
                 </table>
                 <table style="width: 100%; margin: 30px 0px 30px 0px;">
                     <tr>
-                        <td style="width: 3%; vertical-align: top;">
-                            <span>내용</span>
+                        <td style="width: 3.5%; vertical-align: top;">
+                            <span>내용</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 97%">
+                        <td style="width: 96.5%">
                             <textarea id="contentInput" class="content-input" name="content" th:text="${logDetail.content}" maxlength="500" required></textarea>
                         </td>
                     </tr>

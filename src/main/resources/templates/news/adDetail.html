@@ -78,7 +78,7 @@
                     <p class="p-tag ad-category-name">AD</p>
                     <p th:text="${adDetail.location.eupMyeonDongName}" class="ad-etc"></p>
                     <p th:text="${adDetail.title}" class="p-tag ad-title"></p>
-                    <p th:text="${adDetail.content}" class="p-tag ad-content"></p>
+                    <p th:utext="${#strings.replace(adDetail.content, '&#10;', '&lt;br&gt;')}" class="p-tag ad-content"></p>
                 </td>
                 <td class="btn-right-area">
                     <th:block th:if="${adDetail.isDeleted == 'Y'}">

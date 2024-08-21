@@ -134,17 +134,17 @@
                 <input type="hidden" name="clubNo" th:value="${clubHome.clubNo}" />
                 <table style="width: 100%">
                     <tr>
-                        <td style="width: 3%">
-                            <span>주제</span>
+                        <td style="width: 3.5%">
+                            <span>주제</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 12%">
+                        <td style="width: 11.5%">
                             <select class="category-select" name="categoryCode">
                             </select>
                         </td>
-                        <td style="width: 4%">
-                            <span>모임명</span>
+                        <td style="width: 4.5%">
+                            <span>모임명</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 36%">
+                        <td style="width: 35.5%">
                             <input type="text" id="clubNameInput" class="input club-name-input" name="clubName" th:value="${clubHome.clubName}" maxlength="40" required>
                         </td>
                         <td style="width: 4%">
@@ -164,10 +164,10 @@
                 <table style="width: 100%; margin: 30px 0 70px 0;">
                     <tr>
                         <td>
-                            <span>대표 이미지</span>
+                            <span>대표 이미지</span><span style="color:red;"> *</span>
                         </td>
                         <td>
-                            <span>소개</span>
+                            <span>소개</span><span style="color:red;"> *</span>
                         </td>
                     </tr>
                     <tr>

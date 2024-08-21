@@ -1310,7 +1310,13 @@ public class ClubController {
 
             try {
 
-                clubService.insertReply(replyDTO);
+                int result = clubService.insertReply(replyDTO);
+
+                if(result == 1) {
+
+                    clubService.sendReply(replyDTO, clubNo);
+
+                }
 
                 return "redirect:/club/clubLog/logDetail?clubNo=" + clubNo + "&logNo=" + logNo;
 

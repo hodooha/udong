@@ -37,6 +37,15 @@ public class NewsController {
     @RequestMapping("/newsMain")
     public String clubLog(@AuthenticationPrincipal CustomUserDetails c, FilterDTO filterDTO, Model model, RedirectAttributes redirectAttributes) {
 
+        if(c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
+
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+
+            return "redirect:/";
+
+        }
+
         // 파라미터로 받은 page 값으로 시작 및 시작 index 설정
         filterDTO.setStartAndStartIndex(filterDTO.getPage());
 

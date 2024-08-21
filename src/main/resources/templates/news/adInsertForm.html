@@ -118,10 +118,10 @@
         <div class="insert-area">
             <table style="width: 100%">
                 <tr>
-                    <td style="width: 3%">
-                        <span>제목</span>
+                    <td style="width: 3.5%">
+                        <span>제목</span><span style="color:red;"> *</span>
                     </td>
-                    <td style="width: 37%">
+                    <td style="width: 36.5%">
                         <input type="text" id="titleInput" class="input title-input" name="title" maxlength="30" required>
                     </td>
                     <td style="width: 4%">
@@ -130,10 +130,10 @@
                     <td style="width: 26%">
                         <input type="text" class="input writer-input" th:value="${#authentication.principal.memberDTO.nickname}" disabled>
                     </td>
-                    <td style="width: 3%">
-                        <span>동네</span>
+                    <td style="width: 3.5%">
+                        <span>동네</span><span style="color:red;"> *</span>
                     </td>
-                    <td style="width: 27%">
+                    <td style="width: 26.5%">
                         <select class="location-select" name="locationCode" required>
                         </select>
                     </td>
@@ -141,16 +141,16 @@
             </table>
             <table style="width: 100%; margin: 30px 0px 30px 0px;">
                 <tr>
-                    <td style="width: 3%; vertical-align: top;">
-                        <span>내용</span>
+                    <td style="width: 3.5%; vertical-align: top;">
+                        <span>내용</span><span style="color:red;"> *</span>
                     </td>
-                    <td style="width: 47%; vertical-align: top;">
+                    <td style="width: 46.5%; vertical-align: top;">
                         <textarea id="contentInput" class="content-input" name="content" maxlength="500" required></textarea>
                     </td>
-                    <td style="width: 4%; vertical-align: top;">
-                        <span style="margin-left: 30px">이미지</span>
+                    <td style="width: 4.5%; vertical-align: top;">
+                        <span style="margin-left: 30px">이미지</span><span style="color:red;"> *</span>
                     </td>
-                    <td style="width: 46%">
+                    <td style="width: 45.5%">
                         <div id="imgArea" class="img-div">
                             <img id="img" class="img">
                             <br>
