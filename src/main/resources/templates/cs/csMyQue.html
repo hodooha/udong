@@ -39,6 +39,9 @@
 <!--            }-->
 <!--        }-->
         .question {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             flex: 1;
             text-align: center;
             border: 1px solid #000000;
@@ -46,6 +49,11 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 20px;
             overflow: auto;
+
+            & h2 {
+                color: #3B5C9A;
+                margin-bottom: 20px;
+            }
         }
         table {
             width: 100%;
@@ -65,11 +73,19 @@
             cursor: pointer;
         }
         #no-result {
-            margin: 20px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20%;
+            background-color: #EDEDED;
+            border-radius: 10px;
+            color: #888;
+            font-style: italic;
         }
         .pagination {
             display: flex;
-            justify-content: start;
+            justify-content: center;
             margin-top: 20px;
 
             & a {
@@ -110,23 +126,25 @@
 <!--        </div>-->
 
         <div class="question">
-            <h2>내 문의내역</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
-                    </tr>
-                </thead>
-                <tbody id="result-table">
-                    <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
-                        <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}">
-                            <span th:if="${elementStat.index == 4}" th:text="${element == 'N' ? '답변 대기' : '답변 완료'}"></span>
-                            <span th:unless="${elementStat.index == 4}" th:text="${element}"></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <div id="no-result" hidden>결과가 없습니다.</div>
+            <div>
+                <h2>내 문의내역</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th th:each="header : ${tableHeaders}" th:text="${header}"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="result-table">
+                        <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
+                            <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}">
+                                <span th:if="${elementStat.index == 4}" th:text="${element == 'N' ? '답변 대기' : '답변 완료'}"></span>
+                                <span th:unless="${elementStat.index == 4}" th:text="${element}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="no-result" hidden>결과가 없습니다.</div>
+            </div>
             <div class="pagination"></div>
         </div>
     </div>

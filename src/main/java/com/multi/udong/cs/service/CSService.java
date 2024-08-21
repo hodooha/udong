@@ -30,5 +30,5 @@ public interface CSService {
 
     String insertAnswerQue(CSAnswerDTO csAnswerDTO, String authority);
 
-    String deleteQue(int csNo);
+    String deleteQue(int csNo, String authority);
 }
