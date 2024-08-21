@@ -17,6 +17,11 @@
             border: 1px solid #F5F5F5 !important;
         }
 
+        .rec-card{
+            background-color: #FFF7EB !important;
+            border: 1px solid #FFF7EB !important;
+        }
+
         .card-body span{
             margin-right: 1em;
         }
@@ -130,7 +135,7 @@
                              th:class="${groupStat.index == 0} ? 'carousel-item active' : 'carousel-item'">
                             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
                                 <div th:each="item : ${group}" class="col">
-                                    <div class="card"
+                                    <div class="card rec-card"
                                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
                                         <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
                                             <img th:src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}"
@@ -260,7 +265,7 @@
                         <div class="card-body">
                             <span class="badge text-bg-secondary mb-1"
                                   style="width:max-content">[[${item.itemCatName}]]</span>
-                            <h5 th:text="${item.title}"></h5>
+                            <h5 th:text="${item.title}" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"></h5>
                             <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️
                                 <span
                                         th:text="${item.reqCnt}"></span></p>
