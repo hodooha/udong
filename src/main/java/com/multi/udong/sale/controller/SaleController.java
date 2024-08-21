@@ -53,11 +53,17 @@ public class SaleController {
                            @RequestParam(value = "search", required = false) String search,
                            @RequestParam(value = "excludeExpired", required = false) Boolean excludeExpired,
                            @RequestParam(value = "sortOption", required = false, defaultValue = "latest") String sortOption,
-                           @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+                           @AuthenticationPrincipal CustomUserDetails customUserDetails,
+                           RedirectAttributes redirectAttributes) {
         try {
 
-            if (customUserDetails == null) {
-                throw new Exception("로그인을 먼저 해주세요.");
+            if(customUserDetails.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
+
+                redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+                redirectAttributes.addFlashAttribute("alertType", "noLocation");
+
+                return "redirect:/";
+
             }
 
 
