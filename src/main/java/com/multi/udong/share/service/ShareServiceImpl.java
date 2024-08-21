@@ -959,7 +959,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 30 14 * * ?")
+    @Scheduled(cron = "0 15  22 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
@@ -1048,8 +1048,9 @@ public class ShareServiceImpl implements ShareService {
                 // 당첨자 & 물건 나눔인에게 쪽지 및 알림 전송
                 MessageDTO messageDTO1 = new MessageDTO();
                 messageDTO1.setReceiverNo(winner.getRqstNo());
-                messageDTO1.setSenderNo(36);
+                messageDTO1.setSenderNo(6);
                 messageDTO1.setReceiverNickname(winner.getRqstNickname());
+                messageDTO1.setIsRead("N");
                 messageDTO1.setContent("축하드립니다! 신청하신 " + i.getTitle() + " 나눔에 당첨되셨습니다! 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 나눔해주신 이웃분과 쪽지를 통해 약속을 잡아주세요.");
 
                 messageMapper.sendMessage(messageDTO1);
@@ -1058,8 +1059,9 @@ public class ShareServiceImpl implements ShareService {
 
                 MessageDTO messageDTO2 = new MessageDTO();
                 messageDTO2.setReceiverNo(i.getOwnerNo());
-                messageDTO2.setSenderNo(36);
+                messageDTO2.setSenderNo(6);
                 messageDTO2.setReceiverNickname(i.getNickName());
+                messageDTO2.setIsRead("N");
                 messageDTO2.setContent("나눔해주신 " + i.getTitle() + "의 당첨자가 발표되었습니다. 지금 바로 나의 드림목록에 가셔서 확인해보세요. :) 당첨자분과 쪽지를 통해 약속을 잡아주세요.");
 
                 messageMapper.sendMessage(messageDTO2);

@@ -2,6 +2,7 @@ package com.multi.udong.share.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.login.service.CustomUserDetails;
+import com.multi.udong.share.exeption.NoLocationException;
 import com.multi.udong.share.model.dto.*;
 import com.multi.udong.share.service.ShareService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -36,15 +38,11 @@ public class ShareController {
 // 이미지 저장 경로
     static final String IMAGE_PATH = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString() + File.separator;
 
-    public static void checkBeforehand(CustomUserDetails c) throws Exception {
-        // 로그인 확인
-        if (c == null) {
-            throw new Exception("로그인을 먼저 해주세요.");
-        }
-
+    public static void checkBeforehand(CustomUserDetails c) throws NoLocationException {
         // 지역 등록 여부 확인
         if (!c.getMemberDTO().getAuthority().equals("ROLE_ADMIN") && c.getMemberDTO().getMemAddressDTO().getLocationCode() == null) {
-            throw new Exception("지역을 먼저 등록해주세요.");
+
+            throw new NoLocationException("먼저 동네를 등록해 주세요.");
         }
     }
 
@@ -57,7 +55,7 @@ public class ShareController {
      * @since 2024 -07-26
      */
     @GetMapping("/rent")
-    public String rentMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String rentMain(Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
         try {
             checkBeforehand(c);
 
@@ -89,6 +87,10 @@ public class ShareController {
             List<ShaCatDTO> catList = shareService.getShaCat();
             model.addAttribute("catList", catList);
 
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -107,7 +109,7 @@ public class ShareController {
      * @since 2024 -07-26
      */
     @GetMapping("/give")
-    public String giveMain(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String giveMain(Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
         try {
             checkBeforehand(c);
 
@@ -139,6 +141,10 @@ public class ShareController {
             List<ShaCatDTO> catList = shareService.getShaCat();
             model.addAttribute("catList", catList);
 
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -156,7 +162,7 @@ public class ShareController {
      * @since 2024 -07-22
      */
     @GetMapping("/register")
-    public String register(Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String register(Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
 
         try {
             checkBeforehand(c);
@@ -165,6 +171,10 @@ public class ShareController {
             List<ShaCatDTO> list = shareService.getShaCat();
             model.addAttribute("catList", list);
 
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -185,7 +195,7 @@ public class ShareController {
      * @since 2024 -07-23
      */
     @GetMapping(value = {"/rent/detail", "/give/detail"})
-    public String itemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String itemDetail(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
 
         try {
             checkBeforehand(c);
@@ -193,7 +203,10 @@ public class ShareController {
             // db에서 물건 상세 정보 조회
             ShaItemDTO item = shareService.getItemDetailWithViewCnt(itemDTO, c);
             model.addAttribute("item", item);
-
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
         } catch (Exception e) {
             model.addAttribute("msg", e.getMessage());
             e.printStackTrace();
@@ -246,7 +259,7 @@ public class ShareController {
      * @since 2024 -07-22
      */
     @PostMapping("/register")
-    public String insertItem(Model model, ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
+    public String insertItem(Model model, ShaItemDTO itemDTO, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList, RedirectAttributes redirectAttributes) {
 
         // 첨부파일 목록 정리 (데이터가 있는 것만!)
         fileList = fileList.stream().filter((x) -> !x.isEmpty()).collect(Collectors.toList());
@@ -289,6 +302,11 @@ public class ShareController {
 
             // db에 물건 정보 저장
             shareService.insertItem(itemDTO, imgList);
+
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
 
         } catch (Exception e) {
             // 물건 정보 저장 실패 시 저장한 첨부파일 삭제
@@ -401,7 +419,7 @@ public class ShareController {
      * @since 2024 -07-29
      */
     @GetMapping("/update")
-    public String editForm(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c) {
+    public String editForm(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c, RedirectAttributes redirectAttributes) {
 
         System.out.println(itemDTO);
 
@@ -422,6 +440,10 @@ public class ShareController {
             List<ShaCatDTO> list = shareService.getShaCat();
             model.addAttribute("catList", list);
 
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -443,7 +465,7 @@ public class ShareController {
      * @since 2024 -07-30
      */
     @PostMapping("/update")
-    public String updateItem(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList) {
+    public String updateItem(ShaItemDTO itemDTO, Model model, @AuthenticationPrincipal CustomUserDetails c, @RequestPart(name = "imgs") List<MultipartFile> fileList, RedirectAttributes redirectAttributes) {
 
         System.out.println("수정하려는 정보: " + itemDTO);
 
@@ -456,6 +478,7 @@ public class ShareController {
         System.out.println(fileList);
 
         try {
+            checkBeforehand(c);
 
             // 물건 소유자가 아닐 경우 예외 던지기
             if (itemDTO.getOwnerNo() != c.getMemberDTO().getMemberNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
@@ -516,6 +539,10 @@ public class ShareController {
             for (String f : delFilesName) {
                 new File(IMAGE_PATH + f).delete();
             }
+        } catch (NoLocationException noLocationException) {
+            redirectAttributes.addFlashAttribute("alert", "먼저 동네를 등록해 주세요.");
+            redirectAttributes.addFlashAttribute("alertType", "noLocation");
+            return "redirect:/";
 
         } catch (Exception e) {
             for (AttachmentDTO img : newImgList) {
