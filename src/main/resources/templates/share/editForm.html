@@ -34,6 +34,11 @@
 
     <h2 style="text-align:center; font-weight:bolder;">물건 수정</h2>
 
+
+    <div style="text-align:right; font-size:0.8em">*거래방식, 마감일은 수정이 불가능합니다.</div>
+    <div style="text-align:right; color: red; font-size:0.8em;">* 필수 입력 사항입니다.</div>
+
+
     <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="return isValid();">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
         <input type="hidden" th:name="itemNo" th:value="${item.itemNo}"/>
@@ -41,7 +46,7 @@
         <input type="hidden" th:name="locCode" th:value="${item.locCode}"/>
         <div class="row mb-1">
             <div class="col-md-6">
-                <label class="form-label"><h5>거래방식</h5></label>
+                <label class="form-label"><h5>거래방식<span style="color:red;">*</span></h5></label>
                 <div style="display:flex">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="itemGroup" id="rent-opt" value="rent"
@@ -61,25 +66,25 @@
             </div>
 
             <div class="col-md-6" th:style="${item.itemGroup eq 'rent'} ? 'visibility:hidden' : ''" id="expiryDate">
-                <label class="form-label"><h5>마감일</h5></label>
+                <label class="form-label"><h5>마감일<span style="color:red;">*</span></h5></label>
 
                 <div class="input-group input-daterange">
                     <input type="date" class="form-control" placeholder="마감일 선택" name="expiryDate" id="datePicker"
                            th:value="${item.expiryDate}" readonly disabled>
                 </div>
 
-                <span style="font-size:0.7em">*마감일은 등록일 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
+                <span style="font-size:0.8em">*마감일은 등록일 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
             </div>
         </div>
 
         <div class="row mb-1">
             <div class="col-md-6">
-                <label for="title" class="form-label"><h5>제목</h5></label>
+                <label for="title" class="form-label"><h5>제목<span style="color:red;">*</span></h5></label>
                 <input type="text" class="form-control mb-2" id="title" name="title" required th:value="${item.title}">
 
             </div>
             <div class="col-md-6">
-                <label class="form-label"><h5>카테고리</h5></label>
+                <label class="form-label"><h5>카테고리<span style="color:red;">*</span></h5></label>
                 <select class="form-select" name="itemCatCode" required>
                     <option value="">=== 카테고리 선택 ===</option>
                     <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"
@@ -101,25 +106,32 @@
                     <input name="imgs" type="file" hidden="hidden">
 
                     <div th:each="img, imgStat : ${item.imgList}" class='img-group'>
-                        <input name="exImgs" type="hidden" th:value="${img.fileNo}" th:data-img-id="'ex-img'+${imgStat.count}">
-                        <input name="exImgsName" type="hidden" th:value="${img.savedName}" th:data-img-id="'ex-img'+${imgStat.count}">
+                        <input name="exImgs" type="hidden" th:value="${img.fileNo}"
+                               th:data-img-id="'ex-img'+${imgStat.count}">
+                        <input name="exImgsName" type="hidden" th:value="${img.savedName}"
+                               th:data-img-id="'ex-img'+${imgStat.count}">
                         <label th:for="'ex-img-input-'+${imgStat.count}">
                             <div class="btn btn-udh-silver">파일선택</div>
                         </label>
-                        <input th:id="'ex-img-input-'+${imgStat.count}" class='' type='file' name='imgs' th:data-img-id="'ex-img'+${imgStat.count}" style="display:none" th:onchange='setImgPreview(${this})' disabled>
-                        <p name="exImgs" th:id="'ex-originalName-'+${imgStat.count}" style="display : inline-block" th:text="${img.originalName}" th:data-img-id="'ex-img'+${imgStat.count}"></p>
-                        <a href='#this' name='img-delete' th:data-img-id="'ex-img'+${imgStat.count}" th:onclick="deleteImg($(this))" class="ms-3">삭제</a>
+                        <input th:id="'ex-img-input-'+${imgStat.count}" class='' type='file' name='imgs'
+                               th:data-img-id="'ex-img'+${imgStat.count}" style="display:none"
+                               th:onchange='setImgPreview(${this})' disabled>
+                        <p name="exImgs" th:id="'ex-originalName-'+${imgStat.count}" style="display : inline-block"
+                           th:text="${img.originalName}" th:data-img-id="'ex-img'+${imgStat.count}"></p>
+                        <a href='#this' name='img-delete' th:data-img-id="'ex-img'+${imgStat.count}"
+                           th:onclick="deleteImg($(this))" class="ms-3">삭제</a>
                     </div>
                 </div>
 
                 <button type="button" class="btn btn-udh-blue mb-3" onclick="addImg()">+</button>
-                <span style="font-size:0.7em">*사진은 최대 3개까지 등록 가능합니다.</span>
+                <span style="font-size:0.8em">*사진은 최대 3개까지 등록 가능합니다.</span>
 
 
             </div>
             <div id="imgPreview" class="col-md-3 mt-3">
                 <div th:each="img, imgStat : ${item.imgList}" th:id="'img-input-'+${imgStat.count}">
-                    <img th:src="@{'/uploadFiles/'+${img.savedName}}" style="height:60px" th:id="'ex-img'+${imgStat.count}">
+                    <img th:src="@{'/uploadFiles/'+${img.savedName}}" style="height:60px"
+                         th:id="'ex-img'+${imgStat.count}">
 
                 </div>
 
@@ -128,7 +140,7 @@
 
         <div class="row my-3">
             <div class="col-md-12">
-                <label for="itemCont" class="form-label"><h5>자세한 설명</h5></label>
+                <label for="itemCont" class="form-label"><h5>자세한 설명<span style="color:red;">*</span></h5></label>
                 <textarea class="form-control" id="itemCont" name="content" rows="3"
                           required>[[${item.title}]]</textarea>
             </div>

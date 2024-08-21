@@ -189,7 +189,7 @@
         const chatbotBody = document.querySelector('.chatbot-body');
 
         document.querySelector('.chatbot-input button').addEventListener('click', sendMessage);
-        userInput.addEventListener('keypress', function(e) {
+        userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }

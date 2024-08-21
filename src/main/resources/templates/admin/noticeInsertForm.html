@@ -23,6 +23,7 @@
         .main-content {
             padding: 20px;
             border-radius: 5px;
+            margin-top:-10px;
         }
         h5 {
             color: #333;
@@ -153,12 +154,16 @@
             background-color: #d4edda;
             border-color: #c3e6cb;
         }
+        .required {
+        color: red;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="main-content">
         <h5>&#128226; 공지사항</h5>
+        <span class="required">(*필수 입력 사항입니다.)</span><br><br>
         <div th:if="${error}" class="alert alert-danger" role="alert">
             <span th:text="${error}"></span>
         </div>
@@ -167,11 +172,11 @@
         </div>
         <form id="noticeForm" th:action="@{/admin/notice/insert}" method="post" enctype="multipart/form-data">
             <div class="form-group-inline">
-                <label for="title">제목</label>
+                <label for="title">제목<span class="required">*</span></label>
                 <input type="text" id="title" name="title" required>
             </div>
             <div class="form-group-inline">
-                <label for="startedAt">게시기간</label>
+                <label for="startedAt">게시기간<span class="required">*</span></label>
                 <input type="datetime-local" id="startedAt" name="startedAt" required>
                 <span id="startedAtError" class="error-message"></span>
                 <input type="datetime-local" id="endedAt" name="endedAt" required>
@@ -190,7 +195,7 @@
                     </div>
                 </div>
                 <div class="form-group-textarea">
-                    <label for="content">내용</label>
+                    <label for="content">내용<span class="required">*</span></label>
                     <textarea id="content" name="content" required></textarea>
                 </div>
             </div>

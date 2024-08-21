@@ -27,6 +27,9 @@
                 case 'noLocation':
                     showNoLocationAlert(alert);
                     break;
+                case 'signup':
+                    showSignupAlert(alert);
+                    break;
                 default:
                     showAlert(alert);
             }
@@ -82,6 +85,17 @@
             icon: "warning"
         }).then(result => {
             return result.isConfirmed;
+        });
+    }
+
+    function showSignupAlert(alert) {
+        Swal.fire({
+            title: alert,
+            html: "우동행은 위치 기반 서비스입니다.<br>원활한 서비스 이용을 위해 동네를 먼저 등록해 주세요.",
+            confirmButtonColor: "#3B5C9A",
+            confirmButtonText: "확인",
+            icon: "warning",
+            footer: `<a href="/member/address">동네 등록하러 가기</a>`
         });
     }
 

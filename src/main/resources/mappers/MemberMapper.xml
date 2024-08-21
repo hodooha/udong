@@ -533,6 +533,7 @@
         JOIN SHA_ITEMS si ON sr.req_item = si.item_no
         JOIN SHA_STATUS ss ON sr.status_code = ss.status_code
         WHERE sr.rqst_no = #{memberNo}
+        AND sr.status_code = 'RNT'
         ORDER BY sr.created_at DESC
         LIMIT 3
     </select>

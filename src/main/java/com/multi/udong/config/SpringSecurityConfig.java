@@ -62,6 +62,13 @@ public class SpringSecurityConfig {
         );
     }
 
+    /**
+     * Persistent token repository persistent token repository.
+     *
+     * @return the persistent token repository
+     * @since 2024 -08-21
+     */
+    @Bean
     public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
         tokenRepository.setDataSource(dataSource);

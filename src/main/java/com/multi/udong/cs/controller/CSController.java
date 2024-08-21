@@ -217,10 +217,10 @@ public class CSController {
     /**
      * Insert que form.
      *
-     * @param c             the c
-     * @param files         the files
-     * @param csQuestionDTO the cs question dto
-     * @param model         the model
+     * @param c                  the c
+     * @param files              the files
+     * @param csQuestionDTO      the cs question dto
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -08-01
      */
@@ -286,20 +286,23 @@ public class CSController {
     /**
      * Delete que string.
      *
-     * @param csNo  the cs no
-     * @param model the model
+     * @param csNo               the cs no
+     * @param redirectAttributes the redirect attributes
      * @return the string
      * @since 2024 -08-14
      */
     @PostMapping("/deleteQue")
-    public String deleteQue(@RequestParam("csNo") int csNo, RedirectAttributes redirectAttributes) {
+    public String deleteQue(@AuthenticationPrincipal CustomUserDetails c,
+                            @RequestParam("csNo") int csNo, RedirectAttributes redirectAttributes) {
 
-        String result = csService.deleteQue(csNo);
+        String authority = c.getMemberDTO().getAuthority();
+
+        String result = csService.deleteQue(csNo, authority);
 
         if (result.equals("answered")) {
             redirectAttributes.addAttribute("alert", "답변이 완료된 문의는 삭제할 수 없습니다.");
             redirectAttributes.addAttribute("alertType", "error");
-            return "redirect:/cs/queDetail";
+            return "redirect:/cs/queDetail?no=" + csNo;
         } else {
             redirectAttributes.addFlashAttribute("alert", "문의글이 삭제되었습니다.");
             redirectAttributes.addFlashAttribute("alertType", "error");

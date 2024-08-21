@@ -172,14 +172,20 @@ public class CSServiceImpl implements CSService{
     /**
      * Delete que string.
      *
-     * @param csNo the cs no
+     * @param csNo      the cs no
+     * @param authority
      * @return the string
      * @since 2024 -08-13
      */
     @Override
-    public String deleteQue(int csNo) {
+    public String deleteQue(int csNo, String authority) {
 
         String isAnswered = csMapper.isQueAnswered(csNo);
+
+        if (authority.equals("ROLE_ADMIN")) {
+            csMapper.deleteQue(csNo);
+            return "notAnswered";
+        }
 
         if (isAnswered.equals("Y")) {
             return "answered";
@@ -187,9 +193,6 @@ public class CSServiceImpl implements CSService{
 
         csMapper.deleteQue(csNo);
         return "notAnswered";
-
-
-
     }
 
 

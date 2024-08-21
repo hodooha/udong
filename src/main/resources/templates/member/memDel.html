@@ -6,16 +6,20 @@
     <title>Title</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
-        .member-delete form {
+        .member-delete {
             flex: 1;
-            min-width: 700px;
-            max-width: 700px;
-            min-height: 300px;
-            text-align: center;
+            display: flex;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .member-delete form {
+            flex: 1;
+            margin: 0 auto;
             padding: 20px;
+            min-width: 700px;
+            max-width: 700px;
+            text-align: center;
         }
         .input-group {
             flex-direction: column;
@@ -24,6 +28,22 @@
             & .btn {
                 min-width: 120px;
                 width: 120px;
+            }
+
+            & select {
+                height: 40px;
+            }
+
+            & textarea {
+                border: 1px solid #ddd;
+                transition: all 0.3s;
+                padding: 10px;
+
+                &:focus {
+                    border-color: #4a90e2;
+                    outline: none`
+                    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+                }
             }
         }
         .warning {
@@ -60,7 +80,7 @@
                         <option>새로운 계정을 만들기 위해</option>
                         <option>기타</option>
                     </select>
-                    <input type="text" name="feedback" placeholder="서비스 개선을 위한 의견을 남겨주세요. (선택사항)">
+                    <textarea type="text" name="feedback" rows="4" cols="50" placeholder="서비스 개선을 위한 의견을 남겨주세요. (선택사항)"></textarea>
                     <div class="agreement-delete">
                         <input type="checkbox" id="agreement-checkbox" required>
                         <label for="agreement-checkbox">모든 정보가 삭제되는 것을 이해하였으며 회원 탈퇴에 동의합니다.</label>

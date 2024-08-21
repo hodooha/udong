@@ -17,6 +17,11 @@
             border: 1px solid #F5F5F5 !important;
         }
 
+        .rec-card{
+            background-color: #FFF7EB !important;
+            border: 1px solid #FFF7EB !important;
+        }
+
         .card-body span{
             margin-right: 1em;
         }
@@ -130,11 +135,11 @@
                              th:class="${groupStat.index == 0} ? 'carousel-item active' : 'carousel-item'">
                             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
                                 <div th:each="item : ${group}" class="col">
-                                    <div class="card"
+                                    <div class="card rec-card"
                                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
                                         <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
                                             <img th:src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}"
-                                                 class="card-img-top" alt="물건이미지" style="height:20em"
+                                                 class="card-img-top" alt="물건이미지" style="height:16em"
                                                  th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                                             <th:block th:switch="${item.statusCode}">
                                                 <div class="blur-info" th:case="UNAV">
@@ -163,9 +168,9 @@
                                                     th:text="${item.viewCnt}"></span>🙋‍♀️
                                                 <span
                                                         th:text="${item.reqCnt}"></span></p>
-                                            <p>
+                                            <div>
                                                 <span>[[${item.locName}]]</span> <span>[[${item.displayDate}]]</span>
-                                            </p>
+                                            </div>
 
                                         </div>
                                     </div>
@@ -187,7 +192,7 @@
 
 
             </div>
-            <hr style="width:80%; color=#979797; margin:auto;"  />
+            <hr style="width:80%; color=#979797; margin:auto;"/>
         </th:block>
 
 
@@ -198,23 +203,27 @@
     <input type="hidden" name="group" value="rent">
 
     <div class="search-bar mt-3">
-        <select th:fragment="catSelect" id="catSelect" class="catSelect" name="itemCatCode"
-                onchange="search()">
-            <option value="">== 카테고리 선택 ==</option>
-            <th:block th:if="${catList} != null">
-                <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
-            </th:block>
-
-        </select>
+        <div th:fragment="catSelect">
+            <label for="catSelect" class="me-1 align-middle">
+                카테고리
+            </label>
+            <select id="catSelect" class="catSelect" name="itemCatCode"
+                    onchange="search()">
+                <option value="">== 카테고리 선택 ==</option>
+                <th:block th:if="${catList} != null">
+                    <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
+                </th:block>
+            </select>
+        </div>
 
         <div class="form-check checkbox">
             <input class="form-check-input" type="checkbox" value="AVL" id="availableCheck" onchange="search()">
-            <label class="form-check-label" for="availableCheck">
+            <label class="form-check-label align-middle" for="availableCheck">
                 대여가능물품만 보기
             </label>
         </div>
-        <div class="search-area">
-            <input class="me-2 search-input" type="search" placeholder="검색어를 입력하세요." id="keyword">
+        <div class="search-area ">
+            <input class="me-2 search-input " type="search" placeholder="검색어를 입력하세요." id="keyword">
             <button class="btn btn-udh-silver searchBtn" type="button" onclick="search()">검색</button>
         </div>
     </div>
@@ -236,7 +245,7 @@
                          th:onclick="|location.href='@{/share/{itemGroup}/detail(itemNo=${item.itemNo}, itemGroup=${item.itemGroup})}'|">
                         <div th:classappend="${item.statusCode != 'AVL' && item.statusCode != 'GIV'? ' div-blur card-img-top' : ' card-img-top'}">
                             <img th:src="${item.img == null ? '/img/noimg.jpg' : '/uploadFiles/' + item.img}"
-                                 class="card-img-top" alt="물건이미지" style="height:20em"
+                                 class="card-img-top" alt="물건이미지" style="height:16em"
                                  th:classappend="${item.statusCode != 'AVL'  && item.statusCode != 'GIV' ? ' img-blur' : ''}">
                             <th:block th:switch="${item.statusCode}">
                                 <div class="blur-info" th:case="UNAV">
@@ -260,13 +269,14 @@
                         <div class="card-body">
                             <span class="badge text-bg-secondary mb-1"
                                   style="width:max-content">[[${item.itemCatName}]]</span>
-                            <h5 th:text="${item.title}"></h5>
+                            <h5 th:text="${item.title}"
+                                style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;"></h5>
                             <p>💛 <span th:text="${item.likeCnt}"></span>👀 <span th:text="${item.viewCnt}"></span>🙋‍♀️
                                 <span
                                         th:text="${item.reqCnt}"></span></p>
-                            <p>
+                            <div>
                                 <span>[[${item.locName}]]</span> <span id="modifiedAt">[[${item.displayDate}]]</span>
-                            </p>
+                            </div>
 
                         </div>
                     </div>
@@ -289,7 +299,8 @@
                     class="page-item active me-1" aria-current="page">
                     <button th:text="${page}" class="page-link btn-udh-blue"
                             th:onclick="search([[${page}]])"
-                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}" style="caret-color: transparent;"></button>
+                            th:classappend="${pageInfo.currentPage == page ? 'pageActive' : ''}"
+                            style="caret-color: transparent;"></button>
                 </li>
                 <li th:style="${pageInfo.currentPage == pageInfo.totalPage ? 'visibility:hidden' : ''}"
                     class="page-item me-1">
