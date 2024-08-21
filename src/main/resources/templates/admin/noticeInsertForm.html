@@ -163,7 +163,7 @@
 <div class="container">
     <div class="main-content">
         <h5>&#128226; 공지사항</h5>
-        <span class="required">(*필수 입력 사항입니다.)</span><br><br>
+        <div style="text-align:left; color: red; font-size:1em; margin-bottom:10px;">(* 필수 입력 사항입니다.)</div><br><br>
         <div th:if="${error}" class="alert alert-danger" role="alert">
             <span th:text="${error}"></span>
         </div>

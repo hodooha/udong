@@ -7,19 +7,18 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .menu {
+         font-family: 'Freesentation-7Bold';
+         font-size: 25px;
+         margin-bottom: 30px;
+         margin-top: 42px;
+         margin-left: 42px;
+         text-align: left;
+        }
         body {
             margin: 0;
             padding: 0;
         }
-
-        .title-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 30px 20px 20px;
-            position: relative;
-        }
-
         .title {
             font-family: 'Freesentation-9Black', sans-serif;
             font-weight: bold;
@@ -239,9 +238,7 @@
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
-<div class="title-container">
-    <h6 class="title">⏰우리동네 땡처리</h6>
-</div>
+    <p class="menu">⏰땡처리</p>
 <div class="detail-container">
     <div class="header-container">
     <h1 class="sale-title"><span th:text="${sale.title}">땡처리 제목</span></h1>

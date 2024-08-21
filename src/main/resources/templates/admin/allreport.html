@@ -31,6 +31,9 @@
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .admin-table th {
@@ -128,11 +131,12 @@
     <div class="search-container">
         <select class="category-select" id="categoryFilter">
             <option value="">카테고리</option>
-            <option value="SAL">땡처리</option>
             <option value="RENT">대여</option>
             <option value="GIVE">나눔</option>
+            <option value="SAL">땡처리</option>
             <option value="NS">소식</option>
             <option value="CL">모임</option>
+            <option value="CL-LOG">모임기록</option>
         </select>
         <input type="text" id="searchInput" class="search-input" placeholder="검색어를 입력해주세요">
         <button class="search-button" onclick="searchReports()">검색</button>
@@ -142,13 +146,13 @@
     <table class="admin-table">
         <thead>
         <tr>
-            <th>카테고리</th>
-            <th>피신고자</th>
-            <th>신고자</th>
-            <th>신고사유</th>
-            <th>첨부파일</th>
-            <th class="sortable" data-sort="createdAt">작성일 ▼</th>
-            <th class="sortable" data-sort="status">처리여부 ▼</th>
+            <th style="width: 10%;">카테고리</th>
+            <th style="width: 10%;">피신고자</th>
+            <th style="width: 10%;">신고자</th>
+            <th style="width: 30%;">신고사유</th>
+            <th style="width: 10%;">첨부파일</th>
+            <th style="width: 15%;" class="sortable" data-sort="createdAt">작성일 ▼</th>
+            <th style="width: 15%;" class="sortable" data-sort="status">처리여부 ▼</th>
         </tr>
         </thead>
         <tbody>
