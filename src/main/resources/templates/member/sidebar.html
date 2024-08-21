@@ -15,11 +15,17 @@
             display: flex;
             overflow: hidden;
             height: calc(100vh - 90px);
+            justify-content: center;
+            max-width: 90%;
+            margin: 0 auto;
+
+            @media (max-width: 1024px) {
+                max-width: 100%;
+            }
         }
         .content-area {
             display: flex;
             flex: 1;
-            align-items: start;
             overflow: auto;
             padding: 20px 20px 20px 0;
             gap: 20px;

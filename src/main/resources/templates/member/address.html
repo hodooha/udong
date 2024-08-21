@@ -14,12 +14,18 @@
     <script th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${kakaoApiKey} + '&libraries=services'}"></script>
     <style>
         .address-insert {
-            min-width: 600px;
-            text-align: center;
+            display: flex;
+            flex: 1;
             border: 1px solid #000000;
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .address-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
+            text-align: center;
         }
         .input-group {
             display: flex;
@@ -66,32 +72,34 @@
 <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="address-insert">
-            <h2>주소 등록</h2>
-            <form action="/member/insertAddress" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <div class="input-group">
-                    <label for="currentFullAddress">현재 지번 주소</label>
-                    <input type="text" name="currentFullAddress" id="currentFullAddress" th:value="${currentFullAddress}" placeholder="등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요." readonly>
+            <div class="address-container">
+                <h2>주소 등록</h2>
+                <form action="/member/insertAddress" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="input-group">
+                        <label for="currentFullAddress">현재 지번 주소</label>
+                        <input type="text" name="currentFullAddress" id="currentFullAddress" th:value="${currentFullAddress}" placeholder="등록된 주소가 없습니다. 주소 검색을 통해 주소 등록을 진행해주세요." readonly>
 
-                    <label for="roadAddress">도로명 주소</label>
-                    <input type="text" class="disabled-input" name="roadAddress" id="roadAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
+                        <label for="roadAddress">도로명 주소</label>
+                        <input type="text" class="disabled-input" name="roadAddress" id="roadAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
 
-                    <label for="jibunAddress">지번 주소</label>
-                    <input type="text" class="disabled-input" name="jibunAddress" id="jibunAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
+                        <label for="jibunAddress">지번 주소</label>
+                        <input type="text" class="disabled-input" name="jibunAddress" id="jibunAddress" placeholder="주소 검색을 눌러 주소를 선택해주세요." readonly>
 
-                    <div class="button-group">
-                        <button class="btn btn-udh-yellow" type="button" id="search-address">주소 검색</button>
-                        <button class="btn btn-udh-yellow" type="button" id="check-address" disabled>위치 인증</button>
-                        <button class="btn btn-udh-yellow" type="submit" id="submit-address" disabled>등록하기</button>
-                        <button class="btn btn-udh-yellow" type="submit" id="update-address" disabled>수정하기</button>
+                        <div class="button-group">
+                            <button class="btn btn-udh-yellow" type="button" id="search-address">주소 검색</button>
+                            <button class="btn btn-udh-yellow" type="button" id="check-address" disabled>위치 인증</button>
+                            <button class="btn btn-udh-yellow" type="submit" id="submit-address" disabled>등록하기</button>
+                            <button class="btn btn-udh-yellow" type="submit" id="update-address" disabled>수정하기</button>
+                        </div>
+
+                        <input type="hidden" name="siDoName" id="siDoName">
+                        <input type="hidden" name="siGunGuName" id="siGunGuName">
+                        <input type="hidden" name="eupMyeonDongName" id="eupMyeonDongName">
+                        <input type="hidden" name="detailAddress" id="detailAddress">
                     </div>
-
-                    <input type="hidden" name="siDoName" id="siDoName">
-                    <input type="hidden" name="siGunGuName" id="siGunGuName">
-                    <input type="hidden" name="eupMyeonDongName" id="eupMyeonDongName">
-                    <input type="hidden" name="detailAddress" id="detailAddress">
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </main>
@@ -171,10 +179,10 @@
                 getAddr(lat, lng);
             }, function(error) {
                 console.error("Error: " + error.message);
-                alert("위치 정보를 가져오는데 실패했습니다. 위치 권한을 확인해주세요.");
+                showErrorAlert("위치 정보를 가져오는데 실패했습니다. 위치 권한을 확인해주세요.");
             });
         } else {
-            alert("이 브라우저에서는 Geolocation이 지원되지 않습니다.");
+            showErrorAlert("이 브라우저에서는 Geolocation이 지원되지 않습니다.");
         }
     }
 
@@ -223,9 +231,9 @@ function getAddr(lat, lng) {
                 document.getElementById('update-address').disabled = true;
             }
 
-            alert("주소 인증이 완료되었습니다. 등록 완료 버튼을 누르시면 주소가 저장됩니다.");
+            showAlert("주소 인증이 완료되었습니다. 등록 완료 버튼을 누르시면 주소가 저장됩니다.");
         } else {
-            alert("현재 주소가 입력된 주소와 일치하지 않습니다.");
+            showErrorAlert("현재 주소가 입력된 주소와 일치하지 않습니다.");
         }
     }
 </script> <!--주소 등록 스크립트-->

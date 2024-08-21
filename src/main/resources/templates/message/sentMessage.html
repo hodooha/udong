@@ -9,11 +9,11 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .message {
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             height: 100%;
-            min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -66,7 +66,7 @@
         }
         .pagination {
             display: flex;
-            justify-content: start;
+            justify-content: center;
             margin-top: 20px;
 
             & a {
@@ -99,9 +99,45 @@
                 width: 120px;
             }
         }
-        .search form button {
-            min-width: 120px;
-            width: 120px;
+        #searchForm {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: #E5E5E5;
+            border-radius: 0.375rem;
+            padding-left: 15px;
+            font-family: 'Freesentation-5Medium';
+            white-space: nowrap;
+
+            & select {
+                font-family: 'Freesentation-3Light';
+                margin-left: 10px;
+                height: 25px;
+                width: 80px;
+            }
+
+            & button {
+                margin-left: auto;
+                margin-right: 10px;
+                font-family: 'Freesentation-5Medium';
+                font-size: 15px !important;
+                padding: 1px 15px 1px 15px !important;
+            }
+
+            & input {
+                font-family: 'Freesentation-3Light';
+                margin-left: 10px;
+                width: 55%;
+                height: 25px;
+                border: 1px solid #979797;
+                transition: all 0.3s;
+
+                &:focus {
+                    border-color: #4a90e2;
+                    outline: none;
+                    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+                }
+            }
         }
         .highlight {
             color: blue;
@@ -148,7 +184,8 @@
                     <button class="btn btn-udh-blue" id="writeMessageBtn">쪽지 작성하기</button>
                 </div>
                 <div class="search">
-                    <form action="/message/sentMessage" method="get">
+                    <form action="/message/sentMessage" method="get" id="searchForm">
+                        <span>검색 카테고리</span>
                         <select name="searchCategory" id="search-category">
                             <option th:each="category : ${searchCategories}"
                                     th:value="${category}"
@@ -156,8 +193,9 @@
                                     th:selected="${category == searchCategory}">
                             </option>
                         </select>
-                        <input type="text" name="searchWord" th:value="${searchWord}" placeholder="검색어를 입력해주세요.">
-                        <button class="btn btn-udh-yellow">검색</button>
+                        <span style="margin-left: 50px;">쪽지 검색</span>
+                        <input type="text" name="searchWord" th:value="${searchWord}" placeholder=" 검색어 입력..." id="searchInput">
+                        <button class="btn btn-udh-silver">검색</button>
                     </form>
                 </div>
             </div>
@@ -319,6 +357,28 @@
 </script> <!--체크박스, 버튼 할당-->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+
+        // 폼 제출 이벤트 처리
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        // 엔터 키 이벤트 처리
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        function performSearch() {
+            searchInput.value = searchInput.value.trim();
+            searchForm.submit();
+        }
+
         const searchWord = /*[[${searchWord}]]*/ '';
         const searchCategoryIndex = /*[[${searchCategoryIndex}]]*/ -1;
 
@@ -331,14 +391,15 @@
 
                 if (cell) {
                     const cellText = cell.textContent;
+                    const trimmedSearchWord = searchWord.trim();
 
-                    if (cellText.includes(searchWord)) {
-                        const regex = new RegExp(searchWord, 'gi'); // g: 전역 검색, i: 대/소문자 구분 안함
+                    if (cellText.includes(trimmedSearchWord)) {
+                        const regex = new RegExp(trimmedSearchWord, 'gi'); // g: 전역 검색, i: 대/소문자 구분 안함
                         cell.innerHTML = cellText.replace(regex, match => `<span class="highlight">${match}</span>`);
                     }
                 }
             }
         }
     });
-</script> <!--검색어 하이라이팅-->
+</script> <!--검색-->
 </html>

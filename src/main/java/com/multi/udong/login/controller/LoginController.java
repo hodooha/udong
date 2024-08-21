@@ -193,8 +193,8 @@ public class LoginController {
                     }
 
                     authenticateUserAndSetSession(memberDTO, request);
-                    redirectAttributes.addFlashAttribute("alert", "신청이 완료되었습니다. 승인여부는 쪽지를 통해 전달됩니다.");
-                    redirectAttributes.addFlashAttribute("alertType", "success");
+                    redirectAttributes.addFlashAttribute("alert", "회원가입이 완료되었습니다!");
+                    redirectAttributes.addFlashAttribute("alertType", "signup-seller");
                     return "redirect:/";
                     
                 } else { // valid=02 일 경우
@@ -215,8 +215,8 @@ public class LoginController {
         try {
             memberService.signup(memberDTO);
             authenticateUserAndSetSession(memberDTO, request);
-            redirectAttributes.addFlashAttribute("alert","회원가입이 완료되었습니다.");
-            redirectAttributes.addFlashAttribute("alertType", "success");
+            redirectAttributes.addFlashAttribute("alert","회원가입이 완료되었습니다!");
+            redirectAttributes.addFlashAttribute("alertType", "signup");
             return "redirect:/";
             
         } catch (Exception e) {

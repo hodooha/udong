@@ -9,8 +9,8 @@
         .dashBoard {
             display: flex;
             flex-direction: column;
-            width: calc((100vw - 300px) / 3);
-            min-width: calc((100vw - 300px) / 3);
+            width: calc((90vw - 300px) / 3);
+            min-width: calc((90vw - 300px) / 3);
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -150,7 +150,7 @@
                 </div>
                 <div class="summary" th:onclick="|location.href='@{/share/dream/borrow}'|">
                     <span th:text="${summary.rent_count}"></span>
-                    <h4>대여한 물건</h4>
+                    <h4>대여중인 물건</h4>
                 </div>
                 <div class="summary" th:onclick="|location.href='@{/share/dream/lend?group=give}'|">
                     <span th:text="${summary.give_count}"></span>
