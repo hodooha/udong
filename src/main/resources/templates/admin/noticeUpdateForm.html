@@ -151,21 +151,25 @@
             background-color: #d4edda;
             border-color: #c3e6cb;
         }
+        .required {
+        color: red;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div id="main-content">
         <h5>&#128226; 공지사항 수정</h5>
+        <span class="required">(*필수 입력 사항입니다.)</span><br><br>
         <div th:if="${notice != null}">
             <form id="noticeForm" th:action="@{/admin/notice/update}" method="post" enctype="multipart/form-data" th:object="${notice}">
                 <input type="hidden" th:field="*{noticeNo}" th:value="${notice.noticeNo}"/>
                 <div class="form-group-inline">
-                    <label for="title">제목</label>
+                    <label for="title">제목<span class="required">*</span></label>
                     <input type="text" id="title" th:field="*{title}" th:value="${notice.title}" required>
                 </div>
                 <div class="form-group-inline">
-                    <label for="startedAt">게시기간</label>
+                    <label for="startedAt">게시기간<span class="required">*</span></label>
                     <input type="datetime-local" id="startedAt" th:field="*{startedAt}" th:value="${notice.startedAt}" required>
                     <span id="startedAtError" class="error-message"></span>
                     <input type="datetime-local" id="endedAt" th:field="*{endedAt}" th:value="${notice.endedAt}" required>
@@ -184,7 +188,7 @@
                         </div>
                     </div>
                     <div class="form-group-textarea">
-                        <label for="content">내용</label>
+                        <label for="content">내용<span class="required">*</span></label>
                         <textarea id="content" th:field="*{content}" th:text="${notice.content}" required></textarea>
                     </div>
                 </div>
