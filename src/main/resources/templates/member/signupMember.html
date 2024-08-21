@@ -11,20 +11,22 @@
         .container {
             display: flex;
             justify-content: center;
-            margin-top: 50px;
-            height: 80vh;
+            margin: 30px 0;
+            max-width: 1060px;
+            height: 85%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .signup {
             display: flex;
-            justify-content: center;
-            width: 600px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 600px;
             padding: 20px;
-            gap: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: auto;
 
             & .btn {
                 min-width: 120px;
@@ -55,13 +57,13 @@
             }
 
             & label {
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background-color: white;
-                padding: 0 5px;
-                font-size: 14px;
-                color: #333;
+                padding: 0 10px;
+                font-size: 18px;
+            }
+
+            & p {
+                margin-left: 10px;
+                color: red;
             }
         }
         .id-input-wrapper {
@@ -91,7 +93,7 @@
         .clear-input {
             position: absolute;
             right: 150px;
-            top: 50%;
+            top: 75%;
             transform: translateY(-50%);
             background: none;
             border: none;
@@ -111,8 +113,8 @@
             <h2>일반 회원 가입</h2>
 
             <div class="input-group">
+                <label>아이디</label><p>*</p>
                 <div class="id-input-wrapper">
-                    <label>아이디</label>
                     <input type="text" name="memberId" placeholder="아이디" required>
                     <button class="clear-input" type="button">&times;</button>
                     <button class="btn btn-udh-yellow" type="button" id="checkDuplicate">중복검사</button>
@@ -121,26 +123,26 @@
             <div class="error-message" id="id-message"></div>
 
             <div class="input-group">
-                <label>비밀번호</label>
+                <label>비밀번호</label><p>*</p>
                 <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" required>
             </div>
             <div class="error-message" id="password-message"></div>
 
             <div class="input-group">
-                <label>비밀번호 확인</label>
+                <label>비밀번호 확인</label><p>*</p>
                 <input type="password" name="confirmPassword" placeholder="비밀번호 확인" required>
             </div>
             <div class="error-message" id="password-confirm-message"></div>
 
             <div class="input-group">
-                <label>전화번호</label>
+                <label>전화번호</label><p>*</p>
                 <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" oninput="removeInvalidChars(this)" required>
             </div>
             <div class="error-message" id="phone-message"></div>
 
             <div class="input-group">
+                <label>이메일</label><p>*</p>
                 <div class="email-group">
-                    <label>이메일</label>
                     <input type="text" id="emailId" placeholder="이메일" required>
                     <span style="padding-top: 10px;">@</span>
                     <input type="text" id="emailDomain" placeholder="직접 입력" required>
@@ -157,6 +159,9 @@
             </div>
             <div class="error-message" id="email-message"></div>
 
+            <div>
+                <span style="color: red;">*</span><span> 필수 입력 사항입니다.</span>
+            </div>
             <button class="btn btn-udh-blue" id="signup-btn" disabled>회원가입</button>
         </div>
     </div>
