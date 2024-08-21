@@ -150,7 +150,8 @@ public class LoginController {
                 
                 // 추출한 결과 전처리
                 String b_no = list.get(0).trim().replaceAll("-", "");
-                String p_nm = list.get(2).trim();
+                String p_nm = list.get(2).trim()
+                        .replaceAll(",", "").trim();
                 String start_dt = list.get(3).trim()
                         .replaceAll(" ", "")
                         .replaceAll("년", "")
@@ -170,6 +171,8 @@ public class LoginController {
 
                 Map<String, Object> result = ntsapi.validateBusinessRegistration(serviceKey, requestBody);
 
+                System.out.println("##### result : " + result);
+
                 // 검증결과에서 "data": [{"valid": "01"}] 값 추출, 01 = 유효, 02 = 유효하지 않음
                 List<Map<String, Object>> dataList = (List<Map<String, Object>>) result.get("data");
                 Map<String, Object> data = dataList.get(0);
@@ -187,28 +190,28 @@ public class LoginController {
                         memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
                         
                     } catch (Exception e) {
-                        new File(fileName).delete();
-                        model.addAttribute("msg", e.getMessage());
-                        return "common/errorPage";
+                        redirectAttributes.addFlashAttribute("alert", "중복된 사업자등록증입니다.<br>등록증 당 한 계정만 가입할 수 있습니다.");
+                        redirectAttributes.addFlashAttribute("alertType", "error");
+                        return "redirect:/signup/seller";
                     }
 
                     authenticateUserAndSetSession(memberDTO, request);
-                    redirectAttributes.addFlashAttribute("alert", "회원가입이 완료되었습니다!");
-                    redirectAttributes.addFlashAttribute("alertType", "signup-seller");
+                    redirectAttributes.addFlashAttribute("alert", "회원가입이 완료되었습니다!<br>승인결과는 사이트 내 알림으로 전송됩니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "signup");
                     return "redirect:/";
                     
                 } else { // valid=02 일 경우
                     new File(fileName).delete();
-                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다");
+                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다.");
                     redirectAttributes.addFlashAttribute("alertType", "error");
-                    return "redirect:/member/signupSeller";
+                    return "redirect:/signup/seller";
                 }
                 
             } else { // OCR로 추출한 결과가 없다면
                 new File(fileName).delete();
-                redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다");
+                redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다.<br>다시 촬영해주세요.");
                 redirectAttributes.addFlashAttribute("alertType", "error");
-                return "redirect:/member/signupSeller";
+                return "redirect:/signup/seller";
             }
         }
 

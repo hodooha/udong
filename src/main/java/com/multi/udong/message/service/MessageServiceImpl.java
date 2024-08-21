@@ -74,16 +74,22 @@ public class MessageServiceImpl implements MessageService{
     @Override
     public boolean sendMessage(MessageDTO messageDTO) {
 
+        // 회원이 존재하는지 확인
         Integer result = messageMapper.getMemberNoByNickname(messageDTO.getReceiverNickname());
 
+        // 회원이 존재한다면
         if (result != null) {
             messageDTO.setReceiverNo(result);
 
+            // 차단당했는지 확인
             boolean blocked = messageMapper.getIsBlocked(messageDTO);
 
+            // 차단 당하지 않았다면
             if (!blocked) {
 
-                // 나에게 보내는 쪽지일경우 읽음상태 Y
+                messageDTO.setIsReceiveDeleted("N");
+
+                // 나에게 보내는 쪽지일 경우 읽음 상태 Y
                 if (messageDTO.getSenderNo() == messageDTO.getReceiverNo()) {
                     messageDTO.setIsRead("Y");
                 } else {
@@ -98,6 +104,13 @@ public class MessageServiceImpl implements MessageService{
                     System.out.println("insertedMessage" + insertedMessage);
                     createMessageNoti(insertedMessage);
                 }
+
+            // 차단 당했다면
+            } else {
+                messageDTO.setIsReceiveDeleted("Y");
+                messageDTO.setIsRead("N");
+
+                messageMapper.sendMessage(messageDTO);
             }
 
             return true;

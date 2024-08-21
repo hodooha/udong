@@ -86,7 +86,7 @@
     </select>
 
     <insert id="sendMessage" parameterType="messageDTO">
-        INSERT INTO MSG (sender_no, receiver_no, content, is_read)
+        INSERT INTO MSG (sender_no, receiver_no, content, is_read, is_receive_deleted)
         SELECT
         #{senderNo},
             (SELECT member_no
@@ -94,7 +94,8 @@
             WHERE nickname = #{receiverNickname}
             AND is_deleted = 'N'),
         #{content},
-        #{isRead}
+        #{isRead},
+        #{isReceiveDeleted}
     </insert>
 
     <select id="getInsertedMessage" resultType="messageDTO">

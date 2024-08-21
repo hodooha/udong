@@ -20,6 +20,8 @@ public class MessageDTO {
     private String content;
     private String createdAt;
     private String isRead;
+    private String isReceiveDeleted;
+    private String isSendDeleted;
 
     private String senderNickname;
     private String receiverNickname;

@@ -13,7 +13,6 @@
             flex:1;
             flex-direction: column;
             gap: 20px;
-            min-width: 800px;
             text-align: center;
             border: 1px solid #000000;
             border-radius: 5px;
@@ -31,8 +30,12 @@
         }
         .detail-person {
             display: flex;
-            gap: 20px;
             justify-content: space-between;
+
+            & button {
+                min-width: 120px;
+                width: 120px;
+            }
         }
         .detail-date,
         .detail-content,
@@ -53,17 +56,16 @@
 
             <div class="detail-person">
                 <div class="separate">
-                    <p th:text="${#strings.equals(type, 'receive') ? '보낸 사람' : '받은 사람'}"></p>
-                    <span th:text="${#strings.equals(type, 'receive') ? detail.senderNickname : detail.receiverNickname}"></span>
+                    <p th:text="${#strings.equals(type, 'received') ? '보낸 사람' : '받은 사람'}"></p>
+                    <span th:text="${#strings.equals(type, 'received') ? detail.senderNickname : detail.receiverNickname}"></span>
                 </div>
-                <div class="separate" th:if="${#strings.equals(type, 'receive')}">
+                <div th:if="${#strings.equals(type, 'received')}">
                     <button class="btn btn-udh-red" id="detailBlockBtn" th:text="${isBlocked ? '차단 해제하기' : '차단하기'}"></button>
-                    <button class="btn btn-udh-red">신고하기</button>
                 </div>
             </div>
 
             <div class="detail-date">
-                <p th:text="${#strings.equals(type, 'receive') ? '받은 날짜' : '보낸 날짜'}"></p>
+                <p th:text="${#strings.equals(type, 'received') ? '받은 날짜' : '보낸 날짜'}"></p>
                 <span th:text="${detail.createdAt}"></span>
             </div>
 
@@ -74,7 +76,7 @@
 
             <div class="button-group">
                 <button class="btn btn-udh-red" id="detailDeleteBtn">삭제하기</button>
-                <button class="btn btn-udh-blue" id="detailSendReplyBtn">답장하기</button>
+                <button class="btn btn-udh-blue" id="detailSendReplyBtn" th:if="${#strings.equals(type, 'received')}">답장하기</button>
             </div>
 
         </div>

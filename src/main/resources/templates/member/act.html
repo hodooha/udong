@@ -142,7 +142,17 @@
     <div class="content-area">
         <div class="act">
             <div class="upper">
-                <h2>나의 활동 기록</h2>
+                <h2 th:switch="${table}">
+                    <span th:case="'newsBoard'">내가 작성한 우동 소식</span>
+                    <span th:case="'newsLike'">내가 좋아요한 우동 소식</span>
+                    <span th:case="'newsReply'">내가 댓글 단 우동 소식</span>
+                    <span th:case="'club'">내가 가입한 우동 모임</span>
+                    <span th:case="'clubLog'">내가 작성한 모임 기록</span>
+                    <span th:case="'clubSchedule'">내가 참여한 모임 일정</span>
+                    <span th:case="'shareLike'">내가 찜한 물건</span>
+                    <span th:case="'saleBoard'">내가 등록한 땡처리 물건</span>
+                    <span th:case="*">나의 활동 기록</span>
+                </h2>
                 <table>
                     <thead>
                         <tr>

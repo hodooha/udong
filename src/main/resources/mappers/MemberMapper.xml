@@ -185,6 +185,7 @@
                 ROW_NUMBER() OVER (ORDER BY np.news_no DESC) AS rownum
             FROM NS_POST np
             WHERE np.writer = #{memberNo}
+            AND np.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -225,6 +226,7 @@
             FROM NS_LIKE nl
             JOIN NS_POST np ON nl.news_no = np.news_no
             WHERE nl.member_no = #{memberNo}
+            AND np.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -268,7 +270,9 @@
                 COUNT(*) OVER() AS total_count,
                 ROW_NUMBER() OVER (ORDER BY nr.created_at DESC) AS rownum
             FROM NS_REPLY nr
+            JOIN NS_POST np ON nr.news_no = np.news_no
             WHERE nr.writer = #{memberNo}
+            AND np.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -309,8 +313,8 @@
             FROM CL c
             JOIN CL_MEMBER cm ON c.club_no = cm.club_no
             WHERE cm.member_no = #{memberNo}
-            AND cm.join_status = 'Y'
-            AND c.is_deleted = 'N'
+                AND cm.join_status = 'Y'
+                AND c.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -353,7 +357,8 @@
             FROM CL_LOG cl
             JOIN CL c ON cl.club_no = c.club_no
             WHERE cl.writer = #{memberNo}
-            AND c.is_deleted = 'N'
+                AND c.is_deleted = 'N'
+                AND cl.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -398,7 +403,8 @@
             FROM CL_SCHEDULE cs
             JOIN CL c ON cs.club_no = c.club_no
             WHERE cs.maker = #{memberNo}
-            AND c.is_deleted = 'N'
+                AND c.is_deleted = 'N'
+                AND cs.is_deleted = 'N'
             <if test="searchCategory != null and searchWord != null">
                 <choose>
                     <when test="searchCategory == '주제'">
@@ -427,41 +433,42 @@
     </select>
 
     <select id="selectShareLike" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
-    SELECT
-        sub.item_no,
-        sc.cat_name,
-        l.eup_myeon_dong_name,
-        sub.title,
-        DATE_FORMAT(sub.expiry_date, '%Y-%m-%d %H:%i:%s') AS expiry_date,
-        ss.status_name,
-        sub.total_count
-    FROM (
         SELECT
-            si.*,
-            sl.like_no,
-            COUNT(*) OVER() AS total_count,
-            ROW_NUMBER() OVER (ORDER BY sl.like_no DESC) AS rownum
-        FROM SHA_LIKE sl
-        JOIN SHA_ITEMS si ON sl.item_no = si.item_no
-        WHERE sl.member_no = #{memberNo}
-        <if test="searchCategory != null and searchWord != null">
-            <choose>
-                <when test="searchCategory == '카테고리'">
-                    AND si.item_cat_code IN (SELECT cat_code FROM SHA_CAT WHERE cat_name LIKE CONCAT('%', #{searchWord}, '%'))
-                </when>
-                <when test="searchCategory == '동네'">
-                    AND si.loc_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
-                </when>
-                <when test="searchCategory == '제목'">
-                    AND si.title LIKE CONCAT('%', #{searchWord}, '%')
-                </when>
-            </choose>
-        </if>
-    ) sub
-    JOIN SHA_CAT sc ON sub.item_cat_code = sc.cat_code
-    JOIN LOCATION l ON sub.loc_code = l.location_code
-    JOIN SHA_STATUS ss ON sub.status_code = ss.status_code
-    WHERE sub.rownum BETWEEN #{start} AND #{end}
+            sub.item_no,
+            sc.cat_name,
+            l.eup_myeon_dong_name,
+            sub.title,
+            DATE_FORMAT(sub.expiry_date, '%Y-%m-%d %H:%i:%s') AS expiry_date,
+            ss.status_name,
+            sub.total_count
+        FROM (
+            SELECT
+                si.*,
+                sl.like_no,
+                COUNT(*) OVER() AS total_count,
+                ROW_NUMBER() OVER (ORDER BY sl.like_no DESC) AS rownum
+            FROM SHA_LIKE sl
+            JOIN SHA_ITEMS si ON sl.item_no = si.item_no
+            WHERE sl.member_no = #{memberNo}
+            AND si.deleted_at IS NULL
+            <if test="searchCategory != null and searchWord != null">
+                <choose>
+                    <when test="searchCategory == '카테고리'">
+                        AND si.item_cat_code IN (SELECT cat_code FROM SHA_CAT WHERE cat_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '동네'">
+                        AND si.loc_code IN (SELECT location_code FROM LOCATION WHERE eup_myeon_dong_name LIKE CONCAT('%', #{searchWord}, '%'))
+                    </when>
+                    <when test="searchCategory == '제목'">
+                        AND si.title LIKE CONCAT('%', #{searchWord}, '%')
+                    </when>
+                </choose>
+            </if>
+        ) sub
+        JOIN SHA_CAT sc ON sub.item_cat_code = sc.cat_code
+        JOIN LOCATION l ON sub.loc_code = l.location_code
+        JOIN SHA_STATUS ss ON sub.status_code = ss.status_code
+        WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 
     <select id="selectSaleBoard" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
@@ -500,7 +507,7 @@
     <select id="getDashboardSummary" resultType="map">
         SELECT
             (SELECT COUNT(*) FROM SHA_ITEMS WHERE owner_no = #{memberNo} AND item_group = 'RENT' AND deleted_at IS NULL) as lend_count,
-            (SELECT COUNT(*) FROM SHA_REQ WHERE rqst_no = #{memberNo}) as rent_count,
+            (SELECT COUNT(*) FROM SHA_REQ WHERE rqst_no = #{memberNo} AND status_code = 'RNT' AND deleted_at IS NULL) as rent_count,
             (SELECT COUNT(*) FROM SHA_ITEMS WHERE owner_no = #{memberNo} AND item_group = 'GIVE' AND deleted_at IS NULL) as give_count,
             (SELECT COUNT(*) FROM CL_MEMBER WHERE member_no = #{memberNo} AND join_status = 'Y') as club_count,
             COALESCE((SELECT AVG(rating) FROM SHA_EVAL WHERE eve_no = #{memberNo}), 0) as avg_rating,
@@ -521,8 +528,8 @@
         FROM SHA_ITEMS i
         JOIN SHA_STATUS s ON i.status_code = s.status_code
         WHERE i.owner_no = #{memberNo}
-        AND i.item_group = 'RENT'
-        AND i.deleted_at IS NULL
+            AND i.item_group = 'RENT'
+            AND i.deleted_at IS NULL
         ORDER BY i.created_at DESC
         LIMIT 3
     </select>
@@ -533,7 +540,9 @@
         JOIN SHA_ITEMS si ON sr.req_item = si.item_no
         JOIN SHA_STATUS ss ON sr.status_code = ss.status_code
         WHERE sr.rqst_no = #{memberNo}
-        AND sr.status_code = 'RNT'
+            AND sr.status_code IN ('RNT', 'RQD', 'RTR', 'REV')
+            AND si.deleted_at IS NULL
+            AND sr.deleted_at IS NULL
         ORDER BY sr.created_at DESC
         LIMIT 3
     </select>
@@ -543,8 +552,8 @@
         FROM SHA_ITEMS i
         JOIN SHA_STATUS s ON i.status_code = s.status_code
         WHERE i.owner_no = #{memberNo}
-        AND i.item_group = 'GIVE'
-        AND i.deleted_at IS NULL
+            AND i.item_group = 'GIVE'
+            AND i.deleted_at IS NULL
         ORDER BY i.created_at DESC
         LIMIT 3
     </select>
