@@ -82,8 +82,6 @@
             display:flex;
             align-items: center;
             justify-content: flex-end;
-            font-size: 16px;
-
         }
 
         .btn-group{
@@ -276,7 +274,7 @@
         </div>
 
         <div class="status-select-area col-9">
-            <label for="catSelect" class="me-1">
+            <label for="catSelect" class="me-1 align-middle">
                 카테고리
             </label>
             <select th:fragment="catSelect" id="catSelect" class="catSelect" name="itemCatCode"
@@ -286,7 +284,7 @@
                     <option th:each="cat:${catList}" th:value=${cat.catCode} th:text="${cat.catName}"></option>
                 </th:block>
             </select>
-            <label for="statusSelect" class="me-1">
+            <label for="statusSelect" class="me-1 align-middle">
                 상태
             </label>
             <select class="stat-select me-3" id=statusSelect name="statusSelect" onchange="getBorrowList()">

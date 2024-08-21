@@ -35,8 +35,8 @@
     <h2 style="text-align:center; font-weight:bolder;">물건 수정</h2>
 
 
-    <div style="text-align:right; font-size:0.7em">*거래방식, 마감일은 수정이 불가능합니다.</div>
-    <div style="text-align:right; color: red; font-size:0.7em;">* 필수 입력 사항입니다.</div>
+    <div style="text-align:right; font-size:0.8em">*거래방식, 마감일은 수정이 불가능합니다.</div>
+    <div style="text-align:right; color: red; font-size:0.8em;">* 필수 입력 사항입니다.</div>
 
 
     <form action="update" method="post" enctype="multipart/form-data" id="updateForm" onsubmit="return isValid();">
@@ -73,7 +73,7 @@
                            th:value="${item.expiryDate}" readonly disabled>
                 </div>
 
-                <span style="font-size:0.7em">*마감일은 등록일 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
+                <span style="font-size:0.8em">*마감일은 등록일 기준 다음날부터 한달 이내로만 선택 가능합니다.</span>
             </div>
         </div>
 
@@ -124,7 +124,7 @@
                 </div>
 
                 <button type="button" class="btn btn-udh-blue mb-3" onclick="addImg()">+</button>
-                <span style="font-size:0.7em">*사진은 최대 3개까지 등록 가능합니다.</span>
+                <span style="font-size:0.8em">*사진은 최대 3개까지 등록 가능합니다.</span>
 
 
             </div>

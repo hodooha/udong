@@ -204,7 +204,7 @@
 
     <div class="search-bar mt-3">
         <div th:fragment="catSelect">
-            <label for="catSelect" class="me-1 ">
+            <label for="catSelect" class="me-1 align-middle">
                 카테고리
             </label>
             <select id="catSelect" class="catSelect" name="itemCatCode"
@@ -218,12 +218,12 @@
 
         <div class="form-check checkbox">
             <input class="form-check-input" type="checkbox" value="AVL" id="availableCheck" onchange="search()">
-            <label class="form-check-label" for="availableCheck">
+            <label class="form-check-label align-middle" for="availableCheck">
                 대여가능물품만 보기
             </label>
         </div>
-        <div class="search-area">
-            <input class="me-2 search-input" type="search" placeholder="검색어를 입력하세요." id="keyword">
+        <div class="search-area ">
+            <input class="me-2 search-input " type="search" placeholder="검색어를 입력하세요." id="keyword">
             <button class="btn btn-udh-silver searchBtn" type="button" onclick="search()">검색</button>
         </div>
     </div>
