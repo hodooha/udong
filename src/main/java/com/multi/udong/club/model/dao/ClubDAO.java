@@ -2,9 +2,11 @@ package com.multi.udong.club.model.dao;
 
 import com.multi.udong.club.model.dto.*;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import org.apache.ibatis.session.SqlSession;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -635,4 +637,13 @@ public class ClubDAO {
         return sqlSession.selectList("clubMapper.selectOldChatMessage", requestDTO);
 
     }
+
+    public List<ScheduleDTO> getUpcomingSchedules(SqlSession sqlSession, LocalDateTime startTime) {
+        return sqlSession.selectList("ClubMapper.getUpcomingSchedules", startTime);
+    }
+
+    public List<Integer> getScheduleParticipants(SqlSession sqlSession, int scheduleNo) {
+        return sqlSession.selectList("ClubMapper.getScheduleParticipants", scheduleNo);
+    }
+
 }

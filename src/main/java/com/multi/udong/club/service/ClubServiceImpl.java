@@ -3,12 +3,18 @@ package com.multi.udong.club.service;
 import com.multi.udong.club.model.dao.ClubDAO;
 import com.multi.udong.club.model.dto.*;
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 모임 service
@@ -24,14 +30,16 @@ public class ClubServiceImpl implements ClubService {
     private SqlSessionTemplate sqlSession;
 
     private final ClubDAO clubDAO;
+    private final NotiServiceImpl notiService;
 
     /**
      * 모임 service 생성자
      *
      * @param clubDAO the club dao
      */
-    public ClubServiceImpl(ClubDAO clubDAO) {
+    public ClubServiceImpl(ClubDAO clubDAO, NotiServiceImpl notiService) {
         this.clubDAO = clubDAO;
+        this.notiService = notiService;
     }
 
 
@@ -164,7 +172,22 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public int requestJoinClub(RequestDTO requestDTO) throws Exception {
 
-        return clubDAO.requestJoinClub(sqlSession, requestDTO);
+        int result = 0;
+
+        result = clubDAO.requestJoinClub(sqlSession, requestDTO);
+
+        if(result == 1) {
+
+            notiService.sendNoti(
+                    NotiSetCodeENUM.CL_NEW_JOIN_REQ,
+                    List.of(clubDAO.selectClubHome(sqlSession, requestDTO).getMaster().getMemberNo()),
+                    requestDTO.getClubNo(),
+                    Map.of("clubName", clubDAO.selectClubHome(sqlSession, requestDTO).getClubName())
+            );
+
+        }
+
+        return result;
 
     }
 
@@ -501,6 +524,29 @@ public class ClubServiceImpl implements ClubService {
 
                 result = 1;
 
+                FilterDTO filterDTO = new FilterDTO();
+                filterDTO.setClubNo(scheduleDTO.getClubNo());
+                filterDTO.setStartIndex(0);
+                filterDTO.setMemberPageCount(Integer.MAX_VALUE);
+
+                RequestDTO requestDTO = new RequestDTO();
+                requestDTO.setClubNo(scheduleDTO.getClubNo());
+
+                List<Integer> receiverNos = new ArrayList<>();
+                for (ClubMemberDTO member : clubDAO.selectClubMemberList(sqlSession, filterDTO).getClubMember()) {
+                    receiverNos.add(member.getMemberNo());
+                }
+
+                System.out.println("receiverNos12 : " + receiverNos);
+
+                notiService.sendNoti(
+                        NotiSetCodeENUM.CL_NEW_SCHEDULE,
+                        receiverNos,
+                        clubDAO.selectClubHome(sqlSession, requestDTO).getClubNo(),
+                        Map.of("clubName", clubDAO.selectClubHome(sqlSession, requestDTO).getClubName(),
+                                "scheduleName", scheduleDTO.getTitle())
+                );
+
             }
 
         }
@@ -611,7 +657,24 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public int approveJoinRequest(ClubMemberDTO clubMemberDTO) throws Exception {
 
-        return clubDAO.approveJoinRequest(sqlSession, clubMemberDTO);
+        int result = 0;
+
+        result = clubDAO.approveJoinRequest(sqlSession, clubMemberDTO);
+
+        if(result == 1) {
+
+            RequestDTO requestDTO = new RequestDTO();
+            requestDTO.setClubNo(clubMemberDTO.getClubNo());
+            notiService.sendNoti(
+                    NotiSetCodeENUM.CL_JOIN_RESULT,
+                    List.of(clubMemberDTO.getMemberNo()),
+                    clubMemberDTO.getClubNo(),
+                    Map.of("clubName", clubDAO.selectClubHome(sqlSession, requestDTO).getClubName(), "result","승인")
+            );
+
+        }
+
+        return result;
 
     }
 
@@ -675,6 +738,23 @@ public class ClubServiceImpl implements ClubService {
     public List<OutputChatMessage> selectOldChatMessage(RequestDTO requestDTO) throws Exception {
 
         return clubDAO.selectOldChatMessage(sqlSession, requestDTO);
+
+    }
+
+    @Override
+    public void sendReply(ReplyDTO replyDTO, int clubNo) throws Exception {
+
+        RequestDTO requestDTO = new RequestDTO();
+        requestDTO.setLogNo(replyDTO.getLogNo());
+        requestDTO.setClubNo(clubNo);
+        notiService.sendNoti(
+                NotiSetCodeENUM.CL_POST_COMMENT,
+                List.of(clubDAO.selectLogDetail(sqlSession, requestDTO).getWriter().getMemberNo()),
+                replyDTO.getLogNo(),
+                Map.of("clubName", clubDAO.selectClubHome(sqlSession, requestDTO).getClubName(),
+                        "title", clubDAO.selectLogDetail(sqlSession, requestDTO).getTitle(),
+                        "extraTargetNo", String.valueOf(clubNo))
+        );
 
     }
 
@@ -796,6 +876,28 @@ public class ClubServiceImpl implements ClubService {
 
         return clubDAO.deleteReplyLike(sqlSession, likeDTO);
 
+    }
+
+    @Scheduled(cron = "0 0 * * * *") // 매시간 실행
+    public void sendScheduleReminders() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime twentyFourHoursLater = now.plusHours(24);
+
+        // 24시간 후에 시작하는 일정들을 조회
+        List<ScheduleDTO> upcomingSchedules = clubDAO.getUpcomingSchedules(sqlSession, twentyFourHoursLater);
+
+        for (ScheduleDTO schedule : upcomingSchedules) {
+            // 해당 일정의 참여자들 조회
+            List<Integer> participantNos = clubDAO.getScheduleParticipants(sqlSession, schedule.getScheduleNo());
+
+            // 알림 전송
+            notiService.sendNoti(
+                    NotiSetCodeENUM.CL_SCHEDULE_REMIND,
+                    participantNos,
+                    schedule.getScheduleNo(),
+                    Map.of("scheduleName", schedule.getTitle(),
+                            "extraTargerNo", String.valueOf(schedule.getClubNo())));
+        }
     }
 
 
