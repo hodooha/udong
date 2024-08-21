@@ -133,7 +133,7 @@
 </div>
 
 <div class="form-container">
-    <span class="required">(*필수 입력 사항입니다.)</span><br>
+    <div style="text-align:right; color: red; font-size:0.7em;">* 필수 입력 사항입니다.</div>
     <form id="reportForm" th:action="@{/sale/saleReport}" method="post" enctype="multipart/form-data" onsubmit="return confirmSubmit()">
         <div class="form-group-inline">
             <label for="title">제목<span class="required">*</span></label>
