@@ -1,5 +1,7 @@
 package com.multi.udong.admin.model.dto;
 
+import java.time.LocalDateTime;
+
 public class ReportDTO {
     private int reportNo;
     private int reportedNo;  // 신고된 게시글 번호
@@ -13,6 +15,7 @@ public class ReportDTO {
     private String reportedMemberId;
     private String reporterMemberId;
     private String imageFileName;
+    private LocalDateTime createdAt;
 
     public void setUrl(String url) {
         this.url = url;
@@ -113,6 +116,15 @@ public class ReportDTO {
         this.imageFileName = imageFileName;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+
     @Override
     public String toString() {
         return "ReportDTO{" +
@@ -127,8 +139,8 @@ public class ReportDTO {
                 ", typeName='" + typeName + '\'' +
                 ", reportedMemberId='" + reportedMemberId + '\'' +
                 ", reporterMemberId='" + reporterMemberId + '\'' +
+                ", imageFileName='" + imageFileName + '\'' +
+                ", createdAt=" + createdAt +
                 '}';
     }
-
-
 }

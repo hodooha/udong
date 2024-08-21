@@ -97,6 +97,13 @@
         .sortable:hover {
             background-color: #e0e0e0;
         }
+        .admin-table .col-no { width: 5%; }
+        .admin-table .col-id { width: 15%; }
+        .admin-table .col-nickname { width: 15%; }
+        .admin-table .col-signup { width: 15%; }
+        .admin-table .col-authority { width: 15%; }
+        .admin-table .col-report { width: 10%; }
+        .admin-table .col-status { width: 10%; }
     </style>
 </head>
 <body>
@@ -123,12 +130,13 @@
         <table class="admin-table">
             <thead>
             <tr>
-                <th>NO.</th>
-                <th>ID</th>
-                <th>닉네임</th>
-                <th class="sortable" data-sort="authority">회원유형 ▼</th>
-                <th class="sortable" data-sort="reportedCnt">신고 ▼</th>
-                <th class="sortable" data-sort="status">비고 ▼</th>
+                <th class="col-no">NO.</th>
+                <th class="col-id">ID</th>
+                <th class="col-nickname">닉네임</th>
+                <th class="col-signup sortable" data-sort="signupAt">가입일 ▼</th>
+                <th class="col-authority sortable" data-sort="authority">회원유형 ▼</th>
+                <th class="col-report sortable" data-sort="reportedCnt">신고 ▼</th>
+                <th class="col-status sortable" data-sort="status">비고 ▼</th>
             </tr>
             </thead>
             <tbody>
@@ -136,6 +144,7 @@
                 <td th:text="${member.memberNo}"></td>
                 <td th:text="${member.memberId}"></td>
                 <td th:text="${member.nickname}"></td>
+                <td th:text="${member.signupAt}"></td>
                 <td th:text="${member.authority == 'ROLE_MEMBER' ? '일반회원' : (member.authority == 'ROLE_SELLER' ? '판매자' : (member.authority == 'ROLE_ADMIN' ? '관리자' : member.authority))}"></td> <!-- 회원 유형 -->
                 <td th:text="${member.reportedCnt}"></td>
                 <td>
@@ -148,186 +157,241 @@
         <div class="pagination"></div>
     </div>
 </div>
-
 <script th:inline="javascript">
     const members = /*[[${members}]]*/ [];
-    console.log(members);
-    let currentPage = 1;
-    const itemsPerPage = 6;
+let currentPage = 1;
+const itemsPerPage = 6;
 
-    let currentSortColumn = '';
-    let isAscending = true;
+let currentSortColumn = '';
+let isAscending = true;
+let filteredMembers = [...members];
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pageFromUrl = urlParams.get('page');
-        if (pageFromUrl) {
-            currentPage = parseInt(pageFromUrl);
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search-input');
+    const searchButton = document.querySelector('.search-button');
 
-        displayMembers(currentPage);
-        updatePagination();
+    searchInput.addEventListener('input', handleSearchInput);
+    searchButton.addEventListener('click', handleSearchButtonClick);
 
-        // 정렬 가능한 열에 클릭 이벤트 리스너 추가
-        document.querySelectorAll('.sortable').forEach(header => {
-            header.addEventListener('click', () => {
-                const column = header.dataset.sort;
-                sortMembers(column);
-            });
-        });
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageFromUrl = urlParams.get('page');
+    if (pageFromUrl) {
+        currentPage = parseInt(pageFromUrl);
+    }
 
-        // 검색 버튼 클릭 이벤트
-        document.querySelector('.search-button').addEventListener('click', function(event) {
-            event.preventDefault();
-            const searchTerm = document.querySelector('.search-input').value.trim();
+    displayMembers(currentPage);
+    updatePagination();
 
-            if (searchTerm === '') {
-                window.location.href = '/admin/adminMain';
-            } else {
-                window.location.href = `/admin/memberSearch?search=${encodeURIComponent(searchTerm)}`;
-            }
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', () => {
+            sortMembers(header.dataset.sort);
         });
     });
+});
 
-    function displayMembers(page) {
-        currentPage = page;
-        const startIndex = (page - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const membersToDisplay = members.slice(startIndex, endIndex);
+function handleSearchInput() {
+    if (this.value.trim().length > 0) {
+        searchMembers();
+    } else {
+        resetSearch();
+    }
+}
 
-        const membersTableBody = document.querySelector('.admin-table tbody');
-        membersTableBody.innerHTML = '';
+function handleSearchButtonClick(event) {
+    event.preventDefault();
+    searchMembers();
+}
 
-        membersToDisplay.forEach((member) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${member.memberNo}</td>
-                <td>${member.memberId}</td>
-                <td>${member.nickname}</td>
-                <td>${getAuthorityDisplay(member.authority)}</td>
-                <td>${member.reportedCnt}</td>
-                <td>${getStatusDisplay(member)}</td>
-            `;
-            membersTableBody.appendChild(row);
-        });
+function searchMembers() {
+    const searchTerm = document.querySelector('.search-input').value.trim().toLowerCase();
 
+    if (searchTerm.length === 0) {
+        resetSearch();
+        return;
+    }
+
+    filteredMembers = members.filter(member =>
+        member.memberId.toLowerCase().includes(searchTerm) ||
+        member.nickname.toLowerCase().includes(searchTerm)
+    );
+
+    if (filteredMembers.length === 0) {
+        showNoResultsMessage();
+    } else {
+        hideNoResultsMessage();
+        displayMembers(1);
         updatePagination();
-        window.history.pushState(null, null, `?page=${page}`);
     }
 
-    function updatePagination() {
-        const totalPages = Math.ceil(members.length / itemsPerPage);
-        const paginationContainer = document.querySelector('.pagination');
+    updateUrl();
+}
 
-        if (paginationContainer) {
-            paginationContainer.innerHTML = '';
+function resetSearch() {
+    filteredMembers = [...members];
+    displayMembers(1);
+    updatePagination();
+    updateUrl();
+}
 
-            for (let i = 1; i <= totalPages; i++) {
-                const pageButton = document.createElement('a');
-                pageButton.textContent = i;
-                pageButton.classList.add('page-button');
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.href = '#';
-                pageButton.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    displayMembers(i);
-                });
-                paginationContainer.appendChild(pageButton);
+function showNoResultsMessage() {
+    const tableBody = document.querySelector('.admin-table tbody');
+    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">검색 결과가 없습니다.</td></tr>';
+    document.querySelector('.pagination').innerHTML = '';
+}
+
+function hideNoResultsMessage() {
+    // 필요한 경우 여기에 로직 추가
+}
+
+function displayMembers(page) {
+    currentPage = page;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const membersToDisplay = filteredMembers.slice(startIndex, endIndex);
+
+    const membersTableBody = document.querySelector('.admin-table tbody');
+    membersTableBody.innerHTML = '';
+
+    membersToDisplay.forEach((member) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="col-no">${member.memberNo}</td>
+            <td class="col-id">${member.memberId}</td>
+            <td class="col-nickname">${member.nickname}</td>
+            <td class="col-signup">${member.signupAt}</td>
+            <td class="col-authority">${getAuthorityDisplay(member.authority)}</td>
+            <td class="col-report">${member.reportedCnt}</td>
+            <td class="col-status">${getStatusDisplay(member)}</td>
+        `;
+        membersTableBody.appendChild(row);
+    });
+
+    updatePagination();
+    window.history.pushState(null, null, `?page=${page}`);
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+    const paginationContainer = document.querySelector('.pagination');
+
+    if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('a');
+            pageButton.textContent = i;
+            pageButton.classList.add('page-button');
+            if (i === currentPage) {
+                pageButton.classList.add('active');
             }
-        } else {
-            console.error('Pagination container not found');
-        }
-    }
-
-    function loadContent(page) {
-        if (page === 'allmember') {
-            window.location.href = '/admin/adminMain';
-        } else {
-            $.ajax({
-                url: '/admin/' + page,
-                type: 'GET',
-                success: function(response) {
-                    $('#adminContent').html(response);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error loading content:", error);
-                }
+            pageButton.href = '#';
+            pageButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                displayMembers(i);
             });
+            paginationContainer.appendChild(pageButton);
         }
+    } else {
+        console.error('Pagination container not found');
+    }
+}
+
+function loadContent(page) {
+    if (page === 'allmember') {
+        window.location.href = '/admin/adminMain';
+    } else {
+        $.ajax({
+            url: '/admin/' + page,
+            type: 'GET',
+            success: function(response) {
+                $('#adminContent').html(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("Error loading content:", error);
+            }
+        });
+    }
+}
+
+function sortMembers(column) {
+    if (currentSortColumn === column) {
+        isAscending = !isAscending;
+    } else {
+        currentSortColumn = column;
+        isAscending = true;
     }
 
-    function sortMembers(column) {
-        if (currentSortColumn === column) {
-            isAscending = !isAscending;
-        } else {
-            currentSortColumn = column;
-            isAscending = true;
-        }
+    filteredMembers.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
 
-        members.sort((a, b) => {
-            let valueA = a[column];
-            let valueB = b[column];
-
-            if (column === 'authority') {
+        switch (column) {
+            case 'signupAt':
+                valueA = new Date(valueA);
+                valueB = new Date(valueB);
+                break;
+            case 'authority':
                 valueA = getAuthorityOrder(valueA);
                 valueB = getAuthorityOrder(valueB);
-            } else if (column === 'status') {
-                valueA = getStatusOrder(a);
-                valueB = getStatusOrder(b);
-            }
-
-            if (valueA < valueB) return isAscending ? -1 : 1;
-            if (valueA > valueB) return isAscending ? 1 : -1;
-            return 0;
-        });
-
-        currentPage = 1; // 정렬 후 첫 페이지로 이동
-        displayMembers(currentPage);
-        updateSortIndicators();
-    }
-
-    function getAuthorityOrder(authority) {
-        switch(authority) {
-            case 'ROLE_ADMIN': return 1;
-            case 'ROLE_SELLER': return 2;
-            case 'ROLE_MEMBER': return 3;
-            default: return 4;
+                break;
+            case 'reportedCnt':
+                valueA = parseInt(valueA);
+                valueB = parseInt(valueB);
+                break;
+            case 'status':
+                valueA = a.isBlacked === 'Y' ? 1 : 0;
+                valueB = b.isBlacked === 'Y' ? 1 : 0;
+                break;
         }
-    }
 
-    function getStatusOrder(member) {
-        if (member.isBlacked === 'Y') return 1;
-        if (member.isDeleted === 'Y') return 2;
-        return 3;
-    }
+        if (valueA < valueB) return isAscending ? -1 : 1;
+        if (valueA > valueB) return isAscending ? 1 : -1;
+        return 0;
+    });
 
-    function updateSortIndicators() {
-        document.querySelectorAll('.sortable').forEach(header => {
-            const column = header.dataset.sort;
-            if (column === currentSortColumn) {
-                header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + (isAscending ? ' ▲' : ' ▼');
-            } else {
-                header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + ' ▼';
-            }
-        });
-    }
+    displayMembers(1);
+    updateSortIndicators();
+}
 
-    function getAuthorityDisplay(authority) {
-        switch(authority) {
-            case 'ROLE_MEMBER': return '일반회원';
-            case 'ROLE_SELLER': return '판매자';
-            case 'ROLE_ADMIN': return '관리자';
-            default: return authority;
+function updateSortIndicators() {
+    document.querySelectorAll('.sortable').forEach(header => {
+        const column = header.dataset.sort;
+        if (column === currentSortColumn) {
+            header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + (isAscending ? ' ▲' : ' ▼');
+        } else {
+            header.textContent = header.textContent.replace(' ▼', '').replace(' ▲', '') + ' ▼';
         }
-    }
+    });
+}
 
-    function getStatusDisplay(member) {
-        if (member.isBlacked === 'Y') return '블랙리스트';
-        if (member.isDeleted === 'Y') return '탈퇴회원';
-        return '';
+function getAuthorityDisplay(authority) {
+    switch(authority) {
+        case 'ROLE_MEMBER': return '일반회원';
+        case 'ROLE_SELLER': return '판매자';
+        case 'ROLE_ADMIN': return '관리자';
+        default: return authority;
     }
+}
+
+function getAuthorityOrder(authority) {
+    switch(authority) {
+        case 'ROLE_MEMBER': return 1;
+        case 'ROLE_SELLER': return 2;
+        case 'ROLE_ADMIN': return 3;
+        default: return 0;
+    }
+}
+
+function getStatusDisplay(member) {
+    return member.isBlacked === 'Y' ? '블랙리스트' : '';
+}
+
+function updateUrl() {
+    const url = new URL(window.location);
+    url.searchParams.set('page', currentPage);
+    window.history.pushState({}, '', url);
+}
 </script>
+
 </body>
 </html>
