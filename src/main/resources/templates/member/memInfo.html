@@ -429,8 +429,8 @@
 
         // 실시간 이메일 유효성 검사
         let isEmailChecked = false;
-        emailIdInput.addEventListener('blur', checkEmail);
-        emailDomainInput.addEventListener('blur', checkEmail);
+        emailIdInput.addEventListener('keyup', checkEmail);
+        emailDomainInput.addEventListener('keyup', checkEmail);
         emailDomainInput.addEventListener('input', checkEmail);
         function checkEmail() {
             let fullEmail = emailIdInput.value.trim() + '@' + emailDomainInput.value.trim();
@@ -462,7 +462,7 @@
 
         // 실시간 전화번호 유효성 검사
         let isPhoneChecked = false;
-        phoneInput.addEventListener('blur', function() {
+        phoneInput.addEventListener('keyup', function() {
             if (!isValidPhone(this.value.trim())) {
                 showInfoMessage(phoneMessage, '전화번호는 11자리 숫자만 입력 가능합니다.', true);
                 isPhoneChecked = false;
@@ -502,7 +502,7 @@
 
         // 실시간 비밀번호 유효성 검사
         let isPwChecked = false;
-        passwordInput.addEventListener('blur', function() {
+        passwordInput.addEventListener('keyup', function() {
             if (!isValidPassword(this.value.trim())) {
                 showInfoMessage(passwordMessage, '새 비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
                 isPwChecked = false;
@@ -514,7 +514,7 @@
 
         // 실시간 비밀번호 확인 검사
         let isPwConfirmed = false;
-        confirmPasswordInput.addEventListener('blur', function() {
+        confirmPasswordInput.addEventListener('keyup', function() {
             if (this.value.trim() !== passwordInput.value.trim()) {
                 showInfoMessage(passwordMessage, '새 비밀번호가 일치하지 않습니다.', true);
                 isPwConfirmed = false;

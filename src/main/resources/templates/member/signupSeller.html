@@ -41,6 +41,14 @@
                 align-items: center;
             }
         }
+        .warning {
+            background-color: #F5DA81;
+            border-left: 8px solid #FFBF00;
+            padding: 10px 30px;
+            font-size: 18px;
+            width: 80%;
+            line-height: 2rem;
+        }
         .input-group {
             & input {
                 width: 100%;
@@ -62,7 +70,7 @@
             }
 
             & p {
-                margin-left: 10px;
+                margin: 0 10px;
                 color: red;
             }
         }
@@ -120,6 +128,14 @@
         <div class="signup">
             <h2>판매자 회원 가입</h2>
 
+            <div class="warning">
+                판매자 가입은 사업자등록증이 필요합니다.<br>
+                신청결과는 하루 이내에 사이트 내 알림으로 전송됩니다.<br>
+                신청결과에 상관없이 일반회원으로 활동하실 수 있습니다.<br>
+                사업자등록증 이미지가 등록이 되지 않을 경우,<br>
+                이미지와 함께 사업자등록증 정보를 입력해주시기 바랍니다.
+            </div>
+
             <div class="input-group">
                 <label>아이디</label><p>*</p>
                 <div class="id-input-wrapper">
@@ -132,19 +148,19 @@
 
             <div class="input-group">
                 <label>비밀번호</label><p>*</p>
-                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" required>
+                <input type="password" name="memberPw" placeholder="알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자" maxlength="15" required>
             </div>
             <div class="error-message" id="password-message"></div>
 
             <div class="input-group">
                 <label>비밀번호 확인</label><p>*</p>
-                <input type="password" name="confirmPassword" placeholder="비밀번호 확인" required>
+                <input type="password" name="confirmPassword" placeholder="비밀번호 확인" maxlength="15" required>
             </div>
             <div class="error-message" id="password-confirm-message"></div>
 
             <div class="input-group">
                 <label>전화번호</label><p>*</p>
-                <input type="tel" name="phone" placeholder="전화번호 ('-'는 빼고 입력)" oninput="removeInvalidChars(this)" required>
+                <input type="tel" name="phone" placeholder="전화번호 11자리 (예: 01012345678)" maxlength="11" required>
             </div>
             <div class="error-message" id="phone-message"></div>
 
@@ -168,15 +184,33 @@
             <div class="error-message" id="email-message"></div>
 
             <div class="input-group">
-                <label>사업자등록증</label><p>*</p>
-                <input type="file" name="file" class="bus-reg" id="bus-reg" accept="image/*" required>
+                <label>사업자등록증 사본</label><p>*</p>
+                <input type="file" name="file" class="bus-reg" id="bus-reg" accept="image/*">
                 <img id="preview" alt="preview">
             </div>
-            <div class="error-message" id="bus-reg-message"></div>
+
+            <div class="input-group">
+                <label>사업자등록번호</label>
+                <input type="text" name="businessNumber" placeholder="사업자등록번호 10자리" maxlength="10">
+            </div>
+            <div class="error-message" id="business-number-message"></div>
+
+            <div class="input-group">
+                <label>대표자명</label>
+                <input type="text" name="representativeName" placeholder="대표자명">
+            </div>
+            <div class="error-message" id="representative-name-message"></div>
+
+            <div class="input-group">
+                <label>개업연월일</label>
+                <input type="text" name="openingDate" placeholder="개업연월일 8자리 (예: 20230101)" maxlength="8">
+            </div>
+            <div class="error-message" id="opening-date-message"></div>
 
             <div>
                 <span style="color: red;">*</span><span> 필수 입력 사항입니다.</span>
             </div>
+
             <button class="btn btn-udh-blue" id="signup-btn" disabled>회원가입</button>
         </div>
     </div>
@@ -192,6 +226,10 @@
         const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
         const phoneInput = document.querySelector('input[name="phone"]');
         const emailInput = document.querySelector('input[name="email"]');
+        const businessNumberInput = document.querySelector('input[name="businessNumber"]');
+        const representativeNameInput = document.querySelector('input[name="representativeName"]');
+        const openingDateInput = document.querySelector('input[name="openingDate"]');
+
         const checkDuplicateButton = document.getElementById('checkDuplicate');
         const clearButton = document.querySelector('.clear-input');
         const submitButton = document.querySelector('#signup-btn');
@@ -205,7 +243,9 @@
         const passwordConfirmMessage = document.querySelector('#password-confirm-message');
         const phoneMessage = document.querySelector('#phone-message');
         const emailMessage = document.querySelector('#email-message');
-        const busRegMessage = document.querySelector('#bus-reg-message');
+        const businessNumberMessage = document.querySelector('#business-number-message');
+        const representativeNameMessage = document.querySelector('#representative-name-message');
+        const openingDateMessage = document.querySelector('#opening-date-message');
 
         const busRegInput = document.querySelector('#bus-reg');
         const preview = document.querySelector('#preview');
@@ -286,7 +326,7 @@
 
         // 실시간 비밀번호 유효성 검사
         let isPwChecked = false;
-        passwordInput.addEventListener('blur', function() {
+        passwordInput.addEventListener('keyup', function() {
             if (!isValidPassword(this.value.trim())) {
                 showMessage(passwordMessage, '비밀번호는 알파벳/숫자/특수문자 중 두 가지 이상 포함된 6~15자여야 합니다.', true);
                 isPwChecked = false;
@@ -300,7 +340,7 @@
 
         // 실시간 비밀번호 확인 검사
         let isPwConfirmed = false;
-        confirmPasswordInput.addEventListener('blur', function() {
+        confirmPasswordInput.addEventListener('keyup', function() {
             if (this.value.trim() !== passwordInput.value.trim()) {
                 showMessage(passwordConfirmMessage, '비밀번호가 일치하지 않습니다.', true);
                 isPwConfirmed = false;
@@ -321,7 +361,7 @@
 
         // 실시간 전화번호 유효성 검사
         let isPhoneChecked = false;
-        phoneInput.addEventListener('blur', function() {
+        phoneInput.addEventListener('keyup', function() {
             if (!isValidPhone(this.value.trim())) {
                 showMessage(phoneMessage, '전화번호는 11자리 숫자만 입력 가능합니다.', true);
                 isPhoneChecked = false;
@@ -361,8 +401,8 @@
 
         // 실시간 이메일 유효성 검사
         let isEmailChecked = false;
-        emailId.addEventListener('blur', checkEmail);
-        emailDomain.addEventListener('blur', checkEmail);
+        emailId.addEventListener('keyup', checkEmail);
+        emailDomain.addEventListener('keyup', checkEmail);
         emailDomain.addEventListener('input', checkEmail);
         function checkEmail() {
             let fullEmail = emailId.value.trim() + '@' + emailDomain.value.trim();
@@ -378,12 +418,13 @@
             }
         }
 
-
         // 사업자등록증 업로드 검사
         let isBusRegUploaded = false;
         busRegInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
+
             if (file) {
+
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -391,10 +432,9 @@
                         preview.style.visibility = 'visible';
                     }
                     reader.readAsDataURL(file);
-                    hideMessage(busRegMessage);
                     isBusRegUploaded = true;
+
                 } else {
-                    showMessage(busRegMessage, '이미지 파일만 업로드 가능합니다.', true);
                     isBusRegUploaded = false;
                     this.value = '';
                     preview.style.visibility = 'hidden';
@@ -402,6 +442,49 @@
                 }
             }
             checkAllFields();
+        });
+
+        // 사업자등록번호 유효성 검사
+        function isValidBusinessNumber(number) {
+            return /^\d{10}$/.test(number);
+        }
+
+        // 실시간 사업자등록번호 유효성 검사
+        businessNumberInput.addEventListener('keyup', function() {
+            if (!isValidBusinessNumber(this.value.trim())) {
+                showMessage(businessNumberMessage, '사업자등록번호는 10자리 숫자여야 합니다.', true);
+                isBusinessNumberChecked = false;
+            } else {
+                hideMessage(businessNumberMessage);
+                isBusinessNumberChecked = true;
+            }
+        });
+
+        // 실시간 대표자명 유효성 검사
+        representativeNameInput.addEventListener('keyup', function() {
+            if (this.value.trim().length === 0) {
+                showMessage(representativeNameMessage, '대표자명을 입력해주세요.', true);
+                isRepresentativeNameChecked = false;
+            } else {
+                hideMessage(representativeNameMessage);
+                isRepresentativeNameChecked = true;
+            }
+        });
+
+        // 개업연월일 유효성 검사
+        function isValidOpeningDate(date) {
+            return /^\d{8}$/.test(date) && !isNaN(Date.parse(date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')));
+        }
+
+        // 실시간 개업연월일 유효성 검사
+        openingDateInput.addEventListener('keyup', function() {
+            if (!isValidOpeningDate(this.value.trim())) {
+                showMessage(openingDateMessage, '올바른 개업연월일 형식이 아닙니다. (예: 20230101)', true);
+                isOpeningDateChecked = false;
+            } else {
+                hideMessage(openingDateMessage);
+                isOpeningDateChecked = true;
+            }
         });
 
         // 필드 체크 검사

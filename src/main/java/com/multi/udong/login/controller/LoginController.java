@@ -111,6 +111,7 @@ public class LoginController {
      * 입력한 사용자 정보로 회원가입
      *
      * @param memberDTO          the memberDTO
+     * @param memBus          the mem bus
      * @param request            the request
      * @param file               the file
      * @param model              the model
@@ -120,6 +121,7 @@ public class LoginController {
      */
     @PostMapping("/signup")
     public String signup(MemberDTO memberDTO,
+                         MemBusDTO memBus,
                          HttpServletRequest request,
                          @RequestParam(value = "file", required = false) MultipartFile file,
                          Model model,
@@ -147,42 +149,23 @@ public class LoginController {
 
             // 추출된 결과가 있다면
             if (!list.isEmpty()) {
-                
-                // 추출한 결과 전처리
-                String b_no = list.get(0).trim().replaceAll("-", "");
-                String p_nm = list.get(2).trim()
-                        .replaceAll(",", "").trim();
-                String start_dt = list.get(3).trim()
-                        .replaceAll(" ", "")
-                        .replaceAll("년", "")
-                        .replaceAll("월", "")
-                        .replaceAll("일", "");
 
-                // 전처리된 추출 결과를 국세청API로 검증요청
-                Map<String, Object> requestBody = new HashMap<>();
-                List<Map<String, String>> businesses = new ArrayList<>();
-                Map<String, String> business = new HashMap<>();
-
-                business.put("b_no", b_no);
-                business.put("p_nm", p_nm);
-                business.put("start_dt", start_dt);
-                businesses.add(business);
-                requestBody.put("businesses", businesses);
-
-                Map<String, Object> result = ntsapi.validateBusinessRegistration(serviceKey, requestBody);
-
-                System.out.println("##### result : " + result);
-
-                // 검증결과에서 "data": [{"valid": "01"}] 값 추출, 01 = 유효, 02 = 유효하지 않음
-                List<Map<String, Object>> dataList = (List<Map<String, Object>>) result.get("data");
-                Map<String, Object> data = dataList.get(0);
-                String valid = (String) data.get("valid");
-                System.out.println("사업자등록증 유효코드 - valid: " + valid);
+                // 국세청 api로 유효코드 반환
+                String valid = ntsAPIValid(list);
 
                 // valid값이 01이면 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
                 if (valid.equals("01")) {
                     
                     try {
+                        String b_no = list.get(0).trim().replaceAll("-", "");
+                        String p_nm = list.get(1).trim()
+                                .replaceAll(",", "").trim();
+                        String start_dt = list.get(2).trim()
+                                .replaceAll(" ", "")
+                                .replaceAll("년", "")
+                                .replaceAll("월", "")
+                                .replaceAll("일", "");
+
                         MemBusDTO memBusDTO = new MemBusDTO();
                         memBusDTO.setBusinessNumber(b_no);
                         memBusDTO.setRepresentativeName(p_nm);
@@ -200,18 +183,96 @@ public class LoginController {
                     redirectAttributes.addFlashAttribute("alertType", "signup");
                     return "redirect:/";
                     
-                } else { // valid=02 일 경우
-                    new File(fileName).delete();
-                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다.");
+                } else { // valid=02 일 경우 입력한 정보로 검증 시도
+
+                    if (memBus.getBusinessNumber().isEmpty()) {
+                        redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다.<br>직접 정보를 입력해 다시 시도해보세요.");
+                        redirectAttributes.addFlashAttribute("alertType", "error");
+                        return "redirect:/signup/seller";
+                    }
+
+                    String b_no = memBus.getBusinessNumber();
+                    String p_nm = memBus.getRepresentativeName();
+                    String start_dt = memBus.getOpeningDate();
+                    ArrayList<String> listInput = new ArrayList<>();
+                    listInput.add(b_no);
+                    listInput.add(p_nm);
+                    listInput.add(start_dt);
+                    String validInput = ntsAPIValid(listInput);
+
+                    // validInput 값이 01이면 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
+                    if (validInput.equals("01")) {
+
+                        try {
+                            MemBusDTO memBusDTO = new MemBusDTO();
+                            memBusDTO.setBusinessNumber(b_no);
+                            memBusDTO.setRepresentativeName(p_nm);
+                            memBusDTO.setOpeningDate(start_dt);
+                            memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
+
+                        } catch (Exception e) {
+                            redirectAttributes.addFlashAttribute("alert", "중복된 사업자등록증입니다.<br>한 사업자등록증으로 한 계정만 가입할 수 있습니다.");
+                            redirectAttributes.addFlashAttribute("alertType", "error");
+                            return "redirect:/signup/seller";
+                        }
+
+                        authenticateUserAndSetSession(memberDTO, request);
+                        redirectAttributes.addFlashAttribute("alert", "회원가입이 완료되었습니다!<br>승인결과는 사이트 내 알림으로 전송됩니다.");
+                        redirectAttributes.addFlashAttribute("alertType", "signup");
+                        return "redirect:/";
+
+                    } else { // valid=02 일 경우
+
+                        redirectAttributes.addFlashAttribute("alert", "유효하지 않은 사업자등록증입니다.");
+                        redirectAttributes.addFlashAttribute("alertType", "error");
+                        return "redirect:/signup/seller";
+                    }
+                }
+                
+            } else { // OCR로 추출한 결과가 없다면 입력한 정보로 검증 시도
+
+                if (memBus.getBusinessNumber().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다.<br>직접 정보를 입력해 다시 시도해보세요.");
                     redirectAttributes.addFlashAttribute("alertType", "error");
                     return "redirect:/signup/seller";
                 }
-                
-            } else { // OCR로 추출한 결과가 없다면
-                new File(fileName).delete();
-                redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다.<br>다시 촬영해주세요.");
-                redirectAttributes.addFlashAttribute("alertType", "error");
-                return "redirect:/signup/seller";
+
+                String b_no = memBus.getBusinessNumber();
+                String p_nm = memBus.getRepresentativeName();
+                String start_dt = memBus.getOpeningDate();
+                ArrayList<String> listInput = new ArrayList<>();
+                listInput.add(b_no);
+                listInput.add(p_nm);
+                listInput.add(start_dt);
+                String validInput = ntsAPIValid(listInput);
+
+                // validInput 값이 01이면 회원가입 처리 + 사업자등록증 정보와 첨부파일도 같이 등록
+                if (validInput.equals("01")) {
+
+                    try {
+                        MemBusDTO memBusDTO = new MemBusDTO();
+                        memBusDTO.setBusinessNumber(b_no);
+                        memBusDTO.setRepresentativeName(p_nm);
+                        memBusDTO.setOpeningDate(start_dt);
+                        memberService.signupSeller(memberDTO, memBusDTO, attachmentDTO);
+
+                    } catch (Exception e) {
+                        redirectAttributes.addFlashAttribute("alert", "중복된 사업자등록증입니다.<br>한 사업자등록증으로 한 계정만 가입할 수 있습니다.");
+                        redirectAttributes.addFlashAttribute("alertType", "error");
+                        return "redirect:/signup/seller";
+                    }
+
+                    authenticateUserAndSetSession(memberDTO, request);
+                    redirectAttributes.addFlashAttribute("alert", "회원가입이 완료되었습니다!<br>승인결과는 사이트 내 알림으로 전송됩니다.");
+                    redirectAttributes.addFlashAttribute("alertType", "signup");
+                    return "redirect:/";
+
+                } else { // valid=02 일 경우
+
+                    redirectAttributes.addFlashAttribute("alert", "유효하지 않은 이미지입니다.<br>다시 촬영해주세요.");
+                    redirectAttributes.addFlashAttribute("alertType", "error");
+                    return "redirect:/signup/seller";
+                }
             }
         }
 
@@ -226,6 +287,47 @@ public class LoginController {
             model.addAttribute("msg", e.getMessage());
             return "common/errorPage";
         }
+    }
+
+    /**
+     * 국세청 API 사업자등록증 진위확인
+     * @param list
+     * @return
+     */
+    private String ntsAPIValid (ArrayList<String> list) {
+
+        // 추출한 결과 전처리
+        String b_no = list.get(0).trim().replaceAll("-", "");
+        String p_nm = list.get(1).trim()
+                .replaceAll(",", "").trim();
+        String start_dt = list.get(2).trim()
+                .replaceAll(" ", "")
+                .replaceAll("년", "")
+                .replaceAll("월", "")
+                .replaceAll("일", "");
+
+        // 전처리된 추출 결과를 국세청API로 검증요청
+        Map<String, Object> requestBody = new HashMap<>();
+        List<Map<String, String>> businesses = new ArrayList<>();
+        Map<String, String> business = new HashMap<>();
+
+        business.put("b_no", b_no);
+        business.put("p_nm", p_nm);
+        business.put("start_dt", start_dt);
+        businesses.add(business);
+        requestBody.put("businesses", businesses);
+
+        Map<String, Object> result = ntsapi.validateBusinessRegistration(serviceKey, requestBody);
+
+        System.out.println("##### result : " + result);
+
+        // 검증결과에서 "data": [{"valid": "01"}] 값 추출, 01 = 유효, 02 = 유효하지 않음
+        List<Map<String, Object>> dataList = (List<Map<String, Object>>) result.get("data");
+        Map<String, Object> data = dataList.get(0);
+        String valid = (String) data.get("valid");
+        System.out.println("사업자등록증 유효코드 - valid: " + valid);
+
+        return valid;
     }
 
     /**
