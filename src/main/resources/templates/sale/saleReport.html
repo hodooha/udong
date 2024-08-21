@@ -6,6 +6,14 @@
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        .menu {
+         font-family: 'Freesentation-7Bold';
+         font-size: 25px;
+         margin-bottom: 30px;
+         margin-top: 42px;
+         margin-left: 42px;
+         text-align: left;
+        }
         .form-container {
             width: 80%;
             margin: 0 auto;
@@ -115,10 +123,10 @@
             margin: 30px 20px 20px;
         }
         .title {
-            font-family: 'Freesentation-9Black', sans-serif;
-            font-weight: bold;
+            font-family: 'Freesentation-7Bold';
+            font-size: 25px;
+            margin-bottom: 30px;
             margin: 0;
-            text-align: center;
         }
         .required {
         color: red;
@@ -128,12 +136,9 @@
 <body>
 
 <div th:replace="~{/common/menubar}"></div>
-<div class="title-container">
-    <h6 class="title">&#128680; 땡처리 신고하기</h6>
-</div>
-
+    <p class="menu">&#128680; 땡처리 신고하기</p>
 <div class="form-container">
-    <div style="text-align:right; color: red; font-size:0.7em;">* 필수 입력 사항입니다.</div>
+    <div style="text-align:left; color: red; font-size:1em; margin-bottom:10px;">(* 필수 입력 사항입니다.)</div>
     <form id="reportForm" th:action="@{/sale/saleReport}" method="post" enctype="multipart/form-data" onsubmit="return confirmSubmit()">
         <div class="form-group-inline">
             <label for="title">제목<span class="required">*</span></label>

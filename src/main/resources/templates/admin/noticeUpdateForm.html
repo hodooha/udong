@@ -160,7 +160,7 @@
 <div class="container">
     <div id="main-content">
         <h5>&#128226; 공지사항 수정</h5>
-        <div style="text-align:right; color: red; font-size:0.7em;">* 필수 입력 사항입니다.</div><br><br>
+        <div style="text-align:left; color: red; font-size:1em; margin-bottom:10px;">(* 필수 입력 사항입니다.)</div><br><br>
         <div th:if="${notice != null}">
             <form id="noticeForm" th:action="@{/admin/notice/update}" method="post" enctype="multipart/form-data" th:object="${notice}">
                 <input type="hidden" th:field="*{noticeNo}" th:value="${notice.noticeNo}"/>
