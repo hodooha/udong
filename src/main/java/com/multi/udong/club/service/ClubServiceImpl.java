@@ -318,6 +318,9 @@ public class ClubServiceImpl implements ClubService {
 
         if(clubResult == 1) {
 
+            // 이미지 수정 없이 모임 데이터만 수정 시 result는 1
+            result = 1;
+
             System.out.println("###### 새 이미지 업로드 여부: " + clubDTO.getAttachment());
 
             // 이미지를 새로 업로드 했으면 이미지 update
@@ -342,9 +345,6 @@ public class ClubServiceImpl implements ClubService {
                 }
 
             }
-
-            // 이미지 수정 없이 모임 데이터만 수정 시 result는 1
-            result = 1;
 
         }
         else {

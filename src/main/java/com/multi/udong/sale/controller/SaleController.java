@@ -226,6 +226,7 @@ public class SaleController {
             report.setReason(reason);
             report.setUrl("/sale/detail/" + saleNo);
             report.setStatus("W");
+            report.setCreatedAt(LocalDateTime.now());
 
             if (!file.isEmpty()) {
                 String path = Paths.get(System.getProperty("user.home"), "udongUploads").toAbsolutePath().normalize().toString();

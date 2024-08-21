@@ -6,6 +6,7 @@
     <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
 
         .content {
@@ -65,7 +66,7 @@
 
     <div class="right-area">
         <p class="menu">&#128680; 모임 기록 신고</p>
-        <form th:action="@{/club/clubLog/reportLog}" method="post">
+        <form th:action="@{/club/clubLog/reportLog}" method="post" onsubmit="return validateForm()">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <input type="hidden" name="clubNo" th:value="${reportedLog.clubNo}" />
             <div class="insert-area">
@@ -139,6 +140,26 @@
             toggleInput(false);
         }
     };
+
+    function validateForm() {
+        const customRadio = document.querySelector('input[name="reason"][value="custom"]');
+        const customInput = document.getElementById('custom-input').value.trim();
+
+        if (customRadio.checked) {
+            if (customInput === '') {
+                Swal.fire({
+                    title: '입력 오류',
+                    text: '신고 사유는 공백만 입력할 수 없습니다.',
+                    icon: 'warning',
+                    confirmButtonColor: '#3B5C9A',
+                    confirmButtonText: '확인'
+                });
+
+                return false;
+            }
+        }
+        return true;
+    }
 
 </script>
 </body>

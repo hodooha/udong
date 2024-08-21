@@ -224,7 +224,7 @@
         </th:block>
 
         <p th:text="${scheduleDetail.title}" class="p-tag schedule-title"></p>
-        <p th:text="${scheduleDetail.content}" class="p-tag schedule-content" style="margin-bottom: 30px"></p>
+        <p th:utext="${#strings.replace(scheduleDetail.content, '&#10;', '&lt;br&gt;')}" class="p-tag schedule-content" style="margin-bottom: 30px"></p>
 
         <p class="p-tag schedule-info">
             <span>&#128197;</span>
