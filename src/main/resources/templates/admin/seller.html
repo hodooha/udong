@@ -95,6 +95,36 @@
             background-color: #FF9909;
             color: #FFFFFF;
         }
+        .search-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+            margin-top: -85px;
+        }
+        .search-input {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px 0 0 5px;
+            height: 40px;
+            box-sizing: border-box;
+        }
+        .search-button {
+            background-color: #FFB83D;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-button:hover {
+            background-color: #FF9909;
+            color: #FFFFFF;
+        }
 
     </style>
     <meta name="_csrf" th:content="${_csrf.token}"/>
@@ -104,6 +134,10 @@
 
 <div class="admin-content">
     <h5 style="text-align: center; margin-bottom: 100px;">판매자 관리</h5>
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="ID 또는 이름으로 검색">
+        <button id="searchButton" class="search-button">검색</button>
+    </div>
 
     <table class="admin-table">
         <thead>
@@ -154,6 +188,7 @@
     $(document).ready(function() {
         initializeSellerData();
         setupSortable();
+         setupSearch();
     });
 
     function initializeSellerData() {
@@ -259,6 +294,53 @@
     }
 
     var sortDirection = true;
+
+     function setupSearch() {
+    $('#searchInput').on('input', function() {
+        var searchTerm = $(this).val().toLowerCase();
+        filterSellers(searchTerm);
+    });
+
+    $('#searchButton').on('click', function() {
+        var searchTerm = $('#searchInput').val().toLowerCase();
+        filterSellers(searchTerm);
+    });
+}
+
+function filterSellers(searchTerm) {
+    var tableBody = $('tbody');
+    var visibleRows = 0;
+
+    if (searchTerm === '') {
+        // 검색어가 비어있으면 모든 행을 표시하고, "검색 결과가 없습니다" 메시지를 제거
+        tableBody.find('tr').show();  // 모든 행을 표시
+        tableBody.find('tr:has(td[colspan="7"])').remove();  // "검색 결과가 없습니다" 메시지 제거
+        return;
+    }
+
+    tableBody.find('tr').each(function() {
+        var id = $(this).find('td:nth-child(2)').text().toLowerCase();
+        var name = $(this).find('td:nth-child(3)').text().toLowerCase();
+        if (id.includes(searchTerm) || name.includes(searchTerm)) {
+            $(this).show();  // 해당되는 행을 표시
+            visibleRows++;
+        } else {
+            $(this).hide();  // 해당되지 않는 행을 숨김
+        }
+    });
+
+    if (visibleRows === 0) {
+        showNoResultsMessage(tableBody);
+    } else {
+        tableBody.find('tr:has(td[colspan="7"])').remove();  // "검색 결과가 없습니다" 메시지 제거
+    }
+}
+
+function showNoResultsMessage(tableBody) {
+    // 기존의 "검색 결과가 없습니다" 메시지를 제거한 후 다시 추가
+    tableBody.find('tr:has(td[colspan="7"])').remove();
+    tableBody.append('<tr><td colspan="7" style="text-align: center;">검색 결과가 없습니다.</td></tr>');
+}
 </script>
 
 </body>
