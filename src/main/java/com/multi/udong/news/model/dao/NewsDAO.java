@@ -207,4 +207,9 @@ public class NewsDAO {
         return sqlSession.update("newsMapper.deleteAd", adNo);
 
     }
+
+    public Integer selectNewsWriterNo(SqlSessionTemplate sqlSession, int newsNo) {
+
+        return sqlSession.selectOne("newsMapper.selectNewsWriterNo", newsNo);
+    }
 }

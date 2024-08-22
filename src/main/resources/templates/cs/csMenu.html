@@ -17,12 +17,18 @@
             padding: 3rem;
             margin: 0 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            transition: all 0.3s;
             text-align: center;
             cursor: pointer;
 
+            & h3 {
+                font-size: 32px;
+            }
+
             &:hover {
                 transform: translateY(-5px);
+                background-color: #007bff;
+                color: white;
             }
         }
     </style>
@@ -30,27 +36,19 @@
 <body>
 <div class="category" sec:authorize="isAuthenticated()">
     <div class="card" onClick="location.href ='/cs/csMain'">
-        <i>A</i>
         <h3>자주 묻는 질문</h3>
-        <p>자주 묻는 질문 입니다.</p>
     </div>
 
     <div class="card" sec:authorize="hasAnyRole('MEMBER', 'SELLER')" onClick="location.href ='/cs/insertQueForm'">
-        <i>B</i>
         <h3>문의하기</h3>
-        <p>문의하기 입니다.</p>
     </div>
 
     <div class="card" sec:authorize="hasAnyRole('MEMBER', 'SELLER')" onClick="location.href='/cs/csMyQue'">
-        <i>C</i>
         <h3>문의내역</h3>
-        <p>내 문의내역 입니다.</p>
     </div>
 
     <div class="card" sec:authorize="hasRole('ADMIN')" onClick="location.href='/cs/csAllQue'">
-        <i>C</i>
         <h3>전체 문의내역</h3>
-        <p>모든 사용자의 문의내역입니다.</p>
     </div>
 </div>
 </body>

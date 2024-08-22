@@ -26,7 +26,7 @@ public enum NotiSetCodeENUM {
     CL_NEW_JOIN_REQ("새 모임 가입 신청", "모임 \"{clubName}\" 에 가입 신청이 있습니다.", "/club/clubHome?clubNo="),
 
     // 소식
-    NEWS_COMMENT("소식 게시글 새 댓글", "소식 게시글에 새 댓글이 달렸습니다.", "/news/detail?newsNo="),
+    NEWS_COMMENT("소식 게시글 새 댓글", "소식 게시글에 새 댓글이 달렸습니다.", "/news/newsDetail?newsNo="),
 
     // 회원
     MEMBER_LEVEL_UP("회원 등급 상승", "회원님의 레벨이 {newLevel}레벨로 상승했습니다!", "/member/dashBoard"),

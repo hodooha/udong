@@ -5,12 +5,15 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.LocationDTO;
 import com.multi.udong.news.model.dao.NewsDAO;
 import com.multi.udong.news.model.dto.*;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(rollbackFor = {Exception.class})
@@ -20,9 +23,11 @@ public class NewsServiceImpl implements NewsService {
     private SqlSessionTemplate sqlSession;
 
     private final NewsDAO newsDAO;
+    private final NotiServiceImpl notiService;
 
-    public NewsServiceImpl(NewsDAO newsDAO) {
+    public NewsServiceImpl(NewsDAO newsDAO, NotiServiceImpl notiService) {
         this.newsDAO = newsDAO;
+        this.notiService = notiService;
     }
 
 
@@ -169,7 +174,20 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public int insertReply(ReplyDTO replyDTO) throws Exception {
 
-        return newsDAO.insertReply(sqlSession, replyDTO);
+        int result = newsDAO.insertReply(sqlSession, replyDTO);
+
+        if (result > 0) {
+
+            // 알림 전송
+            notiService.sendNoti(
+                    NotiSetCodeENUM.NEWS_COMMENT,
+                    List.of(newsDAO.selectNewsWriterNo(sqlSession, replyDTO.getNewsNo())),
+                    replyDTO.getNewsNo(),
+                    Map.of()
+            );
+        }
+
+        return result;
 
     }
 

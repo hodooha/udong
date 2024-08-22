@@ -439,4 +439,10 @@
         WHERE ad_no = #{ adNo }
     </update>
 
+    <select id="selectNewsWriterNo" parameterType="Integer" resultType="Integer">
+        SELECT writer
+        FROM NS_POST
+        WHERE news_no = #{newsNo}
+    </select>
+
 </mapper>
