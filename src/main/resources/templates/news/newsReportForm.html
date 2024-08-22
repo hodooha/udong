@@ -56,7 +56,7 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="padding: 40px; height: 670px">
+<div class="content" style="padding: 40px; height: auto; min-height: 670px">
 
     <p class="menu">&#128680; 우동 소식 신고</p>
     <form th:action="@{/news/reportNews}" method="post" onsubmit="return validateForm()">

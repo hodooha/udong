@@ -111,7 +111,7 @@
 <body>
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="padding: 40px; height: 670px">
+<div class="content" style="padding: 40px; height: auto;">
     <p class="menu">🔖 광고 작성</p>
     <form th:action="@{/news/insertAd}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />

@@ -120,7 +120,7 @@
 
 <div th:replace="~{/common/menubar}"></div>
 
-<div class="content" style="padding: 40px; height: 670px">
+<div class="content" style="padding: 40px; height: auto;">
 
     <p class="menu">&#128240; 우동 소식 수정</p>
     <form th:action="@{/news/updateNews}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">

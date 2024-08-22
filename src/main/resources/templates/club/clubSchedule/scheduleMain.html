@@ -132,7 +132,7 @@
 <div th:replace="~{/common/menubar}"></div>
 <div th:replace="~{/club/clubAlert}"></div>
 
-<div class="content" style="padding: 40px; height: 670px;">
+<div class="content" style="padding: 40px; height: auto; min-height: 670px;">
 
     <div th:replace="~{/club/clubSidebar}"></div>
 
@@ -156,7 +156,7 @@
             </div>
         </div>
 
-        <div class="schedule-list">
+        <div class="schedule-list" style="height: auto;">
             <hr>
             <th:block th:if="${#lists.isEmpty(scheduleList)}">
                 <div class="no-data-div">
