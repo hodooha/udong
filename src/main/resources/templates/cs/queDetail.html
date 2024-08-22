@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         body {
@@ -50,6 +50,8 @@
                 min-width: 200px;
                 margin-left: 20px;
                 display: block;
+                white-space: normal;
+                overflow-y: auto;
             }
 
             &.title span {
@@ -58,7 +60,7 @@
 
             &.content span {
                 width: 100%;
-                height: 100px;
+                min-height: 100px;
             }
         }
         .attachment-box ul {
@@ -99,6 +101,7 @@
         }
         .answer-content span {
             font-size: 20px;
+            white-space: normal;
         }
         .answer-form form {
             display: flex;
@@ -174,7 +177,7 @@
                 <h2>답변:</h2>
                 <div th:each="answer : ${answers}" class="answer-box">
                     <div class="answer-info">
-                        <span th:text="${answer.nickname}"></span>
+                        <span th:text="${answer.nickname}" style="font-size: 24px;"></span>
                         <span th:text="${answer.createdAt}"></span>
                     </div>
                     <div class="answer-content">
@@ -219,6 +222,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

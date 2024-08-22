@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .message-detail {
             display: flex;
             flex:1;
             flex-direction: column;
+            height: 100%;
             gap: 20px;
             text-align: center;
             border: 1px solid #000000;
@@ -26,6 +27,8 @@
                 min-width: 200px;
                 display: block;
                 text-align: left;
+                white-space: normal;
+                overflow-y: auto;
             }
         }
         .detail-person {
@@ -45,7 +48,8 @@
         }
         .detail-content span {
             flex: 1;
-            height: 200px;
+            min-height: 200px;
+            max-height: 500px;
         }
     </style>
 </head>

@@ -435,10 +435,10 @@
     <select id="selectShareLike" parameterType="pageDTO" resultType="java.util.LinkedHashMap">
         SELECT
             sub.item_no,
+            t.type_name,
             sc.cat_name,
             l.eup_myeon_dong_name,
             sub.title,
-            DATE_FORMAT(sub.expiry_date, '%Y-%m-%d %H:%i:%s') AS expiry_date,
             ss.status_name,
             sub.total_count
         FROM (
@@ -468,6 +468,7 @@
         JOIN SHA_CAT sc ON sub.item_cat_code = sc.cat_code
         JOIN LOCATION l ON sub.loc_code = l.location_code
         JOIN SHA_STATUS ss ON sub.status_code = ss.status_code
+        JOIN TYPE t ON sub.item_group = t.type_code
         WHERE sub.rownum BETWEEN #{start} AND #{end}
     </select>
 

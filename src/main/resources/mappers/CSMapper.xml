@@ -68,7 +68,7 @@
 
     <insert id="insertFile" parameterType="attachmentDTO">
         INSERT INTO ATTACHMENT (original_name, saved_name, type_code, target_no) VALUES
-        (#{originalName}, #{savedName}, #{typeCode}, LAST_INSERT_ID())
+        (#{originalName}, #{savedName}, #{typeCode}, #{targetNo})
     </insert>
 
     <select id="getQueDetail" resultType="csQuestionDTO">

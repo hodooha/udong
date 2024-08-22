@@ -354,7 +354,7 @@ public class MessageController {
      * @return the response entity
      * @since 2024 -08-13
      */
-// 웹소켓
+    // 웹소켓
     @GetMapping("/getMessage")
     public ResponseEntity<List<MessageDTO>> getMessage(@AuthenticationPrincipal CustomUserDetails c) {
 

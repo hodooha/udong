@@ -200,7 +200,7 @@ public class MemberController {
             case "club" -> Arrays.asList("주제", "동네", "모임명", "모임장", "생성일");
             case "clubLog" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성일", "조회수");
             case "clubSchedule" -> Arrays.asList("주제", "동네", "모임명", "제목", "작성자", "일시");
-            case "shareLike" -> Arrays.asList("카테고리", "동네", "물품명" , "상태");
+            case "shareLike" -> Arrays.asList("대여/나눔","카테고리", "동네", "물품명" , "상태");
             case "saleBoard" -> Arrays.asList("동네", "물품명", "정상가", "할인가", "작성일", "시작시간", "종료시간");
             default -> new ArrayList<>();
         };

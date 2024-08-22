@@ -33,8 +33,7 @@ public enum NotiSetCodeENUM {
     CS_ANSWER("문의글 답변","작성하신 문의글에 답변이 등록되었습니다.", "/cs/queDetail?no="),
 
     // 관리자
-    ADMIN_NEW_SELLER("새 판매자 가입 신청", "새로운 판매자 가입 신청이 접수되었습니다.", "/admin/sellerApplications"),
-    ADMIN_NEW_REPORT("새 신고 접수", "새로운 신고가 접수되었습니다. 신고 유형: {reportType}", "/admin/reports"),
+    ADMIN_NEW_SELLER("새 판매자 가입 신청", "새로운 판매자 가입 신청이 접수되었습니다.", "/admin/adminMain?page=1"),
 
     // 판매자, 설정 불가
     SELLER_APP_RESULT("판매자 신청 결과", "판매자 신청이 {result}되었습니다.", "/sale/saleMain?page=1");

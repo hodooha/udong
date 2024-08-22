@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .noti-setting {
@@ -44,6 +44,10 @@
             margin-bottom: 10px;
             padding: 10px;
             background-color: #e3e3e3;
+
+            & span {
+                font-size: 20px;
+            }
         }
         .switch {
             position: relative;
@@ -124,17 +128,6 @@
                     </div>
 
                     <div class="noti-category">
-                        <h3>우동 모임 관련 알림</h3>
-                        <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('CL_')}">
-                            <span th:text="${notiSet.notiSetName}"></span>
-                            <label class="switch">
-                                <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="noti-category">
                         <h3>대여 / 나눔 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('GIVE_') || notiSet.notiSetCode.startsWith('RENT_') || notiSet.notiSetCode == 'ITEM_AVAILABLE'}">
                             <span th:text="${notiSet.notiSetName}"></span>
@@ -148,6 +141,17 @@
                     <div class="noti-category">
                         <h3>우동 소식 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode == 'NEWS_COMMENT'}">
+                            <span th:text="${notiSet.notiSetName}"></span>
+                            <label class="switch">
+                                <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="noti-category">
+                        <h3>우동 모임 관련 알림</h3>
+                        <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('CL_')}">
                             <span th:text="${notiSet.notiSetName}"></span>
                             <label class="switch">
                                 <input type="checkbox" th:name="${notiSet.notiSetCode}" value="Y" th:checked="${notiSet.isReceived == 'Y'}">
@@ -175,6 +179,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script>
     const notiSetForm = document.querySelector('#noti-set-form');

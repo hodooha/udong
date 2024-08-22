@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <style>
         .unread-noti-count {
             position: absolute;
@@ -335,13 +335,16 @@
     }
 </script> <!--알림-->
 <script th:inline="javascript">
+    const notiBtn = document.querySelector('.noti-btn');
+    const notiWindow = document.querySelector('.noti-window');
+
     document.addEventListener('DOMContentLoaded', function() {
-        const notiBtn = document.querySelector('.noti-btn');
-        const notiWindow = document.querySelector('.noti-window');
 
         notiBtn.addEventListener('click', function(event) {
             event.stopPropagation();
             notiWindow.classList.toggle('show');
+            messageWindow.classList.remove('show');
+            chatbotWindow.classList.remove('show');
         });
 
         notiWindow.addEventListener('click', function(event) {

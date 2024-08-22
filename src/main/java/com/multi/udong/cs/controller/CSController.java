@@ -200,7 +200,7 @@ public class CSController {
         CSQuestionDTO csQuestionDTO = (CSQuestionDTO) map.get("csQuestionDTO");
 
         if (memberNo != csQuestionDTO.getWriterNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
-            model.addAttribute("alert", "권한이 부족합니다.");
+            model.addAttribute("alert", "잘못된 접근입니다.");
             model.addAttribute("alertType", "error");
             return "cs/csMain";
         }
@@ -239,7 +239,6 @@ public class CSController {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
                     AttachmentDTO attachmentDTO = memberController.settingFile(file);
-                    attachmentDTO.setTypeCode("CS");
                     attachments.add(attachmentDTO);
                 }
             }

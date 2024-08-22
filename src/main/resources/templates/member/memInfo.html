@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .profile-update, .contact-update, .password-update {
             flex: 1;
-            min-width: 720px;
-            max-width: 720px;
+            min-width: 580px;
+            max-width: 723px;
             min-height: 300px;
             text-align: center;
             border: 1px solid #000000;
@@ -23,6 +23,11 @@
                 color: #3B5C9A;
                 margin-bottom: 20px;
             }
+
+            @media (max-width: 1024px) {
+                min-width: 100%;
+            }
+
         }
         .contact-update form {
             display: flex;
@@ -225,6 +230,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

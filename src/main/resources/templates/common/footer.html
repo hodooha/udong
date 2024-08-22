@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>우동행</title>
+    <style>
+        html {
+            overflow-y: auto;
+        }
+        #content-wrapper {
+            height: auto;
+            min-height: calc(100vh - 230px);
+        }
+        .footer {
+            height: 140px;
+            position: relative;
+            background-color: #f8f9fa;
+            padding: 20px 0;
+            border-top: 1px solid #e7e7e7;
+            width: 100%;
+
+            & .footer-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                max-width: 60%;
+                margin: 0 auto;
+                padding: 0 15px;
+
+                & .footer-logo img {
+                    height: 40px;
+                }
+
+                & .footer-links {
+                    display: flex;
+                    gap: 20px;
+
+                    & a {
+                        color: #333;
+                        text-decoration: none;
+                    }
+                }
+
+                & .page-up {
+                    display: flex;
+                    gap: 10px;
+
+                    & a {
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        padding: 10px;
+                        font-size: 20px;
+                        color: #333;
+                        text-decoration: none;
+                        cursor: default;
+
+                        &:hover {
+                            background-color: #c0c7cf;
+                        }
+                    }
+                }
+            }
+
+            & .footer-bottom {
+                text-align: center;
+                margin-top: 20px;
+                color: #777;
+            }
+        }
+    </style>
+</head>
+<body>
+</div> <!--content-wrapper 닫음-->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img th:src="@{/img/logo.png}" alt="우동행 로고">
+            </div>
+            <div class="footer-links">
+                <a th:href="@{/share/rent}">대여 / 나눔</a>
+                <a th:href="@{/sale/saleMain}">땡처리</a>
+                <a th:href="@{/news/newsMain}">우동 소식</a>
+                <a th:href="@{/club/clubMain(page=1)}">우동 모임</a>
+                <a th:href="@{/cs/csMain(page=1)}">고객센터</a>
+            </div>
+            <div class="page-up">
+                <a href="#">맨 위로</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 우동행. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

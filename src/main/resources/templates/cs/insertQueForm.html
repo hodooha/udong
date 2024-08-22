@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         body {
@@ -133,7 +133,7 @@
                         <label for="queFormTitle">문의제목</label>
                         <p>*</p>
                     </div>
-                    <input type="text" name="title" id="queFormTitle" required>
+                    <input type="text" name="title" id="queFormTitle" maxlength="200" required>
                 </div>
 
                 <div class="column-set">
@@ -165,6 +165,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script>
     const queFormTitle = document.querySelector('#queFormTitle');

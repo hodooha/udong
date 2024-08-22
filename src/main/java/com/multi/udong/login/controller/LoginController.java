@@ -1,14 +1,13 @@
 package com.multi.udong.login.controller;
 
 import com.multi.udong.common.model.dto.AttachmentDTO;
+import com.multi.udong.login.openFeign.NTSAPI;
 import com.multi.udong.login.service.CustomUserDetailsService;
 import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.MemBusDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.member.service.MemberService;
-import com.multi.udong.login.openFeign.NTSAPI;
 import com.multi.udong.member.service.NaverOcr;
-import com.multi.udong.notification.controller.NotiController;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,6 @@ public class LoginController {
     private final MemberController memberController;
     private final CustomUserDetailsService customUserDetailsService;
     private final NaverOcr naverOcr;
-    private final NotiController notiController;
 
     /**
      * 로그인 메소드, 로그인 실패시 에러메세지를 받아옴
@@ -348,7 +346,7 @@ public class LoginController {
     }
 
     /**
-     * Authenticate user and set session.
+     * 현재 사용자 세션 업데이트
      *
      * @param memberDTO the member dto
      * @param request   the request

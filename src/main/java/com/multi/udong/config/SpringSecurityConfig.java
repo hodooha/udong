@@ -1,9 +1,6 @@
 package com.multi.udong.config;
 
-import com.multi.udong.login.service.AuthenticationService;
-import com.multi.udong.login.service.CustomAuthenticationFailureHandler;
-import com.multi.udong.login.service.CustomAuthenticationSuccessHandler;
-import com.multi.udong.login.service.CustomUserDetailsService;
+import com.multi.udong.login.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

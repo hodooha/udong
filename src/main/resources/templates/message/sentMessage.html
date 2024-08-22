@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         .message {
@@ -148,6 +148,12 @@
             color: blue;
             text-decoration: underline;
         }
+        .ellipsis {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -173,8 +179,8 @@
                             th:onclick="|location.href='@{/message/sentMessage(messageNo=${data.messageNo},page=${page},searchCategory=${searchCategory},searchWord=${searchWord})}'|">
                             <!--th:onclick https://velog.io/@leejk0924/Tymeleaf%EC%9D%98-thonclick-%EC%82%AC%EC%9A%A9%EB%B2%95-->
                             <td><input type="checkbox" id="row-checkbox"></td>
-                            <td th:text="${data.receiverNickname}"></td>
-                            <td th:text="${data.content}"></td>
+                            <td th:text="${data.receiverNickname}" class="ellipsis"></td>
+                            <td th:text="${data.content}" class="ellipsis"></td>
                             <td th:text="${data.createdAt}"></td>
                             <td th:text="${data.isRead.equals('Y') ? '읽음' : '안읽음'}"></td>
                         </tr>
@@ -208,6 +214,7 @@
         <div th:replace="~{/message/messageDetail}"></div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

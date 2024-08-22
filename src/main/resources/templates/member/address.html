@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script th:inline="javascript">
@@ -108,6 +108,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script>
     let searchedAddress = null;
@@ -236,7 +237,7 @@ function getAddr(lat, lng) {
                 document.getElementById('update-address').disabled = true;
             }
 
-            showAlert("주소 인증이 완료되었습니다.<br>등록 완료 버튼을 누르시면 주소가 저장됩니다.");
+            showAlert("주소 인증이 완료되었습니다.<br>등록하기 또는 수정하기 버튼을 누르시면<br>주소가 저장됩니다.");
         } else {
             showErrorAlert("현재 주소가 입력된 주소와 일치하지 않습니다.");
         }

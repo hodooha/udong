@@ -3,7 +3,7 @@
       xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}" />
     <style>
         body {
@@ -66,11 +66,15 @@
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #D4D4D4;
         }
-        .clickable-row:hover {
-            background-color: #f2f2f2;
+        .clickable-row {
+            border-bottom: 1px solid #D4D4D4;
             cursor: pointer;
+
+            &:hover {
+                background-color: #D4D4D4;
+            }
         }
         #no-result {
             margin: 30px 0;
@@ -110,6 +114,12 @@
         h2 {
             text-align: left;
         }
+        .ellipsis {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -136,7 +146,7 @@
                     </thead>
                     <tbody id="result-table">
                         <tr th:each="data : ${tableData}" th:attr="data-no=${data[0]}" class="clickable-row">
-                            <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}">
+                            <td th:each="element, elementStat : ${data}" th:if="${elementStat.index > 0}" class="ellipsis">
                                 <span th:if="${elementStat.index == 5}" th:text="${element == 'N' ? '답변 대기' : '답변 완료'}"></span>
                                 <span th:unless="${elementStat.index == 5}" th:text="${element}"></span>
                             </td>
@@ -149,6 +159,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

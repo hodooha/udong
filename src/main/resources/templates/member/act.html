@@ -3,7 +3,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
     <style>
         .act {
@@ -132,6 +132,12 @@
             color: blue;
             text-decoration: underline;
         }
+        .ellipsis {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -164,7 +170,7 @@
                             th:attr="data-no=${data[0]}, data-club-no=${table == 'clubLog'} ? ${data[1]} : ''" class="clickable-row">
                             <td th:each="element, elementStat : ${data}"
                                 th:if="${table == 'clubLog'} ? ${elementStat.index > 1} : ${elementStat.index > 0}"
-                                th:text="${element}"></td>
+                                th:text="${element}" class="ellipsis"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -192,6 +198,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {

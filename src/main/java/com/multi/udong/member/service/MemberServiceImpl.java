@@ -8,6 +8,8 @@ import com.multi.udong.member.model.dto.PageDTO;
 import com.multi.udong.member.model.dto.MemberDTO;
 import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.login.service.CustomUserDetailsService;
+import com.multi.udong.notification.model.dto.NotiSetCodeENUM;
+import com.multi.udong.notification.service.NotiServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +34,7 @@ public class MemberServiceImpl implements MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MemberMapper memberMapper;
     private final CustomUserDetailsService customUserDetailsService;
+    private final NotiServiceImpl notiService;
 
     /**
      * 일반회원 회원가입
@@ -216,9 +219,12 @@ public class MemberServiceImpl implements MemberService {
     public void signupSeller(MemberDTO memberDTO, MemBusDTO memBusDTO, AttachmentDTO attachmentDTO) throws Exception {
         String encPw = bCryptPasswordEncoder.encode(memberDTO.getMemberPw());
         memberDTO.setMemberPw(encPw);
+
+        int memberNo;
+
         try {
             int result = memberMapper.signup(memberDTO);
-            int memberNo = memberMapper.getMemberNoByMemberId(memberDTO);
+            memberNo = memberDTO.getMemberNo();
             memBusDTO.setMemberNo(memberNo);
             attachmentDTO.setTargetNo(memberNo);
             int result2 = memberMapper.insertBusReg(memBusDTO);
@@ -233,6 +239,13 @@ public class MemberServiceImpl implements MemberService {
             e.printStackTrace();
             throw e;
         }
+
+        notiService.sendNoti(
+                NotiSetCodeENUM.ADMIN_NEW_SELLER,
+                List.of(memberNo),
+                null,
+                Map.of()
+        );
     }
 
     /**

@@ -86,8 +86,13 @@ public class CSServiceImpl implements CSService{
     public void insertQueForm(CSQuestionDTO csQuestionDTO, List<AttachmentDTO> attachments) {
         csMapper.insertQueForm(csQuestionDTO);
 
+        // useGeneratedKeys
+        int csNo = csQuestionDTO.getCsNo();
+
         if (attachments != null && !attachments.isEmpty()) {
             for (AttachmentDTO attachment : attachments) {
+                attachment.setTargetNo(csNo);
+                attachment.setTypeCode("CS");
                 csMapper.insertFile(attachment);
             }
         }

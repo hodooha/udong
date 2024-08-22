@@ -6,7 +6,7 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/uicons-thin-rounded/css/uicons-thin-rounded.css'>
-    <title>Title</title>
+    <title>우동행</title>
     <style>
         .chatbot {
             position: fixed;
@@ -181,6 +181,8 @@
     </div>
 </body>
 <script th:inline="javascript">
+    const chatbotWindow = document.querySelector('#chatbot-window');
+
     document.addEventListener('DOMContentLoaded', function() {
 
         const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -196,12 +198,13 @@
         });
 
         let gotWelcomeMessage = false;
-        const chatbotWindow = document.querySelector('#chatbot-window');
 
         // 챗봇 토글
         document.querySelector('.chatbot').addEventListener('click', function(event) {
             event.stopPropagation();
             chatbotWindow.classList.toggle('show');
+            notiWindow.classList.remove('show');
+            messageWindow.classList.remove('show');
             if (!gotWelcomeMessage) {
                 getWelcomeMessage();
                 gotWelcomeMessage = true;

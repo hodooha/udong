@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>Title</title>
+    <title>우동행</title>
     <link rel="stylesheet" th:href="@{/css/mainDesign.css}"/>
     <style>
         .container {
@@ -166,6 +166,7 @@
         </div>
     </div>
 </form>
+<div th:replace="~{/common/footer}"></div>
 </body>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

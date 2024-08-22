@@ -34,9 +34,6 @@
         ) sub
         JOIN MEMBER m ON sub.sender_no = m.member_no
         WHERE sub.rownum BETWEEN #{start} AND #{end}
-        ORDER BY
-            CASE WHEN sub.is_read = 'N' THEN 0 ELSE 1 END,
-            sub.created_at DESC
     </select>
 
     <select id="getSentMessages" resultType="messageDTO" parameterType="pageDTO">
@@ -69,7 +66,6 @@
         ) sub
         JOIN MEMBER m ON sub.receiver_no = m.member_no
         WHERE sub.rownum BETWEEN #{start} AND #{end}
-        ORDER BY sub.created_at DESC
     </select>
     
     <select id="getNicknameByMemberNo" resultType="string">
@@ -191,7 +187,8 @@
         FROM MSG msg
         LEFT JOIN MEMBER m ON msg.sender_no = m.member_no
         WHERE msg.receiver_no = #{receiverNo}
-        ORDER BY msg.is_read DESC, msg.created_at DESC
+        AND msg.is_receive_deleted = 'N'
+        ORDER BY msg.is_read DESC, msg.created_at ASC
     </select>
 
     <select id="getUnreadMessageCount" resultType="int">
