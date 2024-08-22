@@ -47,15 +47,16 @@
                         style="text-align:left; font-size:0.6em; margin-left: 5px;">※거래방식은 수정이 불가능합니다.</span></h5>
                 </label>
                 <div style="display:flex">
+                    <input hidden="hidden" name="itemGroup"  th:value="${item.itemGroup}">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="itemGroup" id="rent-opt" value="rent"
+                        <input class="form-check-input" type="radio" id="rent-opt" value="rent"
                                th:checked="${item.itemGroup == 'rent'}" disabled>
                         <label class="form-check-label" for="rent-opt">
                             대여
                         </label>
                     </div>
                     <div class="form-check mx-3">
-                        <input class="form-check-input" type="radio" name="itemGroup" id="give-opt" value="give"
+                        <input class="form-check-input" type="radio" id="give-opt" value="give"
                                 th:checked="${item.itemGroup == 'give'}" disabled>
                         <label class="form-check-label" for="give-opt">
                             나눔
