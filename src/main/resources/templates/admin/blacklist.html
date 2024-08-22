@@ -194,16 +194,16 @@
         }
 
         function updateMemberListWithLocalStorage() {
-    memberList = originalMemberList.map(function(member) {
-        var storedDate = localStorage.getItem('unblackedAt-' + member.memberNo);
-        if (storedDate) {
-            member.unblackedAt = storedDate;
-            member.isBlacked = 'N';
+            memberList = originalMemberList.map(function(member) {
+                var storedDate = localStorage.getItem('unblackedAt-' + member.memberNo);
+                if (storedDate) {
+                    member.unblackedAt = storedDate;
+                    member.isBlacked = 'N';
+                }
+                return member;
+            });
+            originalMemberList = JSON.parse(JSON.stringify(memberList));
         }
-        return member;
-    });
-    originalMemberList = JSON.parse(JSON.stringify(memberList));
-}
 
         function setupAjaxCSRF() {
             $.ajaxSetup({
@@ -219,42 +219,44 @@
                 sortMembers(column);
             });
 
-            $('#searchButton').on('click', searchMembers);
+            $('#searchInput').on('input', function() {
+            searchMembers();
+        });
         }
 
         function displayMembers(page) {
-    currentPage = page;
-    var startIndex = (page - 1) * itemsPerPage;
-    var endIndex = startIndex + itemsPerPage;
-    var membersToDisplay = memberList.slice(startIndex, endIndex);
+            currentPage = page;
+            var startIndex = (page - 1) * itemsPerPage;
+            var endIndex = startIndex + itemsPerPage;
+            var membersToDisplay = memberList.slice(startIndex, endIndex);
 
-    var membersTableBody = $('#blacklistTable tbody');
-    membersTableBody.empty();
+            var membersTableBody = $('#blacklistTable tbody');
+            membersTableBody.empty();
 
-    membersToDisplay.forEach(function(member) {
-        var row = $('<tr>');
-        row.append($('<td>').text(member.memberNo));
-        row.append($('<td>').text(member.memberId));
-        row.append($('<td>').text(member.nickname));
-        row.append($('<td>').text(member.blackedAt || '등록된 날짜 없음'));
+            membersToDisplay.forEach(function(member) {
+                var row = $('<tr>');
+                row.append($('<td>').text(member.memberNo));
+                row.append($('<td>').text(member.memberId));
+                row.append($('<td>').text(member.nickname));
+                row.append($('<td>').text(member.blackedAt || '등록된 날짜 없음'));
 
-        var unblackedAtText = member.isBlacked === 'Y' ? '해제된 날짜 없음' : (member.unblackedAt || '');
-        row.append($('<td>').attr('id', 'unblackedAt-' + member.memberNo).text(unblackedAtText));
+                var unblackedAtText = member.unblackedAt || '해제된 날짜 없음';
+                row.append($('<td>').attr('id', 'unblackedAt-' + member.memberNo).text(unblackedAtText));
 
-        var button = $('<button>')
-            .addClass('status-btn')
-            .addClass(member.isBlacked === 'Y' ? 'btn-udh-red' : 'btn-udh-yellow')
-            .text(member.isBlacked === 'Y' ? '해제' : '등록')
-            .attr('data-member-no', member.memberNo)
-            .attr('data-is-blacked', member.isBlacked)
-            .on('click', function() { handleBlacklistAction(member.memberNo); });
+                var button = $('<button>')
+                    .addClass('status-btn')
+                    .addClass(member.isBlacked === 'Y' ? 'btn-udh-red' : 'btn-udh-yellow')
+                    .text(member.isBlacked === 'Y' ? '해제' : '등록')
+                    .attr('data-member-no', member.memberNo)
+                    .attr('data-is-blacked', member.isBlacked)
+                    .on('click', function() { handleBlacklistAction(member.memberNo); });
 
-        row.append($('<td>').append(button));
-        membersTableBody.append(row);
-    });
+                row.append($('<td>').append(button));
+                membersTableBody.append(row);
+            });
 
-    updatePagination();
-}
+            updatePagination();
+        }
 
         function updatePagination() {
             var totalPages = Math.ceil(memberList.length / itemsPerPage);
@@ -291,8 +293,8 @@
                 var valueB = b[column];
 
                 if (column === 'blackedAt' || column === 'unblackedAt') {
-                    valueA = new Date(valueA || 0);
-                    valueB = new Date(valueB || 0);
+                     valueA = valueA ? new Date(valueA) : new Date(0); // 최소값으로 과거 처리
+                     valueB = valueB ? new Date(valueB) : new Date(0);
                 }
 
                 if (valueA < valueB) return isAscending ? -1 : 1;
@@ -317,18 +319,19 @@
         }
 
         function searchMembers() {
-            var searchTerm = $('#searchInput').val().trim().toLowerCase();
-            if (searchTerm === '') {
-                memberList = [...originalMemberList];
-            } else {
-                memberList = originalMemberList.filter(function(member) {
-                    return member.memberId.toLowerCase().includes(searchTerm) ||
-                           member.nickname.toLowerCase().includes(searchTerm);
-                });
-            }
-            currentPage = 1;
-            displayMembers(currentPage);
+        var searchTerm = $('#searchInput').val().trim().toLowerCase();
+        if (searchTerm === '') {
+            memberList = [...originalMemberList];
+        } else {
+            memberList = originalMemberList.filter(function(member) {
+                return member.memberId.toLowerCase().includes(searchTerm) ||
+                       member.nickname.toLowerCase().includes(searchTerm);
+            });
         }
+        currentPage = 1;
+        displayMembers(currentPage);
+        updatePagination();
+    }
 
         function handleBlacklistAction(memberNo) {
             var member = memberList.find(function(m) { return m.memberNo === memberNo; });
@@ -408,29 +411,29 @@
         }
 
         function updateButtonStatus(memberNo, status, date) {
-    var member = memberList.find(function(m) { return m.memberNo === memberNo; });
-    var originalMember = originalMemberList.find(function(m) { return m.memberNo === memberNo; });
-    member.isBlacked = status;
-    originalMember.isBlacked = status;
-    var button = $('button[data-member-no="' + memberNo + '"]');
-    if (status === 'Y') {
-        button.removeClass('btn-udh-yellow').addClass('btn-udh-red').text('해제');
-        $('#unblackedAt-' + memberNo).text('해제된 날짜 없음');
-        member.blackedAt = date;
-        originalMember.blackedAt = date;
-        member.unblackedAt = null;
-        originalMember.unblackedAt = null;
-        $('tr:has(button[data-member-no="' + memberNo + '"]) td:nth-child(4)').text(date);
-        localStorage.removeItem('unblackedAt-' + memberNo);
-    } else {
-        button.removeClass('btn-udh-red').addClass('btn-udh-yellow').text('등록');
-        $('#unblackedAt-' + memberNo).text(date);
-        member.unblackedAt = date;
-        originalMember.unblackedAt = date;
-        localStorage.setItem('unblackedAt-' + memberNo, date);
-    }
-    button.attr('data-is-blacked', status);
-}
+                var member = memberList.find(function(m) { return m.memberNo === memberNo; });
+                var originalMember = originalMemberList.find(function(m) { return m.memberNo === memberNo; });
+                member.isBlacked = status;
+                originalMember.isBlacked = status;
+                var button = $('button[data-member-no="' + memberNo + '"]');
+                if (status === 'Y') {
+                    button.removeClass('btn-udh-yellow').addClass('btn-udh-red').text('해제');
+                    $('#unblackedAt-' + memberNo).text('해제된 날짜 없음');
+                    member.blackedAt = date;
+                    originalMember.blackedAt = date;
+                    member.unblackedAt = null;
+                    originalMember.unblackedAt = null;
+                    $('tr:has(button[data-member-no="' + memberNo + '"]) td:nth-child(4)').text(date);
+                    localStorage.removeItem('unblackedAt-' + memberNo);
+                } else {
+                    button.removeClass('btn-udh-red').addClass('btn-udh-yellow').text('등록');
+                    $('#unblackedAt-' + memberNo).text(date);
+                    member.unblackedAt = date;
+                    originalMember.unblackedAt = date;
+                    localStorage.setItem('unblackedAt-' + memberNo, date);
+                }
+                button.attr('data-is-blacked', status);
+            }
 
         return {
             init: init,
