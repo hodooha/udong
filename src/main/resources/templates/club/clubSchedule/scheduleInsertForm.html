@@ -120,10 +120,10 @@
             <div class="insert-area">
                 <table style="width: 100%">
                     <tr>
-                        <td style="width: 3%">
-                            <span>제목</span>
+                        <td style="width: 3.5%">
+                            <span>제목</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 72%">
+                        <td style="width: 71.5%">
                             <input type="text" id="titleInput" class="input schedule-title-input" name="title" maxlength="30" required>
                         </td>
                         <td style="width: 4%">
@@ -136,19 +136,19 @@
                 </table>
                 <table style="width: 100%; margin: 30px 0px 30px 0px;">
                     <tr>
-                        <td style="width: 3%; vertical-align: top;">
-                            <span>내용</span>
+                        <td style="width: 3.5%; vertical-align: top;">
+                            <span>내용</span><span style="color:red;"> *</span>
                         </td>
-                        <td style="width: 97%">
+                        <td style="width: 96.5%">
                             <textarea id="contentInput" class="content-input" name="content" maxlength="500" required></textarea>
                         </td>
                     </tr>
                 </table>
-                <span>최대 모집 인원</span>
+                <span>최대 모집 인원</span><span style="color:red;"> *</span>
                 <input type="number" class="input schedule-max-personnel-input" name="maxPersonnel" min=2 max=100 placeholder="2~100" required>
                 <span>명</span>
                 <br>
-                <span>일정 일시</span>
+                <span>일정 일시</span><span style="color:red;"> *</span>
                 <input type="datetime-local" id="gatheringInput" class="input gathering-input" name="gatheringAtBeforeProcessing" required>
             </div>
             <div class="insert-schedule-btn-container">

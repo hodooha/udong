@@ -138,4 +138,6 @@ public interface ClubService {
     List<OutputChatMessage> selectInitialChatMessage(int clubNo) throws Exception;
 
     List<OutputChatMessage> selectOldChatMessage(RequestDTO requestDTO) throws Exception;
+
+    void sendReply(ReplyDTO replyDTO, int clubNo) throws Exception;
 }

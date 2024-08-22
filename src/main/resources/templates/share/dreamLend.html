@@ -439,8 +439,22 @@
                                 </div>
 
                             </div>
-                            <div th:if="${item.statusCode == 'GVD'}">
-                                <div class="position-absolute top-50 start-50 translate-middle-y">
+                            <div th:if="${item.statusCode == 'GVD' || item.statusCode == 'GIV'}">
+                                <div class="dropdown dropend position-absolute top-0 end-0">
+                                    <button class="btn btn-udh-nocolor" type="button" data-bs-toggle="dropdown"
+                                            aria-expanded="false" style="font-weight:bold; font-size:1.5em;">
+                                        &#8230;
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-btns">
+                                        <li>
+                                            <button th:onclick="|location.href='@{/share/update(itemNo=${item.itemNo})}'|"
+                                                    class="btn btn-udh-silver dropdown-item">
+                                                수정하기
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div th:if="${item.statusCode == 'GVD'}" class="position-absolute top-50 start-50 translate-middle-y">
                                     <button th:onclick="sendMsg([[${item.rqstNo}]])" class="btn btn-udh-yellow "
                                             style="width:max-content">쪽지하기
                                     </button>

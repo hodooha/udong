@@ -156,7 +156,7 @@
             OR NS.content LIKE CONCAT('%', #{ searchWord }, '%')
             )
         </if>
-        ORDER BY NS.news_no DESC
+        ORDER BY NS.created_at DESC
         LIMIT #{ startIndex }, #{ pageCount }
     </select>
 
@@ -385,7 +385,7 @@
         LEFT JOIN LOCATION L ON L.location_code = NS.location_code
         LEFT JOIN MEMBER M ON M.member_no = NS.writer
         WHERE NS.is_deleted = 'N' AND NS.location_code = #{ locationCode } AND NS.created_at &gt; #{ recentlyTime }
-        ORDER BY likes_count DESC
+        ORDER BY likes_count DESC, NS.views DESC
         LIMIT 5
     </select>
 

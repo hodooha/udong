@@ -449,7 +449,7 @@
                 OR A.content LIKE CONCAT('%', #{ searchWord }, '%')
             )
         </if>
-        ORDER BY A.log_no DESC
+        ORDER BY A.created_at DESC
         LIMIT #{ startIndex }, #{ pageCount }
     </select>
 
@@ -919,6 +919,17 @@
         WHERE CLC.chat_no &lt; #{ minChatNo } AND CLC.club_no = #{ clubNo } AND CLC.type = 'chat'
         ORDER BY CLC.chat_no DESC
         LIMIT 10
+    </select>
+
+    <select id="getUpcomingSchedules" resultType="com.multi.udong.club.model.dto.ScheduleDTO">
+        SELECT * FROM CL_SCHEDULE
+        WHERE gathering_at BETWEEN #{startTime} AND DATE_ADD(#{startTime}, INTERVAL 1 HOUR)
+        AND is_deleted = 'N'
+    </select>
+
+    <select id="getScheduleParticipants" resultType="Integer">
+        SELECT member_no FROM CL_SCHEDULE_PARTICIPANT
+        WHERE schedule_no = #{scheduleNo}
     </select>
 
 </mapper>

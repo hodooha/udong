@@ -221,7 +221,7 @@
                     <input type="hidden" th:value="${ad.newsNo}">
                     <p class="p-tag ad-category-name">AD</p>
                     <p th:text="${ad.title}" class="p-tag news-title"></p>
-                    <p th:text="${ad.content}" class="p-tag news-content"></p>
+                    <p th:text="${#strings.abbreviate(ad.content, 143)}" class="p-tag news-content"></p>
                     <p class="p-tag news-etc">
                         <span>&#127960;</span>
                         <span th:text="${ad.location.eupMyeonDongName}" style="margin-left: 4px"></span>
