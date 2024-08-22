@@ -223,43 +223,38 @@
         }
 
         function displayMembers(page) {
-            currentPage = page;
-            var startIndex = (page - 1) * itemsPerPage;
-            var endIndex = startIndex + itemsPerPage;
-            var membersToDisplay = memberList.slice(startIndex, endIndex);
+    currentPage = page;
+    var startIndex = (page - 1) * itemsPerPage;
+    var endIndex = startIndex + itemsPerPage;
+    var membersToDisplay = memberList.slice(startIndex, endIndex);
 
-            var membersTableBody = $('#blacklistTable tbody');
-            membersTableBody.empty();
+    var membersTableBody = $('#blacklistTable tbody');
+    membersTableBody.empty();
 
-            membersToDisplay.forEach(function(member) {
-                var row = $('<tr>');
-                row.append($('<td>').text(member.memberNo));
-                row.append($('<td>').text(member.memberId));
-                row.append($('<td>').text(member.nickname));
-                row.append($('<td>').text(member.blackedAt || '등록된 날짜 없음'));
+    membersToDisplay.forEach(function(member) {
+        var row = $('<tr>');
+        row.append($('<td>').text(member.memberNo));
+        row.append($('<td>').text(member.memberId));
+        row.append($('<td>').text(member.nickname));
+        row.append($('<td>').text(member.blackedAt || '등록된 날짜 없음'));
 
-                var unblackedAtText;
-                if (member.isBlacked === 'N') {
-                    unblackedAtText = member.unblackedAt || '해제된 날짜 없음';
-                } else {
-                    unblackedAtText = '해제된 날짜 없음';
-                }
-                row.append($('<td>').attr('id', 'unblackedAt-' + member.memberNo).text(unblackedAtText));
+        var unblackedAtText = member.isBlacked === 'Y' ? '해제된 날짜 없음' : (member.unblackedAt || '');
+        row.append($('<td>').attr('id', 'unblackedAt-' + member.memberNo).text(unblackedAtText));
 
-                var button = $('<button>')
-                    .addClass('status-btn')
-                    .addClass(member.isBlacked === 'Y' ? 'btn-udh-red' : 'btn-udh-yellow')
-                    .text(member.isBlacked === 'Y' ? '해제' : '등록')
-                    .attr('data-member-no', member.memberNo)
-                    .attr('data-is-blacked', member.isBlacked)
-                    .on('click', function() { handleBlacklistAction(member.memberNo); });
+        var button = $('<button>')
+            .addClass('status-btn')
+            .addClass(member.isBlacked === 'Y' ? 'btn-udh-red' : 'btn-udh-yellow')
+            .text(member.isBlacked === 'Y' ? '해제' : '등록')
+            .attr('data-member-no', member.memberNo)
+            .attr('data-is-blacked', member.isBlacked)
+            .on('click', function() { handleBlacklistAction(member.memberNo); });
 
-                row.append($('<td>').append(button));
-                membersTableBody.append(row);
-            });
+        row.append($('<td>').append(button));
+        membersTableBody.append(row);
+    });
 
-            updatePagination();
-        }
+    updatePagination();
+}
 
         function updatePagination() {
             var totalPages = Math.ceil(memberList.length / itemsPerPage);
@@ -434,7 +429,7 @@
         originalMember.unblackedAt = date;
         localStorage.setItem('unblackedAt-' + memberNo, date);
     }
-    button.data('is-blacked', status);
+    button.attr('data-is-blacked', status);
 }
 
         return {
