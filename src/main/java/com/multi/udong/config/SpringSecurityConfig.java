@@ -15,6 +15,8 @@ import org.springframework.security.web.authentication.rememberme.JdbcTokenRepos
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.sql.DataSource;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +94,12 @@ public class SpringSecurityConfig {
                 .requestMatchers(adminPermitList.toArray(new String[0])).hasRole("ADMIN")
                 .requestMatchers(permitAllList.toArray(new String[0])).permitAll()
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(exceptionHandling -> exceptionHandling
+                .authenticationEntryPoint((request, response, authException) ->
+                    response.sendRedirect("/error?alert=" + URLEncoder.encode("원활한 서비스 이용을 위해서는<br>로그인이 필요합니다.", StandardCharsets.UTF_8) + "&alertType=error"))
+                .accessDeniedHandler((request, response, accessDeniedException) ->
+                    response.sendRedirect("/error?alert=" + URLEncoder.encode("접근 권한이 없습니다.", StandardCharsets.UTF_8) + "&alertType=error"))
             )
             .formLogin((form) -> form
                 .loginPage("/login")

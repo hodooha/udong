@@ -211,12 +211,10 @@
                         <button class="btn btn-udh-red">문의 삭제하기</button>
                     </div>
                     <div sec:authorize="!hasRole('ROLE_ADMIN')">
-                        <th:block th:if="${#lists.isEmpty(answers) or answers.![answererNo].contains(#authentication.principal.memberDTO.memberNo)}">
-                            <button class="btn btn-udh-red">문의 삭제하기</button>
-                        </th:block>
-                        <th:block th:unless="${#lists.isEmpty(answers) or answers.![answererNo].contains(#authentication.principal.memberDTO.memberNo)}">
-                            <button class="btn btn-udh-red"disabled>문의 삭제하기</button>
-                        </th:block>
+                        <button class="btn btn-udh-red" th:disabled="${que.isAnswered == 'Y'}"
+                                th:title="${que.isAnswered == 'Y' ? '답변이 완료된 문의는 삭제할 수 없습니다.' : ''}">
+                            문의 삭제하기
+                        </button>
                     </div>
                 </form>
             </div>

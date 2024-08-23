@@ -78,7 +78,7 @@
             cursor: pointer;
 
             &::after {
-                content: '클릭하여 수정';
+                content: '클릭하여 변경';
                 position: absolute;
                 bottom: 0;
                 left: 0;
@@ -139,7 +139,7 @@
     <div th:replace="~{/member/sidebar}"></div>
     <div class="content-area">
         <div class="profile-update">
-            <h2>프로필 수정</h2>
+            <h2>프로필 변경</h2>
             <form action="/member/updateProfile" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="input-group">
@@ -161,7 +161,7 @@
                         </div>
                         <input type="hidden" id="current-nickname" th:value="${nickname}">
                         <button type="button" class="btn btn-udh-yellow" id="checkDuplicate">닉네임 중복 검사</button>
-                        <button type="submit" class="btn btn-udh-blue" id="updateProfile">프로필 수정</button>
+                        <button type="submit" class="btn btn-udh-blue" id="updateProfile">프로필 변경</button>
                     </div>
 
                     <div class="message" id="nickname-message"></div>
@@ -169,7 +169,7 @@
             </form>
         </div>
         <div class="contact-update">
-            <h2>연락처 수정</h2>
+            <h2>연락처 변경</h2>
             <div class="email-update">
                 <form action="/member/updateProfile" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -187,7 +187,7 @@
                             <option value="kakao.com">kakao.com</option>
                         </select>
                         <input type="hidden" name="email" id="email">
-                        <button type="submit" class="btn btn-udh-blue" id="updateEmail">이메일 수정</button>
+                        <button type="submit" class="btn btn-udh-blue" id="updateEmail">이메일 변경</button>
                     </div>
                     <div class="message" id="email-message"></div>
                 </form>
@@ -198,14 +198,14 @@
                     <div class="submit-group">
                         <i class="fi fi-rr-phone-call"></i>
                         <input type="tel" class="phone" name="phone" id="phone" th:value="${phone}" placeholder="전화번호" oninput="removeInvalidChars(this)" required>
-                        <button type="submit" class="btn btn-udh-blue" id="updatePhone">전화번호 수정</button>
+                        <button type="submit" class="btn btn-udh-blue" id="updatePhone">전화번호 변경</button>
                     </div>
                     <div class="message" id="phone-message"></div>
                 </form>
             </div>
         </div>
         <div class="password-update">
-            <h2>비밀번호 수정</h2>
+            <h2>비밀번호 변경</h2>
             <form action="/member/updateProfile" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                 <div class="input-group">
@@ -223,7 +223,7 @@
                     </div>
                     <div class="message" id="password-message"></div>
                     <div class="submit-group">
-                        <button type="submit" class="btn btn-udh-blue" id="updatePw">비밀번호 수정</button>
+                        <button type="submit" class="btn btn-udh-blue" id="updatePw">비밀번호 변경</button>
                     </div>
                 </div>
             </form>
@@ -341,7 +341,7 @@
             });
         });
 
-        // 프로필 사진 + 닉네임 수정 폼 제출
+        // 프로필 사진 + 닉네임 변경 폼 제출
         updateProfileForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -450,7 +450,7 @@
             }
         }
 
-        // 이메일 수정 폼 제출
+        // 이메일 변경 폼 제출
         updateEmailForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -478,7 +478,7 @@
             }
         });
 
-        // 전화번호 수정 폼 제출
+        // 전화번호 변경 폼 제출
         updatePhoneForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -530,7 +530,7 @@
             }
         });
 
-        // 비밀번호 수정 폼 제출
+        // 비밀번호 변경 폼 제출
         updatePasswordForm.addEventListener('submit', function(e) {
             e.preventDefault();
 

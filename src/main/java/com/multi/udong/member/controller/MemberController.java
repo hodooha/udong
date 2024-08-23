@@ -248,7 +248,7 @@ public class MemberController {
     }
 
     /**
-     * 입력한 주소를 등록하거나 수정함
+     * 입력한 주소를 등록하거나 변경함
      *
      * @param c                  the c
      * @param memAddressDTO      the mem address dto
@@ -288,7 +288,7 @@ public class MemberController {
 
         } else { // 등록된 주소가 있다면
 
-            // 주소 수정 진행
+            // 주소 변경 진행
             try {
                 memberService.updateAddress(memAddressDTO);
                 
@@ -297,9 +297,9 @@ public class MemberController {
                 return "common/errorPage";
             }
 
-            // 수정 후 사용자 세션 최신화
+            // 변경 후 사용자 세션 최신화
             memberService.updateMemberSession();
-            redirectAttributes.addFlashAttribute("alert", "주소 수정이 완료되었습니다.");
+            redirectAttributes.addFlashAttribute("alert", "주소 변경이 완료되었습니다.");
             redirectAttributes.addFlashAttribute("alertType", "success");
 
         }
@@ -308,7 +308,7 @@ public class MemberController {
     }
 
     /**
-     * 입력한 정보로 현재 사용자의 회원정보를 수정함
+     * 입력한 정보로 현재 사용자의 회원정보를 변경함
      *
      * @param c                  the c
      * @param file               the file
@@ -331,7 +331,7 @@ public class MemberController {
         int memberNo = c.getMemberDTO().getMemberNo();
         memberDTO.setMemberNo(memberNo);
 
-        // 프로필 사진를 수정할 때
+        // 프로필 사진를 변경할 때
         if (file != null && !file.isEmpty()) {
 
             // 첨부파일 저장 및 TargetNo, TypeCode 입력
@@ -339,12 +339,12 @@ public class MemberController {
             attachmentDTO.setTargetNo(c.getMemberDTO().getMemberNo());
             attachmentDTO.setTypeCode("MEM");
 
-            // 프로필 수정 진행
+            // 프로필 변경 진행
             memberService.updateProfile(memberDTO, attachmentDTO);
 
-        } else { // 프로필 사진을 수정하지 않을 때
+        } else { // 프로필 사진을 변경하지 않을 때
 
-            // 비밀번호를 수정할 때
+            // 비밀번호를 변경할 때
             if (currentPw != null && memberDTO.getMemberPw() != null) {
                 BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
@@ -356,13 +356,13 @@ public class MemberController {
                 }
             }
 
-            // 프로필 수정 진행
+            // 프로필 변경 진행
             memberService.updateProfile(memberDTO, null);
         }
 
-        // 수정 후 사용자 세션 최신화
+        // 변경 후 사용자 세션 최신화
         memberService.updateMemberSession();
-        redirectAttributes.addFlashAttribute("alert", "회원정보 수정이 완료되었습니다.");
+        redirectAttributes.addFlashAttribute("alert", "회원정보 변경이 완료되었습니다.");
         redirectAttributes.addFlashAttribute("alertType", "success");
         return "redirect:/member/memInfo";
     }

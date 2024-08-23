@@ -122,7 +122,11 @@ public class CSServiceImpl implements CSService{
         Map <String, Object> map = new HashMap<>();
 
         CSQuestionDTO csQuestionDTO = csMapper.getQueDetail(csNo);
-        map.put("csQuestionDTO", csQuestionDTO);
+        if (csQuestionDTO == null) {
+            return null;
+        } else {
+            map.put("csQuestionDTO", csQuestionDTO);
+        }
 
         List<AttachmentDTO> attachments = csMapper.getQueAttachment(csNo);
         map.put("attachments", attachments);
