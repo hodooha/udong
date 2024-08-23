@@ -211,7 +211,7 @@
                         <button class="btn btn-udh-red">문의 삭제하기</button>
                     </div>
                     <div sec:authorize="!hasRole('ROLE_ADMIN')">
-                        <button class="btn btn-udh-red" th:disabled="${que.isAnswered == 'Y'}"
+                        <button class="btn btn-udh-red" id="deleteQueDetail" th:disabled="${que.isAnswered == 'Y'}"
                                 th:title="${que.isAnswered == 'Y' ? '답변이 완료된 문의는 삭제할 수 없습니다.' : ''}">
                             문의 삭제하기
                         </button>
@@ -230,7 +230,7 @@
         const noAnswer = document.querySelector('.no-answer');
         const submitAnswer = document.querySelector('#submit-answer');
         const answerContent = document.querySelector('#answer-content');
-        const deleteQueBtns = document.querySelectorAll('.btn-udh-red');
+        const deleteQueBtn = document.querySelector('#deleteQueDetail');
         const deleteQueForm = document.querySelector('.alert-box form');
 
         const token = document.querySelector('meta[name="_csrf"]').content;
@@ -302,13 +302,11 @@
             }
         });
 
-        deleteQueBtns.forEach(btn => {
-            btn.addEventListener('click', async function(e) {
-                e.preventDefault();
-                if (await showConfirmAlert('정말 문의를 삭제하시겠습니까?')) {
-                    this.closest('form').submit();
-                }
-            });
+        deleteQueBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            if (await showConfirmAlert('정말 문의를 삭제하시겠습니까?')) {
+                this.closest('form').submit();
+            }
         });
     });
 </script> <!--댓글 비동기-->

@@ -50,8 +50,42 @@ public class CSController {
      * @since 2024 -08-01
      */
     @GetMapping("/csMain")
-    public void csMain (Model model) {
-        model.addAttribute("faqItems", FAQItem.values());
+    public void csMain(@RequestParam(value = "page", defaultValue = "1") int page,
+                       @RequestParam(value = "category", defaultValue = "all") String category,
+                       Model model) {
+
+        int pageSize = 5;
+
+        FAQItem[] allFaqItems = FAQItem.values();
+
+        List<FAQItem> filteredFaqItems = new ArrayList<>();
+        for (FAQItem item : allFaqItems) {
+            if (category.equals("all") || item.getCategory().equals(category)) {
+                filteredFaqItems.add(item);
+            }
+        }
+
+
+        int count = filteredFaqItems.size();
+        int pages = (count + pageSize - 1) / pageSize; // 올림 연산
+
+        // 페이지 범위 계산
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, count);
+
+        // 범위 체크 추가
+        if (start >= count) {
+            start = 0;
+            end = Math.min(pageSize, count);
+            page = 1;
+        }
+
+        FAQItem[] paginatedFaqItems = filteredFaqItems.subList(start, end).toArray(new FAQItem[0]);
+
+        model.addAttribute("faqItems", paginatedFaqItems);
+        model.addAttribute("page", page);
+        model.addAttribute("pages", pages);
+        model.addAttribute("currentCategory", category);
     }
 
     /**
@@ -68,12 +102,13 @@ public class CSController {
     public String csMyQue (@AuthenticationPrincipal CustomUserDetails c,
                            @RequestParam(value = "page", defaultValue = "1") int page,
                            @RequestParam(value = "searchWord", required = false) String searchWord,
+                           RedirectAttributes redirectAttributes,
                            Model model) {
 
         if (c == null) {
-            model.addAttribute("alert","로그인이 필요한 기능입니다.");
-            model.addAttribute("alertType", "error");
-            return "cs/csMain";
+            redirectAttributes.addFlashAttribute("alert","로그인이 필요한 기능입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/cs/csMain";
         }
 
         int memberNo = c.getMemberDTO().getMemberNo();
@@ -166,12 +201,13 @@ public class CSController {
      */
     @GetMapping("/insertQueForm")
     public String insertQueForm (@AuthenticationPrincipal CustomUserDetails c,
+                               RedirectAttributes redirectAttributes,
                                Model model) {
 
         if (c == null) {
-            model.addAttribute("alert","로그인이 필요한 기능입니다.");
-            model.addAttribute("alertType", "error");
-            return "cs/csMain";
+            redirectAttributes.addFlashAttribute("alert","로그인이 필요한 기능입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/cs/csMain";
         }
 
         List<TypeDTO> csTypes = csService.getAllTypes();
@@ -192,23 +228,24 @@ public class CSController {
     @GetMapping("/queDetail")
     public String queDetail (@AuthenticationPrincipal CustomUserDetails c,
                              @RequestParam("no") int csNo,
+                             RedirectAttributes redirectAttributes,
                              Model model) {
 
         int memberNo = c.getMemberDTO().getMemberNo();
 
         Map<String, Object> map = csService.getQueDetail(csNo);
         if (map == null) {
-            model.addAttribute("alert", "삭제된 문의입니다.");
-            model.addAttribute("alertType", "error");
-            return "cs/csMain";
+            redirectAttributes.addFlashAttribute("alert", "삭제된 문의입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/cs/csMain";
         }
 
         CSQuestionDTO csQuestionDTO = (CSQuestionDTO) map.get("csQuestionDTO");
 
         if (memberNo != csQuestionDTO.getWriterNo() && !c.getMemberDTO().getAuthority().equals("ROLE_ADMIN")) {
-            model.addAttribute("alert", "잘못된 접근입니다.");
-            model.addAttribute("alertType", "error");
-            return "cs/csMain";
+            redirectAttributes.addFlashAttribute("alert", "잘못된 접근입니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
+            return "redirect:/cs/csMain";
         }
 
         List<AttachmentDTO> attachments = (List<AttachmentDTO>) map.get("attachments");
