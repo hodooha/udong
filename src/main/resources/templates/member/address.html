@@ -131,7 +131,6 @@
         new daum.Postcode({
             oncomplete: function(data) {
                 updateFields(data);
-                // 주소 검색 후 입력 필드 스타일 변경
                 document.getElementById("roadAddress").classList.remove('disabled-input');
                 document.getElementById("jibunAddress").classList.remove('disabled-input');
             }
