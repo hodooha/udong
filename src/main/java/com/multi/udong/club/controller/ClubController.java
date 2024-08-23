@@ -2076,8 +2076,7 @@ public class ClubController {
 
                 int scheduleNo = scheduleDTO.getScheduleNo();
 
-                // return "redirect:/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
-                return "redirect:/club/clubSchedule/scheduleMain?clubNo=" + clubNo;
+                return "redirect:/club/clubSchedule/scheduleDetail?clubNo=" + clubNo + "&scheduleNo=" + scheduleNo;
 
             } catch (Exception e) {
 
