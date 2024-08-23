@@ -154,8 +154,8 @@ public class SaleController {
         return "redirect:/sale/saleMain"; // 모든 처리가 완료되면 땡처리 메인으로 리다이렉트
     }
 
-    @Value("${kakao.api.key}")
-    private String kakaoApiKey;
+    @Value("${kakao.map.key}")
+    private String kakaoMapKey;
 
     @GetMapping("/detail/{saleNo}")
     public String saleDetail(@PathVariable("saleNo") int saleNo, Model model, Authentication authentication) {
@@ -165,7 +165,7 @@ public class SaleController {
         System.out.println("Created At: " + sale.getCreatedAt()); // 로그 추가
         System.out.println("Views: " + sale.getViews()); // 로그 추가
         model.addAttribute("sale", sale);
-        model.addAttribute("kakaoApiKey", kakaoApiKey);
+        model.addAttribute("kakaoMapKey", kakaoMapKey);
 
 
         if (authentication != null && authentication.isAuthenticated()) {
