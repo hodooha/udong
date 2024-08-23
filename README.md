@@ -5,7 +5,7 @@
 </div>
 <div align="center">
       
-![logo1](https://github.com/user-attachments/assets/9fceeac5-bf56-49c8-af1c-2dd522097b63)
+![logo1](https://github.com/user-attachments/assets/f6f2e852-f328-4b1d-965f-7543eece5f64)
 
 </div>
 
@@ -15,7 +15,7 @@
 
 ## &#128161; Overview<br>
 
-![udh-index-page](https://github.com/user-attachments/assets/7dfd1473-89fa-4a1a-8b97-9a72f9ad9da6)
+![udh-index-page](https://github.com/user-attachments/assets/24d733ef-bb6c-4ceb-93f7-4633caa527a2)
 
 <div align="right"><strong>Design by 팀장 강성현</strong></div>
 
@@ -46,10 +46,10 @@
 
 **NAVER CLOUD FLATFORM: Cloud DB for MySQL**
 
-[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1724253641856?alt=media&token=7302a5ed-a7ae-425b-a744-57dfdf1ef681)](https://github.com/msdio/stackticon) <br><br>
+[![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1724372982469?alt=media&token=1d7b420d-0ecf-4d5b-b32e-b895214c15f4)](https://github.com/msdio/stackticon) <br><br>
 
 ## &#127912; ERD
-![ERD_최종](https://github.com/user-attachments/assets/450aabc8-75b9-474d-b31e-cfcbb619ec2d)
+![ERD_최종](https://github.com/user-attachments/assets/baaa13a9-3103-4802-8f3e-8f6bf59e5207)
 <br><br>
 
 ## &#128187; 구현 결과
@@ -79,7 +79,7 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
       (공백)<br> 
       모임회원들끼리 채팅 기능 추가<br> 
 
-**이모지 태그 설명**<br>  
+**이모지 태그 설명**<br>
 🗂️ project :: 프로젝트를 세팅한다.<br> 
 ⚙️ build :: 시스템 또는 외부 종속 파일에 영향을 미치는 설정을 변경<br> 
 📑 docs :: 프로젝트 관련 문서 등을 추가/수정 (README.md 등)<br> 
@@ -94,7 +94,7 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
 <br><br>
 
 ## &#128546;  힘들었던 점
-![locationTable](https://github.com/user-attachments/assets/80f4c89f-9384-4b51-895a-d5daa4ec8f00)
+![locationTable](https://github.com/user-attachments/assets/9468f318-a4fe-4cd8-8250-6def99dc5641)
 <br><br>
 저희 프로젝트는 위치 기반 지역 커뮤니티 플랫폼을 개발하는 것이었고, 여기서 핵심은 사용자 위치 정보를 활용해 지역 커뮤니티를 효과적으로 연결하는 것이었습니다. 이 플랫폼에서 가장 중요한 부분은 위치 정보 데이터를 정확하고 효율적으로 처리하는 것이었습니다.
 
@@ -103,7 +103,7 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
 
 #### 가장 어려웠던 점: 데이터 가공<br>
 특히 데이터 가공 과정이 가장 어려웠습니다.  API로부터 받은 데이터를 저희 플랫폼의 LOCATION 테이블 구조에 맞게 변환하는 작업이 필요했는데, 이 과정에서 데이터의 중복 제거와 데이터 형식 통일에 많은 시간이 들었습니다. 예상보다 까다로운 작업이었지만, 여러 번의 시도 끝에 데이터를 정리할 수 있었습니다. 이를 통해 저희 팀은 대규모 데이터를 효율적으로 처리하는 방법을 배웠고, 이러한 경험은 앞으로도 큰 도움이 될 것이라고 생각합니다.&#128563;&#128522;
-<br><br>
+<br><br><br>
 
 
 
