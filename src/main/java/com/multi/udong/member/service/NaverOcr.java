@@ -92,10 +92,7 @@ public class NaverOcr {
             }
             br.close();
 
-            System.out.println("res "+response);
-            //String을 json으로 만들어서 inferText만 추출해봅시다.
             JSONObject json2 = new JSONObject(response.toString());
-            System.out.println(json2);
             JSONArray images_arr = json2.getJSONArray("images");
             //키에 대한 값이 array이면 getJSONArray("key");
             //키에 대한 값이 json이면 getJSONObject("key");

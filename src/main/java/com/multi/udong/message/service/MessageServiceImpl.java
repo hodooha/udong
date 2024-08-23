@@ -101,7 +101,6 @@ public class MessageServiceImpl implements MessageService{
                 // 나에게 보내는 쪽지가 아니면 알림 보냄
                 if (messageDTO.getSenderNo() != messageDTO.getReceiverNo()){
                     MessageDTO insertedMessage = messageMapper.getInsertedMessage(messageDTO);
-                    System.out.println("insertedMessage" + insertedMessage);
                     createMessageNoti(insertedMessage);
                 }
 

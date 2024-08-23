@@ -95,9 +95,12 @@
     </insert>
 
     <select id="getInsertedMessage" resultType="messageDTO">
-        SELECT M.*, MB.nickname AS receiverNickname
+        SELECT M.*,
+            MB_RECEIVER.nickname AS receiverNickname,
+            MB_SENDER.nickname AS senderNickname
         FROM MSG M
-        JOIN MEMBER MB ON M.receiver_no = MB.member_no
+        JOIN MEMBER MB_RECEIVER ON M.receiver_no = MB_RECEIVER.member_no
+        JOIN MEMBER MB_SENDER ON M.sender_no = MB_SENDER.member_no
         WHERE M.sender_no = #{senderNo}
             AND M.receiver_no = #{receiverNo}
             AND M.is_read = 'N'

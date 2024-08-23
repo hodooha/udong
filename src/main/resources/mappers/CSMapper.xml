@@ -59,6 +59,7 @@
     <select id="getAllTypes" resultType="typeDTO">
         SELECT type_code, type_name
         FROM TYPE
+        ORDER BY type_name ASC
     </select>
 
     <insert id="insertQueForm" parameterType="csQuestionDTO" useGeneratedKeys="true" keyProperty="csNo">
@@ -78,7 +79,8 @@
             t.type_name AS csName,
             cq.title,
             cq.content,
-            cq.created_at
+            cq.created_at,
+            cq.is_answered
         FROM CS_QUESTION cq
         JOIN TYPE t ON cq.cs_type = t.type_code
         WHERE cq.cs_no = #{csNo}

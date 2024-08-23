@@ -127,7 +127,7 @@
                         </div>
                     </div>
 
-                    <div class="noti-category">
+                    <div class="noti-category" sec:authorize="!hasRole('ROLE_ADMIN')">
                         <h3>대여 / 나눔 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('GIVE_') || notiSet.notiSetCode.startsWith('RENT_') || notiSet.notiSetCode == 'ITEM_AVAILABLE'}">
                             <span th:text="${notiSet.notiSetName}"></span>
@@ -138,7 +138,7 @@
                         </div>
                     </div>
 
-                    <div class="noti-category">
+                    <div class="noti-category" sec:authorize="!hasRole('ROLE_ADMIN')">
                         <h3>우동 소식 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode == 'NEWS_COMMENT'}">
                             <span th:text="${notiSet.notiSetName}"></span>
@@ -149,7 +149,7 @@
                         </div>
                     </div>
 
-                    <div class="noti-category">
+                    <div class="noti-category" sec:authorize="!hasRole('ROLE_ADMIN')">
                         <h3>우동 모임 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode.startsWith('CL_')}">
                             <span th:text="${notiSet.notiSetName}"></span>
@@ -160,7 +160,7 @@
                         </div>
                     </div>
 
-                    <div class="noti-category">
+                    <div class="noti-category" sec:authorize="!hasRole('ROLE_ADMIN')">
                         <h3>회원 관련 알림</h3>
                         <div class="noti-set-item" th:each="notiSet : ${notiSets}" th:if="${notiSet.notiSetCode == 'MEMBER_LEVEL_UP' || notiSet.notiSetCode == 'CS_ANSWER'}">
                             <span th:text="${notiSet.notiSetName}"></span>

@@ -90,14 +90,34 @@
             resize: vertical;
         }
         input[type="file"] {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 4px;
+            display: none;
         }
         input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin-right: 10px;
+        }
+        .file-upload-section {
+            margin-bottom: 20px;
+        }
+        #fileList {
+            margin-top: 10px;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .file-item button {
+            background-color: none;
+            color: blue;
+            text-decoration: underline;
+            font-size: 18px;
+            border: none;
         }
         .btn-udh-blue:disabled {
             background-color: #9BAFD4;
@@ -144,9 +164,11 @@
                     <input type="text" name="content" id="queFormContent" required>
                 </div>
 
-                <div class="column-set">
+                <div class="column-set file-upload-section">
                     <label for="queFormFiles" style="padding: 0 10px; font-size: 18px;">첨부파일</label>
                     <input type="file" name="files" id="queFormFiles" multiple>
+                    <button type="button" id="addFileBtn" class="btn btn-udh-blue">파일 추가</button>
+                    <div id="fileList"></div>
                 </div>
 
                 <div class="column-set">
@@ -167,6 +189,58 @@
 </main>
 <div th:replace="~{/common/footer}"></div>
 </body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.querySelector('#queFormFiles');
+        const addFileBtn = document.querySelector('#addFileBtn');
+        const fileList = document.querySelector('#fileList');
+        let files = new DataTransfer();
+
+        fileInput.addEventListener('change', handleFileSelect);
+        addFileBtn.addEventListener('click', () => fileInput.click());
+
+        function handleFileSelect(event) {
+            const newFiles = Array.from(event.target.files);
+            newFiles.forEach(file => {
+                if (!Array.from(files.files).some(f => f.name === file.name)) {
+                    files.items.add(file);
+                    addFileToList(file);
+                }
+            });
+            updateFileInput();
+        }
+
+        function addFileToList(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <span>${file.name}</span>
+                <button type="button" class="remove-file">삭제</button>
+            `;
+            fileItem.querySelector('.remove-file').addEventListener('click', () => removeFile(file.name));
+            fileList.appendChild(fileItem);
+        }
+
+        function removeFile(fileName) {
+            const newFiles = new DataTransfer();
+            Array.from(files.files)
+                .filter(file => file.name !== fileName)
+                .forEach(file => newFiles.items.add(file));
+            files = newFiles;
+            updateFileInput();
+            updateFileList();
+        }
+
+        function updateFileInput() {
+            fileInput.files = files.files;
+        }
+
+        function updateFileList() {
+            fileList.innerHTML = '';
+            Array.from(files.files).forEach(addFileToList);
+        }
+    });
+</script> <!--파일 등록 스크립트-->
 <script>
     const queFormTitle = document.querySelector('#queFormTitle');
     const queFormContent = document.querySelector('#queFormContent');

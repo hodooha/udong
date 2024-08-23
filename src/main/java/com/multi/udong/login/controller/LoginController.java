@@ -109,7 +109,7 @@ public class LoginController {
      * 입력한 사용자 정보로 회원가입
      *
      * @param memberDTO          the memberDTO
-     * @param memBus          the mem bus
+     * @param memBus             the mem bus
      * @param request            the request
      * @param file               the file
      * @param model              the model
@@ -156,8 +156,7 @@ public class LoginController {
                     
                     try {
                         String b_no = list.get(0).trim().replaceAll("-", "");
-                        String p_nm = list.get(1).trim()
-                                .replaceAll(",", "").trim();
+                        String p_nm = list.get(1).replaceAll(",", "").trim();
                         String start_dt = list.get(2).trim()
                                 .replaceAll(" ", "")
                                 .replaceAll("년", "")
@@ -343,6 +342,25 @@ public class LoginController {
         } else {
             return ResponseEntity.ok("available");
         }
+    }
+
+    /**
+     * Handle error string.
+     *
+     * @param alert              the alert
+     * @param alertType          the alert type
+     * @param redirectAttributes the redirect attributes
+     * @return the string
+     * @since 2024 -08-22
+     */
+    @GetMapping("/error")
+    public String handleError(@RequestParam("alert") String alert,
+                              @RequestParam("alertType") String alertType,
+                              RedirectAttributes redirectAttributes) {
+
+        redirectAttributes.addFlashAttribute("alert", alert);
+        redirectAttributes.addFlashAttribute("alertType", alertType);
+        return "redirect:/";
     }
 
     /**

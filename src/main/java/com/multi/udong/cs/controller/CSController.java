@@ -196,6 +196,11 @@ public class CSController {
         int memberNo = c.getMemberDTO().getMemberNo();
 
         Map<String, Object> map = csService.getQueDetail(csNo);
+        if (map == null) {
+            model.addAttribute("alert", "삭제된 문의입니다.");
+            model.addAttribute("alertType", "error");
+            return "cs/csMain";
+        }
 
         CSQuestionDTO csQuestionDTO = (CSQuestionDTO) map.get("csQuestionDTO");
 
@@ -298,9 +303,11 @@ public class CSController {
 
         String result = csService.deleteQue(csNo, authority);
 
+        System.out.println("##result + " + result);
+
         if (result.equals("answered")) {
-            redirectAttributes.addAttribute("alert", "답변이 완료된 문의는 삭제할 수 없습니다.");
-            redirectAttributes.addAttribute("alertType", "error");
+            redirectAttributes.addFlashAttribute("alert", "답변이 완료된 문의는 삭제할 수 없습니다.");
+            redirectAttributes.addFlashAttribute("alertType", "error");
             return "redirect:/cs/queDetail?no=" + csNo;
         } else {
             redirectAttributes.addFlashAttribute("alert", "문의글이 삭제되었습니다.");
