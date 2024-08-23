@@ -4,10 +4,11 @@ import com.multi.udong.common.model.dto.AttachmentDTO;
 import com.multi.udong.common.model.dto.TypeDTO;
 import com.multi.udong.cs.model.dto.CSAnswerDTO;
 import com.multi.udong.cs.model.dto.CSQuestionDTO;
+import com.multi.udong.cs.model.dto.FAQItem;
 import com.multi.udong.cs.service.CSService;
+import com.multi.udong.login.service.CustomUserDetails;
 import com.multi.udong.member.controller.MemberController;
 import com.multi.udong.member.model.dto.PageDTO;
-import com.multi.udong.login.service.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -42,7 +43,6 @@ public class CSController {
     private final CSService csService;
     private final MemberController memberController;
 
-
     /**
      * Cs main.
      *
@@ -51,6 +51,7 @@ public class CSController {
      */
     @GetMapping("/csMain")
     public void csMain (Model model) {
+        model.addAttribute("faqItems", FAQItem.values());
     }
 
     /**

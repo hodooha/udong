@@ -11,3 +11,4 @@ public interface GoogleUserInfoClient {
     @GetMapping("/oauth2/v2/userinfo")
     GoogleUserInfo getUserInfo(@RequestHeader("Authorization") String bearerToken);
 }
+
