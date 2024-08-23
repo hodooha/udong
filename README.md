@@ -15,7 +15,7 @@
 
 ## &#128161; Overview<br>
 
-![udh-index-page](https://github.com/user-attachments/assets/24d733ef-bb6c-4ceb-93f7-4633caa527a2)
+![우동행메인최종](https://github.com/user-attachments/assets/4e85cb40-668a-4486-bef3-bd61876bdb5d)
 
 <div align="right"><strong>Design by 팀장 강성현</strong></div>
 
@@ -120,5 +120,5 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
             프로젝트 과정에서 많이 배웠고, 잊지 못할 소중한 경험을 한 것 같습니다. 팀원분들 정말 감사합니다.&#128557; </pre>
 
 <pre>&#128156; 하지은 : 훌륭한 팀을 만난 덕분에 많이 배웠고 멋지게 프로젝트를 마칠 수 있었습니다.
-	이슈나 에러에 대해 같이 토론하고 해결해가는 과정 속에서 협업의 의미와 가치를 다시 한번 느꼈습니다. 
+	    이슈나 에러에 대해 같이 토론하고 해결해가는 과정 속에서 협업의 의미와 가치를 다시 한번 느꼈습니다. 
             모두들 정말 고생 많으셨고 감사합니다!😍</pre> 
