@@ -959,7 +959,7 @@ public class ShareServiceImpl implements ShareService {
      * @since 2024 -08-08
      */
     // 매일 오후 12시에 나눔 품목들의 마감일 확인
-    @Scheduled(cron = "0 15  22 * * ?")
+    @Scheduled(cron = "0 0 12 * * ?")
     public void raffleGiveItem() throws Exception {
 
         // 오늘 날짜인 나눔 물건 조회
