@@ -93,4 +93,6 @@ public interface MemberMapper {
     void deleteMemBus(int memberNo);
 
     MemberDTO getMemberInfo(int memberNo);
+
+    List<Integer> getAdminMemberNos();
 }

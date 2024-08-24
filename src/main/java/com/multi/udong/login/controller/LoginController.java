@@ -145,8 +145,10 @@ public class LoginController {
             // NaverOcr로 사업자등록증 추출요청
             ArrayList<String> list = naverOcr.ocr(fileName);
 
+            System.out.println(list);
+
             // 추출된 결과가 있다면
-            if (!list.isEmpty()) {
+            if (list != null && list.size() == 3 && list.stream().allMatch(s -> s != null && !s.trim().isEmpty())) {
 
                 // 국세청 api로 유효코드 반환
                 String valid = ntsAPIValid(list);

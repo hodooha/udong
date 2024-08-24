@@ -240,9 +240,10 @@ public class MemberServiceImpl implements MemberService {
             throw e;
         }
 
+        List<Integer> adminMemberNos = memberMapper.getAdminMemberNos();
         notiService.sendNoti(
                 NotiSetCodeENUM.ADMIN_NEW_SELLER,
-                List.of(memberNo),
+                adminMemberNos,
                 null,
                 Map.of()
         );

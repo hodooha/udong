@@ -633,7 +633,7 @@
 
     <select id="getMemberInfo" resultMap="memberResultMap">
         SELECT m.*, ma.eup_myeon_dong_name, a.saved_name
-        FROM member m
+        FROM MEMBER m
         LEFT JOIN mem_address ma ON m.member_no = ma.member_no
         LEFT JOIN (
             SELECT target_no, saved_name
@@ -647,5 +647,11 @@
             )
         ) a ON m.member_no = a.target_no
         WHERE m.member_no = #{memberNo}
+    </select>
+
+    <select id="getAdminMemberNos" resultType="int">
+        SELECT member_no
+        FROM MEMBER
+        WHERE authority = 'ROLE_ADMIN'
     </select>
 </mapper>
