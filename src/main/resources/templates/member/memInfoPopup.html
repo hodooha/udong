@@ -205,7 +205,7 @@
                     <div class="profile-right-section">
                         <div class="profile-name-section">
                             <span class="profile-name" th:text="${memberData.nickname + ' 님'}"></span>
-                            <img class="level" th:src="@{'/img/'+${#authentication.principal.memberDTO.level}+'.png'}">
+                            <img class="level" th:src="@{'/img/'+${memberData.level}+'.png'}">
                         </div>
                         <button class="info-location-btn">
                             <svg viewBox="0 0 24 24" width="16" height="16">
