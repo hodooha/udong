@@ -4,8 +4,8 @@
 
 </div>
 <div align="center">
-      
-![logo1](https://github.com/user-attachments/assets/f6f2e852-f328-4b1d-965f-7543eece5f64)
+
+<img src=https://github.com/user-attachments/assets/e09c366c-4a97-47a7-a0be-78d74e866e11 width=300>
 
 </div>
 
@@ -15,9 +15,10 @@
 
 ## &#128161; Overview<br>
 
-![우동행메인최종](https://github.com/user-attachments/assets/4e85cb40-668a-4486-bef3-bd61876bdb5d)
+<img src="https://github.com/user-attachments/assets/0c3a8186-2356-4e6c-85d0-5af5941acba3">
 
 <div align="right"><strong>Design by 팀장 강성현</strong></div>
+
 
 <br>**📆 프로젝트 기간 : 2024.07.11 ~ 2024.08.26**
 <br><br>
@@ -49,8 +50,9 @@
 [![stackticon](https://firebasestorage.googleapis.com/v0/b/stackticon-81399.appspot.com/o/images%2F1724372982469?alt=media&token=1d7b420d-0ecf-4d5b-b32e-b895214c15f4)](https://github.com/msdio/stackticon) <br><br>
 
 ## &#127912; ERD
-![ERD_최종](https://github.com/user-attachments/assets/baaa13a9-3103-4802-8f3e-8f6bf59e5207)
+<img src="https://github.com/user-attachments/assets/97b9faa4-f853-4a46-b7a7-2ad154836583">
 <br><br>
+
 
 ## &#128187; 구현 결과  <br>
 - [X] **강성현 : 우동 소식, 우동 모임 담당**<br>
