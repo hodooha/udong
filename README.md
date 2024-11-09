@@ -58,20 +58,17 @@
 - [X] **강성현 : 우동 소식, 우동 모임 담당**<br>
 • 우동 소식: 검색, 인기글, 광고, 좋아요, 댓글 등의 기능<br>
 • 우동 모임: 모임 기록, 모임 일정, 모임 앨범, 모임 멤버, 가입 신청자 관리, 채팅 등의 기능<br>
-<img width="1339" alt="성현님img" src="https://github.com/user-attachments/assets/d3385ddc-4dc0-4a84-942f-6e29c40c5bcb">
 <br><br>
 
 - [x] **김재식 : 회원가입, 마이페이지, 고객센터 담당**<br>
 •회원가입 : 일반회원, 판매자, 구글 및 카카오 등 소셜 회원가입<br>
 •마이페이지 : 회원정보 변경, 활동기록 조회, 쪽지, 알림 등<br>
 •고객센터 : 자주 묻는 질문, 문의 및 답변 시스템, AI챗봇<br>
-![재식님](https://github.com/user-attachments/assets/2cc22f9d-ec25-42ff-b759-79ab93572b1c)
 <br><br>
 
 - [x] **윤정해 : 땡처리, 관리자페이지 담당**<br>
 • 땡처리 : 검색, 정렬옵션, 상세조회, 삭제, 마감, 신고 등의 기능<br>
 • 관리자페이지 : 회원관리, 신고관리, 판매자관리, 블랙리스트 관리, 공지사항 등의 기능<br>
-![스크린샷 2024-08-22 211627](https://github.com/user-attachments/assets/5fbef35f-8fc3-40b6-980b-3689ce0ac197)
 <br><br>
 
 - [x] **하지은 : 대여/나눔 담당**<br>
@@ -108,8 +105,6 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
 <br><br>
 
 ## &#128546;  힘들었던 점
-![locationTable](https://github.com/user-attachments/assets/9468f318-a4fe-4cd8-8250-6def99dc5641)
-<br><br>
 저희 프로젝트는 위치 기반 지역 커뮤니티 플랫폼을 개발하는 것이었고, 여기서 핵심은 사용자 위치 정보를 활용해 지역 커뮤니티를 효과적으로 연결하는 것이었습니다. 이 플랫폼에서 가장 중요한 부분은 위치 정보 데이터를 정확하고 효율적으로 처리하는 것이었습니다.
 
 #### 데이터 활용 및 처리 과정<br>
@@ -138,5 +133,5 @@ ex) 🧩feat :: (성현 #1) 채팅 기능 추가<br>
 <br>
 
 ## &#127881; 수상내역
-![최우수상](https://github.com/user-attachments/assets/4a50f5f6-f4de-49c0-9e19-066046eb920f)
+<img src="https://github.com/user-attachments/assets/a635f1ad-b497-41a4-904e-3078a2692f4a" style="width: 100%">
 <br><br>
